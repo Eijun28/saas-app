@@ -1,15 +1,30 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
+import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
+import MainWrapper from "@/components/layout/MainWrapper";
+import FooterWrapper from "@/components/layout/FooterWrapper";
+import Chatbot from "@/components/Chatbot";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Converso",
-  description: "Real-time AI Teaching Platform",
+  title: "NUPLY — La plateforme mariage next-gen",
+  description: "Matching IA, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -18,8 +33,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${bricolage.variable} antialiased`}>{children}</body>
+    <html lang="fr">
+      <body className={`${poppins.variable} font-sans antialiased bg-white`}>
+        <NuplyNavbarMenu />
+        <main>
+          <MainWrapper>
+            {children}
+          </MainWrapper>
+        </main>
+        <FooterWrapper />
+        
+        {/* Chatbot visible sur TOUTES les pages */}
+        <Chatbot />
+      </body>
     </html>
   );
 }
