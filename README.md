@@ -9,33 +9,38 @@ Plateforme premium de planification de mariage avec matching IA, gestion de budg
 - **TailwindCSS 4** avec configuration personnalisée
 - **shadcn/ui** components
 - **Framer Motion** pour les animations
-- **Poppins** (Google Fonts)
+- **Inter** (Google Fonts)
 
 ## 🎨 Design System
 
 ### Palette de couleurs
 
-- **Primary**: `#7C3AED` (Violet)
-- **Secondary**: `#A78BFA` (Light violet)
-- **Accent**: `#F5F3FF` (Violet-50)
+- **Primary**: `#823F91` (Violet premium)
+- **Primary Hover**: `#6D3478` (Violet foncé)
+- **Primary Light**: `#E8D4EF` (Violet clair)
 - **Background**: `#FFFFFF` (Blanc pur)
-- **Text**: `#1F2937` (Neutral dark) / `#374151` (Neutral medium)
+- **Foreground**: `#0B0E12` (Dark Navy)
+- **Text Secondary**: `#374151` (Neutral medium)
+- **Text Muted**: `#6B7280` (Neutral gray)
 - **Border**: `#E5E7EB` (Gray-200)
+- **Muted Background**: `#F7F7F7` (Light gray)
 
 ### Typographie
 
-- **Police**: Poppins (weights: 300, 400, 500, 600, 700)
+- **Police**: Inter (weights: 300, 400, 500, 600, 700, 800)
+- **Police Mono**: JetBrains Mono (pour les chiffres/montants)
 - **Hiérarchie**:
-  - h1: `text-4xl font-bold text-[#7C3AED]`
-  - h2: `text-3xl font-semibold text-[#1F2937]`
-  - h3: `text-2xl font-semibold text-[#1F2937]`
-  - body: `text-base font-normal text-[#374151]`
+  - h1: `text-4xl font-bold tracking-tight` (Inter)
+  - h2: `text-2xl font-semibold tracking-tight` (Inter)
+  - h3: `text-xl font-semibold` (Inter)
+  - body: `text-base` (Inter)
+  - muted: `text-sm text-gray-500` (Inter)
 
 ## 📁 Architecture
 
 ```
 app/
-├── layout.tsx              # Root layout avec Poppins
+├── layout.tsx              # Root layout avec Inter
 ├── page.tsx                # Landing page
 ├── globals.css             # Styles globaux + design system
 ├── couple/
@@ -128,7 +133,7 @@ Créer un fichier `.env.local`:
 ```env
 # TODO: Ajouter les variables Supabase
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_ANON_KEY= 
 ```
 
 ### shadcn/ui Components

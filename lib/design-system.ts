@@ -16,7 +16,7 @@ export const colors = {
   backgroundMuted: '#F7F7F7',
   
   // Text
-  textPrimary: '#0F0F0F',
+  textPrimary: '#0B0E12', // Dark Navy (cohérent avec globals.css)
   textSecondary: '#374151',
   textMuted: '#6B7280',
   
@@ -54,10 +54,10 @@ export const shadows = {
 } as const
 
 export const typography = {
-  h1: 'text-4xl md:text-5xl lg:text-6xl font-bold text-[#0F0F0F]',
-  h2: 'text-3xl md:text-4xl font-semibold text-[#0F0F0F]',
-  h3: 'text-2xl md:text-3xl font-semibold text-[#0F0F0F]',
-  h4: 'text-xl md:text-2xl font-semibold text-[#0F0F0F]',
+  h1: 'text-4xl md:text-5xl lg:text-6xl font-bold text-[#0B0E12]',
+  h2: 'text-3xl md:text-4xl font-semibold text-[#0B0E12]',
+  h3: 'text-2xl md:text-3xl font-semibold text-[#0B0E12]',
+  h4: 'text-xl md:text-2xl font-semibold text-[#0B0E12]',
   body: 'text-base text-[#374151]',
   bodyLarge: 'text-lg text-[#374151]',
   muted: 'text-sm text-[#6B7280]',

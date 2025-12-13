@@ -299,10 +299,10 @@ export default function ProfilPublicPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
             Profil public
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-sm md:text-base lg:text-lg text-muted-foreground">
             Gérez votre profil visible par les couples
           </p>
         </div>
@@ -356,7 +356,7 @@ export default function ProfilPublicPage() {
           "border-border/10 transition-all duration-300",
           editingSection !== 'description' && "hover:shadow-md hover:border-[#823F91]/20 cursor-pointer group"
         )}>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <CardTitle className="text-xl">À propos</CardTitle>
             {editingSection !== 'description' && (
               <motion.div
@@ -443,7 +443,7 @@ export default function ProfilPublicPage() {
         transition={{ duration: 0.6, delay: 0.3 }}
       >
         <Card className="border-border/10 hover:shadow-md hover:border-[#823F91]/20 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <CardTitle className="text-xl">Services & Tarifs</CardTitle>
             <div className="flex gap-2">
               <Button 
@@ -551,7 +551,7 @@ export default function ProfilPublicPage() {
         transition={{ duration: 0.6, delay: 0.4 }}
       >
         <Card className="border-border/10 hover:shadow-md hover:border-[#823F91]/20 transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <CardTitle className="text-xl">Portfolio</CardTitle>
             <Button 
               variant="outline" 

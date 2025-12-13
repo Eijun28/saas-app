@@ -8,8 +8,14 @@ import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import type { Stats, UIState } from '@/lib/types/prestataire'
+import { useUser } from '@/hooks/use-user'
+import { createClient } from '@/lib/supabase/client'
 
 export default function DashboardPrestatairePage() {
+  const { user } = useUser()
+  const [prenom, setPrenom] = useState('')
+  const [nom, setNom] = useState('')
+  
   // États
   const [stats, setStats] = useState<Stats>({
     nouvelles_demandes: 0,
@@ -23,6 +29,21 @@ export default function DashboardPrestatairePage() {
     loading: 'idle',
     error: null,
   })
+
+  useEffect(() => {
+    if (user) {
+      const supabase = createClient()
+      supabase
+        .from('profiles')
+        .select('prenom, nom')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.prenom) setPrenom(data.prenom)
+          if (data?.nom) setNom(data.nom)
+        })
+    }
+  }, [user])
 
   // TODO: Fetch stats from Supabase
   // Table: demandes (count where statut = 'nouvelle')
@@ -75,10 +96,10 @@ export default function DashboardPrestatairePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-4xl font-bold text-gray-900">
-          Tableau de bord
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+          Bonjour {prenom && nom ? `${prenom} ${nom}` : prenom || '👋'}
         </h1>
-        <p className="text-muted-foreground text-lg mt-2">
+        <p className="text-muted-foreground text-base md:text-lg mt-2">
           Aperçu de votre activité
         </p>
       </motion.div>

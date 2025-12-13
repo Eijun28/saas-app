@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { FadeInOnScroll, StaggeredList } from '@/components/components/landing/animations'
+import { FadeInOnScroll, StaggeredList } from '@/components/landing/animations'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

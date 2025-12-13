@@ -51,7 +51,12 @@ export function ProfilePhoto({ photoUrl, name, onUpdate }: ProfilePhotoProps) {
     setUploading(false)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      // Afficher un message d'erreur plus détaillé
+      const errorMessage = result.error.includes('bucket') 
+        ? `${result.error}\n\nConsultez SUPABASE_STORAGE_SETUP.md pour les instructions détaillées.`
+        : `Erreur: ${result.error}`
+      
+      alert(errorMessage)
       setPreview(null)
     } else {
       setPreview(null)
