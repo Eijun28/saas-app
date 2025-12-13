@@ -2,6 +2,7 @@
 
 import { HeroFlipWords } from '@/components/HeroFlipWords'
 import { AvatarCirclesDemo } from '@/components/landing/AvatarCirclesDemo'
+import { PainPointSection } from '@/components/landing/PainPointSection'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import { StatsSection } from '@/components/landing/StatsSection'
 import CallToAction from '@/components/landing/CallToAction'
@@ -14,6 +15,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-white overflow-x-hidden relative">
         <HeroFlipWords />
         <AvatarCirclesDemo />
+        <PainPointSection />
         <FeaturesGrid />
         <StatsSection />
         <CallToAction />

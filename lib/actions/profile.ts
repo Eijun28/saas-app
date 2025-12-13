@@ -44,6 +44,14 @@ export async function uploadProfilePhoto(formData: FormData) {
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
+      
+      // Message d'erreur plus explicite pour le bucket manquant
+      if (uploadError.message?.includes('Bucket not found') || uploadError.message?.includes('not found')) {
+        return { 
+          error: 'Le bucket "profile-photos" n\'existe pas dans Supabase Storage. Veuillez le créer dans votre dashboard Supabase : Storage → New bucket → Nom: "profile-photos" → Public bucket: activé' 
+        }
+      }
+      
       return { error: uploadError.message }
     }
 

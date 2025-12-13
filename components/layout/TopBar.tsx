@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Input } from '@/components/ui/input'
+import { UserAvatar } from '@/components/ui/user-avatar'
 
 interface TopBarProps {
   title?: string
@@ -28,6 +29,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
   const { user } = useUser()
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -38,10 +40,15 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
       const supabase = createClient()
       supabase
         .from('profiles')
-        .select('prenom, nom')
+        .select('prenom, nom, photo_url')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => setProfile(data))
+        .then(({ data }) => {
+          setProfile(data)
+          if (data?.photo_url) {
+            setPhotoUrl(data.photo_url)
+          }
+        })
       
       loadNotifications()
     }
@@ -181,7 +188,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB] px-8 py-4"
+      className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB] px-4 md:px-6 lg:px-8 py-3 md:py-4"
     >
       <div className="flex items-center justify-between">
         {/* Breadcrumbs */}
@@ -195,14 +202,14 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                       {crumb.label}
                     </a>
                   ) : (
-                    <span className="text-[#1F2937] font-medium">{crumb.label}</span>
+                    <span className="text-[#0B0E12] font-medium">{crumb.label}</span>
                   )}
                   {index < breadcrumbs.length - 1 && <span>/</span>}
                 </span>
               ))}
             </nav>
           ) : (
-            <h1 className="text-2xl font-bold text-[#1F2937]">{title || 'Dashboard'}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B0E12]">{title || 'Dashboard'}</h1>
           )}
         </div>
 
@@ -281,7 +288,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                 ) : (
                   <div className="py-2">
                     <div className="px-4 py-2 border-b border-gray-200">
-                      <h3 className="text-sm font-semibold text-[#1F2937]">Notifications</h3>
+                      <h3 className="text-sm font-semibold text-[#0B0E12]">Notifications</h3>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
                       {notifications.map((notif) => (
@@ -297,7 +304,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                             {getNotificationIcon(notif.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#1F2937] truncate">
+                            <p className="text-sm font-medium text-[#0B0E12] truncate">
                               {notif.title}
                             </p>
                             <p className="text-xs text-[#4A4A4A] truncate mt-1">
@@ -315,11 +322,19 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
           </Popover>
 
           {/* User profile */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {profile && (
-              <span className="text-sm text-[#374151] hidden md:block">
-                {profile.prenom} {profile.nom}
-              </span>
+              <>
+                <UserAvatar
+                  src={photoUrl}
+                  fallback={`${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email}
+                  size="md"
+                  status="online"
+                />
+                <span className="text-sm text-[#374151] hidden md:block">
+                  {profile.prenom} {profile.nom}
+                </span>
+              </>
             )}
             <button
               onClick={handleSignOut}

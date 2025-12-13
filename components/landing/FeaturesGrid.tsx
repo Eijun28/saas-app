@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Sparkles, MessageSquare, PiggyBank, Shield, Calendar } from "lucide-react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { FadeInOnScroll } from '@/components/components/landing/animations';
+import { FadeInOnScroll } from '@/components/landing/animations';
 
 // Skeleton Matching IA - Rotation conversation toutes les 10s
 const SkeletonMatching = () => {
@@ -40,7 +40,7 @@ const SkeletonMatching = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-purple-600/20 blur-3xl opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -62,13 +62,13 @@ const SkeletonMatching = () => {
                 <div className={`flex items-start space-x-2 max-w-[85%] ${
                   msg.from === "ai" ? "flex-row-reverse space-x-reverse" : ""
                 }`}>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center shrink-0 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] flex items-center justify-center shrink-0 text-sm">
                     {msg.avatar}
                   </div>
                   <div className={`rounded-2xl p-3 ${
                     msg.from === "couple" 
                       ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100" 
-                      : "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                      : "bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white"
                   }`}>
                     <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
                   </div>
@@ -116,7 +116,7 @@ const SkeletonMessaging = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-2 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-purple-600/20 to-violet-600/20 blur-3xl opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -137,8 +137,8 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-900 dark:text-purple-100"
-                    : "bg-pink-100 dark:bg-pink-900/30 text-pink-900 dark:text-pink-100"
+                    ? "bg-[#E8D4EF] dark:bg-[#823F91]/30 text-[#823F91] dark:text-[#E8D4EF]"
+                    : "bg-[#E8D4EF] dark:bg-[#9D5FA8]/30 text-[#6D3478] dark:text-[#E8D4EF]"
                 }`}>
                   <p className="text-xs leading-relaxed">{msg.text}</p>
                 </div>
@@ -203,7 +203,7 @@ const SkeletonBudget = () => {
   );
 };
 
-// Skeleton Paiements - Système escrow avec données
+// Skeleton Paiements - Système tiers de confiance avec données
 const SkeletonPayments = () => {
   return (
     <motion.div
@@ -211,7 +211,7 @@ const SkeletonPayments = () => {
     >
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/20 to-cyan-600/20 blur-3xl opacity-20" />
       <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full">
-        {/* Montant en escrow */}
+        {/* Montant en tiers de confiance */}
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -221,7 +221,7 @@ const SkeletonPayments = () => {
           <p className="text-2xl font-bold text-green-600 dark:text-green-400">2 450€</p>
         </motion.div>
 
-        {/* Flow escrow */}
+        {/* Flow tiers de confiance */}
         <div className="w-full flex items-center justify-between text-xs">
           <motion.div 
             initial={{ x: -20, opacity: 0 }}
@@ -229,7 +229,7 @@ const SkeletonPayments = () => {
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mb-1">
+            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] dark:bg-[#823F91] flex items-center justify-center mb-1">
               👰
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300">Couple</p>
@@ -239,7 +239,7 @@ const SkeletonPayments = () => {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.5 }}
-            className="flex-1 h-0.5 bg-gradient-to-r from-purple-600 to-green-600 mx-2"
+            className="flex-1 h-0.5 bg-gradient-to-r from-[#823F91] to-green-600 mx-2"
           />
 
           <motion.div 
@@ -365,7 +365,6 @@ const items = [
     header: <SkeletonMatching />,
     className: "md:col-span-2",
     icon: <Sparkles className="h-4 w-4 text-purple-600" />,
-    href: "/couple/matching",
   },
   {
     title: "Messagerie sécurisée",
@@ -373,7 +372,6 @@ const items = [
     header: <SkeletonMessaging />,
     className: "md:col-span-1",
     icon: <MessageSquare className="h-4 w-4 text-purple-600" />,
-    href: "/couple/messagerie",
   },
   {
     title: "Gestion du budget",
@@ -381,7 +379,6 @@ const items = [
     header: <SkeletonBudget />,
     className: "md:col-span-1",
     icon: <PiggyBank className="h-4 w-4 text-purple-600" />,
-    href: "/couple/budget",
   },
   {
     title: "Paiements sécurisés",
@@ -389,7 +386,6 @@ const items = [
     header: <SkeletonPayments />,
     className: "md:col-span-1",
     icon: <Shield className="h-4 w-4 text-purple-600" />,
-    href: "/couple/budget",
   },
   {
     title: "Timeline interactive",
@@ -397,7 +393,6 @@ const items = [
     header: <SkeletonTimeline />,
     className: "md:col-span-1",
     icon: <Calendar className="h-4 w-4 text-purple-600" />,
-    href: "/couple/timeline",
   },
 ];
 
@@ -407,7 +402,7 @@ export function FeaturesGrid() {
       <div className="max-w-7xl mx-auto px-6">
         <FadeInOnScroll className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4">
-            <span className="px-4 py-1.5 rounded-full bg-purple-100 text-purple-600 text-sm font-semibold">
+            <span className="px-4 py-1.5 rounded-full bg-[#E8D4EF] text-[#823F91] text-sm font-semibold">
               Fonctionnalités
             </span>
           </div>
@@ -428,7 +423,6 @@ export function FeaturesGrid() {
               header={item.header}
               className={item.className}
               icon={item.icon}
-              href={item.href}
             />
           ))}
         </BentoGrid>

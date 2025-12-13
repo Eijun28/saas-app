@@ -60,7 +60,7 @@ export default function CoupleLayout({
         <TopBar />
 
         {/* Page Content */}
-        <main className="p-8 min-h-screen">
+        <main className="p-4 md:p-6 lg:p-8 min-h-screen">
           {children}
         </main>
       </div>

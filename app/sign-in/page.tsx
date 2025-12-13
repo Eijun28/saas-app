@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { FadeInOnScroll } from '@/components/components/landing/animations'
+import { FadeInOnScroll } from '@/components/landing/animations'
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)

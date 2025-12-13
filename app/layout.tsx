@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 import Chatbot from "@/components/Chatbot";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${poppins.variable} font-sans antialiased bg-white`}>
+      <body className={`${inter.variable} font-sans antialiased bg-white`}>
         <NuplyNavbarMenu />
         <main>
           <MainWrapper>

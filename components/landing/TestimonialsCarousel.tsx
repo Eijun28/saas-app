@@ -2,7 +2,7 @@
 
 import { Carousel } from '@/components/ui/carousel'
 import { Card, CardContent } from '@/components/ui/card'
-import { FadeInOnScroll } from '@/components/components/landing/animations'
+import { FadeInOnScroll } from '@/components/landing/animations'
 import { Star, Quote } from 'lucide-react'
 
 const testimonials = [

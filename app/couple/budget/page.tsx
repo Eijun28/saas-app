@@ -241,16 +241,16 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-white p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
             <div>
-              <h1 className="text-4xl font-semibold text-[#0D0D0D] mb-2">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#0D0D0D] mb-2">
                 Budget
               </h1>
               <p className="text-[#4A4A4A]">
@@ -262,7 +262,7 @@ export default function BudgetPage() {
                 resetForm()
                 setIsDialogOpen(true)
               }}
-              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto"
             >
               <Plus className="h-4 w-4" />
               Ajouter une dépense
@@ -270,7 +270,7 @@ export default function BudgetPage() {
           </div>
 
           {/* Vue d'ensemble du budget */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <Card className="border-gray-200">
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-[#4A4A4A]">
@@ -278,7 +278,7 @@ export default function BudgetPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-[#0D0D0D]">
+                <p className="text-2xl md:text-3xl font-bold text-[#0D0D0D]">
                   {budgetAverage > 0
                     ? `${budgetAverage.toLocaleString('fr-FR')} €`
                     : 'Non défini'}
@@ -299,7 +299,7 @@ export default function BudgetPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-[#823F91]">
+                <p className="text-2xl md:text-3xl font-bold text-[#823F91]">
                   {totalSpent.toLocaleString('fr-FR')} €
                 </p>
                 <p className="text-sm text-[#6B7280] mt-1">
@@ -316,7 +316,7 @@ export default function BudgetPage() {
               </CardHeader>
               <CardContent>
                 <p
-                  className={`text-3xl font-bold ${
+                  className={`text-2xl md:text-3xl font-bold ${
                     remaining >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}
                 >

@@ -158,18 +158,18 @@ export default function MessageriePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 md:mb-8"
         >
-          <h1 className="text-4xl font-semibold text-[#0D0D0D] mb-2">Messagerie</h1>
-          <p className="text-[#4A4A4A]">Communiquez avec tous vos prestataires</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#0D0D0D] mb-2">Messagerie</h1>
+          <p className="text-sm md:text-base text-[#4A4A4A]">Communiquez avec tous vos prestataires</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Liste des conversations */}
           <Card className="lg:col-span-1 border-gray-200">
             <CardHeader>
@@ -243,7 +243,7 @@ export default function MessageriePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-0">
-                  <div className="flex-1 space-y-4 mb-4 overflow-y-auto max-h-[500px] p-6">
+                  <div className="flex-1 space-y-4 mb-4 overflow-y-auto max-h-[400px] md:max-h-[500px] p-4 md:p-6">
                     {messages.length === 0 ? (
                       <div className="text-center py-8 text-[#4A4A4A]">
                         <p>Aucun message dans cette conversation</p>

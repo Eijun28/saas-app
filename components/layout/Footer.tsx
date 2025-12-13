@@ -14,14 +14,14 @@ export default function Footer() {
           <div className="flex items-center gap-6 text-sm">
             <Link 
               href="/legal" 
-              className="text-[#6B7280] hover:text-[#0F0F0F] transition-colors duration-200 font-medium"
+              className="text-[#6B7280] hover:text-[#0B0E12] transition-colors duration-200 font-medium"
             >
               Mentions légales
             </Link>
             <Separator orientation="vertical" className="h-4" />
             <Link 
               href="/contact" 
-              className="text-[#6B7280] hover:text-[#0F0F0F] transition-colors duration-200 font-medium"
+              className="text-[#6B7280] hover:text-[#0B0E12] transition-colors duration-200 font-medium"
             >
               Contact
             </Link>

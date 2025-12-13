@@ -105,7 +105,7 @@ export function Calendar({ value, onChange, className, events = [], onEventClick
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h3 className="font-semibold text-[#1F2937]">
+        <h3 className="font-semibold text-[#0B0E12]">
           {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </h3>
         <Button

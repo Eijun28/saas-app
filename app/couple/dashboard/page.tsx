@@ -14,7 +14,8 @@ import {
   Calendar, 
   TrendingUp,
   ArrowRight,
-  Zap
+  Zap,
+  FileText
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import Link from 'next/link'
@@ -33,20 +34,24 @@ export default function CoupleDashboardPage() {
   })
   const [coupleProfile, setCoupleProfile] = useState<any>(null)
   const [prenom, setPrenom] = useState('')
+  const [nom, setNom] = useState('')
 
   useEffect(() => {
     if (user) {
       const supabase = createClient()
       
-      // Récupérer le profil utilisateur pour le prénom
+      // Récupérer le profil utilisateur pour le prénom et nom
       supabase
         .from('profiles')
-        .select('prenom')
+        .select('prenom, nom')
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
           if (data?.prenom) {
             setPrenom(data.prenom)
+          }
+          if (data?.nom) {
+            setNom(data.nom)
           }
         })
       
@@ -115,6 +120,13 @@ export default function CoupleDashboardPage() {
       badge: 'Nouveau',
     },
     {
+      title: 'Dossier de Mariage',
+      description: 'Gérez vos documents administratifs avec l\'IA',
+      icon: FileText,
+      href: '/dashboard/dossier-mariage',
+      gradient: 'from-rose-600 to-pink-600',
+    },
+    {
       title: 'Budget & Timeline',
       description: 'Gérez votre budget et planifiez votre mariage',
       icon: Wallet,
@@ -146,8 +158,8 @@ export default function CoupleDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
         {/* Header modernisé */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -155,10 +167,10 @@ export default function CoupleDashboardPage() {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-3"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">
-                Bonjour {prenom || '👋'}
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
+                Bonjour {prenom && nom ? `${prenom} ${nom}` : prenom || '👋'}
               </h1>
               {stats.joursRestants !== null && stats.joursRestants > 0 && (
                 <p className="text-muted-foreground mt-2">
@@ -264,7 +276,7 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="text-3xl font-bold font-mono-numbers"
+                className="text-2xl md:text-3xl font-bold font-mono-numbers"
               >
                 {stats.prestatairesTrouves}
               </motion.div>
@@ -292,7 +304,7 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="text-3xl font-bold font-mono-numbers"
+                className="text-2xl md:text-3xl font-bold font-mono-numbers"
               >
                 {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
               </motion.div>
@@ -320,7 +332,7 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
-                className="text-3xl font-bold font-mono-numbers"
+                className="text-2xl md:text-3xl font-bold font-mono-numbers"
               >
                 {stats.joursRestants !== null ? stats.joursRestants : '-'}
               </motion.div>

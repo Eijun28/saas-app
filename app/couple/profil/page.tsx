@@ -11,6 +11,8 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Loader2, Edit2, X, Check, User, Mail, Phone, MapPin, Wallet, Globe, FileText, Calendar as CalendarIcon } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { UserAvatar } from '@/components/ui/user-avatar'
+import { ProfilePhoto } from '@/components/profile/ProfilePhoto'
 
 export default function CoupleProfilPage() {
   const router = useRouter()
@@ -20,6 +22,7 @@ export default function CoupleProfilPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState<any>(null)
   const [coupleProfile, setCoupleProfile] = useState<any>(null)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: '',
     telephone: '',
@@ -79,6 +82,7 @@ export default function CoupleProfilPage() {
 
       setProfile(profileData)
       setCoupleProfile(coupleData)
+      setPhotoUrl(profileData?.photo_url || null)
       
       setFormData({
         email: user.email || '',
@@ -221,31 +225,58 @@ export default function CoupleProfilPage() {
   const fullName = `${profile.prenom || ''} ${profile.nom || ''}`.trim()
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-white p-4 md:p-6">
+      <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
-          <div>
-            <h1 className="text-4xl font-semibold text-[#0D0D0D] mb-2">
-              Mon profil
-            </h1>
-            <p className="text-[#4A4A4A]">
-              Gérez vos informations personnelles et de mariage
-            </p>
+          <div className="flex items-center gap-3 md:gap-4">
+            <UserAvatar
+              src={photoUrl}
+              fallback={fullName || user?.email}
+              size="lg"
+              status="online"
+            />
+            <div>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#0D0D0D] mb-1 md:mb-2">
+                Mon profil
+              </h1>
+              <p className="text-sm md:text-base text-[#4A4A4A]">
+                Gérez vos informations personnelles et de mariage
+              </p>
+            </div>
           </div>
           {!isEditing && (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full md:w-auto"
             >
               <Edit2 className="h-4 w-4" />
               Modifier
             </Button>
           )}
         </motion.div>
+
+        {/* Photo de profil */}
+        <Card className="border-gray-200">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5 text-[#823F91]" />
+              <CardTitle>Photo de profil</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ProfilePhoto
+              photoUrl={photoUrl}
+              name={fullName || user?.email}
+              onUpdate={async () => {
+                await loadProfile()
+              }}
+            />
+          </CardContent>
+        </Card>
 
         {/* Informations personnelles */}
         <Card className="border-gray-200">

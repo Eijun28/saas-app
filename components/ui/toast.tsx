@@ -19,7 +19,7 @@ export function Toast({ title, description, variant = 'default', onClose }: Toas
   }[variant]
 
   const textColor = {
-    default: 'text-[#1F2937]',
+    default: 'text-[#0B0E12]',
     destructive: 'text-red-600',
     success: 'text-green-600',
   }[variant]
