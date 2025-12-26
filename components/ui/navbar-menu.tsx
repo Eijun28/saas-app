@@ -39,10 +39,13 @@ export const MenuItem = ({
     if (href) {
       if (href.startsWith('/#')) {
         e.preventDefault();
-        const targetId = href.replace('/#', '');
-        const element = document.getElementById(targetId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Vérifier que nous sommes côté client
+        if (typeof window !== 'undefined') {
+          const targetId = href.replace('/#', '');
+          const element = document.getElementById(targetId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
       }
       setActive(null);
@@ -107,14 +110,31 @@ export const MenuItem = ({
 export const HoveredLink = ({
   children,
   className,
+  href,
   ...rest
 }: {
   children: React.ReactNode;
   href: string;
   className?: string;
 }) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      // Vérifier que nous sommes côté client
+      if (typeof window !== 'undefined') {
+        const targetId = href.replace('#', '');
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }
+  };
+
   return (
     <Link
+      href={href}
+      onClick={handleClick}
       {...rest}
       className={cn(
         "text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white",

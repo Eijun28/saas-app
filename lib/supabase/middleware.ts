@@ -36,8 +36,15 @@ export async function updateSession(request: NextRequest) {
   // Récupérer l'utilisateur
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  return { supabaseResponse, user };
+  // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
+  // On ne fait rien, on retourne simplement null pour user
+  if (error && !error.message.includes('Auth session missing')) {
+    console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+  }
+
+  return { supabaseResponse, user: error ? null : user };
 }
 

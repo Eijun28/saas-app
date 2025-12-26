@@ -12,8 +12,32 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { X } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const SERVICES_LIST = [
+  'Traiteur',
+  'Photographe',
+  'Vidéaste',
+  'DJ / Musicien',
+  'Salle de réception',
+  'Décorateur / Fleuriste',
+  'Coiffeur / Maquilleur',
+  'Pâtissier (Wedding cake)',
+  'Robe de mariée / Costume',
+  'Bijoutier',
+  'Faire-part / Papeterie',
+  'Animation (photobooth, jeux...)',
+  'Wedding planner',
+  'Officiant de cérémonie',
+  'Location de véhicules',
+  'Autre',
+]
 
 interface Service {
   id: string
@@ -30,27 +54,29 @@ interface ServiceDialogProps {
 }
 
 export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialogProps) {
-  const [formData, setFormData] = useState({
-    nom: '',
-    description: '',
-    prix: '',
-  })
+  const [selectedService, setSelectedService] = useState<string>('')
+  const [customService, setCustomService] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const isOtherSelected = selectedService === 'Autre'
 
   // Initialiser le formulaire avec les données du service si en mode édition
   useEffect(() => {
     if (service) {
-      setFormData({
-        nom: service.nom,
-        description: service.description,
-        prix: service.prix.toString(),
-      })
+      // Si le service existe, essayer de trouver le type correspondant
+      const matchingService = SERVICES_LIST.find(s => service.nom.includes(s))
+      if (matchingService) {
+        setSelectedService(matchingService)
+        if (matchingService === 'Autre') {
+          setCustomService(service.nom.replace('Autre - ', ''))
+        }
+      } else {
+        setSelectedService('Autre')
+        setCustomService(service.nom)
+      }
     } else {
-      setFormData({
-        nom: '',
-        description: '',
-        prix: '',
-      })
+      setSelectedService('')
+      setCustomService('')
     }
     setErrors({})
   }, [service, isOpen])
@@ -58,21 +84,12 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.nom.trim()) {
-      newErrors.nom = 'Le nom du service est requis'
+    if (!selectedService) {
+      newErrors.serviceType = 'Le type de service est requis'
     }
 
-    if (!formData.description.trim()) {
-      newErrors.description = 'La description est requise'
-    }
-
-    if (!formData.prix.trim()) {
-      newErrors.prix = 'Le prix est requis'
-    } else {
-      const prixNum = parseFloat(formData.prix)
-      if (isNaN(prixNum) || prixNum <= 0) {
-        newErrors.prix = 'Le prix doit être un nombre positif'
-      }
+    if (isOtherSelected && !customService.trim()) {
+      newErrors.customService = 'Veuillez préciser votre métier'
     }
 
     setErrors(newErrors)
@@ -84,28 +101,24 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
 
     if (!validate()) return
 
+    const serviceName = isOtherSelected ? customService.trim() : selectedService
+
     onSave({
-      nom: formData.nom.trim(),
-      description: formData.description.trim(),
-      prix: parseFloat(formData.prix),
+      nom: serviceName,
+      description: '', // On garde la description vide pour l'instant
+      prix: 0, // On garde le prix à 0 pour l'instant
     })
 
     // Reset form
-    setFormData({
-      nom: '',
-      description: '',
-      prix: '',
-    })
+    setSelectedService('')
+    setCustomService('')
     setErrors({})
     onClose()
   }
 
   const handleClose = () => {
-    setFormData({
-      nom: '',
-      description: '',
-      prix: '',
-    })
+    setSelectedService('')
+    setCustomService('')
     setErrors({})
     onClose()
   }
@@ -115,67 +128,48 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {service ? 'Modifier le service' : 'Ajouter un service'}
+            {service ? 'Modifier votre service' : 'Ajouter un service'}
           </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sélectionnez le type de prestation que vous proposez
+          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nom">
-              Nom du service *
-            </Label>
-            <Input
-              id="nom"
-              value={formData.nom}
-              onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-              placeholder="Ex: Forfait Mariage Complet"
-              className={errors.nom ? 'border-red-500' : ''}
-            />
-            {errors.nom && (
-              <p className="text-sm text-red-500">{errors.nom}</p>
+            <Label htmlFor="service-type">Type de service</Label>
+            <Select value={selectedService} onValueChange={setSelectedService}>
+              <SelectTrigger id="service-type" className={errors.serviceType ? 'border-red-500' : ''}>
+                <SelectValue placeholder="Sélectionnez un service" />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICES_LIST.map((serviceItem) => (
+                  <SelectItem key={serviceItem} value={serviceItem}>
+                    {serviceItem}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.serviceType && (
+              <p className="text-sm text-red-500">{errors.serviceType}</p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">
-              Description *
-            </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Décrivez votre service en détail..."
-              className="min-h-[100px] resize-none"
-              rows={4}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-500">{errors.description}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="prix">
-              Prix (€) *
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                €
-              </span>
+          {isOtherSelected && (
+            <div className="space-y-2">
+              <Label htmlFor="custom-service">Précisez votre métier</Label>
               <Input
-                id="prix"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.prix}
-                onChange={(e) => setFormData({ ...formData, prix: e.target.value })}
-                placeholder="0.00"
-                className={`pl-8 ${errors.prix ? 'border-red-500' : ''}`}
+                id="custom-service"
+                placeholder="Ex: Negafa, Calligraphe, Couturier..."
+                value={customService}
+                onChange={(e) => setCustomService(e.target.value)}
+                className={errors.customService ? 'border-red-500' : ''}
               />
+              {errors.customService && (
+                <p className="text-sm text-red-500">{errors.customService}</p>
+              )}
             </div>
-            {errors.prix && (
-              <p className="text-sm text-red-500">{errors.prix}</p>
-            )}
-          </div>
+          )}
 
           <DialogFooter>
             <Button
@@ -183,14 +177,13 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
               variant="outline"
               onClick={handleClose}
             >
-              <X className="h-4 w-4 mr-2" />
               Annuler
             </Button>
             <Button
               type="submit"
               className="bg-[#823F91] hover:bg-[#6D3478]"
             >
-              {service ? 'Enregistrer les modifications' : 'Ajouter le service'}
+              Enregistrer
             </Button>
           </DialogFooter>
         </form>

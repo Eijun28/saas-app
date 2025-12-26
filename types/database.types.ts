@@ -6,6 +6,31 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type Couple = {
+  id: string
+  email: string
+  prenom: string | null
+  nom: string | null
+  date_mariage: string | null
+  lieu_marriage: string | null
+  budget_total: number | null
+  avatar_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type Profile = {
+  id: string
+  email: string
+  role: 'prestataire'
+  prenom: string | null
+  nom: string | null
+  nom_entreprise: string | null
+  avatar_url: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Database {
   public: {
     Tables: {

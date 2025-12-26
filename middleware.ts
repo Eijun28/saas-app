@@ -43,6 +43,18 @@ export async function middleware(request: NextRequest) {
 
   // Connecté + route auth = redirect vers dashboard
   if (user && isAuthRoute) {
+    // Vérifier d'abord dans la table couples
+    const { data: couple } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (couple) {
+      return NextResponse.redirect(new URL('/couple/dashboard', request.url))
+    }
+
+    // Sinon vérifier dans profiles (prestataires)
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -50,9 +62,45 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (profile) {
-      // Rediriger vers le dashboard selon le rôle
-      const dashboardUrl = profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'
-      return NextResponse.redirect(new URL(dashboardUrl, request.url))
+      return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
+    }
+  }
+
+  // Protection : empêcher un prestataire d'accéder aux routes couple et vice versa
+  if (user && isProtectedRoute) {
+    const isTryingToAccessCouple = request.nextUrl.pathname.startsWith('/couple')
+    const isTryingToAccessPrestataire = request.nextUrl.pathname.startsWith('/prestataire')
+
+    // Vérifier d'abord dans la table couples
+    const { data: couple } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (couple) {
+      // Couple essaie d'accéder à une route prestataire
+      if (isTryingToAccessPrestataire) {
+        return NextResponse.redirect(new URL('/couple/dashboard', request.url))
+      }
+      // Sinon, c'est bon, le couple accède à ses routes
+      return supabaseResponse
+    }
+
+    // Sinon vérifier dans profiles (prestataires)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      // Prestataire essaie d'accéder à une route couple
+      if (isTryingToAccessCouple) {
+        return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
+      }
+      // Sinon, c'est bon, le prestataire accède à ses routes
+      return supabaseResponse
     }
   }
 

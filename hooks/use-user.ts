@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
+import type { User } from "@supabase/supabase-js"
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
@@ -11,9 +11,13 @@ export function useUser() {
   useEffect(() => {
     const supabase = createClient()
 
-    // Récupérer l'utilisateur actuel
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
+    // Récupérer l'utilisateur initial
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
+      if (error && !error.message?.includes("Auth session missing")) {
+        console.error("Erreur lors de la récupération de l'utilisateur:", error)
+      }
+      setUser(error ? null : user)
       setLoading(false)
     })
 
@@ -25,7 +29,9 @@ export function useUser() {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return { user, loading }

@@ -4,12 +4,19 @@ import { Bell, Search, User, LogOut, MessageSquare, Wallet, Calendar } from 'luc
 import { motion } from 'framer-motion'
 import { useUser } from '@/hooks/use-user'
 import { signOut } from '@/lib/auth/actions'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Input } from '@/components/ui/input'
 import { UserAvatar } from '@/components/ui/user-avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface TopBarProps {
   title?: string
@@ -28,117 +35,254 @@ interface Notification {
 export function TopBar({ title, breadcrumbs }: TopBarProps) {
   const { user } = useUser()
   const router = useRouter()
+  const pathname = usePathname()
+  
+  // Déterminer le titre automatiquement selon la page si non fourni
+  const getPageTitle = () => {
+    if (title) return title
+    if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs[breadcrumbs.length - 1].label
+    
+    // Titres automatiques selon le pathname
+    if (pathname?.startsWith('/couple/dashboard')) return 'Accueil'
+    if (pathname?.startsWith('/couple/matching')) return 'Matching IA'
+    if (pathname?.startsWith('/couple/messagerie')) return 'Messages'
+    if (pathname?.startsWith('/couple/budget')) return 'Budget'
+    if (pathname?.startsWith('/couple/profil')) return 'Profil'
+    if (pathname?.startsWith('/couple/demandes')) return 'Demandes & Devis'
+    if (pathname?.startsWith('/couple/timeline')) return 'Calendrier'
+    if (pathname?.startsWith('/couple/collaborateurs')) return 'Collaborateurs'
+    if (pathname?.startsWith('/couple/notifications')) return 'Notifications'
+    if (pathname?.startsWith('/couple/recherche')) return 'Recherche'
+    
+    return 'Dashboard'
+  }
+  
+  const pageTitle = getPageTitle()
   const [profile, setProfile] = useState<any>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<'couple' | 'prestataire' | null>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      const supabase = createClient()
-      supabase
+  const loadProfile = async () => {
+    if (!user) return
+    
+    const supabase = createClient()
+    
+    // Vérifier d'abord dans la table couples
+    const { data: coupleData, error: coupleError } = await supabase
+      .from('couples')
+      .select('partner_1_name, partner_2_name, avatar_url')
+      .eq('user_id', user.id)
+      .single()
+    
+    if (coupleData && !coupleError) {
+      // Formater les noms pour l'affichage
+      const name1 = coupleData.partner_1_name || ''
+      const name2 = coupleData.partner_2_name || ''
+      const displayName = name1 && name2 ? `${name1} & ${name2}` : name1 || name2 || ''
+      
+      setProfile({
+        partner_1_name: name1,
+        partner_2_name: name2,
+        displayName: displayName,
+      })
+      setUserRole('couple')
+      if (coupleData.avatar_url) {
+        setPhotoUrl(coupleData.avatar_url)
+      }
+    } else {
+      // Sinon vérifier dans profiles (prestataires)
+      const { data: profileData } = await supabase
         .from('profiles')
-        .select('prenom, nom, photo_url')
+        .select('prenom, nom, avatar_url, role')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => {
-          setProfile(data)
-          if (data?.photo_url) {
-            setPhotoUrl(data.photo_url)
-          }
-        })
       
-      loadNotifications()
+      if (profileData) {
+        setProfile(profileData)
+        if (profileData.avatar_url) {
+          setPhotoUrl(profileData.avatar_url)
+        }
+        if (profileData.role) {
+          setUserRole(profileData.role as 'couple' | 'prestataire')
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      loadProfile()
     }
   }, [user])
 
+  // Écouter les événements de mise à jour d'avatar
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      if (user) {
+        loadProfile()
+      }
+    }
+
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => {
+      window.removeEventListener('avatar-updated', handleAvatarUpdate)
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (user && userRole) {
+      loadNotifications()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, userRole])
+
   const loadNotifications = async () => {
-    if (!user) return
+    if (!user || !userRole) return
 
     const supabase = createClient()
     const allNotifications: Notification[] = []
 
     try {
-      // Récupérer les 3 derniers messages reçus (non lus et où l'utilisateur n'est pas l'expéditeur)
-      const { data: conversations } = await supabase
-        .from('conversations')
-        .select('id, couple_id, last_message_at')
-        .eq('couple_id', user.id)
-        .order('last_message_at', { ascending: false })
-        .limit(3)
+      if (userRole === 'couple') {
+        // Notifications pour les couples
+        // Récupérer les 3 derniers messages reçus
+        const { data: conversations } = await supabase
+          .from('conversations')
+          .select('id, couple_id, last_message_at')
+          .eq('couple_id', user.id)
+          .order('last_message_at', { ascending: false })
+          .limit(3)
 
-      if (conversations && conversations.length > 0) {
-        for (const conv of conversations) {
-          const { data: messages } = await supabase
-            .from('messages')
-            .select('id, sender_id, content, created_at')
-            .eq('conversation_id', conv.id)
-            .neq('sender_id', user.id)
-            .eq('is_read', false)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle()
+        if (conversations && conversations.length > 0) {
+          for (const conv of conversations) {
+            const { data: messages } = await supabase
+              .from('messages')
+              .select('id, sender_id, content, created_at')
+              .eq('conversation_id', conv.id)
+              .neq('sender_id', user.id)
+              .eq('is_read', false)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
 
-          if (messages) {
+            if (messages) {
+              allNotifications.push({
+                id: messages.id,
+                type: 'message',
+                title: 'Nouveau message',
+                description: messages.content?.substring(0, 50) || 'Nouveau message reçu',
+                time: new Date(messages.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+                href: '/couple/messagerie'
+              })
+            }
+          }
+        }
+
+        // Récupérer les 3 dernières dépenses créées/modifiées
+        const { data: budgetItems } = await supabase
+          .from('budget_items')
+          .select('id, title, amount, updated_at')
+          .eq('couple_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(3)
+
+        if (budgetItems && budgetItems.length > 0) {
+          budgetItems.forEach((item) => {
             allNotifications.push({
-              id: messages.id,
-              type: 'message',
-              title: 'Nouveau message',
-              description: messages.content?.substring(0, 50) || 'Nouveau message reçu',
-              time: new Date(messages.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-              href: '/couple/messagerie'
+              id: item.id,
+              type: 'budget',
+              title: 'Dépense mise à jour',
+              description: `${item.title} - ${item.amount}€`,
+              time: new Date(item.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+              href: '/couple/budget'
             })
+          })
+        }
+
+        // Récupérer les 3 derniers événements créés/modifiés
+        const { data: timelineEvents } = await supabase
+          .from('timeline_events')
+          .select('id, title, event_date, updated_at')
+          .eq('couple_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(3)
+
+        if (timelineEvents && timelineEvents.length > 0) {
+          timelineEvents.forEach((event) => {
+            allNotifications.push({
+              id: event.id,
+              type: 'timeline',
+              title: 'Événement mis à jour',
+              description: event.title,
+              time: new Date(event.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+              href: '/couple/timeline'
+            })
+          })
+        }
+      } else if (userRole === 'prestataire') {
+        // Notifications pour les prestataires
+        // Récupérer les nouvelles demandes
+        const { data: demandes } = await supabase
+          .from('demandes')
+          .select('id, titre, created_at, statut')
+          .eq('prestataire_id', user.id)
+          .eq('statut', 'nouvelle')
+          .order('created_at', { ascending: false })
+          .limit(3)
+
+        if (demandes && demandes.length > 0) {
+          demandes.forEach((demande) => {
+            allNotifications.push({
+              id: demande.id,
+              type: 'message',
+              title: 'Nouvelle demande',
+              description: demande.titre || 'Nouvelle demande reçue',
+              time: new Date(demande.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+              href: '/prestataire/demandes-recues'
+            })
+          })
+        }
+
+        // Récupérer les messages non lus pour les prestataires
+        const { data: conversations } = await supabase
+          .from('conversations')
+          .select('id, prestataire_id, last_message_at')
+          .eq('prestataire_id', user.id)
+          .order('last_message_at', { ascending: false })
+          .limit(3)
+
+        if (conversations && conversations.length > 0) {
+          for (const conv of conversations) {
+            const { data: messages } = await supabase
+              .from('messages')
+              .select('id, sender_id, content, created_at')
+              .eq('conversation_id', conv.id)
+              .neq('sender_id', user.id)
+              .eq('is_read', false)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+
+            if (messages) {
+              allNotifications.push({
+                id: messages.id,
+                type: 'message',
+                title: 'Nouveau message',
+                description: messages.content?.substring(0, 50) || 'Nouveau message reçu',
+                time: new Date(messages.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+                href: '/prestataire/messagerie'
+              })
+            }
           }
         }
       }
 
-      // Récupérer les 3 dernières dépenses créées/modifiées
-      const { data: budgetItems } = await supabase
-        .from('budget_items')
-        .select('id, title, amount, updated_at')
-        .eq('couple_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(3)
-
-      if (budgetItems && budgetItems.length > 0) {
-        budgetItems.forEach((item) => {
-          allNotifications.push({
-            id: item.id,
-            type: 'budget',
-            title: 'Dépense mise à jour',
-            description: `${item.title} - ${item.amount}€`,
-            time: new Date(item.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-            href: '/couple/budget'
-          })
-        })
-      }
-
-      // Récupérer les 3 derniers événements créés/modifiés
-      const { data: timelineEvents } = await supabase
-        .from('timeline_events')
-        .select('id, title, event_date, updated_at')
-        .eq('couple_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(3)
-
-      if (timelineEvents && timelineEvents.length > 0) {
-        timelineEvents.forEach((event) => {
-          allNotifications.push({
-            id: event.id,
-            type: 'timeline',
-            title: 'Événement mis à jour',
-            description: event.title,
-            time: new Date(event.updated_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-            href: '/couple/timeline'
-          })
-        })
-      }
-
       // Trier par date et prendre les 3 plus récents
       allNotifications.sort((a, b) => {
-        // Convertir les dates de format "12 jan" en timestamp pour trier
         const dateA = new Date(a.time).getTime()
         const dateB = new Date(b.time).getTime()
         return dateB - dateA
@@ -163,10 +307,22 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      // Rediriger vers une page de résultats de recherche ou filtrer
-      router.push(`/couple/recherche?q=${encodeURIComponent(searchQuery)}`)
-      setIsSearchOpen(false)
-      setSearchQuery('')
+      // Si on est dans le dashboard prestataire, on filtre les éléments de la page
+      const isPrestataire = pathname?.startsWith('/prestataire')
+      
+      if (isPrestataire) {
+        // Pour le dashboard prestataire, on stocke la recherche dans le sessionStorage
+        // et on déclenche un événement personnalisé pour que la page puisse filtrer
+        sessionStorage.setItem('prestataire_search_query', searchQuery)
+        window.dispatchEvent(new CustomEvent('prestataire-search', { detail: searchQuery }))
+        setIsSearchOpen(false)
+        // Ne pas vider la recherche pour qu'elle reste visible
+      } else {
+        // Pour le couple, rediriger vers la page de recherche
+        router.push(`/couple/recherche?q=${encodeURIComponent(searchQuery)}`)
+        setIsSearchOpen(false)
+        setSearchQuery('')
+      }
     }
   }
 
@@ -188,10 +344,10 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#E5E7EB] px-4 md:px-6 lg:px-8 py-3 md:py-4"
+      className="sticky top-0 z-30 bg-white px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b border-[#E5E7EB]"
     >
       <div className="flex items-center justify-between">
-        {/* Breadcrumbs */}
+        {/* Page Title */}
         <div className="flex items-center gap-2">
           {breadcrumbs && breadcrumbs.length > 0 ? (
             <nav className="flex items-center gap-2 text-sm text-[#374151]">
@@ -209,7 +365,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
               ))}
             </nav>
           ) : (
-            <h1 className="text-xl md:text-2xl font-bold text-[#0B0E12]">{title || 'Dashboard'}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-[#0B0E12]">{pageTitle}</h1>
           )}
         </div>
 
@@ -224,7 +380,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="p-2 rounded-lg hover:bg-[#E8D4EF] transition-colors"
+                  className="p-2 rounded-lg hover:bg-purple-200 transition-colors"
                   title="Recherche"
                 >
                   <Search className="h-5 w-5 text-[#374151]" />
@@ -265,7 +421,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="relative p-2 rounded-lg hover:bg-[#E8D4EF] transition-colors"
+                  className="relative p-2 rounded-lg hover:bg-purple-200 transition-colors"
                   title="Notifications"
                 >
                   <Bell className="h-5 w-5 text-[#374151]" />
@@ -322,28 +478,62 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
           </Popover>
 
           {/* User profile */}
-          <div className="flex items-center gap-3">
-            {profile && (
-              <>
-                <UserAvatar
-                  src={photoUrl}
-                  fallback={`${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email}
-                  size="md"
-                  status="online"
-                />
-                <span className="text-sm text-[#374151] hidden md:block">
-                  {profile.prenom} {profile.nom}
-                </span>
-              </>
-            )}
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-[#E8D4EF] transition-colors"
-              title="Déconnexion"
-            >
-              <LogOut className="h-4 w-4 text-[#374151]" />
-            </button>
-          </div>
+          {profile && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-200 transition-colors">
+                  <UserAvatar
+                    src={photoUrl}
+                    fallback={
+                      userRole === 'couple' && profile.partner_1_name && profile.partner_2_name
+                        ? `${profile.partner_1_name[0] || ''}${profile.partner_2_name[0] || ''}`.trim() || user?.email?.[0]?.toUpperCase() || 'U'
+                        : userRole === 'couple' && profile.partner_1_name
+                        ? profile.partner_1_name[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'
+                        : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.[0]?.toUpperCase() || 'U'
+                    }
+                    size="md"
+                    status="online"
+                  />
+                  <span className="text-sm text-[#374151] hidden md:block font-medium">
+                    {userRole === 'couple' && profile.displayName
+                      ? profile.displayName
+                      : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-purple-100 !via-purple-50 !to-white border-0 backdrop-blur-none">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium text-[#0B0E12]">
+                    {userRole === 'couple' && profile.displayName
+                      ? profile.displayName
+                      : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
+                  </p>
+                  <p className="text-xs text-[#6B7280] truncate">
+                    {user?.email}
+                  </p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    const profilePath = userRole === 'couple' ? '/couple/profil' : '/prestataire/profil-public'
+                    router.push(profilePath)
+                  }}
+                  className="cursor-pointer"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  <span>Profil</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </motion.header>

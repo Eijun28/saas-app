@@ -107,8 +107,8 @@ export async function updateBudget(budgetMin: number, budgetMax: number) {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
-    revalidatePath('/dashboard')
+    revalidatePath('/couple/budget')
+    revalidatePath('/couple/dashboard')
     return { success: true }
   } catch (error) {
     console.error('Error in updateBudget:', error)
@@ -157,7 +157,7 @@ export async function addBudgetCategory(categoryName: string, budgetPrevu: numbe
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true, data }
   } catch (error) {
     console.error('Error in addBudgetCategory:', error)
@@ -193,7 +193,7 @@ export async function updateCategoryBudget(categoryId: string, budgetPrevu: numb
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in updateCategoryBudget:', error)
@@ -224,7 +224,7 @@ export async function deleteCategory(categoryId: string) {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in deleteCategory:', error)
@@ -285,7 +285,7 @@ export async function addProvider(provider: {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true, data }
   } catch (error) {
     console.error('Error in addProvider:', error)
@@ -319,7 +319,7 @@ export async function updateProviderStatus(
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in updateProviderStatus:', error)
@@ -357,7 +357,7 @@ export async function updateProvider(
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in updateProvider:', error)
@@ -388,7 +388,7 @@ export async function deleteProvider(providerId: string) {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in deleteProvider:', error)
@@ -440,7 +440,7 @@ export async function initializeCategories() {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error) {
     console.error('Error in initializeCategories:', error)

@@ -34,12 +34,12 @@ export function AvatarCircles({
               src={avatar.imageUrl}
               alt={`Avatar ${index + 1}`}
               size="sm"
-              className="border-2 border-white ring-2 ring-gray-100"
+              className="border-2 border-white ring-2 ring-[#E8D4EF]"
             />
           </Link>
         ))}
         {remainingCount > 0 && (
-          <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-gray-100 text-gray-600 text-xs font-semibold ring-2 ring-gray-100">
+          <div className="relative inline-flex items-center justify-center h-10 w-10 rounded-full border-2 border-white bg-[#E8D4EF] text-[#823F91] text-xs font-semibold ring-2 ring-[#E8D4EF]">
             +{remainingCount}
           </div>
         )}

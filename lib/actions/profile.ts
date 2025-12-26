@@ -71,7 +71,7 @@ export async function uploadProfilePhoto(formData: FormData) {
       return { error: updateError.message }
     }
 
-    revalidatePath('/dashboard/profil')
+    revalidatePath('/couple/profil')
     return { success: true, photoUrl: data.publicUrl }
   } catch (error) {
     console.error('Error in uploadProfilePhoto:', error)
@@ -125,7 +125,7 @@ export async function updateProfile(profileData: {
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/profil')
+    revalidatePath('/couple/profil')
     return { success: true }
   } catch (error) {
     console.error('Error in updateProfile:', error)
@@ -222,7 +222,7 @@ export async function updateWeddingInfo(weddingData: {
       }
     }
 
-    revalidatePath('/dashboard/profil')
+    revalidatePath('/couple/profil')
     return { success: true }
   } catch (error) {
     console.error('Error in updateWeddingInfo:', error)

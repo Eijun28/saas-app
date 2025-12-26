@@ -54,12 +54,22 @@ export default function SignUpPage() {
       })
 
       if (result?.error) {
-        setError(result.error)
+        // Améliorer les messages d'erreur pour les clés API invalides
+        if (result.error.includes('Invalid API key') || result.error.includes('invalid') || result.error.includes('Variables d\'environnement')) {
+          setError('Erreur de configuration. Veuillez contacter le support.')
+        } else {
+          setError(result.error)
+        }
       } else {
         router.push('/onboarding')
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue')
+      // Gérer les erreurs de configuration Supabase
+      if (err.message?.includes('Variables d\'environnement') || err.message?.includes('Invalid API key') || err.message?.includes('invalid')) {
+        setError('Erreur de configuration. Veuillez contacter le support.')
+      } else {
+        setError(err.message || 'Une erreur est survenue')
+      }
     } finally {
       setIsLoading(false)
     }

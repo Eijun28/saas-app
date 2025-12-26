@@ -163,9 +163,6 @@ export default function CollaborateursPage() {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-4xl font-semibold text-[#0D0D0D] mb-2">
-              Collaborateurs
-            </h1>
             <p className="text-[#4A4A4A]">
               Gérez les personnes qui vous aident dans l'organisation
             </p>

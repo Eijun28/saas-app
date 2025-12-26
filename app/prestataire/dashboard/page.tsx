@@ -15,6 +15,7 @@ export default function DashboardPrestatairePage() {
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   
   // États
   const [stats, setStats] = useState<Stats>({
@@ -29,6 +30,25 @@ export default function DashboardPrestatairePage() {
     loading: 'idle',
     error: null,
   })
+
+  // Écouter les événements de recherche depuis TopBar
+  useEffect(() => {
+    const handleSearch = (e: CustomEvent) => {
+      setSearchQuery(e.detail || '')
+    }
+
+    // Charger la recherche depuis sessionStorage au montage
+    const savedQuery = sessionStorage.getItem('prestataire_search_query')
+    if (savedQuery) {
+      setSearchQuery(savedQuery)
+    }
+
+    window.addEventListener('prestataire-search', handleSearch as EventListener)
+    
+    return () => {
+      window.removeEventListener('prestataire-search', handleSearch as EventListener)
+    }
+  }, [])
 
   useEffect(() => {
     if (user) {
@@ -89,64 +109,94 @@ export default function DashboardPrestatairePage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-          Bonjour {prenom && nom ? `${prenom} ${nom}` : prenom || '👋'}
-        </h1>
-        <p className="text-muted-foreground text-base md:text-lg mt-2">
-          Aperçu de votre activité
-        </p>
-      </motion.div>
+    <div className="w-full">
+      <div className="w-full space-y-8">
+      {/* Affichage de la recherche active */}
+      {searchQuery && (
+        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-purple-700">
+              Recherche : <strong>{searchQuery}</strong>
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              setSearchQuery('')
+              sessionStorage.removeItem('prestataire_search_query')
+            }}
+            className="text-sm text-purple-600 hover:text-purple-800 underline"
+          >
+            Effacer
+          </button>
+        </div>
+      )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={Bell}
-          label="Nouvelles demandes"
-          value={stats.nouvelles_demandes}
-          subtitle="À traiter"
-          colorClass="from-[#9D5FA8]/10 to-[#823F91]/10 text-[#823F91]"
-          delay={0.1}
-          onClick={() => window.location.href = '/prestataire/demandes-recues'}
-        />
-
-        <StatCard
-          icon={Calendar}
-          label="Événements à venir"
-          value={stats.evenements_a_venir}
-          subtitle="Ce mois-ci"
-          colorClass="from-blue-100/50 to-blue-200/50 text-blue-600"
-          delay={0.2}
-          onClick={() => window.location.href = '/prestataire/agenda'}
-        />
-
-        <StatCard
-          icon={MessageSquare}
-          label="Messages non lus"
-          value={stats.messages_non_lus}
-          subtitle="À répondre"
-          colorClass="from-green-100/50 to-green-200/50 text-green-600"
-          delay={0.3}
-          onClick={() => window.location.href = '/prestataire/messagerie'}
-        />
-
-        <StatCard
-          icon={TrendingUp}
-          label="Taux de réponse"
-          value={`${stats.taux_reponse}%`}
-          trend={{
-            value: '+5% ce mois',
-            positive: true,
-          }}
-          colorClass="from-orange-100/50 to-orange-200/50 text-orange-600"
-          delay={0.4}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+        {[
+          {
+            icon: Bell,
+            label: "Nouvelles demandes",
+            value: stats.nouvelles_demandes,
+            subtitle: "À traiter",
+            colorClass: "from-[#9D5FA8]/10 to-[#823F91]/10 text-[#823F91]",
+            delay: 0.1,
+            onClick: () => window.location.href = '/prestataire/demandes-recues',
+            searchTerms: ['demandes', 'nouvelles', 'traiter', 'notifications']
+          },
+          {
+            icon: Calendar,
+            label: "Événements à venir",
+            value: stats.evenements_a_venir,
+            subtitle: "Ce mois-ci",
+            colorClass: "from-blue-100/50 to-blue-200/50 text-blue-600",
+            delay: 0.2,
+            onClick: () => window.location.href = '/prestataire/agenda',
+            searchTerms: ['événements', 'agenda', 'calendrier', 'rendez-vous']
+          },
+          {
+            icon: MessageSquare,
+            label: "Messages non lus",
+            value: stats.messages_non_lus,
+            subtitle: "À répondre",
+            colorClass: "from-green-100/50 to-green-200/50 text-green-600",
+            delay: 0.3,
+            onClick: () => window.location.href = '/prestataire/messagerie',
+            searchTerms: ['messages', 'messagerie', 'répondre', 'conversations']
+          },
+          {
+            icon: TrendingUp,
+            label: "Taux de réponse",
+            value: `${stats.taux_reponse}%`,
+            trend: {
+              value: '+5% ce mois',
+              positive: true,
+            },
+            colorClass: "from-orange-100/50 to-orange-200/50 text-orange-600",
+            delay: 0.4,
+            searchTerms: ['taux', 'réponse', 'statistiques', 'performance']
+          }
+        ]
+          .filter(card => {
+            if (!searchQuery) return true
+            const query = searchQuery.toLowerCase()
+            return card.label.toLowerCase().includes(query) ||
+                   (card.subtitle && card.subtitle.toLowerCase().includes(query)) ||
+                   card.searchTerms.some(term => term.toLowerCase().includes(query))
+          })
+          .map((card, index) => (
+            <StatCard
+              key={index}
+              icon={card.icon}
+              label={card.label}
+              value={card.value}
+              subtitle={card.subtitle}
+              colorClass={card.colorClass}
+              delay={card.delay}
+              onClick={card.onClick}
+              trend={card.trend}
+            />
+          ))}
       </div>
 
       {/* Activité récente */}
@@ -167,6 +217,7 @@ export default function DashboardPrestatairePage() {
           </CardContent>
         </Card>
       </motion.div>
+      </div>
     </div>
   )
 }

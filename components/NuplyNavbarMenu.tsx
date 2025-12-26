@@ -17,45 +17,118 @@ export function NuplyNavbarMenu() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const supabase = createClient();
-    
-    // Récupérer l'utilisateur
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      if (user) {
-        // Récupérer le profil
-        supabase
-          .from('profiles')
-          .select('role, prenom, nom')
-          .eq('id', user.id)
-          .single()
-          .then(({ data }) => setProfile(data));
-      }
-    });
-
-    // Écouter les changements d'authentification
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('role, prenom, nom')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => setProfile(data));
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      const supabase = createClient();
+      
+      // Récupérer l'utilisateur
+      supabase.auth.getUser().then(({ data: { user }, error }) => {
+        // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
+        if (error && !error.message?.includes('Auth session missing')) {
+          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+        }
+        setUser(error ? null : user);
+        if (user) {
+          // Vérifier d'abord dans la table couples
+          supabase
+            .from('couples')
+            .select('id, partner_1_name, partner_2_name')
+            .eq('user_id', user.id)
+            .single()
+            .then(({ data: couple, error: coupleError }) => {
+              if (couple && !coupleError) {
+                // Extraire prenom et nom de partner_1_name
+                const partner1Name = couple.partner_1_name || '';
+                const nameParts = partner1Name.split(' ');
+                setProfile({ 
+                  ...couple, 
+                  role: 'couple',
+                  prenom: nameParts[0] || '',
+                  nom: nameParts.slice(1).join(' ') || ''
+                });
+                return;
+              }
+              // Sinon vérifier dans profiles (prestataires)
+              supabase
+                .from('profiles')
+                .select('role, prenom, nom')
+                .eq('id', user.id)
+                .single()
+                .then(({ data, error: profileError }) => {
+                  if (profileError) {
+                    console.error('Erreur lors de la récupération du profil:', profileError);
+                    return;
+                  }
+                  setProfile(data);
+                });
+            });
+        }
+      }).catch((error) => {
+        console.error('Erreur lors de l\'initialisation de Supabase:', error);
+      });
+
+      // Écouter les changements d'authentification
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          // Vérifier d'abord dans la table couples
+          supabase
+            .from('couples')
+            .select('id, partner_1_name, partner_2_name')
+            .eq('user_id', session.user.id)
+            .single()
+            .then(({ data: couple, error: coupleError }) => {
+              if (couple && !coupleError) {
+                // Extraire prenom et nom de partner_1_name
+                const partner1Name = couple.partner_1_name || '';
+                const nameParts = partner1Name.split(' ');
+                setProfile({ 
+                  ...couple, 
+                  role: 'couple',
+                  prenom: nameParts[0] || '',
+                  nom: nameParts.slice(1).join(' ') || ''
+                });
+                return;
+              }
+              // Sinon vérifier dans profiles (prestataires)
+              supabase
+                .from('profiles')
+                .select('role, prenom, nom')
+                .eq('id', session.user.id)
+                .single()
+                .then(({ data, error: profileError }) => {
+                  if (profileError) {
+                    console.error('Erreur lors de la récupération du profil:', profileError);
+                    return;
+                  }
+                  setProfile(data);
+                });
+            });
+        } else {
+          setProfile(null);
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    } catch (error: any) {
+      console.error('Erreur lors de la création du client Supabase:', error);
+      // Si c'est une erreur de configuration, on ne bloque pas l'interface
+      if (error.message?.includes('Variables d\'environnement') || error.message?.includes('Invalid API key')) {
+        console.error('Configuration Supabase invalide. Vérifiez vos variables d\'environnement.');
+      }
+    }
+  }, [mounted]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -72,6 +145,26 @@ export function NuplyNavbarMenu() {
 
   // Sur la page d'accueil, toujours afficher "Se connecter" et "Commencer"
   const isHomePage = pathname === '/';
+
+  // Ne pas rendre le contenu dépendant de l'utilisateur jusqu'à ce que le composant soit monté
+  // Cela évite les erreurs d'hydratation
+  if (!mounted) {
+    return (
+      <div className="relative w-full flex items-center justify-center">
+        <Navbar 
+          className="top-2" 
+          active={active} 
+          setActive={setActive}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          user={null}
+          profile={null}
+          onSignOut={handleSignOut}
+          isHomePage={isHomePage}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full flex items-center justify-center">
@@ -113,10 +206,13 @@ function Navbar({
 }) {
   const handleLinkClick = (href: string) => {
     if (href.startsWith('/#')) {
-      const targetId = href.replace('/#', '');
-      const element = document.getElementById(targetId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Vérifier que nous sommes côté client
+      if (typeof window !== 'undefined') {
+        const targetId = href.replace('/#', '');
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
     }
     setIsMobileMenuOpen(false);
@@ -151,7 +247,7 @@ function Navbar({
             <MenuItem setActive={setActive} active={active} item="Services" href="/#prestataires">
               <div className="flex flex-col space-y-4 text-sm">
                 <HoveredLink href="/#prestataires">Trouver un prestataire</HoveredLink>
-                <HoveredLink href="/#fonctionnement">Comment ça marche</HoveredLink>
+                <HoveredLink href="#comment-ca-marche">Comment ça marche</HoveredLink>
                 <HoveredLink href="/#features">Fonctionnalités</HoveredLink>
                 <HoveredLink href="/#testimonials">Témoignages</HoveredLink>
               </div>
@@ -267,8 +363,15 @@ function Navbar({
                   Trouver un prestataire
                 </Link>
                 <Link
-                  href="/#fonctionnement"
-                  onClick={() => handleLinkClick("/#fonctionnement")}
+                  href="#comment-ca-marche"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('comment-ca-marche')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                    setIsMobileMenuOpen(false);
+                    setActive(null);
+                  }}
                   className="text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white text-sm"
                 >
                   Comment ça marche

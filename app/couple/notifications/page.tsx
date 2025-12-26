@@ -63,9 +63,6 @@ export default function NotificationsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
-          <h1 className="text-4xl font-semibold text-[#0D0D0D]">
-            Notifications
-          </h1>
           <p className="text-[#4A4A4A]">
             Restez informé de toutes vos activités
           </p>

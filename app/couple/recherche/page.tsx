@@ -65,9 +65,6 @@ export default function RecherchePage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
-          <h1 className="text-4xl font-semibold text-[#0D0D0D]">
-            Recherche de prestataires
-          </h1>
           <p className="text-[#4A4A4A]">
             Trouvez les prestataires qui correspondent à vos besoins
           </p>

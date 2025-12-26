@@ -48,7 +48,7 @@ export async function initializeDefaultCategories() {
       // Ignorer les erreurs de duplicate (contrainte unique)
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error: any) {
     console.error('Error in initializeDefaultCategories:', error)
@@ -96,7 +96,7 @@ export async function addCustomCategory(name: string, icon: string, budgetPrevu:
       return { error: error.message }
     }
 
-    revalidatePath('/dashboard/budget')
+    revalidatePath('/couple/budget')
     return { success: true }
   } catch (error: any) {
     console.error('Error in addCustomCategory:', error)
