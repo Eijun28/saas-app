@@ -30,7 +30,7 @@ export function Sidebar({ role, items }: SidebarProps) {
       className="fixed left-0 top-0 h-screen w-[280px] bg-white border-r border-[#E5E7EB] z-40 hidden lg:block"
     >
       <div className="flex flex-col h-full">
-        {/* Logo */}
+        {/* Logo NUPLY */}
         <div className="p-6 border-b border-[#E5E7EB]">
           <Link href={`/${role}`} className="flex items-center gap-2">
             <Image
@@ -56,6 +56,13 @@ export function Sidebar({ role, items }: SidebarProps) {
             />
           ))}
         </nav>
+
+        {/* Bottom logo icon */}
+        <div className="p-4 border-t border-[#E5E7EB]">
+          <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center">
+            <span className="text-sm font-bold text-[#823F91]">N</span>
+          </div>
+        </div>
       </div>
     </motion.aside>
   )

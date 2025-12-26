@@ -75,12 +75,25 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       if (user) {
+        // Vérifier d'abord dans la table couples
         supabase
-          .from('profiles')
-          .select('role, prenom, nom')
+          .from('couples')
+          .select('id, prenom, nom')
           .eq('id', user.id)
           .single()
-          .then(({ data }) => setProfile(data))
+          .then(({ data: couple }) => {
+            if (couple) {
+              setProfile({ ...couple, role: 'couple' })
+              return
+            }
+            // Sinon vérifier dans profiles (prestataires)
+            supabase
+              .from('profiles')
+              .select('role, prenom, nom')
+              .eq('id', user.id)
+              .single()
+              .then(({ data }) => setProfile(data))
+          })
       }
     })
 
@@ -89,12 +102,25 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
+        // Vérifier d'abord dans la table couples
         supabase
-          .from('profiles')
-          .select('role, prenom, nom')
+          .from('couples')
+          .select('id, prenom, nom')
           .eq('id', session.user.id)
           .single()
-          .then(({ data }) => setProfile(data))
+          .then(({ data: couple }) => {
+            if (couple) {
+              setProfile({ ...couple, role: 'couple' })
+              return
+            }
+            // Sinon vérifier dans profiles (prestataires)
+            supabase
+              .from('profiles')
+              .select('role, prenom, nom')
+              .eq('id', session.user.id)
+              .single()
+              .then(({ data }) => setProfile(data))
+          })
       } else {
         setProfile(null)
       }

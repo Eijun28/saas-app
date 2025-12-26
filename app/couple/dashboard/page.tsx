@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ModernCard, cardVariants } from '@/components/ui/modern-card'
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ModernCard } from '@/components/ui/modern-card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -40,24 +40,23 @@ export default function CoupleDashboardPage() {
     if (user) {
       const supabase = createClient()
       
-      // Récupérer le profil utilisateur pour le prénom et nom
+      // Récupérer le profil couple pour le prénom et nom
       supabase
-        .from('profiles')
-        .select('prenom, nom')
-        .eq('id', user.id)
+        .from('couples')
+        .select('partner_1_name')
+        .eq('user_id', user.id)
         .single()
         .then(({ data }) => {
-          if (data?.prenom) {
-            setPrenom(data.prenom)
-          }
-          if (data?.nom) {
-            setNom(data.nom)
+          if (data?.partner_1_name) {
+            const nameParts = data.partner_1_name.split(' ')
+            setPrenom(nameParts[0] || '')
+            setNom(nameParts.slice(1).join(' ') || '')
           }
         })
       
       // Récupérer le profil couple
       supabase
-        .from('couple_profiles')
+        .from('couples')
         .select('*')
         .eq('user_id', user.id)
         .single()
@@ -67,8 +66,8 @@ export default function CoupleDashboardPage() {
           if (data) {
             // Calculer les jours restants
             let joursRestants = null
-            if (data.date_marriage) {
-              const dateMariage = new Date(data.date_marriage)
+            if (data.wedding_date) {
+              const dateMariage = new Date(data.wedding_date)
               const aujourdhui = new Date()
               const diff = dateMariage.getTime() - aujourdhui.getTime()
               joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
@@ -83,9 +82,32 @@ export default function CoupleDashboardPage() {
                 setStats(prev => ({
                   ...prev,
                   prestatairesTrouves: count || 0,
-                  budgetAlloue: data.budget_max || data.budget_min || 0,
+                  budgetAlloue: data.budget_total || 0,
                   joursRestants,
                 }))
+              })
+            
+            // Compter les messages non lus
+            supabase
+              .from('conversations')
+              .select('id')
+              .eq('couple_id', user.id)
+              .then(({ data: conversations }) => {
+                if (conversations && conversations.length > 0) {
+                  const conversationIds = conversations.map(c => c.id)
+                  supabase
+                    .from('messages')
+                    .select('id', { count: 'exact', head: true })
+                    .in('conversation_id', conversationIds)
+                    .neq('sender_id', user.id)
+                    .eq('is_read', false)
+                    .then(({ count }) => {
+                      setStats(prev => ({
+                        ...prev,
+                        messagesNonLus: count || 0,
+                      }))
+                    })
+                }
               })
           }
         })
@@ -142,6 +164,13 @@ export default function CoupleDashboardPage() {
       badge: stats.messagesNonLus > 0 ? `${stats.messagesNonLus}` : undefined,
     },
     {
+      title: 'Demandes & Devis',
+      description: 'Gérez vos demandes et devis reçus',
+      icon: FileText,
+      href: '/couple/demandes',
+      gradient: 'from-blue-600 to-cyan-600',
+    },
+    {
       title: 'Collaborateurs',
       description: 'Invitez des proches à vous aider dans l\'organisation',
       icon: Users,
@@ -158,43 +187,8 @@ export default function CoupleDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-        {/* Header modernisé */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-3"
-        >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
-                Bonjour {prenom && nom ? `${prenom} ${nom}` : prenom || '👋'}
-              </h1>
-              {stats.joursRestants !== null && stats.joursRestants > 0 && (
-                <p className="text-muted-foreground mt-2">
-                  Votre mariage dans <span className="font-semibold text-purple-600">{stats.joursRestants}</span> jour{stats.joursRestants > 1 ? 's' : ''}
-                </p>
-              )}
-            </div>
-            
-            {/* Mini stats en ligne */}
-            <div className="hidden md:flex items-center gap-6">
-              <div className="flex items-center gap-2 text-sm">
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-                <span className="text-muted-foreground">{stats.prestatairesTrouves}</span>
-                <span className="text-muted-foreground">matchs</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <MessageSquare className="h-4 w-4 text-pink-600" />
-                <span className="text-muted-foreground">{stats.messagesNonLus}</span>
-                <span className="text-muted-foreground">messages</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
+    <div className="w-full">
+      <div className="w-full space-y-8">
         {/* Sections principales avec ModernCard */}
         <motion.div
           variants={fadeInUp}
@@ -207,14 +201,19 @@ export default function CoupleDashboardPage() {
             return (
               <motion.div
                 key={section.title}
-                custom={index}
-                variants={cardVariants}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.1,
+                  duration: 0.4,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
               >
                 <ModernCard delay={index * 0.1}>
                   <Link href={section.href} className="block h-full">
                     <CardHeader>
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center shadow-lg shadow-purple-500/20`}>
+                        <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center shadow-lg shadow-purple-500/20 hover-gradient-purple`}>
                           <Icon className="h-6 w-6 text-white" />
                         </div>
                         {section.badge && (

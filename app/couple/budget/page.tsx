@@ -250,9 +250,6 @@ export default function BudgetPage() {
         >
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#0D0D0D] mb-2">
-                Budget
-              </h1>
               <p className="text-[#4A4A4A]">
                 Gérez votre budget de mariage et suivez vos dépenses
               </p>

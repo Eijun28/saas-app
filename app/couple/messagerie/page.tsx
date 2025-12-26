@@ -165,7 +165,6 @@ export default function MessageriePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 md:mb-8"
         >
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-[#0D0D0D] mb-2">Messagerie</h1>
           <p className="text-sm md:text-base text-[#4A4A4A]">Communiquez avec tous vos prestataires</p>
         </motion.div>
 

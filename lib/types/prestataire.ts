@@ -79,3 +79,27 @@ export interface UIState {
   error: string | null
 }
 
+export interface ProviderCulture {
+  id: string;
+  profile_id: string;
+  culture_id: string;
+  created_at: string;
+}
+
+export interface ProviderZone {
+  id: string;
+  profile_id: string;
+  zone_id: string;
+  created_at: string;
+}
+
+export interface ProviderPortfolioImage {
+  id: string;
+  profile_id: string;
+  image_url: string;
+  image_path: string;
+  title?: string;
+  display_order: number;
+  created_at: string;
+}
+

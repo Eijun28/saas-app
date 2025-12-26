@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { Calendar } from "./calendar"
+import { Calendar } from "./calendar-shadcn"
 import { Input } from "./input"
 import { cn } from "@/lib/utils"
 
@@ -46,11 +46,17 @@ export function DatePicker({ value, onChange, placeholder = "Sélectionner une d
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 z-20">
-            <Calendar value={value} onChange={(date) => {
-              onChange?.(date)
-              setIsOpen(false)
-            }} />
+          <div className="absolute top-full left-0 mt-2 z-20 bg-white rounded-md border shadow-lg">
+            <Calendar
+              mode="single"
+              selected={value}
+              onSelect={(date) => {
+                onChange?.(date)
+                setIsOpen(false)
+              }}
+              captionLayout="dropdown"
+              className="rounded-md"
+            />
           </div>
         </>
       )}

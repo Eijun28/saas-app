@@ -35,15 +35,28 @@ export default function MessagesPage() {
     if (!user) return
 
     const supabase = createClient()
+    // Vérifier d'abord dans la table couples
     supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
+      .from('couples')
+      .select('id')
+      .eq('user_id', user.id)
       .single()
-      .then(({ data, error }) => {
-        if (data?.role === 'couple' || data?.role === 'prestataire') {
-          setUserType(data.role)
+      .then(({ data: couple }) => {
+        if (couple) {
+          setUserType('couple')
+          return
         }
+        // Sinon vérifier dans profiles (prestataires)
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (data?.role === 'prestataire') {
+              setUserType('prestataire')
+            }
+          })
       })
   }, [user])
 

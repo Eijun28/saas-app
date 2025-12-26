@@ -35,10 +35,13 @@ export default function SignInPage() {
       const result = await signIn(data.email, data.password)
       if (result?.error) {
         setError(result.error)
+        setIsLoading(false)
+      } else if (result?.success && result?.redirectTo) {
+        // Rediriger côté client après connexion réussie
+        router.push(result.redirectTo)
       }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue')
-    } finally {
       setIsLoading(false)
     }
   }

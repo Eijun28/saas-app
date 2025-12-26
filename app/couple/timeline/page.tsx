@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2 } from 'lucide-react'
-import { Calendar18 } from '@/components/ui/calendar18'
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { DatePicker } from '@/components/ui/date-picker'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { fr } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
 
 interface Event {
   id: string
@@ -69,17 +71,22 @@ export default function TimelinePage() {
     setLoading(true)
     const supabase = createClient()
     
-    const { data } = await supabase
-      .from('couple_profiles')
-      .select('date_marriage')
-      .eq('user_id', user.id)
-      .single()
+    try {
+      // Charger depuis la table couples (nouvelle structure)
+      const { data, error } = await supabase
+        .from('couples')
+        .select('wedding_date')
+        .eq('user_id', user.id)
+        .single()
 
-    if (data?.date_marriage) {
-      setDateMarriage(data.date_marriage)
+      if (!error && data?.wedding_date) {
+        setDateMarriage(data.wedding_date)
+      }
+    } catch (err) {
+      console.error('Erreur chargement date mariage:', err)
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   const loadEvents = async () => {
@@ -87,20 +94,32 @@ export default function TimelinePage() {
     
     const supabase = createClient()
     
-    const { data, error } = await supabase
-      .from('timeline_events')
-      .select('*')
-      .eq('couple_id', user.id)
-      .order('event_date', { ascending: true })
+    try {
+      const { data, error } = await supabase
+        .from('timeline_events')
+        .select('*')
+        .eq('couple_id', user.id)
+        .order('event_date', { ascending: true })
 
-    if (error) {
-      console.error('Erreur chargement événements:', error)
-      if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-        console.warn('La table timeline_events n\'existe pas encore. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
+      if (error) {
+        // Si la table n'existe pas ou erreur RLS, on initialise avec un tableau vide
+        if (error.code === '42P01' || error.message?.includes('does not exist') || error.message?.includes('schema cache')) {
+          console.warn('La table timeline_events n\'existe pas encore. Les événements seront disponibles une fois la table créée.')
+          setEvents([])
+          return
+        }
+        // Autres erreurs (RLS, permissions, etc.)
+        console.error('Erreur chargement événements:', error.code, error.message)
+        setEvents([])
+        return
       }
-      setEvents([])
-    } else {
+      
+      // Succès : initialiser avec les données ou un tableau vide
       setEvents(data || [])
+    } catch (err) {
+      // Erreur inattendue
+      console.error('Erreur inattendue lors du chargement des événements:', err)
+      setEvents([])
     }
   }
 
@@ -189,23 +208,6 @@ export default function TimelinePage() {
     setIsDialogOpen(true)
   }
 
-  const handleEventClick = (event: CalendarEvent) => {
-    const fullEvent = events.find(e => e.id === event.id)
-    if (fullEvent) {
-      handleEditEvent(fullEvent)
-    }
-  }
-
-  const handleDateClick = (date: Date) => {
-    // Ouvrir la modal avec la date pré-remplie
-    setEventForm({
-      title: '',
-      description: '',
-      event_date: date,
-    })
-    setEditingEvent(null)
-    setIsDialogOpen(true)
-  }
 
   const resetForm = () => {
     setEventForm({ title: '', description: '', event_date: null })
@@ -230,9 +232,6 @@ export default function TimelinePage() {
         >
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-4xl font-semibold text-[#0D0D0D] mb-2">
-                Timeline
-              </h1>
               <p className="text-[#4A4A4A]">
                 Planifiez votre mariage étape par étape
               </p>
@@ -246,55 +245,46 @@ export default function TimelinePage() {
             </Button>
           </div>
 
-          <Card className="border-gray-200 mb-8">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5 text-[#823F91]" />
-                <CardTitle>Date du mariage</CardTitle>
+          {/* Date du mariage - Version compacte */}
+          <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
+            {dateMarriage ? (
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[#0D0D0D]">
+                  {new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+                <p className="text-xs text-[#6B7280] mt-1">
+                  {(() => {
+                    const date = new Date(dateMarriage)
+                    const today = new Date()
+                    const diff = date.getTime() - today.getTime()
+                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                    if (days > 0) {
+                      return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
+                    } else if (days === 0) {
+                      return "C'est aujourd'hui !"
+                    } else {
+                      return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+                    }
+                  })()}
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {dateMarriage ? (
-                <div>
-                  <p className="text-2xl font-bold text-[#0D0D0D]">
-                    {new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </p>
-                  <p className="text-sm text-[#4A4A4A] mt-2">
-                    {(() => {
-                      const date = new Date(dateMarriage)
-                      const today = new Date()
-                      const diff = date.getTime() - today.getTime()
-                      const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                      if (days > 0) {
-                        return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
-                      } else if (days === 0) {
-                        return "C'est aujourd'hui !"
-                      } else {
-                        return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                      }
-                    })()}
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-[#4A4A4A] mb-4">
-                    Aucune date de mariage renseignée pour le moment.
-                  </p>
-                  <p className="text-sm text-[#4A4A4A]">
-                    Vous pouvez définir votre date de mariage dans la section{' '}
-                    <a href="/couple/profil" className="text-[#823F91] hover:underline">
-                      Profil
-                    </a>
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="flex-1">
+                <p className="text-sm text-[#4A4A4A]">
+                  Aucune date de mariage renseignée.{' '}
+                  <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
+                    Définir dans le profil
+                  </a>
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Liste des événements */}
           {events.length > 0 && (
@@ -354,16 +344,24 @@ export default function TimelinePage() {
             </Card>
           )}
 
-          {/* Calendrier en bas */}
+          {/* Calendrier */}
           <Card className="border-gray-200">
             <CardHeader>
               <CardTitle>Calendrier</CardTitle>
             </CardHeader>
             <CardContent>
-              <Calendar18 
-                events={events.map(e => ({ id: e.id, title: e.title, event_date: e.event_date }))}
-                onEventClick={handleEventClick}
-                onDateClick={handleDateClick}
+              <Calendar
+                onDateSelect={(date) => {
+                  setEventForm({
+                    title: '',
+                    description: '',
+                    event_date: date,
+                  })
+                  setEditingEvent(null)
+                  setIsDialogOpen(true)
+                }}
+                showSelectedDateInfo={false}
+                maxWidth="max-w-full"
               />
             </CardContent>
           </Card>
@@ -392,11 +390,49 @@ export default function TimelinePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="event-date">Date</Label>
-                <DatePicker
-                  value={eventForm.event_date}
-                  onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
-                  placeholder="Sélectionner une date"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !eventForm.event_date && "text-muted-foreground"
+                      )}
+                    >
+                      <div className="relative w-full">
+                        <Input
+                          readOnly
+                          value={
+                            eventForm.event_date
+                              ? eventForm.event_date.toLocaleDateString('fr-FR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                })
+                              : "Sélectionner une date"
+                          }
+                          placeholder="Sélectionner une date"
+                          className="cursor-pointer pr-10"
+                        />
+                        <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
+                      </div>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <div className="bg-white rounded-xl border p-4">
+                      <Calendar
+                        mode="single"
+                        selected={eventForm.event_date || undefined}
+                        onSelect={(date) => setEventForm({ ...eventForm, event_date: date || null })}
+                        locale={fr}
+                        className="rounded-md"
+                        captionLayout="dropdown-buttons"
+                        fromYear={2025}
+                        toYear={2030}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="space-y-2">

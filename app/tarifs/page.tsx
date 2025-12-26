@@ -1,399 +1,232 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import { CircleCheck, Sparkles, Filter, Shield, UserCheck, TrendingUp, Settings, Gift } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { motion, AnimatePresence } from 'framer-motion';
+import { Check, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { Inter } from 'next/font/google';
 
-const couplePlans = [
-  {
-    id: 'gratuit',
-    name: 'Gratuit',
-    description: 'Parfait pour commencer votre projet',
-    monthlyPrice: '0€',
-    yearlyPrice: '0€',
-    features: [
-      { text: 'Matching basique' },
-      { text: 'Accès application' },
-      { text: 'Recherche limitée' },
-      { text: 'Profil personnalisé' },
-      { text: 'Accès à la communauté' },
-    ],
-    button: {
-      text: 'Commencer',
-      url: '/sign-up',
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-inter',
+});
+
+export default function PricingSection() {
+  const [userType, setUserType] = useState<'couples' | 'prestataires'>('couples');
+
+  // Plan unique pour les couples
+  const couplesPricing = [
+    {
+      name: "Gratuit",
+      price: "0€",
+      period: "à vie",
+      description: "Tout ce dont vous avez besoin pour trouver vos prestataires parfaits.",
+      features: [
+        "Créer votre profil couple",
+        "Matching AI par culture et tradition",
+        "Messages illimités avec les prestataires",
+        "Accès à tous les portfolios",
+        "Support par email",
+      ],
+      cta: "Créer mon compte gratuit",
+      ctaLink: "/sign-up",
     },
-  },
-]
+  ];
 
-const prestatairePlans = [
-  {
-    id: 'decouverte',
-    name: 'Découverte',
-    description: 'Parfait pour débuter sur la plateforme',
-    monthlyPrice: '0€',
-    hasFreeTrial: false,
-    features: [
-      { text: 'Présence basique' },
-      { text: 'Profil public simple' },
-      { text: 'Fonctionnalités limitées' },
-      { text: 'Visibilité standard' },
-    ],
-    button: {
-      text: 'Commencer gratuitement',
-      url: '/sign-up',
+  // Plans pour les prestataires
+  const prestatairesPricing = [
+    {
+      name: "Gratuit",
+      price: "0€",
+      period: "à vie",
+      description: "Testez la plateforme sans engagement.",
+      features: [
+        "Créer votre profil professionnel",
+        "Apparaître dans les recherches",
+        "Recevoir jusqu'à 3 demandes par mois",
+        "Portfolio basique (10 photos max)",
+        "Support par email",
+      ],
+      cta: "Créer mon profil",
+      ctaLink: "/sign-up",
     },
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    description: 'Pour les prestataires professionnels',
-    monthlyPrice: '49€',
-    hasFreeTrial: true,
-    features: [
-      { text: 'Fiche prestataire avancée' },
-      { text: 'Visibilité renforcée' },
-      { text: 'Accès tableau de bord complet' },
-      { text: 'Priorité dans le matching' },
-      { text: 'Statistiques basiques' },
-      { text: 'Support standard' },
-    ],
-    button: {
-      text: 'Essayer gratuitement',
-      url: '/sign-up',
+    {
+      name: "Premium",
+      price: "49€",
+      period: "/ mois",
+      description: "Pour les professionnels qui veulent plus de visibilité.",
+      features: [
+        "Demandes de contacts illimitées",
+        "Portfolio illimité avec galeries privées",
+        "Badge professionnel vérifié",
+        "Apparition prioritaire dans les matchs",
+        "Support prioritaire par email et chat",
+      ],
+      cta: "Passer Premium",
+      ctaLink: "/sign-up?plan=premium",
     },
-    popular: false,
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    description: 'Solution complète pour maximiser votre visibilité',
-    monthlyPrice: '79€',
-    hasFreeTrial: true,
-    features: [
-      { text: 'Mise en avant premium' },
-      { text: 'Gestion complète des demandes' },
-      { text: 'Statistiques détaillées avancées' },
-      { text: 'Support prioritaire 24/7' },
-      { text: 'Booster de visibilité illimité' },
-      { text: 'Badge "Prestataire Vérifié"' },
-      { text: 'Accès aux fonctionnalités beta' },
-    ],
-    button: {
-      text: 'Essayer gratuitement',
-      url: '/sign-up',
+    {
+      name: "Pro",
+      price: "79€",
+      period: "/ mois",
+      description: "Pour dominer votre catégorie et maximiser vos réservations.",
+      features: [
+        "Tout de Premium, plus :",
+        "Position #1 garanti dans votre spécialité",
+        "Analytics détaillés et reporting mensuel",
+        "Publicité sponsorisée sur la plateforme",
+        "Account manager dédié et formation incluse",
+      ],
+      cta: "Devenir Pro",
+      ctaLink: "/sign-up?plan=pro",
     },
-    popular: true,
-  },
-]
+  ];
 
-const benefits = [
-  {
-    icon: Sparkles,
-    title: 'Matching IA',
-    description: 'Trouvez les prestataires parfaits grâce à notre intelligence artificielle',
-  },
-  {
-    icon: Filter,
-    title: 'Filtres avancés',
-    description: 'Affinez votre recherche selon vos critères précis',
-  },
-  {
-    icon: Shield,
-    title: 'Prestataires vérifiés',
-    description: 'Tous nos prestataires sont vérifiés et qualifiés',
-  },
-  {
-    icon: UserCheck,
-    title: 'Profil optimisé',
-    description: 'Mettez en valeur votre profil pour attirer les meilleurs clients',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Visibilité plus élevée',
-    description: 'Augmentez votre visibilité et votre taux de conversion',
-  },
-  {
-    icon: Settings,
-    title: 'Gestion simplifiée',
-    description: 'Tout centralisé : demandes, agenda, messagerie',
-  },
-]
+  const currentPricing = userType === 'couples' ? couplesPricing : prestatairesPricing;
 
-const faqs = [
-  {
-    question: 'Puis-je changer de formule à tout moment ?',
-    answer: 'Oui, vous pouvez changer de formule à tout moment depuis votre tableau de bord. Les changements prennent effet immédiatement.',
-  },
-  {
-    question: 'Comment fonctionne le mois gratuit ?',
-    answer: 'Pour les formules Pro et Premium, vous bénéficiez d\'un mois d\'essai gratuit sans engagement. Aucun paiement ne sera effectué pendant cette période, et vous pouvez annuler à tout moment.',
-  },
-  {
-    question: 'Y a-t-il des frais cachés ?',
-    answer: 'Non, tous nos prix sont transparents. Il n\'y a pas de frais cachés, pas de frais de transaction supplémentaires.',
-  },
-  {
-    question: 'Que se passe-t-il si j\'annule mon abonnement ?',
-    answer: 'Vous pouvez annuler votre abonnement à tout moment. Vous garderez l\'accès jusqu\'à la fin de votre période de facturation.',
-  },
-  {
-    question: 'Les prix incluent-ils la TVA ?',
-    answer: 'Oui, tous les prix affichés incluent la TVA applicable en France.',
-  },
-]
-
-function PricingContent({ plans, isPrestataire = false }: { plans: typeof couplePlans | typeof prestatairePlans, isPrestataire?: boolean }) {
   return (
-    <div className="flex flex-col items-stretch gap-8 md:flex-row justify-center w-full">
-      {plans.map((plan: any) => (
+    <section className={`${inter.className} py-20 bg-white`}>
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-bold text-slate-900 mb-3"
+          >
+            Tarifs simples et transparents
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-base text-slate-600 max-w-2xl mx-auto"
+          >
+            Pas de frais cachés. Changez ou annulez quand vous voulez.
+          </motion.p>
+        </div>
+
+        {/* Toggle Couples / Prestataires */}
         <motion.div
-          key={plan.id}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          whileHover={{ y: -8, scale: 1.02 }}
-          className="relative"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="flex justify-center mb-12"
         >
-          <Card
-            className={`flex w-full md:w-80 flex-col justify-between text-left transition-all duration-300 ${
-              plan.popular 
-                ? 'border-[#823F91] shadow-lg shadow-purple-500/20 ring-2 ring-[#823F91]/20' 
-                : 'border-border/10 hover:shadow-xl hover:shadow-purple-500/10'
+          <div className="inline-flex items-center bg-white rounded-full p-1 shadow-sm border border-slate-200">
+            <button
+              onClick={() => setUserType('couples')}
+              className={`
+                px-5 py-2 rounded-full font-medium text-sm transition-all duration-300
+                ${userType === 'couples'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:text-slate-900'
+                }
+              `}
+            >
+              Pour les couples
+            </button>
+            <button
+              onClick={() => setUserType('prestataires')}
+              className={`
+                px-5 py-2 rounded-full font-medium text-sm transition-all duration-300
+                ${userType === 'prestataires'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:text-slate-900'
+                }
+              `}
+            >
+              Pour les prestataires
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Pricing Cards */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={userType}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className={`grid gap-4 max-w-5xl mx-auto ${
+              userType === 'couples' 
+                ? 'lg:grid-cols-1 max-w-sm' 
+                : 'lg:grid-cols-3'
             }`}
           >
-            {plan.popular && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white px-4 py-1 text-xs font-semibold">
-                  ⭐ Plus populaire
-                </Badge>
-              </div>
-            )}
-
-            <CardHeader className="pb-6">
-              <CardTitle>
-                <p className="text-2xl font-bold">{plan.name}</p>
-              </CardTitle>
-              <p className="text-muted-foreground text-sm mt-2">
-                {plan.description}
-              </p>
-              <div className="flex items-end mt-4">
-                <span className="text-4xl font-semibold">
-                  {plan.monthlyPrice}
-                </span>
-                <span className="text-muted-foreground text-xl font-medium">
-                  /mois
-                </span>
-              </div>
-              
-              {plan.hasFreeTrial && (
-                <div className="mt-3 flex items-center gap-2 text-sm font-medium text-[#823F91]">
-                  <Gift className="h-4 w-4" />
-                  <span>1er mois gratuit</span>
-                </div>
-              )}
-            </CardHeader>
-
-            <CardContent className="px-6 pb-6">
-              <Separator className="mb-6" />
-              {plan.id === 'premium' && isPrestataire && (
-                <p className="mb-3 font-semibold text-sm text-gray-700">
-                  Tout dans Pro, et :
-                </p>
-              )}
-              <ul className="space-y-4">
-                {plan.features.map((feature: any, index: number) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <CircleCheck className="size-4 text-[#823F91] flex-shrink-0" />
-                    <span>{feature.text}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </CardContent>
-
-            <CardFooter className="mt-auto px-6 pb-6">
-              <Button 
-                asChild 
-                className={`w-full transition-all duration-300 ${
-                  plan.popular
-                    ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:shadow-lg hover:shadow-purple-500/30'
-                    : 'bg-[#823F91] hover:bg-[#6D3478]'
-                }`}
-              >
-                <Link href={plan.button.url}>
-                  {plan.button.text}
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      ))}
-    </div>
-  )
-}
-
-export default function TarifsPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Pricing Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-pretty text-4xl font-semibold lg:text-6xl"
-            >
-              Tarifs
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-muted-foreground lg:text-xl"
-            >
-              Choisissez la formule adaptée à vos besoins
-            </motion.p>
-
-            <Tabs defaultValue="couples" className="w-full">
-              {/* Toggle Role */}
-              <div className="flex justify-center mb-12">
-                <TabsList className="h-12 px-1 bg-gray-100 rounded-xl">
-                  <TabsTrigger value="couples" className="px-6 py-2 text-sm font-medium rounded-lg">
-                    Couples
-                  </TabsTrigger>
-                  <TabsTrigger value="prestataires" className="px-6 py-2 text-sm font-medium rounded-lg">
-                    Prestataires
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              {/* Pricing Cards */}
-              <TabsContent value="couples" className="mt-0">
-                <PricingContent plans={couplePlans} isPrestataire={false} />
-              </TabsContent>
-
-              <TabsContent value="prestataires" className="mt-0">
-                <PricingContent plans={prestatairePlans} isPrestataire={true} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-32 px-6 bg-gradient-to-b from-white to-purple-50/30">
-        <div className="mx-auto max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-semibold text-gray-900 mb-4">
-              Ce que vous obtenez avec Nuply
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Des fonctionnalités pensées pour simplifier votre organisation
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {benefits.map((benefit, index) => {
-              const Icon = benefit.icon
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:shadow-purple-500/10 transition-all duration-300 p-6"
-                >
-                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#9D5FA8]/10 to-[#823F91]/10 flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6 text-[#823F91]" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {benefit.description}
-                  </p>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-32 px-6 bg-white">
-        <div className="mx-auto max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-semibold text-gray-900 mb-4">
-              Questions fréquentes
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Tout ce que vous devez savoir sur nos offres
-            </p>
-          </motion.div>
-
-          <Accordion type="single" collapsible className="w-full space-y-4">
-            {faqs.map((faq, index) => (
+            {currentPricing.map((plan, index) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
+                key={plan.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex flex-col p-6 bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-shadow h-full"
               >
-                <AccordionItem
-                  value={`item-${index}`}
-                  className="rounded-xl border border-gray-200 bg-white px-6 shadow-sm hover:shadow-md transition-all duration-300"
-                >
-                  <AccordionTrigger className="text-left font-semibold text-gray-900 hover:no-underline py-6">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-gray-600 leading-relaxed pb-6">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
+                {/* Nom du plan */}
+                <h3 className="text-base font-semibold text-slate-900 mb-4">
+                  {plan.name}
+                </h3>
+
+                {/* Prix */}
+                <div className="mb-1">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-bold text-slate-900 tracking-tight">
+                      {plan.price}
+                    </span>
+                    <span className="text-slate-500 text-base">
+                      {plan.period}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-slate-600 text-sm mb-6 min-h-[2.5rem] leading-snug">
+                  {plan.description}
+                </p>
+
+                {/* CTA Button */}
+                <Link href={plan.ctaLink}>
+                  <button className="w-full py-3 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 group mb-6">
+                    {plan.cta}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+
+                {/* Features List */}
+                <ul className="space-y-2.5 flex-grow">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <Check className="w-4 h-4 text-violet-600 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span className="text-slate-700 text-sm leading-snug">
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </motion.div>
             ))}
-          </Accordion>
-        </div>
-      </section>
-    </div>
-  )
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Footer Note */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center mt-10"
+        >
+          <p className="text-slate-600 text-sm">
+            {userType === 'couples' 
+              ? "Aucune carte bancaire requise • Gratuit pour toujours"
+              : "Sans engagement • Résiliable à tout moment"}
+          </p>
+        </motion.div>
+      </div>
+    </section>
+  );
 }

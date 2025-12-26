@@ -38,11 +38,10 @@ export function ModernCard({
     >
       <Card
         className={cn(
-          'h-full rounded-2xl border transition-all duration-300',
-          'border-border/10 hover:border-border/20',
+          'h-full rounded-2xl transition-all duration-300',
           'hover:shadow-xl hover:shadow-purple-500/10',
           'bg-card/50 backdrop-blur-sm',
-          glassmorphism && 'backdrop-blur-md bg-purple-500/5 border-purple-500/20',
+          glassmorphism && 'backdrop-blur-md bg-purple-500/5',
           className
         )}
       >
@@ -61,7 +60,7 @@ export const cardVariants = {
     transition: {
       delay: index * 0.1,
       duration: 0.4,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as const,
     },
   }),
 };

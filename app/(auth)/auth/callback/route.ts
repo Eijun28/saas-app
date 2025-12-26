@@ -7,14 +7,31 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    
+    // Échanger le code pour une session
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (error) {
+      console.error('Erreur callback:', error)
+      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=callback_error`)
+    }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
+    // Récupérer l'utilisateur
+    const { data: { user } } = await supabase.auth.getUser()
+    
     if (user) {
-      // Vérifier si profil existe
+      // Vérifier d'abord dans couples
+      const { data: couple } = await supabase
+        .from('couples')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (couple) {
+        return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
+      }
+
+      // Sinon vérifier dans profiles
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -22,13 +39,12 @@ export async function GET(request: Request) {
         .single()
 
       if (profile) {
-        const dashboardUrl =
-          profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'
-        return NextResponse.redirect(new URL(dashboardUrl, request.url))
+        return NextResponse.redirect(`${requestUrl.origin}/prestataire/dashboard`)
       }
     }
   }
 
-  return NextResponse.redirect(new URL('/', request.url))
+  // Fallback
+  return NextResponse.redirect(`${requestUrl.origin}/`)
 }
 
