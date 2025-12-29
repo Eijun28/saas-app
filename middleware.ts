@@ -2,35 +2,67 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Configuration CORS - Origines autorisées
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_SITE_URL,
+  'https://nuply.com',
+  'https://www.nuply.com',
+  'http://localhost:3000',  // Dev local
+  'http://localhost:3001',  // Dev local alternatif
+].filter(Boolean) as string[]
+
+// Fonction helper pour vérifier origine
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true  // Same-origin requests
+  return ALLOWED_ORIGINS.some(allowed => origin === allowed)
+}
+
 /**
  * Configure les en-têtes CORS pour les requêtes API
  */
 function configureCORS(response: NextResponse, request: NextRequest): NextResponse {
   const origin = request.headers.get('origin');
-  const allowedOrigins = [
-    process.env.NEXT_PUBLIC_SITE_URL,
-    'https://nuply.com',
-    'https://www.nuply.com',
-    ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
-  ].filter(Boolean) as string[];
-
+  
   // Si l'origine est autorisée, ajouter les en-têtes CORS
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
     response.headers.set('Access-Control-Allow-Credentials', 'true');
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
 
-  // Gérer les requêtes preflight OPTIONS
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { status: 200, headers: response.headers });
-  }
-
   return response;
 }
 
 export async function middleware(request: NextRequest) {
+  // ========== CORS PROTECTION ==========
+  const origin = request.headers.get('origin')
+  
+  // Vérifier si origine autorisée (pour les requêtes cross-origin)
+  if (origin && !isAllowedOrigin(origin)) {
+    return new NextResponse('Forbidden - Invalid Origin', { 
+      status: 403,
+      headers: {
+        'Content-Type': 'text/plain',
+      }
+    })
+  }
+
+  // Handle preflight requests (OPTIONS)
+  // À ce stade, si origin existe, elle est déjà vérifiée et autorisée
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': origin || '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
+  // ========== SUITE DU CODE EXISTANT ==========
   const { supabaseResponse, user } = await updateSession(request)
   
   // Appliquer CORS à toutes les réponses
