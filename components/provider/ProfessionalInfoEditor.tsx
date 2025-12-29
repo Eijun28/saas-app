@@ -204,7 +204,7 @@ export function ProfessionalInfoEditor({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="bg-[#823F91] hover:bg-[#6D3478] h-9 text-sm"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

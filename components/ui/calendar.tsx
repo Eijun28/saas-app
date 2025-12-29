@@ -1,204 +1,179 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { DayPicker } from "react-day-picker"
+import { fr } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
-interface CalendarDay {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isSelected: boolean;
-}
+export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-interface CalendarProps {
-  initialDate?: Date;
-  onDateSelect?: (date: Date) => void;
-  showSelectedDateInfo?: boolean;
-  className?: string;
-  maxWidth?: string;
-}
-
-const Calendar: React.FC<CalendarProps> = ({
-  initialDate = new Date(),
-  onDateSelect,
-  showSelectedDateInfo = true,
-  className = "",
-  maxWidth = "max-w-2xl",
-}) => {
-  const [currentDate, setCurrentDate] = useState(initialDate);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
-  const getDaysInMonth = (date: Date): CalendarDay[] => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    const days: CalendarDay[] = [];
-    const today = new Date();
-
-    for (let i = 0; i < 42; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-
-      days.push({
-        date: currentDate,
-        isCurrentMonth: currentDate.getMonth() === month,
-        isToday: currentDate.toDateString() === today.toDateString(),
-        isSelected: selectedDate
-          ? currentDate.toDateString() === selectedDate.toDateString()
-          : false,
-      });
-    }
-
-    return days;
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-    );
-  };
-
-  const prevMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-    );
-  };
-
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    onDateSelect?.(date);
-  };
-
-  const days = getDaysInMonth(currentDate);
+// Composant personnalisé Table pour forcer 7 lignes (7 semaines)
+function TableCustom(props: React.ComponentProps<'table'>) {
+  const tableRef = React.useRef<HTMLTableElement>(null)
+  const observerRef = React.useRef<MutationObserver | null>(null)
   
-  const monthNames = [
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre",
-  ];
+  React.useEffect(() => {
+    const ensureSevenRows = () => {
+      if (!tableRef.current) return
+      
+      const tbody = tableRef.current.querySelector('tbody')
+      if (!tbody) return
+      
+      // Supprimer les lignes vides existantes créées précédemment
+      const allRows = Array.from(tbody.querySelectorAll('tr'))
+      allRows.forEach(row => {
+        const cells = row.querySelectorAll('td')
+        const isEmpty = Array.from(cells).every(cell => {
+          const day = cell.querySelector('span[aria-hidden="true"], button[aria-hidden="true"]')
+          return day !== null
+        })
+        if (isEmpty) {
+          row.remove()
+        }
+      })
+      
+      // Compter les lignes réelles (avec des jours visibles)
+      const realRows = Array.from(tbody.querySelectorAll('tr')).filter(row => {
+        const cells = row.querySelectorAll('td')
+        return Array.from(cells).some(cell => {
+          const day = cell.querySelector('span:not([aria-hidden]), button:not([aria-hidden])')
+          return day !== null && !day.classList.contains('invisible')
+        })
+      })
+      
+      const currentRows = realRows.length
+      
+      // Ajouter des lignes vides pour avoir toujours 7 lignes
+      if (currentRows < 7) {
+        for (let i = currentRows; i < 7; i++) {
+          const emptyRow = document.createElement('tr')
+          emptyRow.className = '!flex !w-full !mt-1 !flex-row !justify-around'
+          for (let j = 0; j < 7; j++) {
+            const emptyCell = document.createElement('td')
+            emptyCell.className = 'relative p-0 text-center text-sm !w-9 !h-9 !flex !items-center !justify-center !flex-1'
+            const emptyDay = document.createElement('span')
+            emptyDay.className = '!h-9 !w-9 p-0 font-normal rounded-md !flex !items-center !justify-center opacity-0 pointer-events-none'
+            emptyDay.setAttribute('aria-hidden', 'true')
+            emptyCell.appendChild(emptyDay)
+            emptyRow.appendChild(emptyCell)
+          }
+          tbody.appendChild(emptyRow)
+        }
+      }
+    }
+    
+    // Exécuter immédiatement
+    ensureSevenRows()
+    
+    // Observer les changements dans le tbody
+    const tbody = tableRef.current?.querySelector('tbody')
+    if (tbody) {
+      observerRef.current = new MutationObserver(() => {
+        // Délai pour laisser react-day-picker terminer son rendu
+        setTimeout(ensureSevenRows, 0)
+      })
+      
+      observerRef.current.observe(tbody, {
+        childList: true,
+        subtree: true
+      })
+    }
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [props.children])
 
-  const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  return <table ref={tableRef} {...props} />
+}
+
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarProps) {
+  const currentYear = new Date().getFullYear()
+  const fromYear = props.fromYear ?? currentYear - 5 // 5 ans dans le passé par défaut
+  const toYear = props.toYear ?? currentYear + 20 // 20 ans dans le futur par défaut
 
   return (
-    <motion.div
-      initial={{ scale: 0.9, y: 10, filter: "blur(10px)" }}
-      animate={{ scale: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.5 }}
-      className={cn(
-        "bg-white rounded-2xl shadow-2xl p-8 w-full",
-        maxWidth,
-        className
-      )}
-    >
-      {/* Header */}
-      <motion.div
-        initial={{ y: -10, filter: "blur(5px)" }}
-        animate={{ y: 0, filter: "blur(0px)" }}
-        className="flex items-center justify-between mb-8"
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={prevMonth}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </motion.button>
-        <motion.h1
-          key={currentDate.getMonth()}
-          initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          className="text-3xl font-bold text-gray-800"
-        >
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </motion.h1>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={nextMonth}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </motion.button>
-      </motion.div>
+    <DayPicker
+      locale={fr}
+      weekStartsOn={1} // Lundi
+      showOutsideDays={showOutsideDays}
+      fixedWeeks={true} // Force l'affichage de 6 semaines complètes
+      fromYear={fromYear}
+      toYear={toYear}
+      mode={props.mode || "single"} // Mode par défaut
+      className={cn("p-3", className)}
+      components={{
+        Navbar: () => null, // Masquer les flèches (on utilise dropdown)
+        Table: TableCustom, // Utiliser notre composant Table personnalisé
+      }}
+      classNames={{
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center mb-4",
+        caption_label: "hidden", // ⚠️ Masquer le label car on utilise dropdown
+        caption_dropdowns: "flex justify-center gap-3 items-center w-full",
 
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1 mb-4">
-        {dayNames.map((day) => (
-          <motion.div
-            key={day}
-            initial={{ opacity: 0, filter: "blur(3px)" }}
-            animate={{ opacity: 1, filter: "blur(0px)" }}
-            className="p-3 text-center font-semibold text-gray-600"
-          >
-            {day}
-          </motion.div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        <AnimatePresence mode="wait">
-          {days.map((day, index) => (
-            <motion.button
-              key={`${day.date.toDateString()}-${index}`}
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(5px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.8, filter: "blur(5px)" }}
-              transition={{ delay: index * 0.001 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleDateClick(day.date)}
-              className={cn(
-                "p-4 rounded-lg text-center transition-all duration-200",
-                day.isCurrentMonth
-                  ? "text-gray-800 hover:bg-blue-50"
-                  : "text-gray-400 hover:bg-gray-50",
-                day.isToday ? "calendar-today" : "",
-                day.isSelected && !day.isToday
-                  ? "bg-blue-200 text-blue-800 hover:bg-blue-200"
-                  : ""
-              )}
-            >
-              {day.date.getDate()}
-            </motion.button>
-          ))}
-        </AnimatePresence>
-      </div>
+        // ⚠️ IMPORTANT : Styles des dropdowns
+        dropdown: "px-3 py-2 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1",
+        dropdown_month: "px-3 py-2 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 min-w-[120px]",
+        dropdown_year: "px-3 py-2 text-sm rounded-md border border-gray-300 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 min-w-[90px]",
 
-      {/* Selected Date Info */}
-      {showSelectedDateInfo && selectedDate && (
-        <motion.div
-          initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          className="mt-8 p-4 bg-gray-50 rounded-lg"
-        >
-          <p className="text-gray-600">
-            Date sélectionnée :{" "}
-            {selectedDate.toLocaleDateString("fr-FR", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
+        nav: "hidden",
+        nav_button: "hidden",
+        nav_button_previous: "hidden",
+        nav_button_next: "hidden",
 
-export { Calendar };
-export default Calendar;
+        // ⚠️ CRITIQUE : Grille du calendrier
+        table: "w-full border-collapse mt-4",
+        tbody: "min-h-[280px]", // Force la hauteur minimale pour 7 lignes (7 * 40px)
+        
+        // ⚠️ CRITIQUE : Ligne des jours de la semaine (DOIT être en FLEX avec !important)
+        head_row: "!flex !w-full !flex-row !justify-around",
+        head_cell: cn(
+          "text-muted-foreground !w-9 font-normal text-sm text-center",
+          "!flex !items-center !justify-center !flex-1"
+        ),
+
+        // ⚠️ CRITIQUE : Lignes des jours (DOIVENT être en FLEX avec !important)
+        row: "!flex !w-full !mt-1 !flex-row !justify-around",
+
+        // ⚠️ CRITIQUE : Cellules individuelles
+        cell: cn(
+          "relative p-0 text-center text-sm",
+          "focus-within:relative focus-within:z-20",
+          "!w-9 !h-9 !flex !items-center !justify-center !flex-1" // Taille fixe + flex pour centrer
+        ),
+
+        // ⚠️ CRITIQUE : Jours
+        day: cn(
+          "!h-9 !w-9 p-0 font-normal rounded-md",
+          "hover:bg-accent hover:text-accent-foreground",
+          "!flex !items-center !justify-center", // ⚠️ FLEX pour centrer
+          "transition-colors"
+        ),
+
+        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_today: "bg-accent text-accent-foreground font-semibold",
+        day_outside: "text-muted-foreground opacity-50",
+        day_disabled: "text-muted-foreground opacity-50 cursor-not-allowed",
+        day_hidden: "invisible",
+        day_range_end: "day-range-end",
+        day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+
+        ...classNames,
+      }}
+      {...props}
+    />
+  )
+}
+
+Calendar.displayName = "Calendar"
+
+export { Calendar }

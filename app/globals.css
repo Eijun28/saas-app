@@ -46,7 +46,6 @@ html {
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -380,28 +379,89 @@ button.bg-white,
   width: 100%;
 }
 
-.rdp-head_row {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+/* === FIX CALENDRIER SHADCN (react-day-picker) - FORCER GRILLE 7x7 === */
+
+/* APPROCHE 1 : Forcer la table en display block pour pouvoir utiliser flex */
+.rdp-table,
+table.rdp-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  display: block !important;
 }
 
-.rdp-row {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+.rdp-table thead,
+.rdp-table tbody {
+  display: block !important;
+  width: 100% !important;
 }
 
-.rdp-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ⚠️ CRITIQUE : Forcer flex sur les lignes - Sélecteurs très spécifiques */
+.rdp-head_row,
+.rdp-row,
+thead.rdp-head_row,
+tbody .rdp-row,
+.rdp-month thead .rdp-head_row,
+.rdp-month tbody .rdp-row,
+.rdp-month table thead tr,
+.rdp-month table tbody tr,
+.rdp-table thead tr,
+.rdp-table tbody tr {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  justify-content: space-around !important;
+  flex-wrap: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-.rdp-head_cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Forcer les cellules en flex - TOUS les sélecteurs possibles */
+.rdp-head_cell,
+.rdp-cell,
+th.rdp-head_cell,
+td.rdp-cell,
+.rdp-head_row .rdp-head_cell,
+.rdp-row .rdp-cell,
+.rdp-month table thead tr th,
+.rdp-month table tbody tr td,
+.rdp-month table thead tr .rdp-head_cell,
+.rdp-month table tbody tr .rdp-cell,
+.rdp-table thead tr th,
+.rdp-table tbody tr td {
+  flex: 1 1 0% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Forcer les jours - TOUS les sélecteurs possibles */
+.rdp-day,
+button.rdp-day,
+.rdp-day_button,
+.rdp-cell button,
+.rdp-cell .rdp-day {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.25rem !important; /* 36px */
+  height: 2.25rem !important; /* 36px */
+  margin: 0 auto !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* S'assurer que les cellules contiennent bien les jours */
+.rdp-cell > *,
+td.rdp-cell > * {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 /* === FIX TEXTE INPUTS VISIBLE === */

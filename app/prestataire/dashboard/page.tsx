@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bell, Calendar, MessageSquare, TrendingUp } from 'lucide-react'
+import { Bell, Calendar, MessageSquare, TrendingUp, User } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
+import { DemandesRecentesList } from '@/components/prestataire/dashboard/DemandesRecentesList'
+import { PrestataireAvatar } from '@/components/shared/PrestataireAvatar'
 import type { Stats, UIState } from '@/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -15,7 +17,6 @@ export default function DashboardPrestatairePage() {
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
   
   // États
   const [stats, setStats] = useState<Stats>({
@@ -31,24 +32,6 @@ export default function DashboardPrestatairePage() {
     error: null,
   })
 
-  // Écouter les événements de recherche depuis TopBar
-  useEffect(() => {
-    const handleSearch = (e: CustomEvent) => {
-      setSearchQuery(e.detail || '')
-    }
-
-    // Charger la recherche depuis sessionStorage au montage
-    const savedQuery = sessionStorage.getItem('prestataire_search_query')
-    if (savedQuery) {
-      setSearchQuery(savedQuery)
-    }
-
-    window.addEventListener('prestataire-search', handleSearch as EventListener)
-    
-    return () => {
-      window.removeEventListener('prestataire-search', handleSearch as EventListener)
-    }
-  }, [])
 
   useEffect(() => {
     if (user) {
@@ -219,114 +202,229 @@ export default function DashboardPrestatairePage() {
   }
 
   return (
-    <div className="w-full">
-      <div className="w-full space-y-8">
-      {/* Affichage de la recherche active */}
-      {searchQuery && (
-        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-purple-700">
-              Recherche : <strong>{searchQuery}</strong>
-            </span>
+    <div className="w-full space-y-8">
+      {/* ========== HEADER PREMIUM ========== */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex items-center justify-between"
+      >
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <PrestataireAvatar userId={user?.id} size="lg" />
+          
+          {/* Greeting */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Bonjour {prenom || 'Prestataire'} 👋
+            </h1>
+            <p className="text-muted-foreground">
+              {new Date().toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+              })}
+            </p>
           </div>
-          <button
-            onClick={() => {
-              setSearchQuery('')
-              sessionStorage.removeItem('prestataire_search_query')
-            }}
-            className="text-sm text-purple-600 hover:text-purple-800 underline"
-          >
-            Effacer
-          </button>
         </div>
-      )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        {[
-          {
-            icon: Bell,
-            label: "Nouvelles demandes",
-            value: stats.nouvelles_demandes,
-            subtitle: "À traiter",
-            colorClass: "from-[#9D5FA8]/10 to-[#823F91]/10 text-[#823F91]",
-            delay: 0.1,
-            onClick: () => window.location.href = '/prestataire/demandes-recues',
-            searchTerms: ['demandes', 'nouvelles', 'traiter', 'notifications']
-          },
-          {
-            icon: Calendar,
-            label: "Événements à venir",
-            value: stats.evenements_a_venir,
-            subtitle: "Ce mois-ci",
-            colorClass: "from-blue-100/50 to-blue-200/50 text-blue-600",
-            delay: 0.2,
-            onClick: () => window.location.href = '/prestataire/agenda',
-            searchTerms: ['événements', 'agenda', 'calendrier', 'rendez-vous']
-          },
-          {
-            icon: MessageSquare,
-            label: "Messages non lus",
-            value: stats.messages_non_lus,
-            subtitle: "À répondre",
-            colorClass: "from-green-100/50 to-green-200/50 text-green-600",
-            delay: 0.3,
-            onClick: () => window.location.href = '/prestataire/messagerie',
-            searchTerms: ['messages', 'messagerie', 'répondre', 'conversations']
-          },
-          {
-            icon: TrendingUp,
-            label: "Taux de réponse",
-            value: `${stats.taux_reponse}%`,
-            trend: {
-              value: '+5% ce mois',
-              positive: true,
-            },
-            colorClass: "from-orange-100/50 to-orange-200/50 text-orange-600",
-            delay: 0.4,
-            searchTerms: ['taux', 'réponse', 'statistiques', 'performance']
-          }
-        ]
-          .filter(card => {
-            if (!searchQuery) return true
-            const query = searchQuery.toLowerCase()
-            return card.label.toLowerCase().includes(query) ||
-                   (card.subtitle && card.subtitle.toLowerCase().includes(query)) ||
-                   card.searchTerms.some(term => term.toLowerCase().includes(query))
-          })
-          .map((card, index) => (
-            <StatCard
-              key={index}
-              icon={card.icon}
-              label={card.label}
-              value={card.value}
-              subtitle={card.subtitle}
-              colorClass={card.colorClass}
-              delay={card.delay}
-              onClick={card.onClick}
-              trend={card.trend}
-            />
-          ))}
+        {/* Badge statut */}
+        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm font-medium text-green-700">En ligne</span>
+        </div>
+      </motion.div>
+
+      {/* ========== STATS CARDS - 3 PRINCIPALES ========== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          icon={Bell}
+          label="Nouvelles demandes"
+          value={stats.nouvelles_demandes}
+          subtitle="À traiter cette semaine"
+          colorClass="from-[#9D5FA8]/10 to-[#823F91]/10 text-[#823F91]"
+          delay={0.1}
+          onClick={() => window.location.href = '/prestataire/demandes-recues'}
+        />
+        
+        <StatCard
+          icon={MessageSquare}
+          label="Messages non lus"
+          value={stats.messages_non_lus}
+          subtitle="Conversations actives"
+          colorClass="from-blue-100/50 to-blue-200/50 text-blue-600"
+          delay={0.2}
+          onClick={() => window.location.href = '/prestataire/messagerie'}
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Taux de réponse"
+          value={`${stats.taux_reponse}%`}
+          trend={{
+            value: stats.taux_reponse >= 80 ? 'Excellent' : 'À améliorer',
+            positive: stats.taux_reponse >= 80,
+          }}
+          colorClass="from-green-100/50 to-green-200/50 text-green-600"
+          delay={0.3}
+        />
       </div>
 
-      {/* Activité récente */}
+      {/* ========== ACTIONS RAPIDES ========== */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
       >
-        <Card className="border-gray-200/50">
-          <CardHeader>
-            <CardTitle className="text-2xl">Activité récente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EmptyState
-              title="Aucune activité récente"
-              description="Les nouvelles demandes et messages apparaîtront ici"
-            />
-          </CardContent>
-        </Card>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h2>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Voir les demandes',
+              href: '/prestataire/demandes-recues',
+              icon: Bell,
+              color: 'purple',
+              badge: stats.nouvelles_demandes > 0 ? stats.nouvelles_demandes : null
+            },
+            {
+              label: 'Messagerie',
+              href: '/prestataire/messagerie',
+              icon: MessageSquare,
+              color: 'blue',
+              badge: stats.messages_non_lus > 0 ? stats.messages_non_lus : null
+            },
+            {
+              label: 'Mon profil',
+              href: '/prestataire/profil-public',
+              icon: User,
+              color: 'green'
+            },
+            {
+              label: 'Agenda',
+              href: '/prestataire/agenda',
+              icon: Calendar,
+              color: 'orange'
+            }
+          ].map((action, idx) => (
+            <motion.button
+              key={idx}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.location.href = action.href}
+              className="relative flex flex-col items-center gap-3 p-6 bg-white border border-gray-200 rounded-xl hover:shadow-lg hover:border-[#823F91]/30 transition-all group"
+            >
+              {action.badge && (
+                <span className="absolute top-2 right-2 h-6 w-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {action.badge}
+                </span>
+              )}
+              
+              <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${
+                action.color === 'purple' ? 'from-[#9D5FA8]/10 to-[#823F91]/10' :
+                action.color === 'blue' ? 'from-blue-100 to-blue-200' :
+                action.color === 'green' ? 'from-green-100 to-green-200' :
+                'from-orange-100 to-orange-200'
+              } flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                <action.icon className={`h-6 w-6 ${
+                  action.color === 'purple' ? 'text-[#823F91]' :
+                  action.color === 'blue' ? 'text-blue-600' :
+                  action.color === 'green' ? 'text-green-600' :
+                  'text-orange-600'
+                }`} />
+              </div>
+              
+              <span className="text-sm font-medium text-gray-700 group-hover:text-[#823F91] transition-colors">
+                {action.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
+
+      {/* ========== GRID 2 COLONNES : DEMANDES + PERFORMANCE ========== */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* COLONNE GAUCHE : Demandes récentes (2/3) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="lg:col-span-2"
+        >
+          <Card className="border-gray-200/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl">Demandes récentes</CardTitle>
+              <button
+                onClick={() => window.location.href = '/prestataire/demandes-recues'}
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
+              >
+                Voir tout →
+              </button>
+            </CardHeader>
+            <CardContent>
+              <DemandesRecentesList />
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* COLONNE DROITE : Performance du mois (1/3) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Card className="border-gray-200/50">
+            <CardHeader>
+              <CardTitle className="text-xl">Ce mois-ci</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Stat 1 */}
+              <div className="flex items-center justify-between pb-3 border-b">
+                <span className="text-sm text-muted-foreground">Demandes reçues</span>
+                <span className="text-2xl font-bold text-gray-900">{stats.demandes_ce_mois}</span>
+              </div>
+              
+              {/* Stat 2 */}
+              <div className="flex items-center justify-between pb-3 border-b">
+                <span className="text-sm text-muted-foreground">Taux de réponse</span>
+                <span className={`text-2xl font-bold ${
+                  stats.taux_reponse >= 80 ? 'text-green-600' : 'text-orange-600'
+                }`}>
+                  {stats.taux_reponse}%
+                </span>
+              </div>
+              
+              {/* Stat 3 */}
+              <div className="flex items-center justify-between pb-3 border-b">
+                <span className="text-sm text-muted-foreground">Messages envoyés</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  {Math.floor(stats.messages_non_lus * 2.5)}
+                </span>
+              </div>
+
+              {/* Badge performance */}
+              <div className="pt-2">
+                <div className={`px-4 py-3 rounded-lg text-center ${
+                  stats.taux_reponse >= 90 ? 'bg-green-50 border border-green-200' :
+                  stats.taux_reponse >= 70 ? 'bg-blue-50 border border-blue-200' :
+                  'bg-orange-50 border border-orange-200'
+                }`}>
+                  <p className={`text-sm font-semibold ${
+                    stats.taux_reponse >= 90 ? 'text-green-700' :
+                    stats.taux_reponse >= 70 ? 'text-blue-700' :
+                    'text-orange-700'
+                  }`}>
+                    {stats.taux_reponse >= 90 ? '🌟 Performance excellente' :
+                     stats.taux_reponse >= 70 ? '✅ Bonne performance' :
+                     '⚠️ Amélioration nécessaire'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   )

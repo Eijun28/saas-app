@@ -18,6 +18,8 @@ import { Label } from '@/components/ui/label'
 
 import { Textarea } from '@/components/ui/textarea'
 
+import { DatePicker } from '@/components/ui/date-picker'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { Badge } from '@/components/ui/badge'
@@ -906,15 +908,16 @@ export default function CoupleProfilPage() {
 
                     <Label htmlFor="wedding_date">Date du mariage *</Label>
 
-                    <Input
+                    <DatePicker
 
-                      id="wedding_date"
+                      value={formData.wedding_date ? new Date(formData.wedding_date) : undefined}
 
-                      type="date"
+                      onChange={(date) => setFormData({ 
+                        ...formData, 
+                        wedding_date: date ? date.toISOString().split('T')[0] : '' 
+                      })}
 
-                      value={formData.wedding_date || ''}
-
-                      onChange={(e) => setFormData({ ...formData, wedding_date: e.target.value })}
+                      placeholder="Sélectionner la date du mariage"
 
                     />
 
