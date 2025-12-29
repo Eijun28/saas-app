@@ -23,7 +23,7 @@ export function HowItWorks() {
           viewport={scrollFadeIn.viewport}
           className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-[96px] md:text-[120px] lg:text-[168px] font-bold text-[#0B0E12] mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0B0E12] mb-6">
             {COPY.howItWorks.title}
           </h2>
         </motion.div>
@@ -54,7 +54,7 @@ export function HowItWorks() {
                     >
                       <Icon className="h-8 w-8 text-[#823F91]" />
                     </motion.div>
-                    <CardTitle className="text-[60px] md:text-[72px] font-bold text-[#0B0E12] mb-3">
+                    <CardTitle className="text-2xl md:text-3xl font-bold text-[#0B0E12] mb-3">
                       {step.title}
                     </CardTitle>
                   </CardHeader>

@@ -166,7 +166,7 @@ const Calendar: React.FC<CalendarProps> = ({
                 day.isCurrentMonth
                   ? "text-gray-800 hover:bg-blue-50"
                   : "text-gray-400 hover:bg-gray-50",
-                day.isToday ? "bg-blue-500 !text-white hover:bg-blue-600" : "",
+                day.isToday ? "calendar-today" : "",
                 day.isSelected && !day.isToday
                   ? "bg-blue-200 text-blue-800 hover:bg-blue-200"
                   : ""

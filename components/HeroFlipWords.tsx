@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/ui/ripple-button";
 
 export function HeroFlipWords() {
   const words = ["traditions", "cultures", "héritages", "origines"];
@@ -37,13 +38,15 @@ export function HeroFlipWords() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button 
-              asChild
-              size="lg" 
-              className="text-lg px-8 py-6 bg-[#823F91] hover:bg-[#6D3478]"
-            >
-              <Link href="/sign-up">Commencer gratuitement</Link>
-            </Button>
+            <Link href="/sign-up">
+              <RippleButton
+                size="lg"
+                className="text-lg px-8 py-6 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                rippleColor="#ffffff"
+              >
+                Commencer gratuitement
+              </RippleButton>
+            </Link>
 
             <Button 
               asChild

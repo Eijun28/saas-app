@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@/lib/validations/auth.schema'
 import { signIn } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/ui/ripple-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { OAuthButtons } from './oauth-buttons'
@@ -109,13 +110,14 @@ export function SignInForm() {
           </Link>
         </div>
 
-        <Button
+        <RippleButton
           type="submit"
-          className="w-full bg-gradient-to-r from-[#823F91] to-[#B855D6] hover:from-[#B855D6] hover:to-[#823F91] text-white h-12 text-base font-medium"
+          className="w-full bg-gradient-to-r from-[#823F91] to-[#B855D6] hover:from-[#B855D6] hover:to-[#823F91] text-white h-12 text-base font-medium border-0"
+          rippleColor="#ffffff"
           disabled={isLoading}
         >
           {isLoading ? 'Connexion...' : 'Se connecter'}
-        </Button>
+        </RippleButton>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

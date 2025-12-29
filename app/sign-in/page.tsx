@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -8,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@/lib/validations/auth.schema'
 import { signIn } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/ui/ripple-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,6 +17,7 @@ import Link from 'next/link'
 import { FadeInOnScroll } from '@/components/landing/animations'
 
 export default function SignInPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -126,13 +129,14 @@ export default function SignInPage() {
                 </Link>
               </div>
 
-              <Button
+              <RippleButton
                 type="submit"
-                className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg py-2.5 text-sm font-medium transition-colors duration-200"
+                className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg py-2.5 text-sm font-medium transition-colors duration-200 border-0"
+                rippleColor="#ffffff"
                 disabled={isLoading}
               >
                 {isLoading ? 'Connexion...' : 'Se connecter'}
-              </Button>
+              </RippleButton>
 
               <p className="text-center text-sm text-[#6B7280]">
                 Pas encore de compte ?{' '}

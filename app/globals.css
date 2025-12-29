@@ -2,6 +2,8 @@
 
 @import "tailwindcss";
 
+@import "tw-animate-css";
+
 :root {
   --background: 220 20% 98%;
   --foreground: 220 20% 10%;
@@ -125,8 +127,8 @@ body {
     background-clip: text;
   }
   .pattern-dots {
-    background-image: radial-gradient(hsl(220, 15%, 85%) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(hsl(220, 15%, 75%) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
   }
   .hover-gradient-purple {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -195,10 +197,55 @@ body {
   border-width: 1px !important;
 }
 
-/* Bordures fines pour tous les inputs */
-input,
+/* Bordures fines pour tous les inputs et champs de formulaire */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="url"],
 textarea,
-select {
+select,
+input,
+[data-slot="input"],
+[data-slot="textarea"],
+button[role="combobox"],
+[role="combobox"],
+[data-radix-select-trigger],
+[data-radix-select-trigger] *,
+button[data-radix-select-trigger],
+[data-slot="select-trigger"],
+[data-slot="select-content"],
+.rdp-button,
+.rdp-day,
+.rdp-day_button {
+  border-width: 1px !important;
+}
+
+/* S'assurer que les composants Select et Popover ont aussi des bordures fines */
+[data-radix-select-trigger],
+[data-radix-popper-content-wrapper] select,
+[data-slot="select-trigger"],
+[data-slot="select-content"],
+[data-radix-popover-trigger],
+[data-radix-popover-content] {
+  border-width: 1px !important;
+}
+
+/* Forcer les bordures fines même si border-2 ou d'autres classes sont utilisées */
+.border-2[data-slot="input"],
+.border-2[data-slot="textarea"],
+.border-2[role="combobox"],
+input.border-2,
+textarea.border-2,
+select.border-2,
+button.border-2[role="combobox"],
+[role="combobox"].border-2 {
   border-width: 1px !important;
 }
 
@@ -435,4 +482,28 @@ input::selection,
 textarea::selection {
   background-color: #3b82f6 !important;
   color: white !important;
+}
+
+/* Style pour le jour d'aujourd'hui dans le calendrier */
+.calendar-today {
+  background-color: #E8D4EF !important;
+  color: #823F91 !important;
+}
+
+.calendar-today:hover {
+  background-color: #D8C4DF !important;
+}
+
+@keyframes rippling {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+:root {
+  --animate-rippling: rippling var(--duration) ease-out;
 }

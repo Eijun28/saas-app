@@ -406,7 +406,7 @@ export function FeaturesGrid() {
               Fonctionnalités
             </span>
           </div>
-          <h2 className="text-[96px] md:text-[120px] lg:text-[168px] xl:text-[256px] font-bold text-[#0B0E12] mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0B0E12] mb-4">
             Tout ce dont vous avez besoin
           </h2>
           <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/ui/ripple-button";
 import { Menu as MenuIcon, X, LogOut, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -290,23 +291,26 @@ function Navbar({
                 Déconnexion
               </Button>
             </>
-          ) : (
+            ) : (
             <>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="text-sm h-8"
-              >
-                <Link href="/sign-in">Se connecter</Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478]"
-              >
-                <Link href="/sign-up">Commencer</Link>
-              </Button>
+              <Link href="/sign-in">
+                <RippleButton
+                  size="sm"
+                  className="text-sm h-8 border-transparent bg-transparent"
+                  rippleColor="#823F91"
+                >
+                  Se connecter
+                </RippleButton>
+              </Link>
+              <Link href="/sign-up">
+                <RippleButton
+                  size="sm"
+                  className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                  rippleColor="#ffffff"
+                >
+                  Commencer
+                </RippleButton>
+              </Link>
             </>
           )}
         </div>
@@ -412,23 +416,22 @@ function Navbar({
                   </>
                 ) : (
                   <>
-                    <Button
-                      asChild
-                      variant="ghost"
-                      className="w-full justify-start"
-                    >
-                      <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                      <RippleButton
+                        className="w-full justify-start border-transparent bg-transparent"
+                        rippleColor="#823F91"
+                      >
                         Se connecter
-                      </Link>
-                    </Button>
-                    <Button
-                      asChild
-                      className="w-full bg-[#823F91] hover:bg-[#6D3478]"
-                    >
-                      <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                      </RippleButton>
+                    </Link>
+                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                      <RippleButton
+                        className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                        rippleColor="#ffffff"
+                      >
                         Commencer
-                      </Link>
-                    </Button>
+                      </RippleButton>
+                    </Link>
                   </>
                 )}
               </div>

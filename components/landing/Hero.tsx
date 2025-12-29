@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
+import { RippleButton } from '@/components/ui/ripple-button';
 
 export default function Hero() {
   // Animation variants optimisés pour Next.js 15
@@ -97,7 +98,7 @@ export default function Hero() {
         {/* Titre principal */}
         <motion.h1
           variants={itemVariants}
-          className="text-[192px] md:text-[256px] lg:text-[268px] xl:text-[400px] 2xl:text-[474px] font-black tracking-tight text-slate-900 mb-8 leading-[1.05] px-4 max-w-6xl mx-auto"
+          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-slate-900 mb-8 leading-tight px-4 max-w-6xl mx-auto"
         >
           Votre mariage, vos racines.
           <br />
@@ -121,15 +122,20 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4"
         >
           <Link href="/sign-up">
-            <button className="group w-full sm:w-auto px-8 py-4 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/50 hover:-translate-y-1 flex items-center justify-center gap-2">
+            <RippleButton
+              className="group w-full sm:w-auto px-6 py-3 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/50 hover:-translate-y-1 flex items-center justify-center border-0"
+              rippleColor="#ffffff"
+            >
               Commencer gratuitement
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </RippleButton>
           </Link>
           <Link href="/#comment-ca-marche">
-            <button className="w-full sm:w-auto px-8 py-4 bg-transparent hover:bg-[#E8D4EF] text-[#823F91] font-semibold rounded-xl border-2 border-[#823F91]/30 hover:border-[#823F91] transition-all duration-300">
+            <RippleButton
+              className="w-full sm:w-auto px-6 py-3 bg-transparent hover:bg-[#E8D4EF] text-[#823F91] font-semibold rounded-xl border-2 border-[#823F91]/30 hover:border-[#823F91] transition-all duration-300"
+              rippleColor="#823F91"
+            >
               Découvrir la plateforme
-            </button>
+            </RippleButton>
           </Link>
         </motion.div>
 
