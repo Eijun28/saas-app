@@ -370,6 +370,9 @@ export default function TimelinePage() {
                 }}
                 className="rounded-md border"
                 locale={fr}
+                captionLayout="dropdown-buttons"
+                fromYear={2025}
+                toYear={2030}
               />
             </CardContent>
           </Card>

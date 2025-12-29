@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar } from '@/components/ui/calendar-shadcn'
+import { fr } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
@@ -319,15 +320,18 @@ export default function AgendaPage() {
         <Card className="border-border/10">
           <CardContent className="pt-6 flex justify-center">
             <Calendar
-              value={selectedDate}
-              onChange={(date) => {
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => {
                 setSelectedDate(date)
                 if (date) {
                   handleDateClick(date)
                 }
               }}
-              events={calendarEvents}
-              onDateClick={handleDateClick}
+              locale={fr}
+              captionLayout="dropdown-buttons"
+              fromYear={2025}
+              toYear={2030}
               className="rounded-lg border"
             />
           </CardContent>
