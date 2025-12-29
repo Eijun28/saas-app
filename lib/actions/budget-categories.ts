@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { DEFAULT_CATEGORIES } from '@/lib/types/budget'
+import { DEFAULT_CATEGORIES } from '@/types/budget'
 
 /**
  * Initialise les catégories par défaut avec icônes

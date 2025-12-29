@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateMarriageDossierPDF } from '@/lib/pdf/marriage-dossier-generator'
+import { pdfLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const ip = getClientIp(req)
+  if (!pdfLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour génération PDF', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
+  
+  let marriageFileId: string | undefined;
+  
   try {
     // Vérifier l'authentification
     const supabase = await createClient()
@@ -15,7 +29,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { marriageFileId } = await req.json()
+    const body = await req.json()
+    marriageFileId = body.marriageFileId
 
     if (!marriageFileId) {
       return NextResponse.json(
@@ -24,7 +39,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log('📄 Génération PDF pour dossier:', marriageFileId)
+    logger.info('Génération PDF pour dossier', { marriageFileId, userId: user.id })
 
     // 1. Récupère le dossier
     const { data: marriageFile, error: fileError } = await supabase
@@ -51,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     if (docsError) throw docsError
 
-    console.log('✅ Données récupérées:', {
+    logger.debug('Données récupérées pour PDF', {
       dossier: marriageFile.id,
       documents: uploadedDocs?.length || 0
     })
@@ -59,7 +74,10 @@ export async function POST(req: NextRequest) {
     // 3. Génère le PDF
     const pdfBytes = await generateMarriageDossierPDF(marriageFile, uploadedDocs || [])
 
-    console.log('✅ PDF généré:', pdfBytes.length, 'bytes')
+    logger.info('PDF généré avec succès', { 
+      marriageFileId, 
+      size: pdfBytes.length 
+    })
 
     // 4. Retourne le PDF
     return new NextResponse(pdfBytes, {
@@ -69,9 +87,9 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (error: any) {
-    console.error('❌ Erreur génération PDF:', error)
+    logger.error('Erreur génération PDF', error, { marriageFileId })
     return NextResponse.json(
-      { error: error.message || 'Erreur lors de la génération du PDF' },
+      { error: 'Erreur lors de la génération du PDF' },
       { status: 500 }
     )
   }

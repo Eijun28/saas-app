@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
-import { type BudgetCategory } from '@/lib/types/budget'
+import { type BudgetCategory } from '@/types/budget'
 import { updateCategoryBudget, deleteCategory } from '@/lib/actions/budget'
 import { addCustomCategory } from '@/lib/actions/budget-categories'
 

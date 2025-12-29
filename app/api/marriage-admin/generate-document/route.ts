@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
+import { apiLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -20,6 +22,16 @@ function sanitizeInput(input: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const ip = getClientIp(req)
+  if (!apiLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour génération document', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
+
   try {
     // Vérifier l'authentification
     const supabase = await createClient()
@@ -34,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const { documentType, userData } = await req.json()
 
-    console.log('🤖 Génération:', documentType)
+    logger.info('Génération document', { documentType, userId: user.id })
 
     if (!documentType || !userData) {
       return NextResponse.json(
@@ -53,9 +65,9 @@ export async function POST(req: NextRequest) {
 
     // Vérifier que la clé API est présente
     if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OPENAI_API_KEY manquante')
+      logger.error('OPENAI_API_KEY manquante', undefined, { userId: user.id })
       return NextResponse.json(
-        { error: 'OpenAI API key not configured' },
+        { error: 'Service de génération non disponible' },
         { status: 500 }
       )
     }
@@ -171,7 +183,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
 
     const content = completion.choices[0].message.content
 
-    console.log('✅ Document généré')
+    logger.info('Document généré avec succès', { documentType, userId: user.id })
 
     return NextResponse.json({
       success: true,
@@ -179,8 +191,11 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
       documentType,
     })
   } catch (error: any) {
-    console.error('❌ Erreur génération:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Erreur génération document', error)
+    return NextResponse.json(
+      { error: 'Erreur lors de la génération du document' },
+      { status: 500 }
+    )
   }
 }
 

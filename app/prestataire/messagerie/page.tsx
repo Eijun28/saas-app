@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Send, Paperclip, Search } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
-import type { Conversation, Message, UIState } from '@/lib/types/prestataire'
+import type { Conversation, Message, UIState } from '@/types/prestataire'
 
 export default function PrestataireMessageriePage() {
   const [conversations, setConversations] = useState<Conversation[]>([])

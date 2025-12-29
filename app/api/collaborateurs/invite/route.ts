@@ -3,10 +3,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { randomBytes } from 'crypto'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schema'
+import { inviteLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting
+  const ip = getClientIp(request)
+  if (!inviteLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour invitations', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -67,7 +78,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Erreur lors de la création de l\'invitation:', error)
+      logger.error('Erreur lors de la création de l\'invitation', error, { userId: user.id, email })
       return NextResponse.json(
         { error: 'Erreur lors de la création de l\'invitation' },
         { status: 500 }
@@ -90,7 +101,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur lors de l\'invitation', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }

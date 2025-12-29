@@ -53,3 +53,105 @@ export function requireEnv(key: string): string {
   return value;
 }
 
+/**
+ * Types de fichiers autorisés pour les uploads
+ */
+export const ALLOWED_FILE_TYPES = {
+  images: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'] as const,
+  documents: ['application/pdf'] as const,
+  all: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'] as const,
+} as const;
+
+/**
+ * Tailles maximales de fichiers (en bytes)
+ */
+export const MAX_FILE_SIZES = {
+  image: 5 * 1024 * 1024, // 5 MB
+  pdf: 10 * 1024 * 1024, // 10 MB
+  default: 5 * 1024 * 1024, // 5 MB
+} as const;
+
+/**
+ * Valide un fichier uploadé
+ * @param file - Le fichier à valider
+ * @param options - Options de validation
+ * @returns Résultat de validation avec message d'erreur si invalide
+ */
+export function validateUploadedFile(
+  file: File,
+  options: {
+    allowedTypes?: readonly string[];
+    maxSize?: number;
+    allowImages?: boolean;
+    allowPdfs?: boolean;
+  } = {}
+): { valid: boolean; error?: string } {
+  // Vérifier que le fichier existe
+  if (!file || !file.name || file.name.trim().length === 0) {
+    return { valid: false, error: 'Fichier invalide' };
+  }
+
+  // Déterminer les types autorisés
+  let allowedTypes: readonly string[] = [];
+  if (options.allowedTypes) {
+    allowedTypes = options.allowedTypes;
+  } else {
+    if (options.allowImages !== false && options.allowPdfs !== false) {
+      allowedTypes = ALLOWED_FILE_TYPES.all;
+    } else if (options.allowImages) {
+      allowedTypes = ALLOWED_FILE_TYPES.images;
+    } else if (options.allowPdfs) {
+      allowedTypes = ALLOWED_FILE_TYPES.documents;
+    } else {
+      allowedTypes = ALLOWED_FILE_TYPES.all;
+    }
+  }
+
+  // Vérifier le type MIME
+  if (!allowedTypes.includes(file.type)) {
+    const typesList = allowedTypes
+      .map(t => {
+        if (t.startsWith('image/')) return 'JPG/PNG/WEBP';
+        if (t === 'application/pdf') return 'PDF';
+        return t;
+      })
+      .join(', ');
+    return {
+      valid: false,
+      error: `Type de fichier non autorisé. Formats acceptés: ${typesList}`,
+    };
+  }
+
+  // Déterminer la taille maximale
+  let maxSize = options.maxSize;
+  if (!maxSize) {
+    if (file.type.startsWith('image/')) {
+      maxSize = MAX_FILE_SIZES.image;
+    } else if (file.type === 'application/pdf') {
+      maxSize = MAX_FILE_SIZES.pdf;
+    } else {
+      maxSize = MAX_FILE_SIZES.default;
+    }
+  }
+
+  // Vérifier la taille
+  if (file.size > maxSize) {
+    const maxSizeMB = (maxSize / 1024 / 1024).toFixed(1);
+    return {
+      valid: false,
+      error: `Fichier trop volumineux. Taille maximale: ${maxSizeMB}MB`,
+    };
+  }
+
+  // Vérifier que le nom de fichier ne contient pas de caractères dangereux
+  const dangerousChars = /[<>:"|?*\x00-\x1f]/;
+  if (dangerousChars.test(file.name)) {
+    return {
+      valid: false,
+      error: 'Le nom de fichier contient des caractères non autorisés',
+    };
+  }
+
+  return { valid: true };
+}
+

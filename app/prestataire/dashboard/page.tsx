@@ -7,7 +7,7 @@ import { Bell, Calendar, MessageSquare, TrendingUp } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
-import type { Stats, UIState } from '@/lib/types/prestataire'
+import type { Stats, UIState } from '@/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 

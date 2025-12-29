@@ -5,6 +5,7 @@ import {
   isValidSessionId, 
   sanitizeMessage} from '@/lib/security';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_CHATBOT_URL;
 
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     
     if (!chatbotLimiter.check(clientIp)) {
       const resetTime = chatbotLimiter.getResetTime(clientIp);
+      logger.warn('Rate limit dépassé pour chatbot', { ip: clientIp });
       return NextResponse.json(
         { error: 'Trop de requêtes. Veuillez patienter.', retryAfter: resetTime },
         { status: 429, headers: { 'Retry-After': resetTime.toString() } }
@@ -112,6 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
+    logger.error('Erreur chatbot', error);
     return NextResponse.json(
       { error: 'Une erreur inattendue s\'est produite.' },
       { status: 500 }

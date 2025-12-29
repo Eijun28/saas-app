@@ -5,8 +5,9 @@ import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CallToAction from '@/components/landing/CallToAction'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import Chatbot from '@/components/Chatbot'
-import { HowItWorks } from '@/components/how-it-works'
+import { HowItWorks } from '@/components/landing/HowItWorks'
 import { AnimatedListNuply } from '@/components/landing/AnimatedListNuply'
+import FAQ from '@/components/landing/FAQ'
 
 export default function HomePage() {
   return (
@@ -38,6 +39,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        <FAQ />
         <CallToAction />
         
         {/* Chatbot - Fixed bottom right */}

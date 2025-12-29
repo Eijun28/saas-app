@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { validateUploadedFile } from '@/lib/security'
+import { logger } from '@/lib/logger'
 
 /**
  * Upload une photo de profil vers Supabase Storage
@@ -20,16 +22,20 @@ export async function uploadProfilePhoto(formData: FormData) {
       return { error: 'Aucun fichier fourni' }
     }
 
-    // Vérifier la taille (5MB max)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      return { error: 'Le fichier est trop volumineux (max 5MB)' }
-    }
-
-    // Vérifier le type MIME
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      return { error: 'Format non supporté (JPG, PNG, WEBP uniquement)' }
+    // Valider le fichier
+    const validation = validateUploadedFile(file, {
+      allowImages: true,
+      allowPdfs: false,
+    })
+    
+    if (!validation.valid) {
+      logger.warn('Fichier photo invalide rejeté', {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        userId: user.id,
+      })
+      return { error: validation.error }
     }
 
     // Générer un nom unique
@@ -43,7 +49,7 @@ export async function uploadProfilePhoto(formData: FormData) {
       .upload(filePath, file, { upsert: true })
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
+      logger.error('Erreur upload photo de profil', uploadError, { userId: user.id })
       
       // Message d'erreur plus explicite pour le bucket manquant
       if (uploadError.message?.includes('Bucket not found') || uploadError.message?.includes('not found')) {
@@ -52,7 +58,7 @@ export async function uploadProfilePhoto(formData: FormData) {
         }
       }
       
-      return { error: uploadError.message }
+      return { error: 'Erreur lors de l\'upload de la photo' }
     }
 
     // Récupérer l'URL publique
@@ -67,14 +73,14 @@ export async function uploadProfilePhoto(formData: FormData) {
       .eq('id', user.id)
 
     if (updateError) {
-      console.error('Update error:', updateError)
-      return { error: updateError.message }
+      logger.error('Erreur mise à jour photo de profil', updateError, { userId: user.id })
+      return { error: 'Erreur lors de la mise à jour du profil' }
     }
 
     revalidatePath('/couple/profil')
     return { success: true, photoUrl: data.publicUrl }
   } catch (error) {
-    console.error('Error in uploadProfilePhoto:', error)
+    logger.error('Erreur uploadProfilePhoto', error)
     return { error: 'Erreur lors de l\'upload de la photo' }
   }
 }
@@ -121,14 +127,14 @@ export async function updateProfile(profileData: {
       .eq('id', user.id)
 
     if (error) {
-      console.error('Error updating profile:', error)
-      return { error: error.message }
+      logger.error('Erreur mise à jour profil', error, { userId: user.id })
+      return { error: 'Erreur lors de la mise à jour du profil' }
     }
 
     revalidatePath('/couple/profil')
     return { success: true }
   } catch (error) {
-    console.error('Error in updateProfile:', error)
+    logger.error('Erreur updateProfile', error)
     return { error: 'Erreur lors de la mise à jour du profil' }
   }
 }
@@ -204,8 +210,8 @@ export async function updateWeddingInfo(weddingData: {
         .eq('user_id', user.id)
 
       if (error) {
-        console.error('Error updating wedding info:', error)
-        return { error: error.message }
+        logger.error('Erreur mise à jour infos mariage', error, { userId: user.id })
+        return { error: 'Erreur lors de la mise à jour des informations' }
       }
     } else {
       // Création
@@ -217,15 +223,15 @@ export async function updateWeddingInfo(weddingData: {
         })
 
       if (error) {
-        console.error('Error creating wedding info:', error)
-        return { error: error.message }
+        logger.error('Erreur création infos mariage', error, { userId: user.id })
+        return { error: 'Erreur lors de la création des informations' }
       }
     }
 
     revalidatePath('/couple/profil')
     return { success: true }
   } catch (error) {
-    console.error('Error in updateWeddingInfo:', error)
+    logger.error('Erreur updateWeddingInfo', error)
     return { error: 'Erreur lors de la mise à jour des informations du mariage' }
   }
 }
@@ -250,7 +256,7 @@ export async function getProfileData() {
       .single()
 
     if (profileError) {
-      console.error('Error fetching profile:', profileError)
+      logger.error('Erreur récupération profil', profileError, { userId: user.id })
       return null
     }
 
@@ -277,7 +283,7 @@ export async function getProfileData() {
       budgetMax: budget?.budget_max || null,
     }
   } catch (error) {
-    console.error('Error in getProfileData:', error)
+    logger.error('Erreur getProfileData', error)
     return null
   }
 }

@@ -1,11 +1,20 @@
-// app/api/marriage-admin/upload-document/route.ts
-// COPIE-COLLE TOUT CE CODE
-
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { uploadLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
+import { validateUploadedFile } from '@/lib/security'
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const ip = getClientIp(req)
+  if (!uploadLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour upload', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
   try {
     // Vérifier l'authentification avec le client server
     const supabase = await createClient()
@@ -25,14 +34,36 @@ export async function POST(req: NextRequest) {
     const documentType = formData.get('documentType') as string
     const userId = formData.get('userId') as string || user.id
 
-    console.log('📤 Upload:', file?.name, documentType)
-
     if (!file || !marriageFileId || !documentType) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Champs requis manquants' },
         { status: 400 }
       )
     }
+
+    // Valider le fichier
+    const validation = validateUploadedFile(file, {
+      allowImages: true,
+      allowPdfs: true,
+    })
+    if (!validation.valid) {
+      logger.warn('Fichier invalide rejeté', { 
+        fileName: file.name, 
+        fileType: file.type, 
+        fileSize: file.size,
+        userId: user.id 
+      })
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      )
+    }
+
+    logger.info('Upload de document', { 
+      fileName: file.name, 
+      documentType, 
+      userId: user.id 
+    })
 
     // Vérifier que l'utilisateur peut accéder à ce dossier de mariage
     const { data: marriageFile, error: fileError } = await supabase
@@ -61,18 +92,20 @@ export async function POST(req: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError)
+      logger.error('Erreur upload fichier', uploadError, { 
+        fileName, 
+        userId: user.id,
+        marriageFileId 
+      })
       throw uploadError
     }
 
-    console.log('✅ Fichier uploadé:', fileName)
+    logger.info('Fichier uploadé avec succès', { fileName, userId: user.id })
 
     // Récupère l'URL publique
     const { data: urlData } = adminClient.storage
       .from('marriage-documents')
       .getPublicUrl(fileName)
-
-    console.log('🔗 URL:', urlData.publicUrl)
 
     // Enregistre dans la DB avec le client admin
     const { data: docData, error: docError } = await adminClient
@@ -90,9 +123,19 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
-    if (docError) throw docError
+    if (docError) {
+      logger.error('Erreur enregistrement document', docError, { 
+        fileName, 
+        userId: user.id,
+        marriageFileId 
+      })
+      throw docError
+    }
 
-    console.log('✅ Document enregistré:', docData.id)
+    logger.info('Document enregistré avec succès', { 
+      documentId: docData.id, 
+      userId: user.id 
+    })
 
     // Met à jour le statut
     await adminClient
@@ -105,8 +148,12 @@ export async function POST(req: NextRequest) {
       data: docData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Erreur upload document', error, { userId: user?.id })
+    return NextResponse.json(
+      { error: 'Erreur lors de l\'upload du document' },
+      { status: 500 }
+    )
   }
 }
+
 

@@ -19,22 +19,30 @@ export function FinalCTA() {
           className="space-y-8"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#0B0E12] leading-tight">
-            {COPY.finalCTA.headline}
+            Prêt à organiser le mariage de vos rêves ?
           </h2>
+          
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            En 5 minutes, découvrez les prestataires qui correspondent parfaitement à votre culture, votre budget et votre vision.
+          </p>
           
           <motion.div
             variants={glowPulse}
             animate="animate"
+            className="flex flex-col items-center gap-4"
           >
             <Link href="/sign-up">
               <Button
                 size="lg"
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg py-6 px-10 font-semibold text-base transition-all duration-300 shadow-lg shadow-[#823F91]/30"
+                className="group bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl py-5 px-10 font-semibold text-base md:text-lg transition-all duration-300 shadow-lg shadow-[#823F91]/30 hover:shadow-2xl hover:shadow-[#823F91]/50 hover:-translate-y-1 flex items-center gap-2"
               >
-                {COPY.finalCTA.cta}
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Créer mon compte gratuit
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
+            <p className="text-sm text-slate-500">
+              Pas de spam, pas d'engagement. Désactivez votre compte à tout moment.
+            </p>
           </motion.div>
         </motion.div>
       </div>

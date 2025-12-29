@@ -20,7 +20,7 @@ import {
   deleteProvider,
   type BudgetProvider,
 } from '@/lib/actions/budget'
-import { PREDEFINED_CATEGORIES } from '@/lib/types/budget'
+import { PREDEFINED_CATEGORIES } from '@/types/budget'
 import { Plus, Trash2, Loader2, Edit2, Check } from 'lucide-react'
 
 type BudgetProvidersProps = {

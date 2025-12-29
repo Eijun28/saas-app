@@ -2,10 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { PREDEFINED_CATEGORIES, DEFAULT_CATEGORIES, type BudgetData } from '@/lib/types/budget'
+import { PREDEFINED_CATEGORIES, DEFAULT_CATEGORIES, type BudgetData } from '@/types/budget'
 
 // Ré-exporter uniquement les types (pas les constantes)
-export type { BudgetCategory, BudgetProvider, CoupleBudget, BudgetData } from '@/lib/types/budget'
+export type { BudgetCategory, BudgetProvider, CoupleBudget, BudgetData } from '@/types/budget'
 
 /**
  * Récupère toutes les données budget de l'utilisateur

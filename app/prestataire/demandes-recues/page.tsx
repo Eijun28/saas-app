@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
-import type { Demande, UIState } from '@/lib/types/prestataire'
+import type { Demande, UIState } from '@/types/prestataire'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{

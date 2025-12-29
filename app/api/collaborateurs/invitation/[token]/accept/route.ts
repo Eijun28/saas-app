@@ -2,14 +2,26 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { inviteLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 const TOKEN_REGEX = /^[a-f0-9]{64}$/i
 
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { token: string } }
 ) {
+  // Rate limiting
+  const ip = getClientIp(request)
+  if (!inviteLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour acceptation invitation', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
+
   try {
     const { token } = params
 
@@ -83,7 +95,10 @@ export async function POST(
       .eq('id', invitation.id)
 
     if (updateError) {
-      console.error('Erreur lors de l\'acceptation:', updateError)
+      logger.error('Erreur lors de l\'acceptation invitation', updateError, { 
+        invitationId: invitation.id,
+        userId: user.id 
+      })
       return NextResponse.json(
         { error: 'Erreur lors de l\'acceptation de l\'invitation' },
         { status: 500 }
@@ -95,7 +110,7 @@ export async function POST(
       message: 'Invitation acceptée avec succès',
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur acceptation invitation', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }

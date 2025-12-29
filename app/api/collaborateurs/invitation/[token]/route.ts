@@ -1,14 +1,26 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { apiLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 const TOKEN_REGEX = /^[a-f0-9]{64}$/i
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { token: string } }
 ) {
+  // Rate limiting
+  const ip = getClientIp(request)
+  if (!apiLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour récupération invitation', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
+
   try {
     const { token } = params
 
@@ -50,7 +62,7 @@ export async function GET(
       invitation,
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur récupération invitation', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }

@@ -11,16 +11,23 @@ interface RateLimitEntry {
   resetTime: number;
 }
 
-const MAX_REQUESTS = 10; // Nombre maximum de requêtes par fenêtre
-const WINDOW_MS = 60000; // 1 minute
+interface RateLimiterConfig {
+  max: number;
+  windowMs: number;
+  maxIps?: number;
+}
 
-class ChatbotRateLimiter {
+class RateLimiter {
   private cache: LRUCache<string, RateLimitEntry>;
+  private maxRequests: number;
+  private windowMs: number;
 
-  constructor() {
+  constructor(config: RateLimiterConfig) {
+    this.maxRequests = config.max;
+    this.windowMs = config.windowMs;
     this.cache = new LRUCache<string, RateLimitEntry>({
-      max: 500, // Nombre maximum d'IPs à tracker
-      ttl: WINDOW_MS,
+      max: config.maxIps || 500,
+      ttl: config.windowMs,
     });
   }
 
@@ -37,7 +44,7 @@ class ChatbotRateLimiter {
       // Première requête de cette IP
       this.cache.set(ip, {
         count: 1,
-        resetTime: now + WINDOW_MS,
+        resetTime: now + this.windowMs,
       });
       return true;
     }
@@ -47,13 +54,13 @@ class ChatbotRateLimiter {
       // Réinitialiser le compteur
       this.cache.set(ip, {
         count: 1,
-        resetTime: now + WINDOW_MS,
+        resetTime: now + this.windowMs,
       });
       return true;
     }
 
     // Vérifier si le nombre de requêtes est dépassé
-    if (entry.count >= MAX_REQUESTS) {
+    if (entry.count >= this.maxRequests) {
       return false; // Rate limited
     }
 
@@ -80,8 +87,31 @@ class ChatbotRateLimiter {
   }
 }
 
-// Instance singleton pour le rate limiting du chatbot
-export const chatbotLimiter = new ChatbotRateLimiter();
+// Rate limiters pour différents types d'endpoints
+export const chatbotLimiter = new RateLimiter({
+  max: 10,
+  windowMs: 60000, // 1 minute
+});
+
+export const apiLimiter = new RateLimiter({
+  max: 50,
+  windowMs: 60000, // 1 minute
+});
+
+export const uploadLimiter = new RateLimiter({
+  max: 5,
+  windowMs: 60000, // 1 minute
+});
+
+export const inviteLimiter = new RateLimiter({
+  max: 10,
+  windowMs: 3600000, // 1 heure
+});
+
+export const pdfLimiter = new RateLimiter({
+  max: 10,
+  windowMs: 60000, // 1 minute
+});
 
 /**
  * Récupère l'adresse IP depuis une requête Next.js

@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import NextImage from 'next/image';
-import type { ProviderPortfolioImage } from '@/lib/types/prestataire';
+import type { ProviderPortfolioImage } from '@/types/prestataire';
 
 interface PortfolioUploaderProps {
   userId: string;

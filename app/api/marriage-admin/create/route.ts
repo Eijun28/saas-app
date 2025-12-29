@@ -3,8 +3,19 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDocumentChecklist } from '@/lib/marriage-admin/checklist-generator'
 import type { QuestionnaireData } from '@/types/marriage-admin'
+import { apiLimiter, getClientIp } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
+  // Rate limiting
+  const ip = getClientIp(req)
+  if (!apiLimiter.check(ip)) {
+    logger.warn('Rate limit dépassé pour création dossier', { ip })
+    return NextResponse.json(
+      { error: 'Trop de requêtes. Veuillez réessayer plus tard.' },
+      { status: 429 }
+    )
+  }
   try {
     // Vérifier l'authentification
     const supabase = await createClient()
@@ -34,7 +45,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log('📝 Création dossier pour:', userId)
+    logger.info('Création dossier mariage', { userId })
 
     // Générer la checklist personnalisée
     const checklist = generateDocumentChecklist(questionnaireData as QuestionnaireData)
@@ -71,7 +82,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      console.log('✅ Dossier mis à jour:', fileData.id)
+      logger.info('Dossier mariage mis à jour', { dossierId: fileData.id, userId })
     } else {
       // Créer un nouveau dossier
       const { data, error } = await adminClient
@@ -91,7 +102,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      console.log('✅ Dossier créé:', fileData.id)
+      logger.info('Dossier mariage créé', { dossierId: fileData.id, userId })
     }
 
     return NextResponse.json({
@@ -99,9 +110,9 @@ export async function POST(req: NextRequest) {
       data: fileData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur création dossier:', error)
+    logger.error('Erreur création dossier mariage', error)
     return NextResponse.json(
-      { error: error.message || 'Erreur lors de la création du dossier' },
+      { error: 'Erreur lors de la création du dossier' },
       { status: 500 }
     )
   }

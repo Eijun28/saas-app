@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles, Clock } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
 import { RippleButton } from '@/components/ui/ripple-button';
@@ -73,7 +73,7 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30">
+    <section className="relative pt-24 md:pt-28 lg:pt-32 pb-10 md:pb-14 lg:pb-16 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30">
       {/* Background decoration avec blur optimisé */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/20 rounded-full blur-3xl animate-pulse" />
@@ -81,17 +81,17 @@ export default function Hero() {
       </div>
 
       <motion.div
-        className="container mx-auto px-6 py-20 text-center"
+        className="container mx-auto px-4 sm:px-6 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Badge */}
-        <motion.div variants={itemVariants} className="flex justify-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E8D4EF]/80 border border-[#823F91]/30 backdrop-blur-sm shadow-sm">
-            <Sparkles className="w-4 h-4 text-[#823F91]" aria-hidden="true" />
-            <span className="text-sm font-medium text-[#823F91]">
-              La première plateforme de son genre en France
+        <motion.div variants={itemVariants} className="flex justify-center mb-4 md:mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E8D4EF]/80 border border-[#823F91]/30 backdrop-blur-sm shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-[#823F91]" aria-hidden="true" />
+            <span className="text-xs sm:text-sm font-medium text-[#823F91]">
+              ✨ La première plateforme de son genre en France
             </span>
           </div>
         </motion.div>
@@ -99,52 +99,87 @@ export default function Hero() {
         {/* Titre principal */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.2] px-4 max-w-5xl mx-auto"
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 md:mb-6 leading-[1.2] max-w-4xl mx-auto"
         >
-          Votre mariage, vos racines.
-          <br />
-          <span className="bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">
-            Leurs traditions, leur expertise.
+          <span 
+            className="bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#823F91] bg-clip-text text-transparent inline-block"
+            style={{
+              backgroundSize: '200% auto',
+              animation: 'shimmer 3s ease-in-out infinite',
+            }}
+          >
+            Trouvez vos prestataires de mariage en 5 minutes grâce à l'IA multiculturelle
           </span>
         </motion.h1>
 
         {/* Sous-titre */}
         <motion.p
           variants={itemVariants}
-          className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed font-normal px-4"
+          className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto mb-6 md:mb-8 leading-relaxed font-normal"
         >
-          Des prestataires de mariage qui connaissent vos traditions sur le bout des doigts.{' '}
-          Matching par culture, budget et dispo.
+          Photographe qui saisit l'importance du henné. Traiteur qui maîtrise vos épices. DJ qui connaît vos classiques. Notre IA les trouve en 5 minutes. Vous économisez 3 mois de recherche.
+        </motion.p>
+
+        {/* Microcopy avant CTA */}
+        <motion.p
+          variants={itemVariants}
+          className="text-xs sm:text-sm text-slate-600 mb-4 md:mb-6"
+        >
+          Rejoignez les 127 couples qui ont trouvé leurs prestataires ce mois-ci
         </motion.p>
 
         {/* CTAs */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4"
+          className="flex flex-row gap-2 sm:gap-3 justify-center mb-4 md:mb-6 flex-wrap sm:flex-nowrap"
         >
           <Link href="/sign-up">
             <RippleButton
-              className="group w-full sm:w-auto px-6 py-3 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/50 hover:-translate-y-1 flex items-center justify-center border-0"
+              className="group w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-[#823F91]/50 hover:-translate-y-0.5 flex items-center justify-center gap-1.5 border-0 text-xs sm:text-sm whitespace-nowrap"
               rippleColor="#ffffff"
             >
-              Commencer gratuitement
+              Essai gratuit · Sans carte bancaire
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
             </RippleButton>
           </Link>
-          <Link href="/#comment-ca-marche">
-            <RippleButton
-              className="w-full sm:w-auto px-6 py-3 bg-transparent hover:bg-[#E8D4EF] text-[#823F91] font-semibold rounded-xl border-2 border-[#823F91]/30 hover:border-[#823F91] transition-all duration-300"
-              rippleColor="#823F91"
-            >
-              Découvrir la plateforme
-            </RippleButton>
-          </Link>
+          <button
+            onClick={() => {
+              const videoSection = document.querySelector('#hero-video');
+              videoSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-transparent hover:bg-[#E8D4EF]/50 text-[#823F91] font-semibold rounded-lg border-2 border-[#823F91]/30 hover:border-[#823F91] transition-all duration-300 text-xs sm:text-sm whitespace-nowrap"
+          >
+            Voir une démo
+          </button>
         </motion.div>
+
+        {/* Trust Badge */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col items-center gap-2 mb-4 md:mb-6"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm border border-gray-100">
+            <AvatarCircles numPeople={3} avatarUrls={avatars.slice(0, 3)} />
+            <span className="text-xs sm:text-sm font-medium text-slate-700">
+              🎉 127 couples ont trouvé leurs prestataires ce mois-ci
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Reassurance */}
+        <motion.p
+          variants={itemVariants}
+          className="text-xs sm:text-sm text-slate-500 mb-8 md:mb-12"
+        >
+          ✓ Gratuit pour les couples  •  ✓ Sans engagement  •  ✓ Setup en 5 minutes
+        </motion.p>
 
         {/* Section Vidéo Démo */}
         <motion.div
+          id="hero-video"
           variants={gradientVariants}
           custom={2}
-          className="w-full max-w-4xl mx-auto mb-16 px-4"
+          className="w-full max-w-4xl mx-auto mb-8 md:mb-12"
         >
           <div className="space-y-4">
             {/* Badge "Nouveau" */}
@@ -185,7 +220,7 @@ export default function Hero() {
         {/* Social Proof */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-slate-600 px-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 text-xs sm:text-sm text-slate-600"
         >
           {/* Avatars stack */}
           <div className="flex items-center" aria-label="Couples satisfaits">
@@ -211,15 +246,15 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
+        className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
         aria-hidden="true"
       >
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          className="w-6 h-10 rounded-full border-2 border-slate-300 flex items-start justify-center p-2"
+          className="w-5 h-8 rounded-full border-2 border-slate-300 flex items-start justify-center p-1.5"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <div className="w-1 h-1 rounded-full bg-slate-400" />
         </motion.div>
       </motion.div>
     </section>

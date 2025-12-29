@@ -13,7 +13,7 @@ import {
   initializeCategories,
   type BudgetCategory,
 } from '@/lib/actions/budget'
-import { PREDEFINED_CATEGORIES } from '@/lib/types/budget'
+import { PREDEFINED_CATEGORIES } from '@/types/budget'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 type BudgetCategoriesProps = {

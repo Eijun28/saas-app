@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { staggerCards, scrollFadeIn, cardHover } from '@/lib/animations'
 import { COPY } from '@/lib/constants'
-import { Check } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export function Pricing() {
   const [activeTab, setActiveTab] = useState('couple')
@@ -112,15 +113,18 @@ export function Pricing() {
                               </li>
                             ))}
                           </ul>
-                          <Button
-                            className={`w-full py-6 text-base font-semibold ${
-                              plan.popular
-                                ? 'bg-[#823F91] hover:bg-[#6D3478] text-white'
-                                : 'bg-white border-2 border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]/50'
-                            }`}
-                          >
-                            {plan.price === '0' ? 'Commencer gratuitement' : 'Choisir ce plan'}
-                          </Button>
+                          <Link href="/sign-up" className="block">
+                            <Button
+                              className={`group w-full py-6 text-base font-semibold flex items-center justify-center gap-2 ${
+                                plan.popular
+                                  ? 'bg-[#823F91] hover:bg-[#6D3478] text-white'
+                                  : 'bg-white border-2 border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]/50'
+                              }`}
+                            >
+                              {plan.price === '0' ? 'Commencer gratuitement' : 'Commencer gratuitement'}
+                              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </Button>
+                          </Link>
                         </CardContent>
                       </Card>
                     </motion.div>
@@ -176,15 +180,18 @@ export function Pricing() {
                               </li>
                             ))}
                           </ul>
-                          <Button
-                            className={`w-full py-6 text-base font-semibold ${
-                              plan.popular
-                                ? 'bg-[#823F91] hover:bg-[#6D3478] text-white'
-                                : 'bg-white border-2 border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]/50'
-                            }`}
-                          >
-                            Choisir ce plan
-                          </Button>
+                          <Link href="/sign-up" className="block">
+                            <Button
+                              className={`group w-full py-6 text-base font-semibold flex items-center justify-center gap-2 ${
+                                plan.popular
+                                  ? 'bg-[#823F91] hover:bg-[#6D3478] text-white'
+                                  : 'bg-white border-2 border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]/50'
+                              }`}
+                            >
+                              Commencer gratuitement
+                              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </Button>
+                          </Link>
                         </CardContent>
                       </Card>
                     </motion.div>
