@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schema'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
     const validationResult = inviteCollaborateurSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: validationResult.error.errors[0]?.message || 'Données invalides' },
+        { error: validationResult.error.issues[0]?.message || 'Données invalides' },
         { status: 400 }
       )
     }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Erreur lors de la création de l\'invitation:', error)
+      logger.error('Erreur lors de la création de l\'invitation', error)
       return NextResponse.json(
         { error: 'Erreur lors de la création de l\'invitation' },
         { status: 500 }
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }
