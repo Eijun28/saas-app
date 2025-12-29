@@ -5,7 +5,6 @@ import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CallToAction from '@/components/landing/CallToAction'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import Chatbot from '@/components/Chatbot'
-import { NuplyGlobe } from '@/components/nuply-globe'
 import { HowItWorks } from '@/components/how-it-works'
 import { AnimatedListNuply } from '@/components/landing/AnimatedListNuply'
 
@@ -24,7 +23,7 @@ export default function HomePage() {
               
               {/* Titre de section */}
               <div className="text-center mb-12">
-                <h2 className="text-[120px] lg:text-[168px] font-bold mb-4">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                   Matching en temps réel
                 </h2>
                 <p className="text-xl text-gray-600 dark:text-gray-400">
@@ -39,11 +38,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-        <div className="py-20 md:py-28 lg:py-32 bg-white">
-          <div className="max-w-7xl mx-auto px-6">
-            <NuplyGlobe />
-          </div>
-        </div>
         <CallToAction />
         
         {/* Chatbot - Fixed bottom right */}

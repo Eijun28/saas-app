@@ -230,60 +230,62 @@ export default function TimelinePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p className="text-[#4A4A4A]">
-                Planifiez votre mariage étape par étape
-              </p>
+          <div className="mb-8">
+            <p className="text-[#4A4A4A] mb-4 text-center">
+              Planifiez votre mariage étape par étape
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              {/* Date du mariage - Version compacte */}
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
+                <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
+                {dateMarriage ? (
+                  <div>
+                    <p className="text-sm font-medium text-[#0D0D0D] whitespace-nowrap">
+                      {(() => {
+                        const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
+                        return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                      })()}
+                    </p>
+                    <p className="text-xs text-[#6B7280] mt-1 whitespace-nowrap">
+                      {(() => {
+                        const date = new Date(dateMarriage)
+                        const today = new Date()
+                        const diff = date.getTime() - today.getTime()
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                        if (days > 0) {
+                          return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
+                        } else if (days === 0) {
+                          return "C'est aujourd'hui !"
+                        } else {
+                          return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+                        }
+                      })()}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-[#4A4A4A] whitespace-nowrap">
+                      Aucune date de mariage renseignée.{' '}
+                      <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
+                        Définir dans le profil
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+              <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 flex-shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                Créer un événement
+              </Button>
             </div>
-            <Button
-              onClick={() => setIsDialogOpen(true)}
-              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Créer un événement
-            </Button>
-          </div>
-
-          {/* Date du mariage - Version compacte */}
-          <div className="flex items-center gap-3 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
-            {dateMarriage ? (
-              <div className="flex-1">
-                <p className="text-sm font-medium text-[#0D0D0D]">
-                  {new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-                <p className="text-xs text-[#6B7280] mt-1">
-                  {(() => {
-                    const date = new Date(dateMarriage)
-                    const today = new Date()
-                    const diff = date.getTime() - today.getTime()
-                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                    if (days > 0) {
-                      return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
-                    } else if (days === 0) {
-                      return "C'est aujourd'hui !"
-                    } else {
-                      return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                    }
-                  })()}
-                </p>
-              </div>
-            ) : (
-              <div className="flex-1">
-                <p className="text-sm text-[#4A4A4A]">
-                  Aucune date de mariage renseignée.{' '}
-                  <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
-                    Définir dans le profil
-                  </a>
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Liste des événements */}
@@ -310,12 +312,15 @@ export default function TimelinePage() {
                             </p>
                           )}
                           <p className="text-xs text-[#6B7280]">
-                            {new Date(event.event_date).toLocaleDateString('fr-FR', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })}
+                            {(() => {
+                              const dateStr = new Date(event.event_date).toLocaleDateString('fr-FR', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })
+                              return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                            })()}
                           </p>
                         </div>
                         <div className="flex gap-2 ml-4">

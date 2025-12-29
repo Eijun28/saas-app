@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ModernCard } from '@/components/ui/modern-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from "@/components/ui/ripple-button"
 import { Badge } from '@/components/ui/badge'
 import { 
   Sparkles, 

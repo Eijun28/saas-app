@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/ui/ripple-button'
 
 export function LandingNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -86,17 +87,20 @@ export function LandingNavbar() {
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
             <Link href="/sign-in">
-              <Button
-                variant="ghost"
-                className="text-sm font-medium text-[#6B7280] hover:text-[#823F91] hover:bg-transparent px-4"
+              <RippleButton
+                className="text-sm font-medium text-[#6B7280] hover:text-[#823F91] hover:bg-transparent px-4 border-transparent bg-transparent"
+                rippleColor="#823F91"
               >
                 Se connecter
-              </Button>
+              </RippleButton>
             </Link>
             <Link href="/sign-up">
-              <Button className="bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold px-6 py-2 rounded-lg transition-all duration-200 shadow-sm shadow-[#823F91]/20 hover:shadow-md hover:shadow-[#823F91]/30">
+              <RippleButton
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold px-6 py-2 rounded-lg transition-all duration-200 shadow-sm shadow-[#823F91]/20 hover:shadow-md hover:shadow-[#823F91]/30 border-0"
+                rippleColor="#ffffff"
+              >
                 Commencer
-              </Button>
+              </RippleButton>
             </Link>
           </div>
 
@@ -156,17 +160,20 @@ export function LandingNavbar() {
                 ))}
                 <div className="pt-4 space-y-3 border-t border-gray-200">
                   <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-[#6B7280] hover:text-[#823F91] hover:bg-[#E8D4EF]/50"
+                    <RippleButton
+                      className="w-full justify-start text-[#6B7280] hover:text-[#823F91] hover:bg-[#E8D4EF]/50 border-transparent bg-transparent"
+                      rippleColor="#823F91"
                     >
                       Se connecter
-                    </Button>
+                    </RippleButton>
                   </Link>
                   <Link href="/sign-up" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white">
+                    <RippleButton
+                      className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                      rippleColor="#ffffff"
+                    >
                       Commencer
-                    </Button>
+                    </RippleButton>
                   </Link>
                 </div>
               </div>

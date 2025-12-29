@@ -5,6 +5,7 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/ui/ripple-button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Menu, X, LogOut, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -284,29 +285,32 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
               </>
             ) : (
               <>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    'hidden md:inline-flex text-sm h-8',
-                    isScrolled ? 'text-gray-700' : 'text-white'
-                  )}
-                >
-                  <Link href="/sign-in">Se connecter</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className={cn(
-                    'text-sm h-8',
-                    isScrolled
-                      ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                      : 'bg-white hover:bg-white/90 text-rose-600'
-                  )}
-                >
-                  <Link href="/sign-up">Commencer</Link>
-                </Button>
+                <Link href="/sign-in">
+                  <RippleButton
+                    size="sm"
+                    className={cn(
+                      'hidden md:inline-flex text-sm h-8 border-transparent bg-transparent',
+                      isScrolled ? 'text-gray-700' : 'text-white'
+                    )}
+                    rippleColor={isScrolled ? '#374151' : '#ffffff'}
+                  >
+                    Se connecter
+                  </RippleButton>
+                </Link>
+                <Link href="/sign-up">
+                  <RippleButton
+                    size="sm"
+                    className={cn(
+                      'text-sm h-8 text-white border-0',
+                      isScrolled
+                        ? 'bg-[#823F91] hover:bg-[#6D3478]'
+                        : 'bg-[#823F91] hover:bg-[#6D3478]'
+                    )}
+                    rippleColor="#ffffff"
+                  >
+                    Commencer
+                  </RippleButton>
+                </Link>
               </>
             )}
 
@@ -397,23 +401,22 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       </>
                     ) : (
                       <>
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className="w-full justify-start"
-                        >
-                          <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                          <RippleButton
+                            className="w-full justify-start border-transparent bg-transparent"
+                            rippleColor="#823F91"
+                          >
                             Se connecter
-                          </Link>
-                        </Button>
-                        <Button
-                          asChild
-                          className="w-full bg-rose-600 hover:bg-rose-700"
-                        >
-                          <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                          </RippleButton>
+                        </Link>
+                        <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                          <RippleButton
+                            className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                            rippleColor="#ffffff"
+                          >
                             Commencer
-                          </Link>
-                        </Button>
+                          </RippleButton>
+                        </Link>
                       </>
                     )}
                   </div>
