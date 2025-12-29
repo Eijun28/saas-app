@@ -2,15 +2,16 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 const TOKEN_REGEX = /^[a-f0-9]{64}$/i
 
 export async function GET(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
 
     if (!token || !TOKEN_REGEX.test(token)) {
       return NextResponse.json(
@@ -50,7 +51,7 @@ export async function GET(
       invitation,
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }

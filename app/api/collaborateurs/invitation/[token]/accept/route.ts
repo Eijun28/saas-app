@@ -3,15 +3,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 const TOKEN_REGEX = /^[a-f0-9]{64}$/i
 
 export async function POST(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
 
     if (!token || !TOKEN_REGEX.test(token)) {
       return NextResponse.json(
@@ -83,7 +84,7 @@ export async function POST(
       .eq('id', invitation.id)
 
     if (updateError) {
-      console.error('Erreur lors de l\'acceptation:', updateError)
+      logger.error('Erreur lors de l\'acceptation', updateError)
       return NextResponse.json(
         { error: 'Erreur lors de l\'acceptation de l\'invitation' },
         { status: 500 }
@@ -95,7 +96,7 @@ export async function POST(
       message: 'Invitation acceptée avec succès',
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }
