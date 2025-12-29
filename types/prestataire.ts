@@ -52,21 +52,28 @@ export interface Evenement {
 export interface Conversation {
   id: string
   couple_id: string
-  couple_nom: string
-  dernier_message: string
-  dernier_message_at: string
-  non_lu: boolean
-  avatar_url?: string
+  provider_id: string
+  demande_id: string | null
+  status: 'active' | 'archived'
+  unread_count_provider: number
+  last_message_at: string
+  created_at: string
+  updated_at: string
+  // Données enrichies (JOIN)
+  couple_name?: string
+  couple_email?: string
+  last_message_preview?: string  // Premier message récent pour preview
 }
 
 export interface Message {
   id: string
   conversation_id: string
   sender_id: string
-  sender_type: 'prestataire' | 'couple'
-  contenu: string
+  content: string               // ⚠️ content (pas contenu)
+  read_at: string | null        // ⚠️ null = non lu
   created_at: string
-  lu: boolean
+  // Données calculées
+  sender_type?: 'prestataire' | 'couple'  // À déterminer côté client
 }
 
 export interface Stats {
