@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
 import { RippleButton } from '@/components/ui/ripple-button';
+import { HeroVideoDialog } from '@/components/ui/hero-video-dialog';
 
 export default function Hero() {
   // Animation variants optimisés pour Next.js 15
@@ -98,7 +99,7 @@ export default function Hero() {
         {/* Titre principal */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-slate-900 mb-8 leading-tight px-4 max-w-6xl mx-auto"
+          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.2] px-4 max-w-5xl mx-auto"
         >
           Votre mariage, vos racines.
           <br />
@@ -137,6 +138,48 @@ export default function Hero() {
               Découvrir la plateforme
             </RippleButton>
           </Link>
+        </motion.div>
+
+        {/* Section Vidéo Démo */}
+        <motion.div
+          variants={gradientVariants}
+          custom={2}
+          className="w-full max-w-4xl mx-auto mb-16 px-4"
+        >
+          <div className="space-y-4">
+            {/* Badge "Nouveau" */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#823F91]/10 border border-[#823F91]/20">
+                <span className="text-xs font-semibold text-[#823F91] uppercase tracking-wide">
+                  Nouveau
+                </span>
+              </div>
+            </div>
+
+            {/* Composant Vidéo */}
+            <HeroVideoDialog
+              videoSrc="/videos/nuply-demo.mp4"
+              thumbnailSrc="/images/hero-video-thumbnail.jpg"
+              thumbnailAlt="Démo de la plateforme Nuply - Matching IA, messagerie et dashboard"
+              videoType="mp4"
+              animationStyle="from-center"
+              className="w-full"
+            />
+
+            {/* Texte accompagnateur */}
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col items-center gap-2 text-center"
+            >
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <Clock className="w-4 h-4" aria-hidden="true" />
+                <span>45 secondes de démo</span>
+              </div>
+              <p className="text-sm text-slate-500 max-w-md">
+                Découvrez comment Nuply fonctionne : matching IA, messagerie intégrée et dashboard complet
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* Social Proof */}
