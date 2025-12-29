@@ -52,7 +52,7 @@ export const COPY = {
     headline: 'Un mariage qui vous ressemble vraiment',
     features: [
       'Trouvez LE photographe qui comprend la symbolique de votre henné',
-      'Économisez jusqu'à 3 000€ grâce aux comparaisons automatiques',
+      "Économisez jusqu'à 3 000€ grâce aux comparaisons automatiques",
       'Zéro malentendu culturel - Tous nos prestataires sont formés à vos traditions',
       'De "Je ne sais pas par où commencer" à "Tout est réservé" en 1 semaine',
     ],

@@ -24,7 +24,7 @@ export const fadeInUp: Variants = {
 
 // Animation de hover pour les cartes
 export const cardHover: Variants = {
-  rest: { 
+  initial: { 
     scale: 1, 
     y: 0,
   },
@@ -104,5 +104,70 @@ export const glowEffect = {
     repeat: Infinity,
     duration: 2,
     ease: 'easeInOut',
+  },
+};
+
+// Animation de fade in au scroll
+export const scrollFadeIn = {
+  initial: {
+    opacity: 0,
+    y: 30,
+  },
+  whileInView: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+  viewport: {
+    once: true,
+    margin: '-100px',
+  },
+} as Variants & { viewport: { once?: boolean; margin?: string } };
+
+// Animation de stagger pour les cartes
+export const staggerCards: Variants = {
+  initial: {
+    opacity: 0,
+  },
+  animate: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Animation de glow pulse
+export const glowPulse: Variants = {
+  initial: {
+    opacity: 0.8,
+    scale: 1,
+  },
+  animate: {
+    opacity: [0.8, 1, 0.8],
+    scale: [1, 1.02, 1],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    },
+  },
+};
+
+// Animation de scale on hover
+export const scaleOnHover: Variants = {
+  initial: {
+    scale: 1,
+  },
+  hover: {
+    scale: 1.1,
+    transition: {
+      duration: 0.3,
+      ease: 'easeOut',
+    },
   },
 };

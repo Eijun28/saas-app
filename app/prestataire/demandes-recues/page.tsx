@@ -8,9 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
+import { DemandeCard } from '@/components/prestataire/demandes/DemandeCard'
 import type { Demande, UIState } from '@/types/prestataire'
+import { useUser } from '@/hooks/use-user'
+import { supabase } from '@/lib/supabase/client'
 
 export default function DemandesRecuesPage() {
+  const { user } = useUser()
   const [demandes, setDemandes] = useState<{
     nouvelles: Demande[]
     en_cours: Demande[]
@@ -27,33 +31,91 @@ export default function DemandesRecuesPage() {
     error: null,
   })
 
-  // TODO: Fetch demandes from Supabase
-  // Table: demandes
-  // Join: couples (pour couple_nom)
-  // Filter: prestataire_id = current_user_id
-  // Group by: statut
+  // Fonction de filtrage pour la recherche
+  const filterDemandes = (list: Demande[]) => {
+    if (!searchTerm) return list
+    
+    return list.filter(d => 
+      d.couple_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.service_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      d.message?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }
+
   useEffect(() => {
     const fetchDemandes = async () => {
       setUiState({ loading: 'loading', error: null })
       
       try {
-        // const { data, error } = await supabase
-        //   .from('demandes')
-        //   .select(`
-        //     *,
-        //     couple:couples(nom, prenom)
-        //   `)
-        //   .eq('prestataire_id', user.id)
-        //   .order('created_at', { ascending: false })
-        
+        // 1. Récupérer user authentifié
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+        if (authError || !authUser) {
+          throw new Error('Non authentifié')
+        }
+
+        // 2. Fetch toutes les demandes du prestataire
+        const { data: allDemandes, error } = await supabase
+          .from('demandes')
+          .select('*')
+          .eq('provider_id', authUser.id)  // ⚠️ provider_id
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+
+        if (!allDemandes || allDemandes.length === 0) {
+          setDemandes({
+            nouvelles: [],
+            en_cours: [],
+            terminees: [],
+          })
+          setUiState({ loading: 'success', error: null })
+          return
+        }
+
+        // 3. Récupérer les infos des couples
+        const coupleIds = [...new Set(allDemandes.map((d: any) => d.couple_id))]
+        const { data: couplesData } = await supabase
+          .from('couples')
+          .select('user_id, partner_1_name, partner_2_name, email')
+          .in('user_id', coupleIds)
+
+        // Créer un map pour accéder rapidement aux infos couple
+        const couplesMap = new Map()
+        if (couplesData) {
+          couplesData.forEach((couple: any) => {
+            couplesMap.set(couple.user_id, couple)
+          })
+        }
+
+        // 4. Enrichir avec couple_name et couple_email
+        const enrichedDemandes: Demande[] = (allDemandes || []).map((d: any) => {
+          const couple = couplesMap.get(d.couple_id)
+          return {
+            ...d,
+            couple_name: couple?.partner_1_name && couple?.partner_2_name
+              ? `${couple.partner_1_name} & ${couple.partner_2_name}`
+              : couple?.partner_1_name || 'Couple',
+            couple_email: couple?.email
+          }
+        })
+
+        // 5. Grouper par statut
+        const grouped = {
+          nouvelles: enrichedDemandes.filter(d => d.status === 'pending'),
+          en_cours: enrichedDemandes.filter(d => ['viewed', 'responded'].includes(d.status)),
+          terminees: enrichedDemandes.filter(d => ['accepted', 'rejected'].includes(d.status))
+        }
+
+        setDemandes(grouped)
         setUiState({ loading: 'success', error: null })
       } catch (error) {
+        console.error('Erreur fetch demandes:', error)
         setUiState({ loading: 'error', error: 'Erreur de chargement' })
       }
     }
 
-    // fetchDemandes()
-  }, [])
+    fetchDemandes()
+  }, [user])
 
   if (uiState.loading === 'loading') {
     return <LoadingSpinner size="lg" text="Chargement des demandes..." />
@@ -112,43 +174,48 @@ export default function DemandesRecuesPage() {
 
         {/* Tab Content - Nouvelles */}
         <TabsContent value="nouvelles">
-          {demandes.nouvelles.length === 0 ? (
+          {filterDemandes(demandes.nouvelles).length === 0 ? (
             <EmptyState
               title="Aucune nouvelle demande"
               description="Les nouvelles demandes de couples apparaîtront ici"
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.nouvelles */}
-              {/* <DemandeCard key={demande.id} data={demande} /> */}
+              {filterDemandes(demandes.nouvelles).map((demande) => (
+                <DemandeCard key={demande.id} demande={demande} />
+              ))}
             </div>
           )}
         </TabsContent>
 
         {/* Tab Content - En cours */}
         <TabsContent value="en-cours">
-          {demandes.en_cours.length === 0 ? (
+          {filterDemandes(demandes.en_cours).length === 0 ? (
             <EmptyState
               title="Aucune demande en cours"
               description="Les demandes acceptées apparaîtront ici"
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.en_cours */}
+              {filterDemandes(demandes.en_cours).map((demande) => (
+                <DemandeCard key={demande.id} demande={demande} />
+              ))}
             </div>
           )}
         </TabsContent>
 
         {/* Tab Content - Terminées */}
         <TabsContent value="terminees">
-          {demandes.terminees.length === 0 ? (
+          {filterDemandes(demandes.terminees).length === 0 ? (
             <EmptyState
               title="Aucune demande terminée"
               description="L'historique de vos prestations apparaîtra ici"
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.terminees */}
+              {filterDemandes(demandes.terminees).map((demande) => (
+                <DemandeCard key={demande.id} demande={demande} />
+              ))}
             </div>
           )}
         </TabsContent>

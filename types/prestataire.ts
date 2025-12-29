@@ -11,14 +11,20 @@ export interface Prestataire {
 export interface Demande {
   id: string
   couple_id: string
-  couple_nom: string
-  date_evenement: string
-  budget_min: number
-  budget_max: number
-  lieu: string
-  statut: 'nouvelle' | 'acceptee' | 'refusee' | 'en_cours' | 'terminee'
+  provider_id: string
+  service_type: string
   message?: string
+  wedding_date: string
+  guest_count: number | null
+  budget_indicatif: number | null
+  status: 'pending' | 'viewed' | 'responded' | 'accepted' | 'rejected'
+  viewed_at: string | null
+  responded_at: string | null
   created_at: string
+  updated_at: string
+  // Données enrichies (JOIN)
+  couple_name?: string
+  couple_email?: string
 }
 
 export interface Service {
