@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
+import { Calendar } from '@/components/ui/calendar-shadcn'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 
