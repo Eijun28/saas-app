@@ -344,11 +344,11 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 bg-white px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b border-[#E5E7EB]"
+      className="sticky top-0 z-30 bg-white px-6 h-20 border-b border-[#E5E7EB] flex items-center"
     >
-      <div className="flex items-center justify-between">
-        {/* Page Title */}
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4 w-full">
+        {/* LEFT - Page Title */}
+        <div className="flex items-center">
           {breadcrumbs && breadcrumbs.length > 0 ? (
             <nav className="flex items-center gap-2 text-sm text-[#374151]">
               {breadcrumbs.map((crumb, index) => (
@@ -369,8 +369,8 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
           )}
         </div>
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-4">
+        {/* RIGHT SIDE - Search + Notifications + User Menu */}
+        <div className="flex items-center gap-3">
           {/* Search Popover */}
           <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
             <div
@@ -380,14 +380,14 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="p-2 rounded-lg hover:bg-purple-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-purple-50 transition-colors"
                   title="Recherche"
                 >
                   <Search className="h-5 w-5 text-[#374151]" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent 
-                className="w-80 p-4" 
+              <PopoverContent
+                className="w-80 p-4"
                 align="end"
                 onMouseEnter={() => setIsSearchOpen(true)}
                 onMouseLeave={() => setIsSearchOpen(false)}
@@ -421,7 +421,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="relative p-2 rounded-lg hover:bg-purple-200 transition-colors"
+                  className="relative p-2 rounded-lg hover:bg-purple-50 transition-colors"
                   title="Notifications"
                 >
                   <Bell className="h-5 w-5 text-[#374151]" />
@@ -430,8 +430,8 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                   )}
                 </button>
               </PopoverTrigger>
-              <PopoverContent 
-                className="w-80 p-0" 
+              <PopoverContent
+                className="w-80 p-0"
                 align="end"
                 onMouseEnter={() => setIsNotificationsOpen(true)}
                 onMouseLeave={() => setIsNotificationsOpen(false)}
@@ -477,11 +477,11 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             </div>
           </Popover>
 
-          {/* User profile */}
+          {/* User Profile + Menu Dropdown */}
           {profile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-200 transition-colors">
+                <button className="p-1 rounded-lg hover:bg-purple-50 transition-colors">
                   <UserAvatar
                     src={photoUrl}
                     fallback={
@@ -493,12 +493,8 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                     }
                     size="md"
                     status="online"
+                    className="w-10 h-10"
                   />
-                  <span className="text-sm text-[#374151] hidden md:block font-medium">
-                    {userRole === 'couple' && profile.displayName
-                      ? profile.displayName
-                      : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
-                  </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-purple-100 !via-purple-50 !to-white border-0 backdrop-blur-none">

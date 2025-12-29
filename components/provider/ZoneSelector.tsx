@@ -151,13 +151,13 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-            <Command>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-lg border shadow-lg bg-white" align="start">
+            <Command className="border-0 bg-transparent">
               <CommandInput placeholder="Rechercher un département..." />
               <CommandEmpty>Aucun département trouvé</CommandEmpty>
               <CommandList>
                 {Object.entries(DEPARTEMENTS_BY_REGION).map(([region, depts]) => (
-                  <CommandGroup key={region} heading={region}>
+                  <CommandGroup key={region} heading={region} className="bg-transparent">
                     {depts.map(dept => (
                       <CommandItem
                         key={dept.id}
@@ -191,15 +191,14 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
             return dept ? (
               <Badge
                 key={id}
-                variant="secondary"
-                className="pl-3 pr-2 py-1"
+                className="pl-3 pr-2 py-1.5 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white border-0 hover:from-[#6D3478] hover:to-[#823F91] transition-all"
               >
                 {dept.label}
                 <button
                   onClick={() => removeZone(id)}
-                  className="ml-2 hover:bg-muted rounded-full p-0.5"
+                  className="ml-2 hover:bg-white/20 rounded-full p-0.5 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3 text-white" />
                 </button>
               </Badge>
             ) : null;
@@ -222,7 +221,7 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="bg-[#823F91] hover:bg-[#6D3478] h-9 text-sm"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>
