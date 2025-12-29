@@ -1,4 +1,5 @@
 // app/api/marriage-admin/upload-document/route.ts
+import { logger } from '@/lib/logger'
 // COPIE-COLLE TOUT CE CODE
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     const documentType = formData.get('documentType') as string
     const userId = formData.get('userId') as string || user.id
 
-    console.log('📤 Upload:', file?.name, documentType)
+    logger.info('📤 Upload:', file?.name, documentType)
 
     if (!file || !marriageFileId || !documentType) {
       return NextResponse.json(
@@ -61,18 +62,18 @@ export async function POST(req: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError)
+      logger.error('❌ Upload error:', uploadError)
       throw uploadError
     }
 
-    console.log('✅ Fichier uploadé:', fileName)
+    logger.info('✅ Fichier uploadé:', fileName)
 
     // Récupère l'URL publique
     const { data: urlData } = adminClient.storage
       .from('marriage-documents')
       .getPublicUrl(fileName)
 
-    console.log('🔗 URL:', urlData.publicUrl)
+    logger.info('🔗 URL:', urlData.publicUrl)
 
     // Enregistre dans la DB avec le client admin
     const { data: docData, error: docError } = await adminClient
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
 
     if (docError) throw docError
 
-    console.log('✅ Document enregistré:', docData.id)
+    logger.info('✅ Document enregistré:', docData.id)
 
     // Met à jour le statut
     await adminClient
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
       data: docData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur:', error)
+    logger.error('❌ Erreur:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

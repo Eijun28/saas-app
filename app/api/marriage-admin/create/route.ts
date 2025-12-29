@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDocumentChecklist } from '@/lib/marriage-admin/checklist-generator'
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log('📝 Création dossier pour:', userId)
+    logger.info('📝 Création dossier pour:', userId)
 
     // Générer la checklist personnalisée
     const checklist = generateDocumentChecklist(questionnaireData as QuestionnaireData)
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      console.log('✅ Dossier mis à jour:', fileData.id)
+      logger.info('✅ Dossier mis à jour:', fileData.id)
     } else {
       // Créer un nouveau dossier
       const { data, error } = await adminClient
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      console.log('✅ Dossier créé:', fileData.id)
+      logger.info('✅ Dossier créé:', fileData.id)
     }
 
     return NextResponse.json({
@@ -99,7 +100,7 @@ export async function POST(req: NextRequest) {
       data: fileData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur création dossier:', error)
+    logger.error('❌ Erreur création dossier:', error)
     return NextResponse.json(
       { error: error.message || 'Erreur lors de la création du dossier' },
       { status: 500 }
