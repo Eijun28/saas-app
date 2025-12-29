@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const documentType = formData.get('documentType') as string
     const userId = formData.get('userId') as string || user.id
 
-    logger.info('📤 Upload:', file?.name, documentType)
+    logger.info('Upload document', { fileName: file?.name, documentType })
 
     if (!file || !marriageFileId || !documentType) {
       return NextResponse.json(
@@ -62,18 +62,18 @@ export async function POST(req: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      logger.error('❌ Upload error:', uploadError)
+      logger.error('Upload error', uploadError)
       throw uploadError
     }
 
-    logger.info('✅ Fichier uploadé:', fileName)
+    logger.info('Fichier uploadé', { fileName })
 
     // Récupère l'URL publique
     const { data: urlData } = adminClient.storage
       .from('marriage-documents')
       .getPublicUrl(fileName)
 
-    logger.info('🔗 URL:', urlData.publicUrl)
+    logger.info('URL générée', { url: urlData.publicUrl })
 
     // Enregistre dans la DB avec le client admin
     const { data: docData, error: docError } = await adminClient
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
 
     if (docError) throw docError
 
-    logger.info('✅ Document enregistré:', docData.id)
+    logger.info('Document enregistré', { docId: docData.id })
 
     // Met à jour le statut
     await adminClient
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       data: docData,
     })
   } catch (error: any) {
-    logger.error('❌ Erreur:', error)
+    logger.error('Erreur upload document', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

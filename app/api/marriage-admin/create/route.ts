@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    logger.info('📝 Création dossier pour:', userId)
+    logger.info('Création dossier', { userId })
 
     // Générer la checklist personnalisée
     const checklist = generateDocumentChecklist(questionnaireData as QuestionnaireData)
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      logger.info('✅ Dossier mis à jour:', fileData.id)
+      logger.info('Dossier mis à jour', { fileId: fileData.id })
     } else {
       // Créer un nouveau dossier
       const { data, error } = await adminClient
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 
       if (error) throw error
       fileData = data
-      logger.info('✅ Dossier créé:', fileData.id)
+      logger.info('Dossier créé', { fileId: fileData.id })
     }
 
     return NextResponse.json({
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       data: fileData,
     })
   } catch (error: any) {
-    logger.error('❌ Erreur création dossier:', error)
+    logger.error('Erreur création dossier', error)
     return NextResponse.json(
       { error: error.message || 'Erreur lors de la création du dossier' },
       { status: 500 }
