@@ -356,17 +356,20 @@ export default function TimelinePage() {
             </CardHeader>
             <CardContent>
               <Calendar
-                onDateSelect={(date) => {
-                  setEventForm({
-                    title: '',
-                    description: '',
-                    event_date: date,
-                  })
-                  setEditingEvent(null)
-                  setIsDialogOpen(true)
+                mode="single"
+                onSelect={(date) => {
+                  if (date) {
+                    setEventForm({
+                      title: '',
+                      description: '',
+                      event_date: date,
+                    })
+                    setEditingEvent(null)
+                    setIsDialogOpen(true)
+                  }
                 }}
-                showSelectedDateInfo={false}
-                maxWidth="max-w-full"
+                className="rounded-md border"
+                locale={fr}
               />
             </CardContent>
           </Card>
