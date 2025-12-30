@@ -81,7 +81,7 @@ export default function MessagesPage() {
   if (userLoading || !user || !userType) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Chargement..." />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

@@ -149,7 +149,7 @@ export function MessageThread({ conversationId, userId, userType }: MessageThrea
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Chargement des messages..." />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
