@@ -103,7 +103,7 @@ export default function Hero() {
         >
           Votre mariage, vos racines.
           <br />
-          <span className="bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">
+          <span className="text-[#823F91]">
             Leurs traditions, leur expertise.
           </span>
         </motion.h1>

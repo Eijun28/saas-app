@@ -16,7 +16,7 @@ export default function HeroSection() {
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-7xl font-bold tracking-tight">
                 Trouvez vos prestataires
-                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <span className="text-[#823F91]">
                   {" "}en quelques clics
                 </span>
               </h1>

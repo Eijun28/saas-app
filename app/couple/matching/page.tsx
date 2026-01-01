@@ -8,7 +8,7 @@ import {
 	ChatInputSubmit,
 	ChatInputTextArea,
 } from '@/components/ui/chat-input'
-import { Sparkles, MessageSquare, Bot } from 'lucide-react'
+import { Sparkles, MessageSquare, Bot, Heart, Lightbulb } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -27,7 +27,7 @@ export default function MatchingPage() {
 		{
 			id: '1',
 			role: 'assistant',
-			content: 'Bonjour ! Je suis votre conseiller en mariage virtuel. Dites-moi tout sur votre projet de mariage : la date, le lieu, le nombre d\'invités, votre budget, et vos préférences. Je vais vous aider à trouver les prestataires parfaits ! 💍✨',
+			content: 'Bonjour ! Je suis votre conseiller en mariage virtuel. Dites-moi tout sur votre projet de mariage : la date, le lieu, le nombre d\'invités, votre budget, et vos préférences. Je vais vous aider à trouver les prestataires parfaits !',
 			timestamp: new Date(),
 		},
 	])
@@ -204,9 +204,12 @@ export default function MatchingPage() {
 				>
 					<Card className="border-gray-200 bg-gray-50">
 						<CardContent className="pt-6">
-							<p className="text-sm text-[#6B7280] text-center">
-								💡 <strong>Astuce :</strong> Plus vous décrivez votre mariage en détail, plus nos recommandations seront précises. 
-								Parlez-nous de votre style, vos couleurs préférées, vos traditions, et tout ce qui compte pour vous !
+							<p className="text-sm text-[#6B7280] text-center flex items-start gap-2">
+								<Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
+								<span>
+									<strong>Astuce :</strong> Plus vous décrivez votre mariage en détail, plus nos recommandations seront précises.
+									Parlez-nous de votre style, vos couleurs préférées, vos traditions, et tout ce qui compte pour vous !
+								</span>
 							</p>
 						</CardContent>
 					</Card>

@@ -131,11 +131,11 @@ export function PlatformFusionAnimation() {
           </motion.div>
 
           {/* Brand Name */}
-          <motion.div 
+          <motion.div
             className="mt-6 text-center"
             style={{ opacity: textOpacity }}
           >
-            <h3 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h3 className="text-4xl md:text-5xl font-bold text-[#823F91] mb-2">
               NUPLY
             </h3>
             <p className="text-lg md:text-xl text-slate-600 font-medium">
