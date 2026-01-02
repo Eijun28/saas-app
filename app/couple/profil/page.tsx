@@ -570,7 +570,7 @@ export default function CoupleProfilPage() {
 
     <div className="w-full">
 
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="w-full px-6 space-y-6">
 
         {/* Header avec progression */}
 

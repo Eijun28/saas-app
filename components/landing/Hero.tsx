@@ -120,22 +120,24 @@ export default function Hero() {
         {/* CTAs */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-16 px-4"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 px-4"
         >
-          <Link href="/sign-up">
+          <Link href="/sign-up" className="w-full sm:w-auto">
             <RippleButton
-              className="group w-full sm:w-auto px-6 py-3 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/50 hover:-translate-y-1 flex items-center justify-center border-0"
+              className="group relative w-full sm:w-auto px-8 py-4 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-base rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/40 hover:-translate-y-1 flex items-center justify-center gap-2 border-0 overflow-hidden"
               rippleColor="#ffffff"
             >
-              Commencer gratuitement
+              <Sparkles className="w-5 h-5" />
+              <span>Commencer gratuitement</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             </RippleButton>
           </Link>
-          <Link href="/#comment-ca-marche">
+          <Link href="/#comment-ca-marche" className="w-full sm:w-auto">
             <RippleButton
-              className="w-full sm:w-auto px-6 py-3 bg-transparent hover:bg-[#E8D4EF] text-[#823F91] font-semibold rounded-xl border-2 border-[#823F91]/30 hover:border-[#823F91] transition-all duration-300"
+              className="w-full sm:w-auto px-8 py-4 bg-white/80 backdrop-blur-sm hover:bg-white text-[#823F91] font-semibold text-base rounded-xl border-2 border-[#823F91]/20 hover:border-[#823F91]/40 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
               rippleColor="#823F91"
             >
-              Découvrir la plateforme
+              <span>Découvrir la plateforme</span>
             </RippleButton>
           </Link>
         </motion.div>
