@@ -39,8 +39,8 @@ const SkeletonMatching = () => {
   }, [isInView, conversationSets.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-3 p-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 blur-3xl opacity-10" />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -119,8 +119,8 @@ const SkeletonMessaging = () => {
   }, [isInView, messageThreads.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-2 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-2 p-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 blur-3xl opacity-10" />
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -175,9 +175,9 @@ const SkeletonBudget = () => {
     <motion.div
       initial="initial"
       whileHover="animate"
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-2 items-center justify-center relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-2 items-center justify-center relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-emerald-600/20 to-teal-600/20 blur-3xl opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-600/10 to-teal-600/10 blur-3xl opacity-10" />
       <motion.div
         variants={variants}
         className="relative w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center relative z-10"
@@ -211,9 +211,9 @@ const SkeletonBudget = () => {
 const SkeletonPayments = () => {
   return (
     <motion.div
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col justify-center items-center p-4 space-y-3 relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col justify-center items-center p-4 space-y-3 relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/20 to-cyan-600/20 blur-3xl opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-teal-600/10 to-cyan-600/10 blur-3xl opacity-10" />
       <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full">
         {/* Montant en tiers de confiance */}
         <motion.div 
@@ -327,8 +327,8 @@ const SkeletonTimeline = () => {
   }, [isInView, timelineSets.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-rose-600/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-3 p-4 relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-rose-600/10 blur-3xl opacity-10" />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div

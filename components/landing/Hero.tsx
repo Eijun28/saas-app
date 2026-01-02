@@ -1,11 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles, Clock } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
-import { RippleButton } from '@/components/ui/ripple-button';
-import { HeroVideoDialog } from '@/components/ui/hero-video-dialog';
 
 export default function Hero() {
   // Animation variants optimisés pour Next.js 15
@@ -73,7 +71,7 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30">
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30">
       {/* Background decoration avec blur optimisé */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/20 rounded-full blur-3xl animate-pulse" />
@@ -81,13 +79,13 @@ export default function Hero() {
       </div>
 
       <motion.div
-        className="container mx-auto px-6 py-20 text-center"
+        className="container mx-auto px-6 py-16 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Badge */}
-        <motion.div variants={itemVariants} className="flex justify-center mb-8">
+        <motion.div variants={itemVariants} className="flex justify-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E8D4EF]/80 border border-[#823F91]/30 backdrop-blur-sm shadow-sm">
             <Sparkles className="w-4 h-4 text-[#823F91]" aria-hidden="true" />
             <span className="text-sm font-medium text-[#823F91]">
@@ -99,7 +97,7 @@ export default function Hero() {
         {/* Titre principal */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight mb-6 leading-[1.2] px-4 max-w-5xl mx-auto"
+          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-4 leading-[1.2] px-4 max-w-4xl mx-auto"
         >
           <span className="text-slate-900">Votre mariage, vos racines.</span>
           <br />
@@ -111,7 +109,7 @@ export default function Hero() {
         {/* Sous-titre */}
         <motion.p
           variants={itemVariants}
-          className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed font-normal px-4"
+          className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal px-4"
         >
           Des prestataires de mariage qui connaissent vos traditions sur le bout des doigts.{' '}
           Matching par culture, budget et dispo.
@@ -120,68 +118,18 @@ export default function Hero() {
         {/* CTAs */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 px-4"
+          className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-12 px-4"
         >
           <Link href="/sign-up" className="w-full sm:w-auto">
-            <RippleButton
-              className="group relative w-full sm:w-auto px-8 py-4 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-base rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-[#823F91]/40 hover:-translate-y-1 flex items-center justify-center gap-2 border-0 overflow-hidden"
-              rippleColor="#ffffff"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>Commencer gratuitement</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-            </RippleButton>
+            <button className="group relative w-full sm:w-auto px-6 py-3 bg-[#823F91] hover:bg-[#6D3478] text-white font-medium text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-[#823F91]/30 border-0">
+              Commencer gratuitement
+            </button>
           </Link>
           <Link href="/#comment-ca-marche" className="w-full sm:w-auto">
-            <RippleButton
-              className="w-full sm:w-auto px-8 py-4 bg-white/80 backdrop-blur-sm hover:bg-white text-[#823F91] font-semibold text-base rounded-xl border-2 border-[#823F91]/20 hover:border-[#823F91]/40 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-              rippleColor="#823F91"
-            >
-              <span>Découvrir la plateforme</span>
-            </RippleButton>
+            <button className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-gray-50 text-[#823F91] font-medium text-sm rounded-lg border border-gray-200 hover:border-[#823F91]/30 transition-all duration-200">
+              Découvrir la plateforme
+            </button>
           </Link>
-        </motion.div>
-
-        {/* Section Vidéo Démo */}
-        <motion.div
-          variants={gradientVariants}
-          custom={2}
-          className="w-full max-w-4xl mx-auto mb-16 px-4"
-        >
-          <div className="space-y-4">
-            {/* Badge "Nouveau" */}
-            <div className="flex justify-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#823F91]/10 border border-[#823F91]/20">
-                <span className="text-xs font-semibold text-[#823F91] uppercase tracking-wide">
-                  Nouveau
-                </span>
-              </div>
-            </div>
-
-            {/* Composant Vidéo */}
-            <HeroVideoDialog
-              videoSrc="/videos/nuply-demo.mp4"
-              thumbnailSrc="/images/hero-video-thumbnail.jpg"
-              thumbnailAlt="Démo de la plateforme Nuply - Matching IA, messagerie et dashboard"
-              videoType="mp4"
-              animationStyle="from-center"
-              className="w-full"
-            />
-
-            {/* Texte accompagnateur */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Clock className="w-4 h-4" aria-hidden="true" />
-                <span>45 secondes de démo</span>
-              </div>
-              <p className="text-sm text-slate-500 max-w-md">
-                Découvrez comment Nuply fonctionne : matching IA, messagerie intégrée et dashboard complet
-              </p>
-            </motion.div>
-          </div>
         </motion.div>
 
         {/* Social Proof */}
