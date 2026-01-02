@@ -99,11 +99,11 @@ export default function Hero() {
         {/* Titre principal */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight text-slate-900 mb-6 leading-[1.2] px-4 max-w-5xl mx-auto"
+          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight mb-6 leading-[1.2] px-4 max-w-5xl mx-auto"
         >
-          Votre mariage, vos racines.
+          <span className="text-slate-900">Votre mariage, vos racines.</span>
           <br />
-          <span className="text-[#823F91]">
+          <span className="text-[#823F91] font-extrabold">
             Leurs traditions, leur expertise.
           </span>
         </motion.h1>

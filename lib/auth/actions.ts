@@ -47,6 +47,7 @@ export async function signUp(
     try {
       if (role === 'couple') {
         // Insérer dans la table couples (nouvelle structure)
+        // Note: currency a une valeur par défaut 'EUR' dans le schéma
         const { error: coupleError } = await supabase
           .from('couples')
           .insert({
@@ -55,7 +56,6 @@ export async function signUp(
             email: email,
             partner_1_name: profileData.prenom || null,
             partner_2_name: profileData.nom || null, // Temporairement, on met le nom ici
-            currency: 'EUR',
           })
 
         if (coupleError) {
