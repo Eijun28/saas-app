@@ -17,7 +17,7 @@ import { signOut } from "@/lib/auth/actions";
 import { useRouter } from "next/navigation";
 
 const navigation = [
-  { name: "Accueil", href: "/couple", icon: Home },
+  { name: "Accueil", href: "/couple/dashboard", icon: Home },
   { name: "Matching IA", href: "/couple/matching", icon: Sparkles },
   { name: "Calendrier", href: "/couple/timeline", icon: Calendar },
   { name: "Messages", href: "/couple/messagerie", icon: MessageSquare },
@@ -38,7 +38,7 @@ export function DashboardSidebar() {
     <aside className="w-72 bg-gradient-to-b from-gray-900 to-black border-r border-purple-600/20 flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-purple-600/20">
-        <Link href="/couple" className="flex items-center gap-2">
+        <Link href="/couple/dashboard" className="flex items-center gap-2">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">N</span>
           </div>

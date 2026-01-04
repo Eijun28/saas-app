@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
@@ -67,12 +66,6 @@ export default function AgendaPage() {
     loadEvenements()
   }, [user])
 
-  // Convertir les événements pour le calendrier
-  const calendarEvents = evenements.map(e => ({
-    id: e.id,
-    title: e.titre,
-    event_date: e.date.toISOString().split('T')[0]
-  }))
 
   const handleCreateEvent = async () => {
     if (!formData.titre || !formData.heure_debut) return
@@ -183,11 +176,7 @@ export default function AgendaPage() {
     })
   }
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date)
-    setFormData({ ...formData, date })
-    setIsDialogOpen(true)
-  }
+
 
   return (
     <div className="space-y-8">
@@ -198,8 +187,8 @@ export default function AgendaPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Agenda</h1>
-          <p className="text-muted-foreground text-lg">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">Agenda</h1>
+          <p className="text-[#823F91]/70 text-lg">
             Gérez votre disponibilité et vos événements
           </p>
         </motion.div>
@@ -208,7 +197,7 @@ export default function AgendaPage() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              className="bg-[#823F91] hover:bg-[#6D3478] gap-2"
+              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300"
               onClick={() => {
                 resetForm()
                 if (selectedDate) {
@@ -301,7 +290,7 @@ export default function AgendaPage() {
               <Button
                 onClick={handleCreateEvent}
                 disabled={!formData.titre || !formData.heure_debut}
-                className="bg-[#823F91] hover:bg-[#6D3478]"
+                className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30"
               >
                 Créer l'événement
               </Button>
@@ -310,39 +299,15 @@ export default function AgendaPage() {
         </Dialog>
       </div>
 
-      {/* Calendrier */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <Card className="border-border/10">
-          <CardContent className="pt-6 flex justify-center">
-            <Calendar
-              value={selectedDate}
-              onChange={(date) => {
-                setSelectedDate(date)
-                if (date) {
-                  handleDateClick(date)
-                }
-              }}
-              events={calendarEvents}
-              onDateClick={handleDateClick}
-              className="rounded-lg border"
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Liste des événements */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <Card className="border-border/10">
+        <Card className="border-[#823F91]/20 bg-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
               <CalendarIcon className="h-5 w-5 text-[#823F91]" />
               Événements à venir
             </CardTitle>
@@ -367,10 +332,10 @@ export default function AgendaPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                     whileHover={{ x: 4 }}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-border/10 hover:bg-gray-50 transition-all cursor-pointer"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20 bg-white hover:bg-[#823F91]/5 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#823F91]/20"
                     onClick={() => handleEditEvent(event)}
                   >
-                    <div className="h-16 w-16 rounded-xl bg-[#823F91] flex flex-col items-center justify-center text-white flex-shrink-0">
+                    <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex flex-col items-center justify-center text-white flex-shrink-0 shadow-lg shadow-[#823F91]/30">
                       <span className="text-2xl font-bold">
                         {event.date.getDate()}
                       </span>
@@ -510,7 +475,7 @@ export default function AgendaPage() {
             <Button
               onClick={handleUpdateEvent}
               disabled={!formData.titre || !formData.heure_debut}
-              className="bg-[#823F91] hover:bg-[#6D3478]"
+              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30"
             >
               Enregistrer les modifications
             </Button>

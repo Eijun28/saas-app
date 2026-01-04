@@ -1,14 +1,14 @@
 "use client"
 
 import { Sidebar } from "@/components/layout/Sidebar"
-import { LayoutDashboard, Store, CalendarCheck, MessageSquare, Settings } from "lucide-react"
+import { Home, Inbox, Calendar, MessageCircle, UserCircle } from "lucide-react"
 
 const prestataireNavItems = [
-  { href: "/prestataire/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/prestataire/demandes-recues", icon: Store, label: "Demandes reçues" },
-  { href: "/prestataire/agenda", icon: CalendarCheck, label: "Agenda" },
-  { href: "/prestataire/messagerie", icon: MessageSquare, label: "Messagerie" },
-  { href: "/prestataire/profil-public", icon: Settings, label: "Profil public" },
+  { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
+  { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes reçues" },
+  { href: "/prestataire/agenda", icon: Calendar, label: "Agenda" },
+  { href: "/prestataire/messagerie", icon: MessageCircle, label: "Messagerie" },
+  { href: "/prestataire/profil-public", icon: UserCircle, label: "Profil public" },
 ]
 
 export function PrestataireSidebarWrapper() {

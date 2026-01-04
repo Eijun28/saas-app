@@ -260,7 +260,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
             {user && !isHomePage ? (
               <>
                 <Link
-                  href={profile?.role === 'couple' ? '/couple' : '/prestataire'}
+                  href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                   className={cn(
                     'hidden md:inline-flex text-sm transition-colors duration-300',
                     isScrolled
@@ -384,7 +384,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                     {user && !isHomePage ? (
                       <>
                         <Link
-                          href={profile?.role === 'couple' ? '/couple' : '/prestataire'}
+                          href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
                         >

@@ -280,7 +280,7 @@ function Navbar({
           {user && !isHomePage ? (
             <>
               <Link
-                href={profile?.role === 'couple' ? '/couple' : '/prestataire'}
+                href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                 className="text-sm text-[#374151] hover:text-[#823F91] transition-colors flex items-center h-8"
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
@@ -403,7 +403,7 @@ function Navbar({
                 {user && !isHomePage ? (
                   <>
                     <Link
-                      href={profile?.role === 'couple' ? '/couple' : '/prestataire'}
+                      href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white"
                     >

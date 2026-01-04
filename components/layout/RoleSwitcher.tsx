@@ -21,7 +21,7 @@ export function RoleSwitcher() {
   const switchRole = (role: 'couple' | 'prestataire') => {
     setCurrentRole(role)
     localStorage.setItem('nuply-role', role)
-    router.push(`/${role}`)
+    router.push(`/${role}/dashboard`)
   }
 
   return (

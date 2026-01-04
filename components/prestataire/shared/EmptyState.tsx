@@ -27,23 +27,23 @@ export function EmptyState({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="border-gray-200/50">
+      <Card className="border-[#823F91]/20 bg-gradient-to-br from-white via-[#823F91]/5 to-white">
         <CardContent className="py-16 text-center">
           {Icon && (
-            <Icon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <Icon className="h-16 w-16 text-[#823F91]/30 mx-auto mb-4" />
           )}
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
             {title}
           </h3>
           {description && (
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            <p className="text-[#823F91]/60 mb-6 max-w-md mx-auto">
               {description}
             </p>
           )}
           {action && (
             <Button
               onClick={action.onClick}
-              className="bg-[#823F91] hover:bg-[#6D3478]"
+              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 transition-all duration-300"
             >
               {action.label}
             </Button>

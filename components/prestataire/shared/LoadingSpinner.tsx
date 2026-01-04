@@ -24,7 +24,7 @@ export function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProps) {
         <Loader2 className={`${sizeClasses[size]} text-[#823F91]`} />
       </motion.div>
       {text && (
-        <p className="text-muted-foreground text-sm mt-4">{text}</p>
+        <p className="text-[#823F91]/70 text-sm mt-4">{text}</p>
       )}
     </div>
   )

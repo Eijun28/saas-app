@@ -18,9 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { fr } from 'date-fns/locale'
+import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
 
 interface Event {
@@ -349,27 +347,6 @@ export default function TimelinePage() {
             </Card>
           )}
 
-          {/* Calendrier */}
-          <Card className="border-gray-200">
-            <CardHeader>
-              <CardTitle>Calendrier</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Calendar
-                onDateSelect={(date) => {
-                  setEventForm({
-                    title: '',
-                    description: '',
-                    event_date: date,
-                  })
-                  setEditingEvent(null)
-                  setIsDialogOpen(true)
-                }}
-                showSelectedDateInfo={false}
-                maxWidth="max-w-full"
-              />
-            </CardContent>
-          </Card>
         </motion.div>
 
         {/* Dialog de création d'événement */}
@@ -395,49 +372,11 @@ export default function TimelinePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="event-date">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !eventForm.event_date && "text-muted-foreground"
-                      )}
-                    >
-                      <div className="relative w-full">
-                        <Input
-                          readOnly
-                          value={
-                            eventForm.event_date
-                              ? eventForm.event_date.toLocaleDateString('fr-FR', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                })
-                              : "Sélectionner une date"
-                          }
-                          placeholder="Sélectionner une date"
-                          className="cursor-pointer pr-10"
-                        />
-                        <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
-                      </div>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <div className="bg-white rounded-xl border p-4">
-                      <Calendar
-                        mode="single"
-                        selected={eventForm.event_date || undefined}
-                        onSelect={(date) => setEventForm({ ...eventForm, event_date: date || null })}
-                        locale={fr}
-                        className="rounded-md"
-                        captionLayout="dropdown-buttons"
-                        fromYear={2025}
-                        toYear={2030}
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <DatePicker
+                  value={eventForm.event_date || undefined}
+                  onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
+                  placeholder="Sélectionner une date"
+                />
               </div>
 
               <div className="space-y-2">

@@ -97,10 +97,10 @@ export default function PrestataireMessageriePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
           Messagerie
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-[#823F91]/70 text-lg">
           Communiquez avec vos clients
         </p>
       </motion.div>
@@ -114,17 +114,17 @@ export default function PrestataireMessageriePage() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <Card className="border-gray-200/50 h-[600px] flex flex-col">
+          <Card className="border-[#823F91]/20 bg-white h-[600px] flex flex-col">
             <CardContent className="p-0 flex flex-col h-full">
               {/* Search */}
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-[#823F91]/20 bg-white">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#823F91]/50" />
                   <Input
                     placeholder="Rechercher..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20"
                   />
                 </div>
               </div>
@@ -143,16 +143,22 @@ export default function PrestataireMessageriePage() {
                       <div
                         key={conversation.id}
                         onClick={() => setSelectedConversation(conversation.id)}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${
-                          selectedConversation === conversation.id ? 'bg-[#9D5FA8]/10' : ''
+                        className={`p-4 cursor-pointer transition-all ${
+                          selectedConversation === conversation.id 
+                            ? 'bg-gradient-to-r from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 border-l-4 border-[#823F91]' 
+                            : 'hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:via-[#9D5FA8]/10 hover:to-[#823F91]/10'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className={`font-semibold ${
+                            selectedConversation === conversation.id 
+                              ? 'text-[#823F91]' 
+                              : 'text-gray-900'
+                          }`}>
                             {conversation.couple_nom}
                           </h3>
                           {conversation.non_lu && (
-                            <Badge className="bg-[#823F91] text-white h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                            <Badge className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs shadow-md shadow-[#823F91]/30">
                               1
                             </Badge>
                           )}
@@ -184,7 +190,7 @@ export default function PrestataireMessageriePage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="lg:col-span-2"
         >
-          <Card className="border-gray-200/50 h-[600px] flex flex-col">
+          <Card className="border-[#823F91]/20 bg-white h-[600px] flex flex-col">
             <CardContent className="p-0 flex flex-col h-full">
               {!selectedConversation ? (
                 <div className="flex-1 flex items-center justify-center">
@@ -196,8 +202,8 @@ export default function PrestataireMessageriePage() {
               ) : (
                 <>
                   {/* Header conversation */}
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-900">
+                  <div className="p-4 border-b border-[#823F91]/20 bg-white">
+                    <h3 className="font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
                       {currentConversation?.couple_nom}
                     </h3>
                   </div>
@@ -219,10 +225,10 @@ export default function PrestataireMessageriePage() {
                           }`}
                         >
                           <div
-                            className={`max-w-[70%] rounded-lg p-3 ${
+                            className={`max-w-[70%] rounded-lg p-3 shadow-md ${
                               message.sender_type === 'prestataire'
-                                ? 'bg-[#823F91] text-white'
-                                : 'bg-gray-100 text-gray-900'
+                                ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-[#823F91]/30'
+                                : 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 border border-gray-200'
                             }`}
                           >
                             <p className="text-sm">{message.contenu}</p>
@@ -239,10 +245,10 @@ export default function PrestataireMessageriePage() {
                   </div>
 
                   {/* Input zone */}
-                  <div className="p-4 border-t border-gray-200">
+                  <div className="p-4 border-t border-[#823F91]/20 bg-white">
                     <div className="flex gap-2">
-                      <Button variant="outline" size="icon">
-                        <Paperclip className="h-4 w-4" />
+                      <Button variant="outline" size="icon" className="border-[#823F91]/20 hover:bg-[#823F91]/10">
+                        <Paperclip className="h-4 w-4 text-[#823F91]" />
                       </Button>
                       <Input
                         type="text"
@@ -254,10 +260,10 @@ export default function PrestataireMessageriePage() {
                             handleSendMessage()
                           }
                         }}
-                        className="flex-1"
+                        className="flex-1 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20"
                       />
                       <Button
-                        className="bg-[#823F91] hover:bg-[#6D3478]"
+                        className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30"
                         onClick={handleSendMessage}
                         disabled={!messageText.trim()}
                       >

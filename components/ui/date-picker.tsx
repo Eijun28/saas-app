@@ -1,8 +1,6 @@
 'use client'
 
 import * as React from "react"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { Calendar } from "./calendar-shadcn"
 import { Input } from "./input"
 import { cn } from "@/lib/utils"
 
@@ -14,52 +12,29 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, placeholder = "Sélectionner une date", className }: DatePickerProps) {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const inputRef = React.useRef<HTMLInputElement>(null)
-
-  const formatDate = (date: Date | undefined) => {
+  const formatDateForInput = (date: Date | undefined) => {
     if (!date) return ""
-    return date.toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
+    return date.toISOString().split('T')[0]
+  }
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateValue = e.target.value
+    if (dateValue) {
+      onChange?.(new Date(dateValue))
+    } else {
+      onChange?.(undefined)
+    }
   }
 
   return (
     <div className={cn("relative", className)}>
-      <div className="relative">
-        <Input
-          ref={inputRef}
-          type="text"
-          readOnly
-          value={formatDate(value)}
-          placeholder={placeholder}
-          onClick={() => setIsOpen(!isOpen)}
-          className="cursor-pointer pr-10"
-        />
-        <CalendarIcon className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
-      </div>
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute top-full left-0 mt-2 z-20 bg-white rounded-md border shadow-lg">
-            <Calendar
-              mode="single"
-              selected={value}
-              onSelect={(date) => {
-                onChange?.(date)
-                setIsOpen(false)
-              }}
-              captionLayout="dropdown"
-              className="rounded-md"
-            />
-          </div>
-        </>
-      )}
+      <Input
+        type="date"
+        value={formatDateForInput(value)}
+        onChange={handleDateChange}
+        placeholder={placeholder}
+        className="cursor-pointer"
+      />
     </div>
   )
 }

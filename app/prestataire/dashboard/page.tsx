@@ -113,10 +113,10 @@ export default function DashboardPrestatairePage() {
       <div className="w-full space-y-8">
       {/* Affichage de la recherche active */}
       {searchQuery && (
-        <div className="flex items-center justify-between p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-lg backdrop-blur-sm">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-purple-700">
-              Recherche : <strong>{searchQuery}</strong>
+            <span className="text-sm text-[#823F91] font-medium">
+              Recherche : <strong className="text-[#6D3478]">{searchQuery}</strong>
             </span>
           </div>
           <button
@@ -124,7 +124,7 @@ export default function DashboardPrestatairePage() {
               setSearchQuery('')
               sessionStorage.removeItem('prestataire_search_query')
             }}
-            className="text-sm text-purple-600 hover:text-purple-800 underline"
+            className="text-sm text-[#823F91] hover:text-[#6D3478] underline transition-colors"
           >
             Effacer
           </button>
@@ -139,7 +139,7 @@ export default function DashboardPrestatairePage() {
             label: "Nouvelles demandes",
             value: stats.nouvelles_demandes,
             subtitle: "À traiter",
-            colorClass: "from-[#9D5FA8]/10 to-[#823F91]/10 text-[#823F91]",
+            colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.1,
             onClick: () => window.location.href = '/prestataire/demandes-recues',
             searchTerms: ['demandes', 'nouvelles', 'traiter', 'notifications']
@@ -149,7 +149,7 @@ export default function DashboardPrestatairePage() {
             label: "Événements à venir",
             value: stats.evenements_a_venir,
             subtitle: "Ce mois-ci",
-            colorClass: "from-blue-100/50 to-blue-200/50 text-blue-600",
+            colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.2,
             onClick: () => window.location.href = '/prestataire/agenda',
             searchTerms: ['événements', 'agenda', 'calendrier', 'rendez-vous']
@@ -159,7 +159,7 @@ export default function DashboardPrestatairePage() {
             label: "Messages non lus",
             value: stats.messages_non_lus,
             subtitle: "À répondre",
-            colorClass: "from-green-100/50 to-green-200/50 text-green-600",
+            colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.3,
             onClick: () => window.location.href = '/prestataire/messagerie',
             searchTerms: ['messages', 'messagerie', 'répondre', 'conversations']
@@ -172,7 +172,7 @@ export default function DashboardPrestatairePage() {
               value: '+5% ce mois',
               positive: true,
             },
-            colorClass: "from-orange-100/50 to-orange-200/50 text-orange-600",
+            colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.4,
             searchTerms: ['taux', 'réponse', 'statistiques', 'performance']
           }
@@ -205,9 +205,11 @@ export default function DashboardPrestatairePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <Card className="border-gray-200/50">
+        <Card className="border-[#823F91]/20 bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl">Activité récente</CardTitle>
+            <CardTitle className="text-2xl bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
+              Activité récente
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <EmptyState

@@ -344,7 +344,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 bg-white px-4 md:px-6 lg:px-8 py-3 md:py-4 border-b border-[#E5E7EB]"
+      className="sticky top-0 z-30 bg-white pl-6 pr-4 md:pr-6 lg:pr-8 py-3 md:py-4 border-b border-[#E5E7EB]"
     >
       <div className="flex items-center justify-between">
         {/* Page Title */}
@@ -380,10 +380,10 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="p-2 rounded-lg hover:bg-purple-200 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all"
                   title="Recherche"
                 >
-                  <Search className="h-5 w-5 text-[#374151]" />
+                  <Search className="h-5 w-5 text-[#374151] hover:text-[#823F91] transition-colors" />
                 </button>
               </PopoverTrigger>
               <PopoverContent 
@@ -403,7 +403,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                   />
                   <button
                     type="submit"
-                    className="w-full bg-[#823F91] text-white px-4 py-2 rounded-lg hover:bg-[#6D3478] transition-colors text-sm font-medium"
+                    className="w-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white px-4 py-2 rounded-lg hover:from-[#6D3478] hover:to-[#823F91] transition-all text-sm font-medium shadow-lg shadow-[#823F91]/30"
                   >
                     Rechercher
                   </button>
@@ -421,12 +421,12 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
             >
               <PopoverTrigger asChild>
                 <button
-                  className="relative p-2 rounded-lg hover:bg-purple-200 transition-colors"
+                  className="relative p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all"
                   title="Notifications"
                 >
-                  <Bell className="h-5 w-5 text-[#374151]" />
+                  <Bell className="h-5 w-5 text-[#374151] hover:text-[#823F91] transition-colors" />
                   {notifications.length > 0 && (
-                    <span className="absolute top-1 right-1 h-2 w-2 bg-[#823F91] rounded-full" />
+                    <span className="absolute top-1 right-1 h-2 w-2 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full shadow-md shadow-[#823F91]/50" />
                   )}
                 </button>
               </PopoverTrigger>
@@ -481,7 +481,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
           {profile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-200 transition-colors">
+                <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all">
                   <UserAvatar
                     src={photoUrl}
                     fallback={
@@ -494,14 +494,14 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                     size="md"
                     status="online"
                   />
-                  <span className="text-sm text-[#374151] hidden md:block font-medium">
+                  <span className="text-sm text-[#823F91] hidden md:block font-medium">
                     {userRole === 'couple' && profile.displayName
                       ? profile.displayName
                       : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
                   </span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-purple-100 !via-purple-50 !to-white border-0 backdrop-blur-none">
+              <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-[#823F91]/10 !via-[#9D5FA8]/10 !to-white border-[#823F91]/20 backdrop-blur-sm">
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium text-[#0B0E12]">
                     {userRole === 'couple' && profile.displayName

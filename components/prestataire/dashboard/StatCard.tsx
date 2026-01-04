@@ -38,15 +38,15 @@ export function StatCard({
       className={cn(onClick && 'cursor-pointer')}
       onClick={onClick}
     >
-      <Card className="border-border/10 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 min-h-[160px]">
+      <Card className="border-[#823F91]/20 bg-gradient-to-br from-white via-[#823F91]/5 to-white hover:shadow-xl hover:shadow-[#823F91]/20 transition-all duration-300 min-h-[160px] hover:border-[#823F91]/30">
         <CardContent className="p-6 h-full flex flex-col justify-between">
           {/* Top section: Label + Icon */}
           <div className="flex items-start justify-between mb-4">
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-sm font-medium text-[#823F91]/70">
               {label}
             </p>
             <div className={cn(
-              'h-12 w-12 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0',
+              'h-12 w-12 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#823F91]/20',
               colorClass
             )}>
               <Icon className="h-6 w-6" />
@@ -54,7 +54,7 @@ export function StatCard({
           </div>
           
           {/* Middle section: Value */}
-          <p className="text-4xl font-bold text-gray-900 mb-2">
+          <p className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
             {value}
           </p>
 
