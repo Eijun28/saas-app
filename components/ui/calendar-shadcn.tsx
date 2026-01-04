@@ -25,9 +25,6 @@ function Calendar({
       fromYear={fromYear}
       toYear={toYear}
       className={cn("p-3", className)}
-      components={{
-        Navbar: () => null,
-      }}
       classNames={{
         months: "flex flex-col space-y-4",
         month: "space-y-4",

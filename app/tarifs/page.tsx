@@ -4,13 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-inter',
-});
 
 export default function PricingSection() {
   const [userType, setUserType] = useState<'couples' | 'prestataires'>('couples');
@@ -86,7 +79,7 @@ export default function PricingSection() {
   const currentPricing = userType === 'couples' ? couplesPricing : prestatairesPricing;
 
   return (
-    <section className={`${inter.className} py-20 bg-white`}>
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-10">

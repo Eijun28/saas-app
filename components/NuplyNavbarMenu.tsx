@@ -288,7 +288,6 @@ function Navbar({
               <Button
                 onClick={handleSignOutClick}
                 variant="ghost"
-                size="sm"
                 className="text-sm h-8"
               >
                 <LogOut className="h-4 w-4 mr-1" />
@@ -299,7 +298,7 @@ function Navbar({
             <>
               <Link href="/sign-in">
                 <RippleButton
-                  size="sm"
+                  
                   className="text-sm h-8 border-transparent bg-transparent"
                   rippleColor="#823F91"
                 >
@@ -308,7 +307,7 @@ function Navbar({
               </Link>
               <Link href="/sign-up">
                 <RippleButton
-                  size="sm"
+                  
                   className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                   rippleColor="#ffffff"
                 >

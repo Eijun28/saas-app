@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Avatar } from '@/components/ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { uploadProfilePhoto } from '@/lib/actions/profile'
 import { Camera, Loader2 } from 'lucide-react'
@@ -69,12 +69,10 @@ export function ProfilePhoto({ photoUrl, name, onUpdate }: ProfilePhotoProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative">
-        <Avatar
-          src={displayPhoto || undefined}
-          fallback={name}
-          size="xl"
-          className="border-4 border-white shadow-lg"
-        />
+        <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+          {displayPhoto && <AvatarImage src={displayPhoto} />}
+          <AvatarFallback>{name || 'U'}</AvatarFallback>
+        </Avatar>
         {uploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
             <Loader2 className="h-8 w-8 animate-spin text-white" />

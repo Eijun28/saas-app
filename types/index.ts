@@ -1,2 +1,2 @@
-export type { PrestataireType, Role } from '@/store/onboarding-store'
+export type { PrestataireType, UserRole } from '@/store/onboarding-store'
 

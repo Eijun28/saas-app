@@ -319,15 +319,13 @@ export default function AgendaPage() {
         <Card className="border-border/10">
           <CardContent className="pt-6 flex justify-center">
             <Calendar
-              value={selectedDate}
-              onChange={(date) => {
+              initialDate={selectedDate}
+              onDateSelect={(date) => {
                 setSelectedDate(date)
                 if (date) {
                   handleDateClick(date)
                 }
               }}
-              events={calendarEvents}
-              onDateClick={handleDateClick}
               className="rounded-lg border"
             />
           </CardContent>
