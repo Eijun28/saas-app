@@ -62,7 +62,7 @@ const getBreadcrumbs = (pathname: string) => {
 export function PrestataireHeader() {
   const pathname = usePathname()
   const { user } = useUser()
-  const { setOpenMobile } = useSidebar()
+  const { openMobile, setOpenMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -240,8 +240,8 @@ export function PrestataireHeader() {
             variant='ghost'
             size='icon'
             className='md:hidden'
-            onClick={() => setOpenMobile(true)}
-            aria-label='Ouvrir le menu'
+            onClick={() => setOpenMobile(!openMobile)}
+            aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
             <Menu className='h-5 w-5' />
           </Button>
