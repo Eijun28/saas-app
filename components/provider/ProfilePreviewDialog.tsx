@@ -198,7 +198,7 @@ export function ProfilePreviewDialog({
                     </div>
                   )}
 
-                  {profile.description_courte && <Separator className="bg-[#6D3478]" />}
+                  {profile.description_courte && <Separator className="h-px bg-[#6D3478]" />}
 
                   {/* Bio complète */}
                   {profile.bio && (
@@ -209,7 +209,7 @@ export function ProfilePreviewDialog({
                           {profile.bio}
                         </p>
                       </div>
-                      <Separator className="bg-[#6D3478]" />
+                      <Separator className="h-px bg-[#6D3478]" />
                     </>
                   )}
 
@@ -232,7 +232,7 @@ export function ProfilePreviewDialog({
                           ))}
                         </div>
                       </div>
-                      <Separator className="bg-[#6D3478]" />
+                      <Separator className="h-px bg-[#6D3478]" />
                     </>
                   )}
 
