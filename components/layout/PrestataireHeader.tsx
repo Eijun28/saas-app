@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Inbox, Calendar, MessageSquare } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare, Menu } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useUser } from '@/hooks/use-user'
@@ -10,6 +10,7 @@ import { signOut } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useSidebar } from '@/components/ui/sidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -61,6 +62,7 @@ const getBreadcrumbs = (pathname: string) => {
 export function PrestataireHeader() {
   const pathname = usePathname()
   const { user } = useUser()
+  const { setOpenMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -233,6 +235,16 @@ export function PrestataireHeader() {
     <header className='h-16 bg-white sticky top-0 z-50 border-b border-[#E5E7EB] w-full shadow-sm flex items-center'>
       <div className='w-full flex items-center justify-between gap-6 px-4 sm:px-6'>
         <div className='flex items-center gap-4'>
+          {/* Mobile menu trigger */}
+          <Button
+            variant='ghost'
+            size='icon'
+            className='md:hidden'
+            onClick={() => setOpenMobile(true)}
+            aria-label='Ouvrir le menu'
+          >
+            <Menu className='h-5 w-5' />
+          </Button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>
               {breadcrumbs.map((crumb, index) => (
