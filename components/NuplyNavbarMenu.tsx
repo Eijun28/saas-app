@@ -307,7 +307,6 @@ function Navbar({
               </Link>
               <Link href="/sign-up">
                 <RippleButton
-                  size="sm"
                   className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                   rippleColor="#ffffff"
                 >
