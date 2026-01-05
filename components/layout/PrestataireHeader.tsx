@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Inbox, Calendar, MessageSquare, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useUser } from '@/hooks/use-user'
@@ -10,8 +10,6 @@ import { signOut } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useSidebar } from '@/components/ui/sidebar'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,43 +26,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import ProfileDropdown from '@/components/shadcn-studio/blocks/dropdown-profile'
-import { cn } from '@/lib/utils'
-
-function SidebarToggleButton() {
-  const { state, toggleSidebar } = useSidebar()
-  const isCollapsed = state === 'collapsed'
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={toggleSidebar}
-          className={cn(
-            'h-9 w-9 rounded-lg transition-all duration-200',
-            'hover:bg-[#E8D4EF] hover:text-[#823F91]',
-            'focus-visible:ring-2 focus-visible:ring-[#823F91] focus-visible:ring-offset-2',
-            isCollapsed && 'bg-[#E8D4EF]/50'
-          )}
-          aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
-        >
-          {isCollapsed ? (
-            <PanelLeft className='h-5 w-5 transition-transform duration-200' />
-          ) : (
-            <PanelLeftClose className='h-5 w-5 transition-transform duration-200' />
-          )}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side='bottom' className='bg-gray-900 text-white'>
-        <p className='text-sm'>
-          {isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
-          <span className='ml-2 text-xs text-gray-400'>Ctrl+B</span>
-        </p>
-      </TooltipContent>
-    </Tooltip>
-  )
-}
 
 const getBreadcrumbs = (pathname: string) => {
   const paths = pathname.split('/').filter(Boolean)
@@ -272,8 +233,6 @@ export function PrestataireHeader() {
     <header className='h-16 bg-white sticky top-0 z-50 border-b border-[#E5E7EB] w-full shadow-sm flex items-center'>
       <div className='w-full flex items-center justify-between gap-6 px-4 sm:px-6'>
         <div className='flex items-center gap-4'>
-          <SidebarToggleButton />
-          <Separator orientation='vertical' className='hidden h-6 sm:block bg-[#823F91]' />
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>
               {breadcrumbs.map((crumb, index) => (

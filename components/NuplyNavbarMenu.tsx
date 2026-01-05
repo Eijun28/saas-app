@@ -234,7 +234,7 @@ function Navbar({
     <div
       className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto z-50 px-4", className)}
     >
-      <div className="flex items-center justify-between bg-white dark:bg-black rounded-full border border-transparent dark:border-white/[0.2] shadow-input px-4 py-2">
+      <div className="flex items-center justify-between bg-white rounded-full border border-transparent shadow-input px-4 py-2">
         {/* Logo */}
         <Link href="/" className="flex items-center h-8">
           <Image
@@ -260,7 +260,7 @@ function Navbar({
             <Link
               href="/tarifs"
               onClick={() => setActive(null)}
-              className="text-black hover:opacity-[0.9] dark:text-white text-sm font-medium cursor-pointer flex items-center h-8"
+              className="text-black hover:opacity-[0.9] text-sm font-medium cursor-pointer flex items-center h-8"
             >
               Tarifs
             </Link>
@@ -320,7 +320,7 @@ function Navbar({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           aria-label="Toggle menu"
         >
           <AnimatePresence mode="wait">
@@ -357,14 +357,14 @@ function Navbar({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden mt-2 overflow-hidden bg-white dark:bg-black rounded-2xl border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
+            className="md:hidden mt-2 overflow-hidden bg-white rounded-2xl border border-black/[0.1] shadow-xl"
           >
             <div className="px-6 py-4 space-y-4">
               <div className="flex flex-col space-y-3">
                 <Link
                   href="/#prestataires"
                   onClick={() => handleLinkClick("/#prestataires")}
-                  className="text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white text-sm"
+                  className="text-neutral-700 hover:text-black text-sm"
                 >
                   Trouver un prestataire
                 </Link>
@@ -378,32 +378,32 @@ function Navbar({
                     setIsMobileMenuOpen(false);
                     setActive(null);
                   }}
-                  className="text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white text-sm"
+                  className="text-neutral-700 hover:text-black text-sm"
                 >
                   Comment ça marche
                 </Link>
                 <Link
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
-                  className="text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white text-sm"
+                  className="text-neutral-700 hover:text-black text-sm"
                 >
                   Tarifs
                 </Link>
                 <Link
                   href="/blog"
                   onClick={() => handleLinkClick("/blog")}
-                  className="text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white text-sm"
+                  className="text-neutral-700 hover:text-black text-sm"
                 >
                   Blog
                 </Link>
               </div>
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
+              <div className="pt-4 border-t border-gray-200 space-y-3">
                 {user && !isHomePage ? (
                   <>
                     <Link
                       href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white"
+                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700 hover:text-black"
                     >
                       {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                     </Link>
