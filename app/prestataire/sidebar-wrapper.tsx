@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const prestataireNavItems = [
   { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
@@ -32,35 +31,25 @@ function SidebarToggleButton() {
   const isCollapsed = state === 'collapsed'
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={toggleSidebar}
-          className={cn(
-            'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-            'hover:bg-gray-100 text-gray-700',
-            'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
-            'hidden md:flex', // Masqué sur mobile
-            isCollapsed && 'bg-gray-100'
-          )}
-          aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
-        >
-          {isCollapsed ? (
-            <PanelLeft className='h-5 w-5' />
-          ) : (
-            <PanelLeftClose className='h-5 w-5' />
-          )}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side='right' className='bg-gray-900 text-white'>
-        <p className='text-sm'>
-          {isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
-          <span className='ml-2 text-xs text-gray-400'>Ctrl+B</span>
-        </p>
-      </TooltipContent>
-    </Tooltip>
+    <Button
+      variant='ghost'
+      size='icon'
+      onClick={toggleSidebar}
+      className={cn(
+        'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
+        'hover:bg-gray-100 text-gray-700',
+        'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
+        'hidden md:flex', // Masqué sur mobile
+        isCollapsed && 'bg-gray-100'
+      )}
+      aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
+    >
+      {isCollapsed ? (
+        <PanelLeft className='h-5 w-5' />
+      ) : (
+        <PanelLeftClose className='h-5 w-5' />
+      )}
+    </Button>
   )
 }
 
