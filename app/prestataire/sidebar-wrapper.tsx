@@ -42,6 +42,7 @@ function SidebarToggleButton() {
             'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
             'hover:bg-gray-100 text-gray-700',
             'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
+            'hidden md:flex', // Masqué sur mobile
             isCollapsed && 'bg-gray-100'
           )}
           aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
