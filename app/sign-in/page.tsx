@@ -84,7 +84,12 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fdfbfc] via-white to-[#faf8f9] flex items-center justify-center px-6 py-24">
+    <div 
+      className="min-h-screen flex items-center justify-center px-6 py-24"
+      style={{
+        background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
+      }}
+    >
       {/* Subtle decorative gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#823F91]/[0.03] to-transparent rounded-full blur-3xl" />

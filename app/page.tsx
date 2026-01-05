@@ -10,7 +10,13 @@ import { ArrowRight } from 'lucide-react'
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      <div className="min-h-screen bg-white overflow-x-hidden relative">
+      {/* Fond dégradé violet clair inspiré eden.so */}
+      <div 
+        className="min-h-screen overflow-x-hidden relative"
+        style={{
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
+        }}
+      >
         <Hero />
         <FeaturesGrid />
         <CTA
@@ -28,7 +34,6 @@ export default function HomePage() {
               variant: "outline",
             },
           ]}
-          className="bg-white"
         />
         
         {/* Chatbot - Fixed bottom right */}

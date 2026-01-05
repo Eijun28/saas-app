@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
-import { GeistSans } from 'geist/font/sans';
-import { Inter } from 'next/font/google';
 import "./globals.css";
 import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 import Chatbot from "@/components/Chatbot";
 import { Toaster } from "@/components/ui/sonner";
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-inter',
-});
 
 export const metadata: Metadata = {
   title: "NUPLY — La plateforme mariage next-gen",
@@ -35,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${GeistSans.className} ${inter.variable}`}>
+    <html lang="fr">
       <body className="antialiased bg-white" suppressHydrationWarning>
         <NuplyNavbarMenu />
         <main>

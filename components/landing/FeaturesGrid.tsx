@@ -403,18 +403,18 @@ const items = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-20 md:py-28 lg:py-32 bg-white">
+    <section id="features" className="py-20 md:py-28 lg:py-32 bg-transparent">
       <div className="max-w-7xl mx-auto px-6">
         <FadeInOnScroll className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4">
-            <span className="px-4 py-1.5 rounded-full bg-[#E8D4EF] text-[#823F91] text-sm font-semibold">
+            <span className="px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-[#823F91] text-sm font-semibold border border-[#823F91]/20">
               Fonctionnalités
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#0B0E12] mb-4">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#2D1B3D] mb-4">
             Tout ce dont vous avez besoin
           </h2>
-          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+          <p className="text-lg text-[#5C4470] max-w-2xl mx-auto">
             Une plateforme complète pour organiser votre mariage multiculturel
           </p>
         </FadeInOnScroll>

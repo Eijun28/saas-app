@@ -72,11 +72,11 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30 pt-24 sm:pt-32">
-      {/* Background decoration avec blur optimisé */}
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-transparent pt-24 sm:pt-32">
+      {/* Background decoration avec blur optimisé - subtil sur fond dégradé */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#9D5FA8]/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#9D5FA8]/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Glow effect */}
@@ -109,7 +109,7 @@ export default function Hero() {
         </h1>
 
         {/* Sous-titre */}
-        <p className="text-sm animate-appear text-muted-foreground relative z-10 max-w-[740px] font-medium text-balance opacity-0 delay-100 sm:text-base md:text-lg lg:text-xl mx-auto mb-8 leading-relaxed px-4">
+        <p className="text-sm animate-appear relative z-10 max-w-[740px] font-medium text-balance opacity-0 delay-100 sm:text-base md:text-lg lg:text-xl mx-auto mb-8 leading-relaxed px-4 text-[#5C4470]">
           Des prestataires de mariage qui connaissent vos traditions sur le bout des doigts.{' '}
           Matching par culture, budget et dispo.
         </p>
@@ -125,7 +125,7 @@ export default function Hero() {
             </button>
           </Link>
           <Link href="/#comment-ca-marche" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-gray-50 text-[#823F91] font-medium text-sm rounded-lg border border-gray-200 hover:border-[#823F91]/30 transition-all duration-200">
+            <button className="w-full sm:w-auto px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white text-[#823F91] font-medium text-sm rounded-lg border border-[#823F91]/20 hover:border-[#823F91]/40 transition-all duration-200 shadow-sm">
               Découvrir la plateforme
             </button>
           </Link>
@@ -134,7 +134,7 @@ export default function Hero() {
         {/* Social Proof */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-slate-600 px-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-[#5C4470] px-4"
         >
           {/* Avatars stack */}
           <div className="flex items-center" aria-label="Couples satisfaits">
@@ -143,13 +143,13 @@ export default function Hero() {
 
           {/* Stats */}
           <div className="flex flex-wrap items-center justify-center gap-3 font-medium">
-            <span className="text-slate-700 whitespace-nowrap">127 mariages célébrés</span>
-            <span className="text-slate-300 hidden sm:inline">•</span>
-            <span className="text-slate-700 whitespace-nowrap">250+ prestataires vérifiés</span>
-            <span className="text-slate-300 hidden sm:inline">•</span>
+            <span className="text-[#2D1B3D] whitespace-nowrap">127 mariages célébrés</span>
+            <span className="text-[#8B7A9E] hidden sm:inline">•</span>
+            <span className="text-[#2D1B3D] whitespace-nowrap">250+ prestataires vérifiés</span>
+            <span className="text-[#8B7A9E] hidden sm:inline">•</span>
             <span className="flex items-center gap-1 whitespace-nowrap">
               <span className="text-amber-500" aria-hidden="true">★</span>
-              <span className="text-slate-700">Note 4.9/5</span>
+              <span className="text-[#2D1B3D]">Note 4.9/5</span>
             </span>
           </div>
         </motion.div>
@@ -166,9 +166,9 @@ export default function Hero() {
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          className="w-6 h-10 rounded-full border-2 border-slate-300 flex items-start justify-center p-2"
+          className="w-6 h-10 rounded-full border-2 border-[#823F91]/30 flex items-start justify-center p-2"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#823F91]/50" />
         </motion.div>
       </motion.div>
     </section>

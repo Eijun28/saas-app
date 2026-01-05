@@ -17,7 +17,12 @@ export default async function CoupleLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div 
+      className="min-h-screen"
+      style={{
+        background: 'linear-gradient(180deg, #FFFFFF 0%, #faf5fc 50%, #f5eef8 100%)',
+      }}
+    >
       <CoupleSidebarWrapper />
       <div className="lg:pl-[280px]">
         <TopBar />

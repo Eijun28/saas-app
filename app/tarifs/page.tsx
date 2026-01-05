@@ -102,7 +102,12 @@ export default function PricingSection() {
   const description = "Pas de frais cachés. Changez ou annulez quand vous voulez.";
 
   return (
-    <Section className="bg-white">
+    <Section 
+      className="min-h-screen"
+      style={{
+        background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-6">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 px-4 text-center sm:gap-8">
