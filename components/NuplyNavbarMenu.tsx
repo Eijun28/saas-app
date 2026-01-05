@@ -299,7 +299,6 @@ function Navbar({
             <>
               <Link href="/sign-in">
                 <RippleButton
-                  size="sm"
                   className="text-sm h-8 border-transparent bg-transparent"
                   rippleColor="#823F91"
                 >

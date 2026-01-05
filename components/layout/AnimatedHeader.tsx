@@ -298,7 +298,6 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                 </Link>
                 <Link href="/sign-up">
                   <RippleButton
-                    size="sm"
                     className={cn(
                       'text-sm h-8 text-white border-0',
                       isScrolled
