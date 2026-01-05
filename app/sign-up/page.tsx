@@ -97,14 +97,14 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-purple-50/30 flex items-center justify-center px-6 py-24 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950/20">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-purple-50/30 flex items-center justify-center px-6 py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
         className="w-full max-w-2xl"
       >
-        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5 dark:border-neutral-800 dark:bg-neutral-900/50">
+        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5">
           <CardHeader className="space-y-3 pb-6 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -117,9 +117,9 @@ export default function SignUpPage() {
                 Créez votre compte NUPLY
               </CardTitle>
             </motion.div>
-            <CardDescription className="text-base text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+            <CardDescription className="text-base text-neutral-600 max-w-md mx-auto">
               Rejoignez des milliers de couples qui organisent leur mariage de rêve avec sérénité. 
-              <span className="block mt-1 text-sm text-neutral-500 dark:text-neutral-500">
+              <span className="block mt-1 text-sm text-neutral-500">
                 Votre aventure commence ici, en quelques secondes.
               </span>
             </CardDescription>
@@ -136,7 +136,7 @@ export default function SignUpPage() {
             >
               {/* Sélection du rôle */}
               <motion.div variants={itemVariants} className="space-y-3">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center block">
+                <Label className="text-sm font-medium text-neutral-700 text-center block">
                   Je suis
                 </Label>
                 <div className="flex justify-center gap-3">
@@ -150,7 +150,7 @@ export default function SignUpPage() {
                       "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
                       selectedRole === 'couple'
                         ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                     )}
                   >
                     Couple
@@ -166,7 +166,7 @@ export default function SignUpPage() {
                       "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
                       selectedRole === 'prestataire'
                         ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                     )}
                   >
                     Prestataire
@@ -181,7 +181,7 @@ export default function SignUpPage() {
               {/* Prénom et Nom */}
               <motion.div variants={itemVariants} className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
                 <LabelInputContainer className="flex-1">
-                  <Label htmlFor="prenom" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <Label htmlFor="prenom" className="text-sm font-medium text-neutral-700">
                     Prénom
                   </Label>
                   <Input
@@ -190,7 +190,7 @@ export default function SignUpPage() {
                     type="text"
                     {...register('prenom')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.prenom && (
                     <p className="text-xs text-red-500 mt-1">{errors.prenom.message}</p>
@@ -198,7 +198,7 @@ export default function SignUpPage() {
                 </LabelInputContainer>
 
                 <LabelInputContainer className="flex-1">
-                  <Label htmlFor="nom" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <Label htmlFor="nom" className="text-sm font-medium text-neutral-700">
                     Nom
                   </Label>
                   <Input
@@ -207,7 +207,7 @@ export default function SignUpPage() {
                     type="text"
                     {...register('nom')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.nom && (
                     <p className="text-xs text-red-500 mt-1">{errors.nom.message}</p>
@@ -222,7 +222,7 @@ export default function SignUpPage() {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="space-y-4 p-4 rounded-2xl bg-gradient-to-br from-purple-50/50 to-neutral-50 dark:from-purple-950/20 dark:to-neutral-900/50 border border-purple-100 dark:border-purple-900/30"
+                  className="space-y-4 p-4 rounded-2xl bg-gradient-to-br from-purple-50/50 to-neutral-50 border border-purple-100"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Building2 className="h-4 w-4 text-[#823F91]" />
@@ -230,7 +230,7 @@ export default function SignUpPage() {
                   </div>
                   
                   <LabelInputContainer>
-                    <Label htmlFor="nomEntreprise" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    <Label htmlFor="nomEntreprise" className="text-sm font-medium text-neutral-700">
                       Nom de l'entreprise
                     </Label>
                     <Input
@@ -239,14 +239,14 @@ export default function SignUpPage() {
                       type="text"
                       {...register('nomEntreprise')}
                       disabled={isLoading}
-                      className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                      className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                     />
                     {errors.nomEntreprise && (
                       <p className="text-xs text-red-500 mt-1">{errors.nomEntreprise.message}</p>
                     )}
                   </LabelInputContainer>
 
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+                  <p className="text-xs text-neutral-500 text-center">
                     Vous pourrez compléter votre profil prestataire après l'inscription
                   </p>
                 </motion.div>
@@ -255,7 +255,7 @@ export default function SignUpPage() {
               {/* Email */}
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
-                  <Label htmlFor="email" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
                     Adresse email
                   </Label>
                   <Input
@@ -264,7 +264,7 @@ export default function SignUpPage() {
                     type="email"
                     {...register('email')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.email && (
                     <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
@@ -275,7 +275,7 @@ export default function SignUpPage() {
               {/* Mot de passe */}
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
-                  <Label htmlFor="password" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
                     Mot de passe
                   </Label>
                   <Input
@@ -284,7 +284,7 @@ export default function SignUpPage() {
                     type="password"
                     {...register('password')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.password && (
                     <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
@@ -295,7 +295,7 @@ export default function SignUpPage() {
               {/* Confirmation mot de passe */}
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
                     Confirmer le mot de passe
                   </Label>
                   <Input
@@ -304,7 +304,7 @@ export default function SignUpPage() {
                     type="password"
                     {...register('confirmPassword')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.confirmPassword && (
                     <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
@@ -316,9 +316,9 @@ export default function SignUpPage() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-red-50 border border-red-200 rounded-xl dark:bg-red-900/20 dark:border-red-800 text-center"
+                  className="p-4 bg-red-50 border border-red-200 rounded-xl text-center"
                 >
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                  <p className="text-sm text-red-600">{error}</p>
                 </motion.div>
               )}
 
@@ -359,7 +359,7 @@ export default function SignUpPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="flex items-center justify-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
+                  className="flex items-center justify-center gap-2 text-xs text-neutral-500"
                 >
                   <Lock className="h-3.5 w-3.5" />
                   <span>
@@ -370,13 +370,13 @@ export default function SignUpPage() {
 
               <motion.div
                 variants={itemVariants}
-                className="pt-6 border-t border-neutral-200 dark:border-neutral-800"
+                className="pt-6 border-t border-neutral-200"
               >
-                <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-center text-sm text-neutral-600">
                   Vous avez déjà un compte ?{' '}
                   <Link
                     href="/sign-in"
-                    className="text-[#823F91] hover:text-[#6D3478] font-semibold transition-colors dark:text-purple-400 dark:hover:text-purple-300"
+                    className="text-[#823F91] hover:text-[#6D3478] font-semibold transition-colors"
                   >
                     Se connecter
                   </Link>

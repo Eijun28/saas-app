@@ -71,7 +71,7 @@ const SkeletonMatching = () => {
                   </div>
                   <div className={`rounded-2xl p-3 ${
                     msg.from === "couple" 
-                      ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100" 
+                      ? "bg-gray-100 text-gray-900" 
                       : "bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white"
                   }`}>
                     <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
@@ -119,7 +119,7 @@ const SkeletonMessaging = () => {
   }, [isInView, messageThreads.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-2 p-4 relative">
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 p-4 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 blur-3xl opacity-5" />
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
@@ -141,8 +141,8 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-[#E8D4EF] dark:bg-[#823F91]/30 text-[#823F91] dark:text-[#E8D4EF]"
-                    : "bg-[#E8D4EF] dark:bg-[#9D5FA8]/30 text-[#6D3478] dark:text-[#E8D4EF]"
+                    ? "bg-[#E8D4EF] text-[#823F91]"
+                    : "bg-[#E8D4EF] text-[#6D3478]"
                 }`}>
                   <p className="text-xs leading-relaxed">{msg.text}</p>
                 </div>
@@ -175,14 +175,14 @@ const SkeletonBudget = () => {
     <motion.div
       initial="initial"
       whileHover="animate"
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col space-y-2 items-center justify-center relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 items-center justify-center relative"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-600/10 to-teal-600/10 blur-3xl opacity-5" />
       <motion.div
         variants={variants}
         className="relative w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center relative z-10"
       >
-        <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-800" />
+        <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
         <svg className="absolute inset-0 w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
           <circle
             cx="50"
@@ -211,7 +211,7 @@ const SkeletonBudget = () => {
 const SkeletonPayments = () => {
   return (
     <motion.div
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] dark:bg-dot-white/[0.05] flex-col justify-center items-center p-4 space-y-3 relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col justify-center items-center p-4 space-y-3 relative"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-teal-600/10 to-cyan-600/10 blur-3xl opacity-5" />
       <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full">
@@ -221,8 +221,8 @@ const SkeletonPayments = () => {
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Montant sécurisé</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">2 450€</p>
+          <p className="text-xs text-gray-500 mb-1">Montant sécurisé</p>
+          <p className="text-2xl font-bold text-green-600">2 450€</p>
         </motion.div>
 
         {/* Flow tiers de confiance */}
@@ -233,10 +233,10 @@ const SkeletonPayments = () => {
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] dark:bg-[#823F91] flex items-center justify-center mb-1">
-              <Users className="w-5 h-5 text-[#823F91] dark:text-white" />
+            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
+              <Users className="w-5 h-5 text-[#823F91]" />
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-300">Couple</p>
+            <p className="text-xs text-gray-600">Couple</p>
           </motion.div>
 
           <motion.div 

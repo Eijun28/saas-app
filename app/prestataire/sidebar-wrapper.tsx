@@ -40,9 +40,9 @@ function SidebarToggleButton() {
           onClick={toggleSidebar}
           className={cn(
             'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-            'hover:bg-[#E8D4EF] hover:text-[#823F91]',
-            'focus-visible:ring-2 focus-visible:ring-[#823F91] focus-visible:ring-offset-2',
-            isCollapsed && 'bg-[#823F91] text-white hover:bg-[#6D3478] hover:text-white'
+            'hover:bg-gray-100 text-gray-700',
+            'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
+            isCollapsed && 'bg-gray-100'
           )}
           aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
         >
