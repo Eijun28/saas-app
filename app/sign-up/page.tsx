@@ -81,7 +81,7 @@ export default function SignUpPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black"
+        className="shadow-input mx-auto w-full max-w-6xl rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black"
       >
         <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
           Bienvenue sur NUPLY

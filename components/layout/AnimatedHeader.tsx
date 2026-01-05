@@ -273,7 +273,6 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                 <Button
                   onClick={handleSignOut}
                   variant="ghost"
-                  size="sm"
                   className={cn(
                     'hidden md:inline-flex text-sm h-8',
                     isScrolled ? 'text-gray-700' : 'text-white'
@@ -287,7 +286,6 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
               <>
                 <Link href="/sign-in">
                   <RippleButton
-                    size="sm"
                     className={cn(
                       'hidden md:inline-flex text-sm h-8 border-transparent bg-transparent',
                       isScrolled ? 'text-gray-700' : 'text-white'
@@ -299,7 +297,6 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                 </Link>
                 <Link href="/sign-up">
                   <RippleButton
-                    size="sm"
                     className={cn(
                       'text-sm h-8 text-white border-0',
                       isScrolled

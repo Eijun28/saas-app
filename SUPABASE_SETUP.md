@@ -44,9 +44,11 @@
 Vérifiez que `.env.local` existe à la racine avec :
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://ywewzjygrozxijgrzngv.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3ZXd6anlncm96eGlqZ3J6bmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjAyNDcsImV4cCI6MjA0NjczNjI0N30.fZfXHYPbYgr5OQxGkjQy-_rckYnk2AijEWNu7nPGWl8
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
+
+⚠️ **Remplacez les valeurs ci-dessus par vos vraies clés Supabase** (disponibles dans votre Dashboard Supabase → Settings → API)
 
 ⚠️ **Important** : Ce fichier est dans `.gitignore` et ne sera pas commité.
 

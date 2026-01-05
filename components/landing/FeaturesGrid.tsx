@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { Sparkles, MessageSquare, PiggyBank, Shield, Calendar } from "lucide-react";
+import { Sparkles, MessageSquare, PiggyBank, Shield, Calendar, Users, Lock, Music } from "lucide-react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { FadeInOnScroll } from '@/components/landing/animations';
 
@@ -13,16 +13,16 @@ const SkeletonMatching = () => {
   
   const conversationSets = [
     [
-      { from: "couple", text: "Cherchons negafa franco-algérienne", avatar: "👰" },
-      { from: "ai", text: "3 prestataires trouvés !", avatar: "✨" },
+      { from: "couple", text: "Cherchons negafa franco-algérienne", avatar: "couple" },
+      { from: "ai", text: "3 prestataires trouvés !", avatar: "ai" },
     ],
     [
-      { from: "couple", text: "DJ qui fait dabké et variété française ?", avatar: "👰" },
-      { from: "ai", text: "2 DJs spécialisés multiculturel !", avatar: "✨" },
+      { from: "couple", text: "DJ qui fait dabké et variété française ?", avatar: "couple" },
+      { from: "ai", text: "2 DJs spécialisés multiculturel !", avatar: "ai" },
     ],
     [
-      { from: "couple", text: "Traiteur végétarien indien + français", avatar: "👰" },
-      { from: "ai", text: "5 traiteurs disponibles !", avatar: "✨" },
+      { from: "couple", text: "Traiteur végétarien indien + français", avatar: "couple" },
+      { from: "ai", text: "5 traiteurs disponibles !", avatar: "ai" },
     ],
   ];
 
@@ -39,8 +39,7 @@ const SkeletonMatching = () => {
   }, [isInView, conversationSets.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.15] dark:bg-dot-white/[0.15] flex-col space-y-3 p-4 relative">
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -62,8 +61,12 @@ const SkeletonMatching = () => {
                 <div className={`flex items-start space-x-2 max-w-[85%] ${
                   msg.from === "ai" ? "flex-row-reverse space-x-reverse" : ""
                 }`}>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] flex items-center justify-center shrink-0 text-sm">
-                    {msg.avatar}
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] flex items-center justify-center shrink-0">
+                    {msg.avatar === "couple" ? (
+                      <Users className="w-4 h-4 text-white" />
+                    ) : (
+                      <Sparkles className="w-4 h-4 text-white" />
+                    )}
                   </div>
                   <div className={`rounded-2xl p-3 ${
                     msg.from === "couple" 
@@ -115,8 +118,7 @@ const SkeletonMessaging = () => {
   }, [isInView, messageThreads.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-2 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/20 via-[#9D5FA8]/20 to-[#823F91]/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.15] dark:bg-dot-white/[0.15] flex-col space-y-2 p-4 relative">
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -171,9 +173,8 @@ const SkeletonBudget = () => {
     <motion.div
       initial="initial"
       whileHover="animate"
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-2 items-center justify-center relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.15] dark:bg-dot-white/[0.15] flex-col space-y-2 items-center justify-center relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 via-emerald-600/20 to-teal-600/20 blur-3xl opacity-20" />
       <motion.div
         variants={variants}
         className="relative w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center relative z-10"
@@ -207,9 +208,8 @@ const SkeletonBudget = () => {
 const SkeletonPayments = () => {
   return (
     <motion.div
-      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col justify-center items-center p-4 space-y-3 relative"
+      className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.15] dark:bg-dot-white/[0.15] flex-col justify-center items-center p-4 space-y-3 relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-600/20 to-cyan-600/20 blur-3xl opacity-20" />
       <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full">
         {/* Montant en tiers de confiance */}
         <motion.div 
@@ -223,14 +223,14 @@ const SkeletonPayments = () => {
 
         {/* Flow tiers de confiance */}
         <div className="w-full flex items-center justify-between text-xs">
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-[#E8D4EF] dark:bg-[#823F91] flex items-center justify-center mb-1">
-              👰
+              <Users className="w-5 h-5 text-[#823F91] dark:text-white" />
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300">Couple</p>
           </motion.div>
@@ -242,14 +242,14 @@ const SkeletonPayments = () => {
             className="flex-1 h-0.5 bg-gradient-to-r from-[#823F91] to-green-600 mx-2"
           />
 
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.7 }}
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-1">
-              🔒
+              <Lock className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300">Escrow</p>
           </motion.div>
@@ -261,14 +261,14 @@ const SkeletonPayments = () => {
             className="flex-1 h-0.5 bg-gradient-to-r from-green-600 to-pink-600 mx-2"
           />
 
-          <motion.div 
+          <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 1.1 }}
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900 flex items-center justify-center mb-1">
-              🎵
+              <Music className="w-5 h-5 text-pink-600 dark:text-pink-400" />
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300">DJ</p>
           </motion.div>
@@ -280,8 +280,9 @@ const SkeletonPayments = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 1.3 }}
         >
-          <span className="text-xs bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full">
-            🔒 SSL sécurisé
+          <span className="text-xs bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full inline-flex items-center gap-1">
+            <Lock className="w-3 h-3" />
+            SSL sécurisé
           </span>
         </motion.div>
       </div>
@@ -322,8 +323,7 @@ const SkeletonTimeline = () => {
   }, [isInView, timelineSets.length]);
 
   return (
-    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.2] dark:bg-dot-white/[0.2] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-rose-600/20 blur-3xl opacity-20" />
+    <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.15] dark:bg-dot-white/[0.15] flex-col space-y-3 p-4 relative">
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div

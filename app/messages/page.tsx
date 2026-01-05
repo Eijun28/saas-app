@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import type { UserType } from '@/types/messages'
 
-export default function MessagesPage() {
+function MessagesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
@@ -81,7 +81,7 @@ export default function MessagesPage() {
   if (userLoading || !user || !userType) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Chargement..." />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
@@ -182,5 +182,13 @@ export default function MessagesPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <MessagesContent />
+    </Suspense>
   )
 }

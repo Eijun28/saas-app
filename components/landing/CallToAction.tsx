@@ -16,7 +16,6 @@ export default function CallToAction() {
           <div className="mt-12 flex flex-wrap justify-center gap-4">
             <Link href="/sign-up">
               <RippleButton
-                size="lg"
                 className="bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                 rippleColor="#ffffff"
               >
@@ -25,7 +24,6 @@ export default function CallToAction() {
             </Link>
             <Button
               asChild
-              size="lg"
               variant="outline"
             >
               <Link href="/tarifs">

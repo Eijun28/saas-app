@@ -124,7 +124,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
       category: provider.category,
       devis: provider.devis.toString(),
       notes: provider.notes || '',
-      statut: provider.statut,
+      statut: provider.statut as "contacte",
     })
   }
 

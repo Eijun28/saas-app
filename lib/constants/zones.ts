@@ -72,5 +72,5 @@ export const DEPARTEMENTS_BY_REGION = DEPARTEMENTS.reduce((acc, dept) => {
   }
   acc[dept.region].push(dept);
   return acc;
-}, {} as Record<string, typeof DEPARTEMENTS>);
+}, {} as Record<string, Array<typeof DEPARTEMENTS[number]>>);
 

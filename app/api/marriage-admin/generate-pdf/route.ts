@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     console.log('✅ PDF généré:', pdfBytes.length, 'bytes')
 
     // 4. Retourne le PDF
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="Dossier-Mariage-${marriageFile.municipality}.pdf"`

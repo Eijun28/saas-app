@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -30,12 +30,10 @@ export function AvatarCircles({
             href={avatar.profileUrl}
             className="relative inline-block transition-transform hover:scale-110 hover:z-10"
           >
-            <Avatar
-              src={avatar.imageUrl}
-              alt={`Avatar ${index + 1}`}
-              size="sm"
-              className="border-2 border-white ring-2 ring-[#E8D4EF]"
-            />
+            <Avatar className="h-10 w-10 border-2 border-white ring-2 ring-[#E8D4EF]">
+              <AvatarImage src={avatar.imageUrl} alt={`Avatar ${index + 1}`} />
+              <AvatarFallback>{index + 1}</AvatarFallback>
+            </Avatar>
           </Link>
         ))}
         {remainingCount > 0 && (

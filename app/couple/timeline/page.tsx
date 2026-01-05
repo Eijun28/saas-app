@@ -426,14 +426,14 @@ export default function TimelinePage() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <div className="bg-white rounded-xl border p-4">
                       <Calendar
-                        mode="single"
-                        selected={eventForm.event_date || undefined}
-                        onSelect={(date) => setEventForm({ ...eventForm, event_date: date || null })}
-                        locale={fr}
+                        initialDate={eventForm.event_date ? new Date(eventForm.event_date) : new Date()}
+                        onDateSelect={(date) => setEventForm({ ...eventForm, event_date: date })}
+                        showSelectedDateInfo={false}
+                        
                         className="rounded-md"
-                        captionLayout="dropdown-buttons"
-                        fromYear={2025}
-                        toYear={2030}
+                        
+                        
+                        
                       />
                     </div>
                   </PopoverContent>

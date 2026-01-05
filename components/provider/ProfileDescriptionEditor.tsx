@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Lightbulb } from 'lucide-react';
 
 interface ProfileDescriptionEditorProps {
   userId: string;
@@ -149,8 +150,9 @@ export function ProfileDescriptionEditor({
         
         {/* Conseil pour une bonne description */}
         <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            💡 Conseil pour une bonne description
+          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+            <Lightbulb className="w-5 h-5" />
+            Conseil pour une bonne description
           </h3>
           <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
             <li>• Mentionnez votre spécialité principale</li>

@@ -99,4 +99,4 @@ export function useToast() {
   }
 }
 
-export { toast }
+export { addToast as toast }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -289,7 +289,9 @@ export function ProfilePreviewDialog({
                     </div>
                   ) : (
                     <Card className="p-12 text-center">
-                      <div className="text-6xl mb-4">📸</div>
+                      <div className="mb-4 flex justify-center">
+                        <Camera className="w-16 h-16 text-muted-foreground" />
+                      </div>
                       <h3 className="font-semibold text-lg mb-2">
                         Aucune photo dans votre portfolio
                       </h3>

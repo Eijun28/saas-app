@@ -40,7 +40,6 @@ export function HeroFlipWords() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
             <Link href="/sign-up">
               <RippleButton
-                size="lg"
                 className="text-lg px-8 py-6 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                 rippleColor="#ffffff"
               >
@@ -50,7 +49,6 @@ export function HeroFlipWords() {
 
             <Button 
               asChild
-              size="lg" 
               variant="outline" 
               className="text-lg px-8 py-6 border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]"
             >

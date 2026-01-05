@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Camera, UtensilsCrossed, Music, Flower2, Castle, Video } from "lucide-react";
 
 import { AnimatedList } from "@/components/ui/animated-list";
 
 interface Match {
   name: string;
   description: string;
-  icon: string;
+  icon: 'camera' | 'food' | 'music' | 'flower' | 'venue' | 'video';
   color: string;
   time: string;
   matchScore: number;
@@ -18,7 +19,7 @@ let matches = [
     name: "Sophie Martin",
     description: "Photographe trouvé",
     time: "Il y a 2 min",
-    icon: "📸",
+    icon: "camera" as const,
     color: "#00C9A7",
     matchScore: 99,
   },
@@ -26,7 +27,7 @@ let matches = [
     name: "Traiteur Le Gourmet",
     description: "Traiteur disponible",
     time: "Il y a 5 min",
-    icon: "🍽️",
+    icon: "food" as const,
     color: "#FFB800",
     matchScore: 95,
   },
@@ -34,7 +35,7 @@ let matches = [
     name: "DJ Laurent Dubois",
     description: "DJ trouvé",
     time: "Il y a 8 min",
-    icon: "🎵",
+    icon: "music" as const,
     color: "#FF3D71",
     matchScore: 92,
   },
@@ -42,7 +43,7 @@ let matches = [
     name: "Fleuriste Roses & Co",
     description: "Fleuriste disponible",
     time: "Il y a 12 min",
-    icon: "💐",
+    icon: "flower" as const,
     color: "#845EC2",
     matchScore: 97,
   },
@@ -50,7 +51,7 @@ let matches = [
     name: "Château de Versailles",
     description: "Lieu de réception trouvé",
     time: "Il y a 15 min",
-    icon: "🏰",
+    icon: "venue" as const,
     color: "#FF6F91",
     matchScore: 88,
   },
@@ -58,7 +59,7 @@ let matches = [
     name: "Vidéaste Pro Events",
     description: "Vidéaste disponible",
     time: "Il y a 18 min",
-    icon: "🎥",
+    icon: "video" as const,
     color: "#00D4FF",
     matchScore: 94,
   },
@@ -67,6 +68,15 @@ let matches = [
 matches = Array.from({ length: 10 }, () => matches).flat();
 
 const Match = ({ name, description, icon, color, time, matchScore }: Match) => {
+  const IconComponent = {
+    camera: Camera,
+    food: UtensilsCrossed,
+    music: Music,
+    flower: Flower2,
+    venue: Castle,
+    video: Video,
+  }[icon];
+
   return (
     <figure
       className={cn(
@@ -86,7 +96,7 @@ const Match = ({ name, description, icon, color, time, matchScore }: Match) => {
             backgroundColor: color,
           }}
         >
-          <span className="text-lg">{icon}</span>
+          <IconComponent className="w-5 h-5 text-white" />
         </div>
         <div className="flex flex-col overflow-hidden">
           <figcaption className="flex flex-row items-center whitespace-pre text-lg font-medium dark:text-white ">

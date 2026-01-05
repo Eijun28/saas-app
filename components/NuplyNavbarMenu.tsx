@@ -61,15 +61,17 @@ export function NuplyNavbarMenu() {
               // Sinon vérifier dans profiles (prestataires)
               supabase
                 .from('profiles')
-                .select('role, prenom, nom')
+                .select('*')
                 .eq('id', user.id)
                 .single()
                 .then(({ data, error: profileError }) => {
-                  if (profileError) {
+                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
+                  if (profileError && profileError.code !== 'PGRST116') {
                     console.error('Erreur lors de la récupération du profil:', profileError);
-                    return;
                   }
-                  setProfile(data);
+                  if (data) {
+                    setProfile(data);
+                  }
                 });
             });
         }
@@ -105,15 +107,17 @@ export function NuplyNavbarMenu() {
               // Sinon vérifier dans profiles (prestataires)
               supabase
                 .from('profiles')
-                .select('role, prenom, nom')
+                .select('*')
                 .eq('id', session.user.id)
                 .single()
                 .then(({ data, error: profileError }) => {
-                  if (profileError) {
+                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
+                  if (profileError && profileError.code !== 'PGRST116') {
                     console.error('Erreur lors de la récupération du profil:', profileError);
-                    return;
                   }
-                  setProfile(data);
+                  if (data) {
+                    setProfile(data);
+                  }
                 });
             });
         } else {
@@ -284,7 +288,6 @@ function Navbar({
               <Button
                 onClick={handleSignOutClick}
                 variant="ghost"
-                size="sm"
                 className="text-sm h-8"
               >
                 <LogOut className="h-4 w-4 mr-1" />
@@ -295,7 +298,7 @@ function Navbar({
             <>
               <Link href="/sign-in">
                 <RippleButton
-                  size="sm"
+                  
                   className="text-sm h-8 border-transparent bg-transparent"
                   rippleColor="#823F91"
                 >
@@ -304,7 +307,7 @@ function Navbar({
               </Link>
               <Link href="/sign-up">
                 <RippleButton
-                  size="sm"
+                  
                   className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                   rippleColor="#ffffff"
                 >
