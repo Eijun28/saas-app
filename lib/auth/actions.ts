@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 import { revalidatePath } from 'next/cache'
 
@@ -18,6 +19,10 @@ export async function signUp(
 ) {
   const supabase = await createClient()
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:signUp_start',message:'signUp called',data:{email,role,profileData},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -31,6 +36,10 @@ export async function signUp(
       }
     },
   })
+
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:after_signUp',message:'auth.signUp result',data:{hasUser:!!data?.user,userId:data?.user?.id,error:error?.message||null,session:!!data?.session},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
 
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
@@ -46,9 +55,12 @@ export async function signUp(
   if (data.user) {
     try {
       if (role === 'couple') {
+        // Utiliser le client admin pour contourner les politiques RLS
+        const adminClient = createAdminClient()
+        
         // Insérer dans la table couples (nouvelle structure)
         // Note: currency a une valeur par défaut 'EUR' dans le schéma
-        const { error: coupleError } = await supabase
+        const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
             id: data.user.id,
@@ -67,7 +79,7 @@ export async function signUp(
         } else {
           // Créer les préférences vides pour le nouveau couple
           try {
-            await supabase
+            await adminClient
               .from('couple_preferences')
               .insert({
                 couple_id: data.user.id,
@@ -87,8 +99,16 @@ export async function signUp(
           }
         }
       } else {
+        // #region agent log
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:before_profile_insert',message:'Before profiles insert for prestataire (using admin client)',data:{targetUserId:data.user.id,currentAuthUid:currentUser?.id||null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+        // #endregion
+
+        // Utiliser le client admin pour contourner les politiques RLS
+        const adminClient = createAdminClient()
+        
         // Insérer dans la table profiles (prestataires)
-        const { error: profileError } = await supabase
+        const { error: profileError } = await adminClient
           .from('profiles')
           .insert({
             id: data.user.id,
@@ -98,6 +118,10 @@ export async function signUp(
             nom: profileData.nom,
             nom_entreprise: profileData.nomEntreprise || null,
           })
+
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:after_profile_insert',message:'After profiles insert result (admin client)',data:{profileError:profileError?.message||null,profileErrorCode:profileError?.code||null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
+        // #endregion
 
         if (profileError) {
           console.error('Erreur création prestataire:', profileError)
