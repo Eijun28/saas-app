@@ -6,7 +6,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface AvatarUploaderProps {
@@ -31,7 +31,6 @@ export function AvatarUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   // Fonction helper pour nettoyer l'URL et ajouter un nouveau timestamp
   const getUrlWithTimestamp = (url: string | null): string | null => {
@@ -189,10 +188,8 @@ export function AvatarUploader({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: 'Le fichier doit être une image',
-        variant: 'destructive',
       });
       return;
     }
@@ -251,18 +248,14 @@ export function AvatarUploader({
       setAvatarUrl(urlWithTimestamp);
       setImageKey(prev => prev + 1); // Forcer le re-render
       onAvatarUpdate?.(urlData.publicUrl); // Callback sans timestamp (pour la DB)
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Photo de profil mise à jour',
-        variant: 'success',
       });
     } catch (error: any) {
       console.error('Avatar upload error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de l\'upload';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     } finally {
       setIsUploading(false);
@@ -301,18 +294,14 @@ export function AvatarUploader({
 
       setAvatarUrl(null);
       onAvatarUpdate?.(null);
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Photo de profil supprimée',
-        variant: 'success',
       });
     } catch (error: any) {
       console.error('Delete error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la suppression';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     }
   }

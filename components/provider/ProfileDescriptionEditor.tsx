@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Lightbulb } from 'lucide-react';
 
 interface ProfileDescriptionEditorProps {
@@ -26,7 +26,6 @@ export function ProfileDescriptionEditor({
   const [initialDescription, setInitialDescription] = useState(currentDescription);
   const [initialBio, setInitialBio] = useState(currentBio);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
   const justSavedRef = useRef(false);
 
   useEffect(() => {
@@ -66,10 +65,8 @@ export function ProfileDescriptionEditor({
 
   async function handleSave() {
     if (description.length > 150) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: 'La description courte doit faire maximum 150 caractères',
-        variant: 'destructive',
       });
       return;
     }
@@ -102,10 +99,8 @@ export function ProfileDescriptionEditor({
       // Marquer qu'on vient de sauvegarder
       justSavedRef.current = true;
       
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Description mise à jour',
-        variant: 'success',
       });
       
       // Appeler onSave qui déclenchera loadAllData pour recharger depuis la DB
@@ -114,10 +109,8 @@ export function ProfileDescriptionEditor({
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);

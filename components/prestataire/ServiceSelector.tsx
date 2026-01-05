@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/components/providers/Providers'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,7 +40,6 @@ export function ServiceSelector() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const { toast } = useToast()
 
   // Charger le service existant au montage
   useEffect(() => {
@@ -91,11 +90,7 @@ export function ServiceSelector() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté",
-          variant: "destructive",
-        })
+        toast.error("Vous devez être connecté")
         setIsSaving(false)
         return
       }
@@ -111,16 +106,13 @@ export function ServiceSelector() {
       setCurrentService(serviceToSave)
       setIsEditing(false)
       
-      toast({
-        title: "✅ Succès",
+      toast.success("✅ Succès", {
         description: "Merci ! Votre type de service a été enregistré avec succès.",
       })
     } catch (error: any) {
       console.error('Erreur lors de la sauvegarde:', error)
-      toast({
-        title: "Erreur",
+      toast.error("Erreur", {
         description: error.message || "Impossible d'enregistrer le service",
-        variant: "destructive",
       })
     } finally {
       setIsSaving(false)

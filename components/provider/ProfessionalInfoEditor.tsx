@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 interface ProfessionalInfoEditorProps {
   userId: string
@@ -30,7 +30,6 @@ export function ProfessionalInfoEditor({
   const [ville, setVille] = useState(currentVille || '')
   const [initialData, setInitialData] = useState({ budgetMin: '', budgetMax: '', experience: '', ville: '' })
   const [isSaving, setIsSaving] = useState(false)
-  const { toast } = useToast()
 
   useEffect(() => {
     const newData = {
@@ -82,10 +81,8 @@ export function ProfessionalInfoEditor({
     const yearsExp = experience ? parseInt(experience) : null
 
     if (minBudget && maxBudget && minBudget > maxBudget) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: 'Le budget minimum ne peut pas être supérieur au maximum',
-        variant: 'destructive',
       })
       return
     }
@@ -105,20 +102,16 @@ export function ProfessionalInfoEditor({
 
     if (error) {
       console.error('Update error:', error)
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: error.message || 'Erreur lors de la sauvegarde',
-        variant: 'destructive',
       })
       setIsSaving(false)
       return
     }
 
     setInitialData({ budgetMin, budgetMax, experience, ville })
-    toast({
-      title: 'Succès',
+    toast.success('Succès', {
       description: 'Informations mises à jour',
-      variant: 'success',
     })
     setIsSaving(false)
     onSave?.()

@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CULTURES } from '@/lib/constants/cultures';
 
 interface CultureSelectorProps {
@@ -32,7 +32,6 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
   const [initialIds, setInitialIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
 
   // Charger les cultures au mount
   useEffect(() => {
@@ -106,19 +105,15 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
       }
 
       setInitialIds(selectedIds);
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Cultures mises à jour',
-        variant: 'success',
       });
       onSave?.();
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);

@@ -5,7 +5,7 @@ import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import NextImage from 'next/image';
 import type { ProviderPortfolioImage } from '@/lib/types/prestataire';
@@ -21,7 +21,6 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     loadPortfolio();
@@ -38,10 +37,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
     if (error) {
       console.error('Error loading portfolio:', error);
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: 'Erreur lors du chargement du portfolio',
-        variant: 'destructive',
       });
     } else {
       setImages(data || []);
@@ -104,10 +101,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
     // Vérifier limite
     if (images.length + files.length > maxImages) {
-      toast({
-        title: 'Limite atteinte',
+      toast.error('Limite atteinte', {
         description: `Maximum ${maxImages} photos autorisées`,
-        variant: 'destructive',
       });
       return;
     }
@@ -119,20 +114,16 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
       // Vérifier type
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: 'Erreur',
+        toast.error('Erreur', {
           description: `${file.name} n'est pas une image`,
-          variant: 'destructive',
         });
         continue;
       }
 
       // Vérifier taille (max 10MB avant compression)
       if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: 'Fichier trop volumineux',
+        toast.error('Fichier trop volumineux', {
           description: `${file.name} est trop volumineux (max 10MB)`,
-          variant: 'destructive',
         });
         continue;
       }
@@ -181,19 +172,15 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
         // Ajouter à l'état
         setImages(prev => [...prev, dbData]);
-        toast({
-          title: 'Succès',
+        toast.success('Succès', {
           description: 'Photo ajoutée',
-          variant: 'success',
         });
         onSave?.(); // Trigger parent refresh
       } catch (error: any) {
         console.error('Upload error:', error);
         const errorMessage = error?.message || error?.code || error?.details || `Erreur lors de l'upload de ${file.name}`;
-        toast({
-          title: 'Erreur',
+        toast.error('Erreur', {
           description: errorMessage,
-          variant: 'destructive',
         });
       }
     }
@@ -225,19 +212,15 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
       // Retirer de l'état
       setImages(prev => prev.filter(img => img.id !== imageId));
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Photo supprimée',
-        variant: 'success',
       });
       onSave?.(); // Trigger parent refresh
     } catch (error: any) {
       console.error('Delete error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la suppression';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     }
   }

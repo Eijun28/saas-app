@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 interface BusinessNameEditorProps {
   userId: string
@@ -17,7 +17,6 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
   const [name, setName] = useState(currentName)
   const [initialName, setInitialName] = useState(currentName)
   const [isSaving, setIsSaving] = useState(false)
-  const { toast } = useToast()
 
   useEffect(() => {
     const newName = currentName || '';
@@ -40,10 +39,8 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
     e.stopPropagation()
 
     if (!name.trim()) {
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: 'Le nom d\'entreprise est obligatoire',
-        variant: 'destructive',
       })
       return
     }
@@ -60,20 +57,16 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
 
     if (error) {
       console.error('Update error:', error)
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: error.message || 'Erreur lors de la sauvegarde',
-        variant: 'destructive',
       })
       setIsSaving(false)
       return
     }
 
     setInitialName(name.trim())
-    toast({
-      title: 'Succès',
+    toast.success('Succès', {
       description: 'Nom d\'entreprise mis à jour',
-      variant: 'success',
     })
     setIsSaving(false)
     onSave?.()

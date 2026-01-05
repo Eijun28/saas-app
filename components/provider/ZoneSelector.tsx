@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DEPARTEMENTS, DEPARTEMENTS_BY_REGION } from '@/lib/constants/zones';
 
 interface ZoneSelectorProps {
@@ -33,7 +33,6 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
   const [initialIds, setInitialIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     loadUserZones();
@@ -105,19 +104,15 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
       }
 
       setInitialIds(selectedIds);
-      toast({
-        title: 'Succès',
+      toast.success('Succès', {
         description: 'Zones mises à jour',
-        variant: 'success',
       });
       onSave?.();
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';
-      toast({
-        title: 'Erreur',
+      toast.error('Erreur', {
         description: errorMessage,
-        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
