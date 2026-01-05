@@ -19,10 +19,6 @@ export async function signUp(
 ) {
   const supabase = await createClient()
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:signUp_start',message:'signUp called',data:{email,role,profileData},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -36,10 +32,6 @@ export async function signUp(
       }
     },
   })
-
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:after_signUp',message:'auth.signUp result',data:{hasUser:!!data?.user,userId:data?.user?.id,error:error?.message||null,session:!!data?.session},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
 
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
@@ -99,11 +91,6 @@ export async function signUp(
           }
         }
       } else {
-        // #region agent log
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:before_profile_insert',message:'Before profiles insert for prestataire (using admin client)',data:{targetUserId:data.user.id,currentAuthUid:currentUser?.id||null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-        // #endregion
-
         // Utiliser le client admin pour contourner les politiques RLS
         const adminClient = createAdminClient()
         
@@ -118,10 +105,6 @@ export async function signUp(
             nom: profileData.nom,
             nom_entreprise: profileData.nomEntreprise || null,
           })
-
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:after_profile_insert',message:'After profiles insert result (admin client)',data:{profileError:profileError?.message||null,profileErrorCode:profileError?.code||null},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,D'})}).catch(()=>{});
-        // #endregion
 
         if (profileError) {
           console.error('Erreur création prestataire:', profileError)
