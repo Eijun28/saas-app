@@ -2,7 +2,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request)
 
   const isAuthRoute =
@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll() {
-          // Ne rien faire dans le middleware
+          // Ne rien faire dans le proxy
         },
       },
     }
@@ -115,3 +115,4 @@ export const config = {
     '/sign-up/:path*',
   ],
 }
+
