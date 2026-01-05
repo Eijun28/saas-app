@@ -17,7 +17,7 @@ interface AIDocumentGeneratorProps {
 }
 
 export function AIDocumentGenerator({ 
-  document, 
+  document: doc, 
   marriageFile, 
   onClose 
 }: AIDocumentGeneratorProps) {
@@ -35,7 +35,7 @@ export function AIDocumentGenerator({
       let userData: any = {}
       const questionnaire = marriageFile.questionnaire_data
 
-      if (document.id === 'birth_certificate') {
+      if (doc.id === 'birth_certificate') {
         // Demande d'acte de naissance (Spouse A par défaut)
         userData = {
           firstName: questionnaire.spouseAFirstName,
@@ -45,7 +45,7 @@ export function AIDocumentGenerator({
           weddingDate: new Date(marriageFile.wedding_date).toLocaleDateString('fr-FR'),
           municipality: marriageFile.municipality
         }
-      } else if (document.id === 'address_proof') {
+      } else if (doc.id === 'address_proof') {
         // Attestation d'hébergement
         userData = {
           hostName: '[NOM DE L\'HÉBERGEUR]',
@@ -53,7 +53,7 @@ export function AIDocumentGenerator({
           guestName: `${questionnaire.spouseAFirstName} ${questionnaire.spouseALastName}`,
           sinceDate: '[DATE DE DÉBUT]'
         }
-      } else if (document.id === 'witnesses_list') {
+      } else if (doc.id === 'witnesses_list') {
         // Liste des témoins
         userData = {
           witnesses: [
@@ -82,9 +82,9 @@ export function AIDocumentGenerator({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          documentType: document.id === 'birth_certificate' 
+          documentType: doc.id === 'birth_certificate' 
             ? 'birth_certificate_request' 
-            : document.id === 'address_proof'
+            : doc.id === 'address_proof'
             ? 'housing_certificate'
             : 'witnesses_list',
           userData
@@ -123,7 +123,7 @@ export function AIDocumentGenerator({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${document.id}-${Date.now()}.txt`
+    a.download = `${doc.id}-${Date.now()}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -139,7 +139,7 @@ export function AIDocumentGenerator({
             Générer avec l'IA
           </DialogTitle>
           <DialogDescription>
-            {document.label} - {document.description}
+            {doc.label} - {doc.description}
           </DialogDescription>
         </DialogHeader>
 

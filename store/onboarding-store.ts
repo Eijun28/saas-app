@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export type UserRole = 'couple' | 'prestataire'
+export type Role = UserRole
 export type PrestataireType =
   | 'photographe'
   | 'videaste'

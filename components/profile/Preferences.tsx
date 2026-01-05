@@ -232,7 +232,7 @@ export function Preferences({
               onCheckedChange={(checked) => onChange('notificationsEmail', checked)}
             />
           ) : (
-            <Badge variant={notificationsEmail ? 'success' : 'outline'}>
+            <Badge variant={notificationsEmail ? 'brand' : 'outline'}>
               {notificationsEmail ? 'Activé' : 'Désactivé'}
             </Badge>
           )}
