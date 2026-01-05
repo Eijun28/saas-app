@@ -34,7 +34,7 @@ export default function CTA({
   className,
 }: CTAProps) {
   return (
-    <Section className={cn("group relative overflow-hidden bg-transparent", className)}>
+    <Section className={cn("group relative overflow-hidden", className)}>
       <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
         <h2 className="max-w-[640px] text-3xl leading-tight font-semibold sm:text-5xl sm:leading-tight text-[#2D1B3D]">
           {title}
@@ -61,22 +61,32 @@ export default function CTA({
           </div>
         )}
       </div>
-      {/* Glow effect personnalisé avec couleurs Nuply - subtil */}
+      {/* Glows blancs subtils pour illuminer la section */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Glow principal - taille réduite, opacité réduite */}
+        {/* Glow blanc principal - effet lumière douce */}
         <div 
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[100%] h-[300px] sm:h-[400px] rounded-full blur-3xl transition-all duration-500 ease-in-out translate-y-4 group-hover:-translate-y-8 opacity-30 group-hover:opacity-50"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[300px] rounded-full blur-3xl opacity-40"
           style={{
-            background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.3) 0%, rgba(157, 95, 168, 0.2) 20%, rgba(130, 63, 145, 0.1) 40%, transparent 70%)',
+            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 30%, transparent 70%)',
           }}
         />
         
-        {/* Glow secondaire - accent subtil */}
+        {/* Glow blanc secondaire - accent lumineux */}
         <div 
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[200px] sm:h-[250px] rounded-full blur-2xl transition-all duration-500 ease-in-out translate-y-4 group-hover:-translate-y-8 opacity-25 group-hover:opacity-40"
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[50%] h-[150px] rounded-full blur-2xl opacity-50"
           style={{
-            background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.35) 0%, rgba(109, 52, 120, 0.25) 25%, transparent 60%)',
+            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 40%, transparent 70%)',
           }}
+        />
+        
+        {/* Petits glows blancs dispersés */}
+        <div 
+          className="absolute top-1/4 left-1/4 w-24 h-24 rounded-full blur-2xl opacity-30"
+          style={{ background: 'rgba(255, 255, 255, 0.6)' }}
+        />
+        <div 
+          className="absolute bottom-1/3 right-1/4 w-32 h-32 rounded-full blur-2xl opacity-25"
+          style={{ background: 'rgba(255, 255, 255, 0.5)' }}
         />
       </div>
     </Section>

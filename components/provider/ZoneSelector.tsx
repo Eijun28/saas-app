@@ -146,22 +146,23 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Rechercher un département..." />
-              <CommandEmpty>Aucun département trouvé</CommandEmpty>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white" align="start">
+            <Command className="bg-white">
+              <CommandInput placeholder="Rechercher un département..." className="text-[#4A1259]" />
+              <CommandEmpty className="text-[#4A1259]">Aucun département trouvé</CommandEmpty>
               <CommandList>
                 {Object.entries(DEPARTEMENTS_BY_REGION).map(([region, depts]) => (
-                  <CommandGroup key={region} heading={region}>
+                  <CommandGroup key={region} heading={region} className="text-[#4A1259] [&_[cmdk-group-heading]]:text-[#823F91] [&_[cmdk-group-heading]]:font-semibold">
                     {depts.map(dept => (
                       <CommandItem
                         key={dept.id}
                         value={`${dept.label} ${dept.id}`}
                         onSelect={() => toggleZone(dept.id)}
+                        className="text-[#4A1259] data-[selected=true]:bg-[#823F91]/10 data-[selected=true]:text-[#4A1259]"
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "mr-2 h-4 w-4 text-[#823F91]",
                             selectedIds.includes(dept.id)
                               ? "opacity-100"
                               : "opacity-0"

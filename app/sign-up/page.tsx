@@ -109,8 +109,11 @@ export default function SignUpPage() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
         className="w-full max-w-2xl"
       >
-        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5">
-          <CardHeader className="space-y-3 pb-6 text-center">
+        <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
+          {/* Reflets violets */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-400/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-purple-500/15 to-violet-300/15 rounded-full blur-3xl pointer-events-none" />
+          <CardHeader className="space-y-3 pb-6 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -130,7 +133,7 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="relative z-10">
 
             <motion.form
               variants={containerVariants}

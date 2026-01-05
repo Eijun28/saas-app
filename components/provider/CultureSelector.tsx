@@ -149,11 +149,11 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Rechercher une culture..." />
-              <CommandEmpty>Aucune culture trouvée</CommandEmpty>
-              <CommandGroup>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white" align="start">
+            <Command className="bg-white">
+              <CommandInput placeholder="Rechercher une culture..." className="text-[#4A1259]" />
+              <CommandEmpty className="text-[#4A1259]">Aucune culture trouvée</CommandEmpty>
+              <CommandGroup className="text-[#4A1259]">
                 {CULTURES.map(culture => (
                   <CommandItem
                     key={culture.id}
@@ -161,10 +161,11 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
                     onSelect={() => {
                       toggleCulture(culture.id);
                     }}
+                    className="text-[#4A1259] data-[selected=true]:bg-[#823F91]/10 data-[selected=true]:text-[#4A1259]"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-4 w-4 text-[#823F91]",
                         selectedIds.includes(culture.id)
                           ? "opacity-100"
                           : "opacity-0"
