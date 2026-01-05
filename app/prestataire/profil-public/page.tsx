@@ -179,8 +179,8 @@ export default function ProfilPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-white border-b">
+    <div className="min-h-screen bg-background">
+      <div className="bg-background">
         <div className="container max-w-7xl">
           <div className="flex items-center justify-between h-20">
             <div>
@@ -260,7 +260,7 @@ export default function ProfilPublicPage() {
             onOpenChange={() => toggleSection('infos')}
           >
             <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-white">
+              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
                 <div className="flex items-center gap-3">
                   {profile?.avatar_url && profile?.nom_entreprise && profile?.description_courte ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
@@ -281,7 +281,7 @@ export default function ProfilPublicPage() {
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 space-y-6 border-t border-[#823F91]/20 pt-6 bg-white">
+                <div className="px-6 pb-6 space-y-6 border-t border-[#823F91]/20 pt-6 bg-background">
                   <AvatarUploader
                     userId={user.id}
                     currentAvatarUrl={profile?.avatar_url}
@@ -323,7 +323,7 @@ export default function ProfilPublicPage() {
             onOpenChange={() => toggleSection('cultures')}
           >
             <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-white">
+              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
                 <div className="flex items-center gap-3">
                   {cultures.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
@@ -346,7 +346,7 @@ export default function ProfilPublicPage() {
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-white">
+                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
                   <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>
@@ -358,7 +358,7 @@ export default function ProfilPublicPage() {
             onOpenChange={() => toggleSection('zones')}
           >
             <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-white">
+              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
                 <div className="flex items-center gap-3">
                   {zones.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
@@ -381,7 +381,7 @@ export default function ProfilPublicPage() {
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-white">
+                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
                   <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>
@@ -393,7 +393,7 @@ export default function ProfilPublicPage() {
             onOpenChange={() => toggleSection('portfolio')}
           >
             <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-white">
+              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
                 <div className="flex items-center gap-3">
                   {portfolio.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
@@ -416,7 +416,7 @@ export default function ProfilPublicPage() {
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-white">
+                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
                   <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>

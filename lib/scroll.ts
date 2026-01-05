@@ -9,7 +9,7 @@ export const initSmoothScroll = () => {
       return {
         destroy: () => {},
         raf: () => {},
-      } as Lenis
+      } as unknown as Lenis
     }
   }
 
@@ -20,7 +20,6 @@ export const initSmoothScroll = () => {
     gestureOrientation: 'vertical',
     smoothWheel: true,
     wheelMultiplier: 1,
-    smoothTouch: false,
     touchMultiplier: 2,
     infinite: false,
   })

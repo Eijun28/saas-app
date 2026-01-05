@@ -192,8 +192,10 @@ export default function AgendaPage() {
             Gérez votre disponibilité et vos événements
           </p>
         </motion.div>
+      </div>
 
-        {/* Bouton Ajouter */}
+      {/* Bouton Ajouter */}
+      <div className="flex justify-end">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 
@@ -305,7 +307,7 @@ export default function AgendaPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <Card className="border-[#823F91]/20 bg-white">
+        <Card className="border-[#823F91]/20 bg-background">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
               <CalendarIcon className="h-5 w-5 text-[#823F91]" />
@@ -332,7 +334,7 @@ export default function AgendaPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                     whileHover={{ x: 4 }}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20 bg-white hover:bg-[#823F91]/5 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#823F91]/20"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20 bg-background hover:bg-[#823F91]/5 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#823F91]/20"
                     onClick={() => handleEditEvent(event)}
                   >
                     <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex flex-col items-center justify-center text-white flex-shrink-0 shadow-lg shadow-[#823F91]/30">

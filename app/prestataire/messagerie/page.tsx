@@ -114,10 +114,10 @@ export default function PrestataireMessageriePage() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <Card className="border-[#823F91]/20 bg-white h-[600px] flex flex-col">
+          <Card className="border-[#823F91]/20 bg-background h-[600px] flex flex-col">
             <CardContent className="p-0 flex flex-col h-full">
               {/* Search */}
-              <div className="p-4 border-b border-[#823F91]/20 bg-white">
+              <div className="p-4 border-b border-[#823F91]/20 bg-background">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#823F91]/50" />
                   <Input
@@ -190,7 +190,7 @@ export default function PrestataireMessageriePage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="lg:col-span-2"
         >
-          <Card className="border-[#823F91]/20 bg-white h-[600px] flex flex-col">
+          <Card className="border-[#823F91]/20 bg-background h-[600px] flex flex-col">
             <CardContent className="p-0 flex flex-col h-full">
               {!selectedConversation ? (
                 <div className="flex-1 flex items-center justify-center">
@@ -202,7 +202,7 @@ export default function PrestataireMessageriePage() {
               ) : (
                 <>
                   {/* Header conversation */}
-                  <div className="p-4 border-b border-[#823F91]/20 bg-white">
+                  <div className="p-4 border-b border-[#823F91]/20 bg-background">
                     <h3 className="font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
                       {currentConversation?.couple_nom}
                     </h3>

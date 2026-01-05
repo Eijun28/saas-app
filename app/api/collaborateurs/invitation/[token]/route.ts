@@ -7,10 +7,10 @@ const TOKEN_REGEX = /^[a-f0-9]{64}$/i
 
 export async function GET(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
+    const { token } = await params
 
     if (!token || !TOKEN_REGEX.test(token)) {
       return NextResponse.json(

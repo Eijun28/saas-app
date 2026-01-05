@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { AvatarCircles } from '@/components/ui/avatar-circles';
+import Glow from '@/components/ui/glow';
 
 export default function Hero() {
   // Animation variants optimisés pour Next.js 15
@@ -71,12 +72,18 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30">
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-violet-50/30 pt-24 sm:pt-32">
       {/* Background decoration avec blur optimisé */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#9D5FA8]/20 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
+
+      {/* Glow effect */}
+      <Glow
+        variant="top"
+        className="animate-appear-zoom opacity-0 delay-1000"
+      />
 
       <motion.div
         className="container mx-auto px-6 py-16 text-center"
@@ -95,25 +102,17 @@ export default function Hero() {
         </motion.div>
 
         {/* Titre principal */}
-        <motion.h1
-          variants={itemVariants}
-          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-4 leading-[1.2] px-4 max-w-4xl mx-auto"
-        >
-          <span className="text-slate-900">Votre mariage, vos racines.</span>
+        <h1 className="animate-appear from-[#823F91] to-[#6D3478] relative z-10 inline-block bg-gradient-to-r bg-clip-text text-2xl leading-tight font-semibold text-balance text-transparent drop-shadow-2xl sm:text-3xl sm:leading-tight md:text-4xl md:leading-tight lg:text-5xl lg:leading-tight xl:text-6xl xl:leading-tight mb-4 px-4 max-w-4xl mx-auto">
+          Votre mariage, vos racines.
           <br />
-          <span className="text-[#823F91] font-extrabold">
-            Leurs traditions, leur expertise.
-          </span>
-        </motion.h1>
+          Leurs traditions, leur expertise.
+        </h1>
 
         {/* Sous-titre */}
-        <motion.p
-          variants={itemVariants}
-          className="text-base md:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed font-normal px-4"
-        >
+        <p className="text-sm animate-appear text-muted-foreground relative z-10 max-w-[740px] font-medium text-balance opacity-0 delay-100 sm:text-base md:text-lg lg:text-xl mx-auto mb-8 leading-relaxed px-4">
           Des prestataires de mariage qui connaissent vos traditions sur le bout des doigts.{' '}
           Matching par culture, budget et dispo.
-        </motion.p>
+        </p>
 
         {/* CTAs */}
         <motion.div

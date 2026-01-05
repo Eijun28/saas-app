@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { TopBar } from "@/components/layout/TopBar"
 import { PrestataireSidebarWrapper } from "./sidebar-wrapper"
-import { MobileMenuClient } from "./mobile-menu-client"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 
 export default async function PrestataireLayout({
   children,
@@ -17,15 +17,11 @@ export default async function PrestataireLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <SidebarProvider>
       <PrestataireSidebarWrapper />
-      <div className="lg:pl-[280px]">
-        <TopBar />
-        <MobileMenuClient />
-        <main className="p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
-    </div>
+      <SidebarInsetWrapper>
+        {children}
+      </SidebarInsetWrapper>
+    </SidebarProvider>
   )
 }

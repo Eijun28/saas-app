@@ -1,27 +1,48 @@
-import { cn } from "@/lib/utils"
+import { cva, VariantProps } from "class-variance-authority";
+import React from "react";
 
-interface GlowProps {
-  variant?: "top" | "bottom" | "left" | "right" | "center"
-  className?: string
-}
+import { cn } from "@/lib/utils";
 
-export default function Glow({ variant = "bottom", className }: GlowProps) {
-  const variantClasses = {
-    top: "top-0 left-1/2 -translate-x-1/2",
-    bottom: "bottom-0 left-1/2 -translate-x-1/2",
-    left: "left-0 top-1/2 -translate-y-1/2",
-    right: "right-0 top-1/2 -translate-y-1/2",
-    center: "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-  }
+const glowVariants = cva("absolute w-full", {
+  variants: {
+    variant: {
+      top: "top-0",
+      above: "-top-[128px]",
+      bottom: "bottom-0",
+      below: "-bottom-[128px]",
+      center: "top-[50%]",
+    },
+  },
+  defaultVariants: {
+    variant: "top",
+  },
+});
 
+function Glow({
+  className,
+  variant,
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof glowVariants>) {
   return (
     <div
-      className={cn(
-        "absolute h-[500px] w-[500px] rounded-full bg-gradient-to-r from-[#823F91]/20 via-[#823F91]/10 to-transparent blur-3xl",
-        variantClasses[variant],
-        className
-      )}
-    />
-  )
+      data-slot="glow"
+      className={cn(glowVariants({ variant }), className)}
+      {...props}
+    >
+      <div
+        className={cn(
+          "from-brand-foreground/50 to-brand-foreground/0 absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[512px] dark:opacity-100",
+          variant === "center" && "-translate-y-1/2",
+        )}
+      />
+      <div
+        className={cn(
+          "from-brand/30 to-brand-foreground/0 absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[256px] dark:opacity-100",
+          variant === "center" && "-translate-y-1/2",
+        )}
+      />
+    </div>
+  );
 }
 
+export default Glow;

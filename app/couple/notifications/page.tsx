@@ -19,9 +19,11 @@ export default function NotificationsPage() {
   }, [user])
 
   const loadNotifications = async () => {
+    if (!user) return
+
     setLoading(true)
     const supabase = createClient()
-    
+
     // Pour l'instant, on récupère les messages non lus comme notifications
     // À adapter selon votre système de notifications
     const { data: conversations } = await supabase

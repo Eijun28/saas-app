@@ -128,9 +128,21 @@ body {
     background-clip: text;
   } */
   .pattern-dots {
+    position: relative;
+  }
+  .pattern-dots::before {
+    content: '';
+    position: absolute;
+    inset: 0;
     background-image: radial-gradient(hsl(220, 15%, 85%) 0.8px, transparent 0.8px);
     background-size: 24px 24px;
-    opacity: 0.4;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .pattern-dots > * {
+    position: relative;
+    z-index: 1;
   }
   .hover-gradient-purple {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

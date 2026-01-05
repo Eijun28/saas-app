@@ -205,7 +205,7 @@ export default function DashboardPrestatairePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <Card className="border-[#823F91]/20 bg-white">
+        <Card className="border-[#823F91]/20 bg-background">
           <CardHeader>
             <CardTitle className="text-2xl bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
               Activité récente

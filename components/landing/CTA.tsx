@@ -1,6 +1,5 @@
 import { type VariantProps } from "class-variance-authority";
 import { ReactNode } from "react";
-import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
@@ -15,7 +14,6 @@ interface CTAButtonProps {
   variant?: VariantProps<typeof buttonVariants>["variant"];
   icon?: ReactNode;
   iconRight?: ReactNode;
-  className?: string;
 }
 
 interface CTAProps {
@@ -37,12 +35,12 @@ export default function CTA({
 }: CTAProps) {
   return (
     <Section className={cn("group relative overflow-hidden", className)}>
-      <div className="max-w-5xl relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8 px-6">
+      <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
         <h2 className="max-w-[640px] text-3xl leading-tight font-semibold sm:text-5xl sm:leading-tight">
           {title}
         </h2>
         {buttons !== false && buttons.length > 0 && (
-          <div className="flex justify-center gap-4 flex-wrap">
+          <div className="flex justify-center gap-4">
             {buttons.map((button, index) => (
               <Button
                 key={index}
@@ -50,22 +48,36 @@ export default function CTA({
                 size="lg"
                 asChild
                 className={cn(
-                  button.variant === "default" && "bg-[#823F91] hover:bg-[#6D3478] text-white",
-                  button.className
+                  button.variant === "default" && "bg-[#823F91] hover:bg-[#6D3478] text-white"
                 )}
               >
-                <Link href={button.href}>
+                <a href={button.href}>
                   {button.icon}
                   {button.text}
                   {button.iconRight}
-                </Link>
+                </a>
               </Button>
             ))}
           </div>
         )}
       </div>
-      <div className="absolute top-0 left-0 h-full w-full translate-y-[1rem] opacity-80 transition-all duration-500 ease-in-out group-hover:translate-y-[-2rem] group-hover:opacity-100">
-        <Glow variant="bottom" />
+      {/* Glow effect personnalisé avec couleurs Nuply - subtil */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Glow principal - taille réduite, opacité réduite */}
+        <div 
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[100%] h-[300px] sm:h-[400px] rounded-full blur-3xl transition-all duration-500 ease-in-out translate-y-4 group-hover:-translate-y-8 opacity-30 group-hover:opacity-50"
+          style={{
+            background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.3) 0%, rgba(157, 95, 168, 0.2) 20%, rgba(130, 63, 145, 0.1) 40%, transparent 70%)',
+          }}
+        />
+        
+        {/* Glow secondaire - accent subtil */}
+        <div 
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70%] h-[200px] sm:h-[250px] rounded-full blur-2xl transition-all duration-500 ease-in-out translate-y-4 group-hover:-translate-y-8 opacity-25 group-hover:opacity-40"
+          style={{
+            background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.35) 0%, rgba(109, 52, 120, 0.25) 25%, transparent 60%)',
+          }}
+        />
       </div>
     </Section>
   );
