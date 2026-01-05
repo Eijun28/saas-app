@@ -65,7 +65,6 @@ const ReviewCard = ({
       className={cn(
         "relative w-80 h-48 cursor-pointer overflow-hidden rounded-xl border p-4",
         "border-gray-200 bg-white hover:bg-gray-50",
-        "dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-800",
         "flex flex-col"
       )}
     >
@@ -74,15 +73,15 @@ const ReviewCard = ({
           {initials}
         </div>
         <div className="flex flex-col min-w-0">
-          <figcaption className="text-sm font-semibold dark:text-white truncate">
+          <figcaption className="text-sm font-semibold truncate">
             {name}
           </figcaption>
-          <p className="text-xs font-medium text-purple-600 dark:text-purple-400 truncate">
+          <p className="text-xs font-medium text-purple-600 truncate">
             {culture}
           </p>
         </div>
       </div>
-      <blockquote className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-5 flex-1">
+      <blockquote className="text-sm text-gray-600 leading-relaxed line-clamp-5 flex-1">
         {body}
       </blockquote>
     </figure>
@@ -91,13 +90,13 @@ const ReviewCard = ({
 
 export function MarqueeReviews() {
   return (
-    <section className="py-20 md:py-28 bg-white dark:bg-black">
+    <section className="py-20 md:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Ce qu'ils en disent
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Découvrez les témoignages de couples qui ont célébré leur union multiculturelle avec NUPLY
           </p>
         </div>

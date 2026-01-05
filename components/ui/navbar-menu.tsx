@@ -56,14 +56,14 @@ export const MenuItem = ({
     <Link
       href={href}
       onClick={handleClick}
-      className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white text-sm font-medium flex items-center h-8"
+      className="cursor-pointer text-black hover:opacity-[0.9] text-sm font-medium flex items-center h-8"
     >
       {item}
     </Link>
   ) : (
     <motion.p
       transition={{ duration: 0.3 }}
-      className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white text-sm font-medium flex items-center h-8"
+      className="cursor-pointer text-black hover:opacity-[0.9] text-sm font-medium flex items-center h-8"
     >
       {item}
     </motion.p>
@@ -91,7 +91,7 @@ export const MenuItem = ({
               <motion.div
                 transition={{ type: "spring", duration: 0.5, stiffness: 260, damping: 20 }}
                 layoutId="active"
-                className="bg-white dark:bg-black rounded-2xl overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
+                className="bg-white rounded-2xl overflow-hidden border border-black/[0.1] shadow-xl"
                 onMouseEnter={() => setActive(item)}
                 onMouseLeave={() => setActive(null)}
               >
@@ -137,7 +137,7 @@ export const HoveredLink = ({
       onClick={handleClick}
       {...rest}
       className={cn(
-        "text-neutral-700 dark:text-neutral-200 hover:text-black dark:hover:text-white",
+        "text-neutral-700 hover:text-black",
         className
       )}
     >
@@ -165,10 +165,10 @@ export const ProductItem = ({
         className="flex-shrink-0 rounded-md shadow-2xl w-[140px] h-[70px] object-cover"
       />
       <div>
-        <h4 className="text-xl font-bold mb-1 text-black dark:text-white">
+        <h4 className="text-xl font-bold mb-1 text-black">
           {title}
         </h4>
-        <p className="text-neutral-700 text-sm max-w-[10rem] dark:text-neutral-300">
+        <p className="text-neutral-700 text-sm max-w-[10rem]">
           {description}
         </p>
       </div>
