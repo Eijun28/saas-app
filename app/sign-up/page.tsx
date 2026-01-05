@@ -6,14 +6,14 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
 import { signUp } from '@/lib/auth/actions'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { BottomGradient } from '@/components/ui/bottom-gradient'
 import { LabelInputContainer } from '@/components/ui/label-input-container'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { Lock, Sparkles, Building2 } from 'lucide-react'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -37,7 +37,7 @@ export default function SignUpPage() {
       confirmPassword: '',
       nomEntreprise: '',
     },
-    mode: 'onSubmit', // Validation uniquement à la soumission
+    mode: 'onSubmit',
   })
 
   const selectedRole = watch('role')
@@ -54,7 +54,6 @@ export default function SignUpPage() {
       })
 
       if (result?.error) {
-        // Améliorer les messages d'erreur pour les clés API invalides
         if (result.error.includes('Invalid API key') || result.error.includes('invalid') || result.error.includes('Variables d\'environnement')) {
           setError('Erreur de configuration. Veuillez contacter le support.')
         } else {
@@ -64,7 +63,6 @@ export default function SignUpPage() {
         router.push('/onboarding')
       }
     } catch (err: any) {
-      // Gérer les erreurs de configuration Supabase
       if (err.message?.includes('Variables d\'environnement') || err.message?.includes('Invalid API key') || err.message?.includes('invalid')) {
         setError('Erreur de configuration. Veuillez contacter le support.')
       } else {
@@ -75,204 +73,318 @@ export default function SignUpPage() {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  }
+
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-24">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-purple-50/30 flex items-center justify-center px-6 py-24 dark:from-neutral-950 dark:via-neutral-900 dark:to-purple-950/20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="shadow-input mx-auto w-full max-w-6xl rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black"
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-2xl"
       >
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
-          Bienvenue sur NUPLY
-        </h2>
-        <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
-          Créez votre compte et commencez à organiser votre mariage de rêve
-        </p>
-
-        <form className="my-8" onSubmit={handleSubmit(onSubmit)}>
-          {/* Sélection du rôle */}
-          <div className="mb-4 space-y-2">
-            <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Je suis
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('role', 'couple', { shouldValidate: false })
-                }}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                  selectedRole === 'couple'
-                    ? 'border-[#823F91] bg-[#E8D4EF]'
-                    : 'border-gray-200 hover:border-gray-300 dark:border-neutral-700'
-                )}
-              >
-                <div>
-                  <h3 className="font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-                    Couple
-                  </h3>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                    Je cherche des prestataires
-                  </p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('role', 'prestataire', { shouldValidate: false })
-                }}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all duration-200 text-left",
-                  selectedRole === 'prestataire'
-                    ? 'border-[#823F91] bg-[#E8D4EF]'
-                    : 'border-gray-200 hover:border-gray-300 dark:border-neutral-700'
-                )}
-              >
-                <div>
-                  <h3 className="font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
-                    Prestataire
-                  </h3>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                    Je propose mes services
-                  </p>
-                </div>
-              </button>
-            </div>
-            <input type="hidden" {...register('role')} />
-            {errors.role && (
-              <p className="text-sm text-red-500">{errors.role.message}</p>
-            )}
-          </div>
-
-          {/* Prénom et Nom */}
-          <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
-            <LabelInputContainer>
-              <Label htmlFor="prenom">Prénom</Label>
-              <Input
-                id="prenom"
-                placeholder="Votre prénom"
-                type="text"
-                {...register('prenom')}
-                disabled={isLoading}
-                className="dark:bg-neutral-800 dark:border-neutral-700"
-              />
-              {errors.prenom && (
-                <p className="text-xs text-red-500">{errors.prenom.message}</p>
-              )}
-            </LabelInputContainer>
-
-            <LabelInputContainer>
-              <Label htmlFor="nom">Nom</Label>
-              <Input
-                id="nom"
-                placeholder="Votre nom"
-                type="text"
-                {...register('nom')}
-                disabled={isLoading}
-                className="dark:bg-neutral-800 dark:border-neutral-700"
-              />
-              {errors.nom && (
-                <p className="text-xs text-red-500">{errors.nom.message}</p>
-              )}
-            </LabelInputContainer>
-          </div>
-
-          {/* Nom entreprise (si prestataire) */}
-          {selectedRole === 'prestataire' && (
-            <LabelInputContainer className="mb-4">
-              <Label htmlFor="nomEntreprise">Nom de l'entreprise</Label>
-              <Input
-                id="nomEntreprise"
-                placeholder="Nom de votre entreprise"
-                type="text"
-                {...register('nomEntreprise')}
-                disabled={isLoading}
-                className="dark:bg-neutral-800 dark:border-neutral-700"
-              />
-              {errors.nomEntreprise && (
-                <p className="text-xs text-red-500">{errors.nomEntreprise.message}</p>
-              )}
-            </LabelInputContainer>
-          )}
-
-          {/* Email */}
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="email">Adresse email</Label>
-            <Input
-              id="email"
-              placeholder="votre@email.com"
-              type="email"
-              {...register('email')}
-              disabled={isLoading}
-              className="dark:bg-neutral-800 dark:border-neutral-700"
-            />
-            {errors.email && (
-              <p className="text-xs text-red-500">{errors.email.message}</p>
-            )}
-          </LabelInputContainer>
-
-          {/* Mot de passe */}
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              id="password"
-              placeholder="••••••••"
-              type="password"
-              {...register('password')}
-              disabled={isLoading}
-              className="dark:bg-neutral-800 dark:border-neutral-700"
-            />
-            {errors.password && (
-              <p className="text-xs text-red-500">{errors.password.message}</p>
-            )}
-          </LabelInputContainer>
-
-          {/* Confirmation mot de passe */}
-          <LabelInputContainer className="mb-8">
-            <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-            <Input
-              id="confirmPassword"
-              placeholder="••••••••"
-              type="password"
-              {...register('confirmPassword')}
-              disabled={isLoading}
-              className="dark:bg-neutral-800 dark:border-neutral-700"
-            />
-            {errors.confirmPassword && (
-              <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>
-            )}
-          </LabelInputContainer>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg dark:bg-red-900/20 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
-          <button
-            className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Inscription...' : 'Créer mon compte →'}
-            <BottomGradient />
-          </button>
-
-          <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
-
-          <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-            Déjà un compte ?{' '}
-            <Link
-              href="/sign-in"
-              className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors dark:text-purple-400"
+        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5 dark:border-neutral-800 dark:bg-neutral-900/50">
+          <CardHeader className="space-y-3 pb-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="flex items-center justify-center gap-2"
             >
-              Se connecter
-            </Link>
-          </p>
-        </form>
+              <Sparkles className="h-5 w-5 text-[#823F91]" />
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent">
+                Créez votre compte NUPLY
+              </CardTitle>
+            </motion.div>
+            <CardDescription className="text-base text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+              Rejoignez des milliers de couples qui organisent leur mariage de rêve avec sérénité. 
+              <span className="block mt-1 text-sm text-neutral-500 dark:text-neutral-500">
+                Votre aventure commence ici, en quelques secondes.
+              </span>
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+
+            <motion.form
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+              {/* Sélection du rôle */}
+              <motion.div variants={itemVariants} className="space-y-3">
+                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 text-center block">
+                  Je suis
+                </Label>
+                <div className="flex justify-center gap-3">
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setValue('role', 'couple', { shouldValidate: false })
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className={cn(
+                      "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                      selectedRole === 'couple'
+                        ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                    )}
+                  >
+                    Couple
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setValue('role', 'prestataire', { shouldValidate: false })
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className={cn(
+                      "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                      selectedRole === 'prestataire'
+                        ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+                    )}
+                  >
+                    Prestataire
+                  </motion.button>
+                </div>
+                <input type="hidden" {...register('role')} />
+                {errors.role && (
+                  <p className="text-sm text-red-500 mt-2 text-center">{errors.role.message}</p>
+                )}
+              </motion.div>
+
+              {/* Prénom et Nom */}
+              <motion.div variants={itemVariants} className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+                <LabelInputContainer className="flex-1">
+                  <Label htmlFor="prenom" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Prénom
+                  </Label>
+                  <Input
+                    id="prenom"
+                    placeholder="Votre prénom"
+                    type="text"
+                    {...register('prenom')}
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                  />
+                  {errors.prenom && (
+                    <p className="text-xs text-red-500 mt-1">{errors.prenom.message}</p>
+                  )}
+                </LabelInputContainer>
+
+                <LabelInputContainer className="flex-1">
+                  <Label htmlFor="nom" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Nom
+                  </Label>
+                  <Input
+                    id="nom"
+                    placeholder="Votre nom"
+                    type="text"
+                    {...register('nom')}
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                  />
+                  {errors.nom && (
+                    <p className="text-xs text-red-500 mt-1">{errors.nom.message}</p>
+                  )}
+                </LabelInputContainer>
+              </motion.div>
+
+              {/* Section Prestataire détaillée */}
+              {selectedRole === 'prestataire' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4 p-4 rounded-2xl bg-gradient-to-br from-purple-50/50 to-neutral-50 dark:from-purple-950/20 dark:to-neutral-900/50 border border-purple-100 dark:border-purple-900/30"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="h-4 w-4 text-[#823F91]" />
+                    <span className="text-sm font-semibold text-[#823F91]">Informations entreprise</span>
+                  </div>
+                  
+                  <LabelInputContainer>
+                    <Label htmlFor="nomEntreprise" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Nom de l'entreprise
+                    </Label>
+                    <Input
+                      id="nomEntreprise"
+                      placeholder="Ex: Studio Photo Lumière"
+                      type="text"
+                      {...register('nomEntreprise')}
+                      disabled={isLoading}
+                      className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                    />
+                    {errors.nomEntreprise && (
+                      <p className="text-xs text-red-500 mt-1">{errors.nomEntreprise.message}</p>
+                    )}
+                  </LabelInputContainer>
+
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 text-center">
+                    Vous pourrez compléter votre profil prestataire après l'inscription
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Email */}
+              <motion.div variants={itemVariants}>
+                <LabelInputContainer>
+                  <Label htmlFor="email" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Adresse email
+                  </Label>
+                  <Input
+                    id="email"
+                    placeholder="votre@email.com"
+                    type="email"
+                    {...register('email')}
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+                  )}
+                </LabelInputContainer>
+              </motion.div>
+
+              {/* Mot de passe */}
+              <motion.div variants={itemVariants}>
+                <LabelInputContainer>
+                  <Label htmlFor="password" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Mot de passe
+                  </Label>
+                  <Input
+                    id="password"
+                    placeholder="Minimum 8 caractères"
+                    type="password"
+                    {...register('password')}
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                  />
+                  {errors.password && (
+                    <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                  )}
+                </LabelInputContainer>
+              </motion.div>
+
+              {/* Confirmation mot de passe */}
+              <motion.div variants={itemVariants}>
+                <LabelInputContainer>
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    Confirmer le mot de passe
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    placeholder="Répétez votre mot de passe"
+                    type="password"
+                    {...register('confirmPassword')}
+                    disabled={isLoading}
+                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] dark:bg-neutral-800 dark:border-neutral-700"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                  )}
+                </LabelInputContainer>
+              </motion.div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-red-50 border border-red-200 rounded-xl dark:bg-red-900/20 dark:border-red-800 text-center"
+                >
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </motion.div>
+              )}
+
+              <motion.div variants={itemVariants} className="space-y-4 pt-2">
+                <motion.button
+                  type="submit"
+                  disabled={isLoading}
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  className="group relative w-full h-14 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                        />
+                        Création en cours...
+                      </>
+                    ) : (
+                      <>
+                        Commencer mon aventure
+                        <motion.span
+                          initial={{ x: 0 }}
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          →
+                        </motion.span>
+                      </>
+                    )}
+                  </span>
+                </motion.button>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center justify-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
+                >
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>
+                    Vos données sont sécurisées et protégées. Inscription gratuite, sans engagement.
+                  </span>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                variants={itemVariants}
+                className="pt-6 border-t border-neutral-200 dark:border-neutral-800"
+              >
+                <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+                  Vous avez déjà un compte ?{' '}
+                  <Link
+                    href="/sign-in"
+                    className="text-[#823F91] hover:text-[#6D3478] font-semibold transition-colors dark:text-purple-400 dark:hover:text-purple-300"
+                  >
+                    Se connecter
+                  </Link>
+                </p>
+              </motion.div>
+            </motion.form>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
   )
