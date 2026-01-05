@@ -265,7 +265,7 @@ export default function ProfilPublicPage() {
                   {profile?.avatar_url && profile?.nom_entreprise && profile?.description_courte ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
                   ) : (
-                    <span className="text-sm font-medium text-[#823F91]">1</span>
+                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
                     <h3 className="font-semibold text-[#823F91]">Informations de base</h3>
@@ -328,7 +328,7 @@ export default function ProfilPublicPage() {
                   {cultures.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
                   ) : (
-                    <span className="text-sm font-medium text-[#823F91]">2</span>
+                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
                     <h3 className="font-semibold text-[#823F91]">Cultures maîtrisées</h3>
@@ -363,7 +363,7 @@ export default function ProfilPublicPage() {
                   {zones.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
                   ) : (
-                    <span className="text-sm font-medium text-[#823F91]">3</span>
+                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
                     <h3 className="font-semibold text-[#823F91]">Zones d'intervention</h3>
@@ -398,7 +398,7 @@ export default function ProfilPublicPage() {
                   {portfolio.length > 0 ? (
                     <Check className="h-5 w-5 text-[#823F91]" />
                   ) : (
-                    <span className="text-sm font-medium text-[#823F91]">4</span>
+                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
                     <h3 className="font-semibold text-[#823F91]">Portfolio</h3>
