@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Inbox, Calendar, MessageCircle, UserCircle } from "lucide-react"
+import { Home, Inbox, Calendar, MessageCircle, UserCircle, PanelLeftClose, PanelLeft } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -13,8 +13,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const prestataireNavItems = [
   { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
