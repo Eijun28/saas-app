@@ -192,7 +192,7 @@ export function PrestataireHeader() {
           if (messages) {
             messages.forEach((message: any) => {
               const conversation: any = conversations.find(c => c.id === message.conversation_id)
-              const coupleNom = conversation?.profiles?.nom || 'Un couple'
+              const coupleNom = conversation?.profiles?.[0]?.nom || 'Un couple'
               notificationsList.push({
                 id: message.id,
                 type: 'message',
