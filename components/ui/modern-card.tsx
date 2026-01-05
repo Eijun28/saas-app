@@ -26,7 +26,7 @@ export function ModernCard({
       transition={{ 
         duration: 0.4, 
         delay,
-        ease: [0.16, 1, 0.3, 1] // Custom easing pour un effet plus fluide
+        ease: [0.16, 1, 0.3, 1] as const // Custom easing pour un effet plus fluide
       }}
       whileHover={{ 
         y: -4, 

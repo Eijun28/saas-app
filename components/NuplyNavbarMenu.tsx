@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "@/lib/auth/actions";
+import { DotPattern } from "@/components/magicui/dot-pattern";
 
 export function NuplyNavbarMenu() {
   const [active, setActive] = useState<string | null>(null);
@@ -234,9 +235,14 @@ function Navbar({
     <div
       className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto z-50 px-4", className)}
     >
-      <div className="flex items-center justify-between bg-white dark:bg-black rounded-full border border-transparent dark:border-white/[0.2] shadow-input px-4 py-2">
+      <div className="flex items-center justify-between bg-white dark:bg-black rounded-full border border-transparent dark:border-white/[0.2] shadow-input px-4 py-2 relative overflow-hidden">
+        <DotPattern
+          className={cn(
+            "absolute inset-0 [mask-image:radial-gradient(400px_circle_at_center,white,transparent)]"
+          )}
+        />
         {/* Logo */}
-        <Link href="/" className="flex items-center h-8">
+        <Link href="/" className="flex items-center h-8 relative z-10">
           <Image
             src="/images/logo.svg"
             alt="NUPLY Logo"
@@ -247,7 +253,7 @@ function Navbar({
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:block">
+        <div className="hidden md:block relative z-10">
           <Menu setActive={setActive}>
             <MenuItem setActive={setActive} active={active} item="Services" href="/#prestataires">
               <div className="flex flex-col space-y-4 text-sm">
@@ -276,7 +282,7 @@ function Navbar({
         </div>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 relative z-10">
           {user && !isHomePage ? (
             <>
               <Link
@@ -320,7 +326,7 @@ function Navbar({
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative z-10"
           aria-label="Toggle menu"
         >
           <AnimatePresence mode="wait">
@@ -357,9 +363,14 @@ function Navbar({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden mt-2 overflow-hidden bg-white dark:bg-black rounded-2xl border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
+            className="md:hidden mt-2 overflow-hidden bg-white dark:bg-black rounded-2xl border border-black/[0.2] dark:border-white/[0.2] shadow-xl relative"
           >
-            <div className="px-6 py-4 space-y-4">
+            <DotPattern
+              className={cn(
+                "absolute inset-0 [mask-image:radial-gradient(300px_circle_at_center,white,transparent)]"
+              )}
+            />
+            <div className="px-6 py-4 space-y-4 relative z-10">
               <div className="flex flex-col space-y-3">
                 <Link
                   href="/#prestataires"

@@ -207,7 +207,7 @@ export default function CoupleDashboardPage() {
                 transition={{
                   delay: index * 0.1,
                   duration: 0.4,
-                  ease: [0.16, 1, 0.3, 1],
+                  ease: [0.16, 1, 0.3, 1] as const,
                 }}
               >
                 <ModernCard delay={index * 0.1}>

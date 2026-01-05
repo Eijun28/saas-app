@@ -19,7 +19,7 @@ export function ModernCard({ children, delay = 0, className, hover = true }: Mod
       transition={{
         delay,
         duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       }}
       className={cn(
         "relative rounded-2xl bg-card p-5 shadow-soft transition-smooth",

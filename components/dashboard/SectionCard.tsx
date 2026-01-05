@@ -31,7 +31,7 @@ export function SectionCard({
       transition={{
         delay,
         duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       }}
     >
       <Link href={href} className="block group">

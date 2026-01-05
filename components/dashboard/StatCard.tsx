@@ -19,7 +19,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, delay = 0 }: Stat
       transition={{
         delay,
         duration: 0.5,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       }}
       className="relative rounded-2xl bg-card p-5 shadow-soft transition-smooth hover:shadow-elevated"
     >

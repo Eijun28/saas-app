@@ -152,7 +152,7 @@ export function FadeInScaleOnScroll({
       ref={ref}
       initial={{ opacity: 0, scale, y: 20 }}
       animate={isInView ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale, y: 20 }}
-      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] as const }}
       className={className}
     >
       {children}

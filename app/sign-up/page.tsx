@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Lock, Sparkles, Building2 } from 'lucide-react'
+import { DotPattern } from '@/components/magicui/dot-pattern'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -91,7 +92,7 @@ export default function SignUpPage() {
       y: 0,
       transition: {
         duration: 0.4,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       },
     },
   }
@@ -101,11 +102,16 @@ export default function SignUpPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
         className="w-full max-w-2xl"
       >
-        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5 dark:border-neutral-800 dark:bg-neutral-900/50">
-          <CardHeader className="space-y-3 pb-6 text-center">
+        <Card className="border-neutral-200/80 shadow-xl shadow-purple-500/5 dark:border-neutral-800 dark:bg-neutral-900/50 relative overflow-hidden">
+          <DotPattern
+            className={cn(
+              "absolute inset-0 [mask-image:radial-gradient(400px_circle_at_center,white,transparent)]"
+            )}
+          />
+          <CardHeader className="space-y-3 pb-6 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -125,7 +131,7 @@ export default function SignUpPage() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="relative z-10">
 
             <motion.form
               variants={containerVariants}

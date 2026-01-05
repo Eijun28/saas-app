@@ -14,7 +14,7 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
     <motion.header 
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
       className="sticky top-0 z-30 flex h-[60px] items-center justify-between border-b border-border bg-background/80 glass px-6"
     >
       <h1 className="text-xl font-semibold text-foreground tracking-tight">{title}</h1>

@@ -131,7 +131,7 @@ export function DashboardSidebar({
                 transition={{ 
                   delay: index * 0.04,
                   duration: 0.3,
-                  ease: [0.16, 1, 0.3, 1]
+                  ease: [0.16, 1, 0.3, 1] as const
                 }}
               >
                 <Link
