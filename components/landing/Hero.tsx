@@ -1,26 +1,23 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { AvatarCircles } from '@/components/ui/avatar-circles';
-import Glow from '@/components/ui/glow';
 
 export default function Hero() {
-  // Animation variants optimisés pour Next.js 15
+  // Animation variants optimisés - style Eden.so
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
+        staggerChildren: 0.12,
+        delayChildren: 0.05,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 25 },
     visible: {
       opacity: 1,
       y: 0,
@@ -31,144 +28,76 @@ export default function Hero() {
     },
   };
 
-  const gradientVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: 0.4 + custom * 0.1,
-        duration: 0.5,
-      },
-    }),
-  };
-
-  // Avatars pour social proof
-  const avatars = [
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/16860528",
-      profileUrl: "https://github.com/dillionverma",
-    },
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/20110627",
-      profileUrl: "https://github.com/tomonarifeehan",
-    },
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/106103625",
-      profileUrl: "https://github.com/BankkRoll",
-    },
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/59228569",
-      profileUrl: "https://github.com/safethecode",
-    },
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/59442788",
-      profileUrl: "https://github.com/sanjay-mali",
-    },
-    {
-      imageUrl: "https://avatars.githubusercontent.com/u/89768406",
-      profileUrl: "https://github.com/itsarghyadas",
-    },
-  ];
-
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-transparent pt-24 sm:pt-32">
-      {/* Background decoration avec blur optimisé - subtil sur fond dégradé */}
-      <div className="absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#823F91]/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#9D5FA8]/10 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      {/* Glow effect */}
-      <Glow
-        variant="top"
-        className="animate-appear-zoom opacity-0 delay-1000"
-      />
-
+    <section className="relative py-20 md:py-32 flex items-center justify-center overflow-hidden bg-transparent px-6">
       <motion.div
-        className="container mx-auto px-6 py-16 text-center"
+        className="container mx-auto text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Badge */}
-        <motion.div variants={itemVariants} className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E8D4EF]/80 border border-[#823F91]/30 backdrop-blur-sm shadow-sm">
-            <Sparkles className="w-4 h-4 text-[#823F91]" aria-hidden="true" />
-            <span className="text-sm font-medium text-[#823F91]">
-              La première plateforme de son genre en France
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Titre principal */}
-        <h1 className="animate-appear from-[#823F91] to-[#6D3478] relative z-10 inline-block bg-gradient-to-r bg-clip-text text-2xl leading-tight font-semibold text-balance text-transparent drop-shadow-2xl sm:text-3xl sm:leading-tight md:text-4xl md:leading-tight lg:text-5xl lg:leading-tight xl:text-6xl xl:leading-tight mb-4 px-4 max-w-4xl mx-auto">
-          Votre mariage, vos racines.
+        {/* Titre principal - ÉNORME style Eden.so */}
+        <motion.h1 
+          variants={itemVariants}
+          className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 text-purple-900"
+        >
+          Votre mariage,
           <br />
-          Leurs traditions, leur expertise.
-        </h1>
+          vos racines.
+        </motion.h1>
 
-        {/* Sous-titre */}
-        <p className="text-sm animate-appear relative z-10 max-w-[740px] font-medium text-balance opacity-0 delay-100 sm:text-base md:text-lg lg:text-xl mx-auto mb-8 leading-relaxed px-4 text-[#5C4470]">
-          Des prestataires de mariage qui connaissent vos traditions sur le bout des doigts.{' '}
-          Matching par culture, budget et dispo.
-        </p>
+        {/* Sous-titre accrocheur - Émotionnel */}
+        <motion.p 
+          variants={itemVariants}
+          className="text-lg md:text-xl text-purple-600/70 max-w-2xl mx-auto mb-10 leading-relaxed"
+        >
+          Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.
+        </motion.p>
 
-        {/* CTAs */}
+        {/* CTA principal */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-12 px-4"
+          className="flex flex-col md:flex-row gap-4 justify-center items-center"
         >
-          <Link href="/sign-up" className="w-full sm:w-auto">
-            <button className="group relative w-full sm:w-auto px-6 py-3 bg-[#823F91] hover:bg-[#6D3478] text-white font-medium text-sm rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-[#823F91]/30 border-0">
+          <Link href="/sign-up" className="w-full md:w-auto">
+            <button className="w-full md:w-auto px-8 py-4 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:shadow-[#823F91]/30 hover:scale-[1.02]">
               Commencer gratuitement
             </button>
           </Link>
-          <Link href="/#comment-ca-marche" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto px-6 py-3 bg-white/80 backdrop-blur-sm hover:bg-white text-[#823F91] font-medium text-sm rounded-lg border border-[#823F91]/20 hover:border-[#823F91]/40 transition-all duration-200 shadow-sm">
+          <Link href="/#comment-ca-marche" className="w-full md:w-auto">
+            <button className="w-full md:w-auto px-8 py-4 bg-white/60 backdrop-blur-sm hover:bg-white/90 text-[#823F91] font-semibold text-lg rounded-xl border border-[#823F91]/20 hover:border-[#823F91]/40 transition-all duration-300">
               Découvrir la plateforme
             </button>
           </Link>
         </motion.div>
 
-        {/* Social Proof */}
+        {/* Stats en petit - discret */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-[#5C4470] px-4"
+          className="mt-8 text-sm text-muted-foreground"
         >
-          {/* Avatars stack */}
-          <div className="flex items-center" aria-label="Couples satisfaits">
-            <AvatarCircles numPeople={99} avatarUrls={avatars} />
-          </div>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-3 font-medium">
-            <span className="text-[#2D1B3D] whitespace-nowrap">127 mariages célébrés</span>
-            <span className="text-[#8B7A9E] hidden sm:inline">•</span>
-            <span className="text-[#2D1B3D] whitespace-nowrap">250+ prestataires vérifiés</span>
-            <span className="text-[#8B7A9E] hidden sm:inline">•</span>
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <span className="text-amber-500" aria-hidden="true">★</span>
-              <span className="text-[#2D1B3D]">Note 4.9/5</span>
-            </span>
-          </div>
+          <span>127+ mariages</span>
+          <span className="mx-2">•</span>
+          <span>250 prestataires</span>
+          <span className="mx-2">•</span>
+          <span>Note 4.9/5</span>
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator - desktop uniquement */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
+        transition={{ delay: 1 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
         aria-hidden="true"
       >
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-          className="w-6 h-10 rounded-full border-2 border-[#823F91]/30 flex items-start justify-center p-2"
+          className="w-6 h-10 rounded-full border-2 border-purple-400/30 flex items-start justify-center p-2"
         >
-          <div className="w-1.5 h-1.5 rounded-full bg-[#823F91]/50" />
+          <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50" />
         </motion.div>
       </motion.div>
     </section>
