@@ -1,7 +1,4 @@
-/* Merriweather - Police pour les titres */
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
-/* Inter - Police pour le corps de texte */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Geist est importé via le package geist dans layout.tsx */
 
 @import "tailwindcss";
 
@@ -49,19 +46,34 @@ html {
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-weight: 400;
+  font-weight: 400; /* font-normal pour les paragraphes */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Merriweather pour les titres */
-h1, h2, h3, h4, h5, h6,
-.font-heading,
-.font-merriweather {
-  font-family: "Merriweather", Georgia, serif;
-  font-optical-sizing: auto;
-  font-variation-settings: "wdth" 100;
+/* Geist font-weights selon spécifications */
+h1 {
+  font-weight: 700; /* font-bold */
+}
+
+h2 {
+  font-weight: 600; /* font-semibold */
+}
+
+h3 {
+  font-weight: 500; /* font-medium */
+}
+
+h4, h5, h6 {
+  font-weight: 500; /* font-medium */
+}
+
+p {
+  font-weight: 400; /* font-normal */
+}
+
+button {
+  font-weight: 500; /* font-medium */
 }
 
 @layer utilities {

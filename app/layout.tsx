@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { GeistSans } from 'geist/font/sans';
 import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
@@ -28,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="antialiased bg-white" suppressHydrationWarning>
+      <body className={`${GeistSans.className} antialiased bg-white`} suppressHydrationWarning>
         <NuplyNavbarMenu />
         <main>
           <MainWrapper>
