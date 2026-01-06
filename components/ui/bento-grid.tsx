@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 import Link from "next/link";
-import { DotPattern } from "@/components/magicui/dot-pattern";
 
 export const BentoGrid = ({
   className,
@@ -65,11 +64,6 @@ export const BentoGridItem = ({
           className
         )}
       >
-        <DotPattern
-          className={cn(
-            "[mask-image:radial-gradient(250px_circle_at_50%_50%,white,transparent)] md:[mask-image:radial-gradient(300px_circle_at_center,white,transparent)]"
-          )}
-        />
         {content}
       </Link>
     );
@@ -82,11 +76,6 @@ export const BentoGridItem = ({
         className
       )}
     >
-      <DotPattern
-        className={cn(
-          "[mask-image:radial-gradient(250px_circle_at_50%_50%,white,transparent)] md:[mask-image:radial-gradient(300px_circle_at_center,white,transparent)]"
-        )}
-      />
       {content}
     </div>
   );

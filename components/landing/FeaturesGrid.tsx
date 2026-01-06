@@ -403,7 +403,7 @@ const items = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-20 md:py-28 lg:py-32 bg-transparent">
+    <section id="features" className="py-12 md:py-16 lg:py-20 bg-transparent">
       <div className="max-w-7xl mx-auto px-6">
         <FadeInOnScroll className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4">

@@ -5,14 +5,14 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative py-12 md:py-16 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6">
+    <section className="relative pt-24 md:pt-28 pb-12 md:pb-16 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6">
       <div className="container mx-auto text-center max-w-4xl">
         {/* Titre principal - Style Eden.so */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-[3.5rem] md:text-[4.5rem] font-bold leading-tight mb-6 text-gray-900"
+          className="text-[3.5rem] md:text-[4.5rem] font-bold leading-tight mb-6 text-[#823F91]"
         >
           Votre mariage,
           <br />
@@ -40,7 +40,7 @@ export default function Hero() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-full transition-all duration-300 shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30"
+              className="px-8 py-3.5 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-full transition-all duration-300 shadow-lg shadow-[#823F91]/20 hover:shadow-xl hover:shadow-[#823F91]/30"
             >
               Commencer gratuitement
             </motion.button>
