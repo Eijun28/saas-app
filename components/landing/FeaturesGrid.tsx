@@ -146,7 +146,7 @@ const SkeletonMessaging = () => {
                     ? "bg-[#E8D4EF] text-[#c081e3]"
                     : "bg-[#E8D4EF] text-[#a865d0]"
                 }`}>
-                  <p className="text-xs leading-relaxed">{msg.text}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(0, 0, 0, 1)' }}>{msg.text}</p>
                 </div>
               </motion.div>
             ))}
@@ -224,7 +224,7 @@ const SkeletonPayments = () => {
           className="text-center"
         >
           <p className="text-xs text-gray-500 mb-1">Montant sécurisé</p>
-          <p className="text-2xl font-bold text-green-600">2 450€</p>
+          <p className="text-2xl font-bold text-green-600" style={{ color: 'rgba(0, 0, 0, 1)' }}>2 450€</p>
         </motion.div>
 
         {/* Flow tiers de confiance */}
@@ -255,7 +255,7 @@ const SkeletonPayments = () => {
             transition={{ delay: 0.7 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mb-1">
+            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] border border-white flex items-center justify-center mb-1">
               <Lock className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-xs text-gray-600">Escrow</p>
@@ -275,7 +275,7 @@ const SkeletonPayments = () => {
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mb-1">
-              <Music className="w-5 h-5 text-pink-600" />
+              <Music className="w-5 h-5 text-pink-600" style={{ color: 'rgba(236, 140, 238, 1)' }} />
             </div>
             <p className="text-xs text-gray-600">DJ</p>
           </motion.div>
@@ -427,7 +427,7 @@ export function FeaturesGrid() {
           {/* Titre - beige foncé */}
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
-            style={{ color: 'hsl(var(--beige-900))' }}
+            style={{ color: 'rgba(216, 91, 214, 1)' }}
           >
             Tout ce dont vous avez besoin
           </h2>

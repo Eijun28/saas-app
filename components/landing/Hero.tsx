@@ -13,6 +13,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-[3.5rem] md:text-[4.5rem] font-extrabold leading-tight mb-6 text-foreground"
+          style={{ color: 'rgba(193, 130, 227, 1)' }}
         >
           Votre mariage,
           <br />
