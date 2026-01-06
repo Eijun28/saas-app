@@ -7,28 +7,24 @@ const actions = [
     description: "Trouve des prestataires",
     href: "/couple/matching",
     icon: Sparkles,
-    gradient: "from-purple-600 to-pink-600",
   },
   {
     label: "Voir le calendrier",
     description: "Événements à venir",
     href: "/couple/timeline",
     icon: Calendar,
-    gradient: "from-pink-600 to-purple-600",
   },
   {
     label: "Messages",
     description: "3 nouveaux messages",
     href: "/couple/messagerie",
     icon: MessageSquare,
-    gradient: "from-purple-600 to-pink-600",
   },
   {
     label: "Gérer le budget",
     description: "Suivi des dépenses",
     href: "/couple/budget",
     icon: DollarSign,
-    gradient: "from-pink-600 to-purple-600",
   },
 ];
 
@@ -43,7 +39,7 @@ export function QuickActions() {
             href={action.href}
             className="group relative overflow-hidden bg-gradient-to-br from-gray-900/50 to-black/50 border border-purple-600/20 rounded-2xl p-6 hover:border-purple-600/40 transition-all"
           >
-            <div className={`inline-flex p-3 bg-gradient-to-br ${action.gradient} rounded-xl mb-4`}>
+            <div className="inline-flex p-3 bg-purple-600 rounded-xl mb-4">
               <action.icon className="text-white" size={20} />
             </div>
             <h3 className="font-semibold text-white mb-1 group-hover:text-purple-400 transition-colors">

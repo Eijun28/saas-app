@@ -14,6 +14,7 @@ import {
   type BudgetCategory,
 } from '@/lib/actions/budget'
 import { PREDEFINED_CATEGORIES } from '@/lib/types/budget'
+import { toast } from 'sonner'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 type BudgetCategoriesProps = {
@@ -50,7 +51,7 @@ export function BudgetCategories({ categories, onUpdate }: BudgetCategoriesProps
     setInitializing(true)
     const result = await initializeCategories()
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }
@@ -65,7 +66,7 @@ export function BudgetCategories({ categories, onUpdate }: BudgetCategoriesProps
   const handleSaveEdit = async (categoryId: string) => {
     const budgetPrevu = parseFloat(editValue)
     if (isNaN(budgetPrevu) || budgetPrevu < 0) {
-      alert('Veuillez entrer un montant valide')
+      toast.error('Veuillez entrer un montant valide')
       return
     }
 
@@ -74,7 +75,7 @@ export function BudgetCategories({ categories, onUpdate }: BudgetCategoriesProps
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       setEditingId(null)
       onUpdate()
@@ -91,7 +92,7 @@ export function BudgetCategories({ categories, onUpdate }: BudgetCategoriesProps
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }
@@ -106,7 +107,7 @@ export function BudgetCategories({ categories, onUpdate }: BudgetCategoriesProps
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }

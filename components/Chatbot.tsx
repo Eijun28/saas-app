@@ -11,6 +11,7 @@ import {
   getConversationStats,
   type Message,
 } from '@/lib/supabase/conversations';
+import { toast } from 'sonner';
 
 
 interface ChatMessage extends Message {
@@ -273,7 +274,7 @@ export default function Chatbot() {
       }
       
     } catch (error) {
-      alert('Erreur lors de l\'effacement de l\'historique');
+      toast.error('Erreur lors de l\'effacement de l\'historique');
     }
   };
   
@@ -292,7 +293,20 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-16 w-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-110 flex items-center justify-center z-50"
+          className="fixed h-16 w-16 rounded-full text-white shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-[9998]"
+          style={{
+            background: 'linear-gradient(to right, #c081e3, #f231c8)',
+            boxShadow: '0 20px 25px -5px rgba(192, 129, 227, 0.3), 0 10px 10px -5px rgba(192, 129, 227, 0.2)',
+            right: '24px',
+            bottom: '24px',
+            position: 'fixed'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(192, 129, 227, 0.5), 0 10px 10px -5px rgba(192, 129, 227, 0.3)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(192, 129, 227, 0.3), 0 10px 10px -5px rgba(192, 129, 227, 0.2)'
+          }}
           aria-label="Ouvrir le chatbot"
         >
           <MessageCircle className="h-7 w-7" />
@@ -306,10 +320,10 @@ export default function Chatbot() {
       
       {/* WIDGET CHATBOT */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom-5">
+        <div className="fixed w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-[9998] animate-in slide-in-from-bottom-5" style={{ right: '24px', bottom: '24px' }}>
           
           {/* HEADER */}
-          <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 text-white p-4 rounded-t-2xl flex items-center justify-between">
+          <div className="text-white p-4 rounded-t-2xl flex items-center justify-between" style={{ background: 'linear-gradient(to right, #c081e3, #c081e3, #f231c8)' }}>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold">
                 N
@@ -368,8 +382,10 @@ export default function Chatbot() {
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                      ? 'text-white'
                       : 'bg-white border border-gray-200 text-gray-800'
+                  }
+                  style={message.role === 'user' ? { background: 'linear-gradient(to right, #c081e3, #f231c8)' } : {}}
                   }`}
                 >
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -425,13 +441,21 @@ export default function Chatbot() {
                 onKeyPress={handleKeyPress}
                 placeholder="Posez votre question..."
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                style={{ '--tw-ring-color': '#c081e3' } as React.CSSProperties}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow = '0 0 0 2px rgba(192, 129, 227, 0.5)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = ''
+                }}
               />
               
               <button
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isLoading}
-                className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+                className="h-10 w-10 rounded-full text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+                style={{ background: 'linear-gradient(to right, #c081e3, #f231c8)' }}
                 aria-label="Envoyer"
               >
                 <Send className="h-4 w-4" />

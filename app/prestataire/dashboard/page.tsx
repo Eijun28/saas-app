@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 export default function DashboardPrestatairePage() {
   const { user } = useUser()
@@ -65,20 +66,92 @@ export default function DashboardPrestatairePage() {
     }
   }, [user])
 
-  // TODO: Fetch stats from Supabase
-  // Table: demandes (count where statut = 'nouvelle')
-  // Table: evenements (count where date >= today)
-  // Table: messages (count where lu = false AND receiver_type = 'prestataire')
   useEffect(() => {
+    if (!user) return
+
     const fetchStats = async () => {
       setUiState({ loading: 'loading', error: null })
       
       try {
-        // Supabase queries here
-        // const { data, error } = await supabase...
+        const supabase = createClient()
+        
+        // Récupérer d'abord les IDs des conversations
+        const { data: conversations } = await supabase
+          .from('conversations')
+          .select('id')
+          .eq('prestataire_id', user.id)
+
+        const conversationIds = conversations?.map(c => c.id) || []
+
+        // Paralléliser toutes les requêtes
+        const [
+          { count: nouvellesDemandes },
+          { count: evenementsAvenir },
+          { count: messagesNonLus },
+          { count: demandesCeMois },
+          { count: totalDemandes }
+        ] = await Promise.all([
+          // Nouvelles demandes (status = 'new')
+          supabase
+            .from('demandes')
+            .select('id', { count: 'exact', head: true })
+            .eq('prestataire_id', user.id)
+            .eq('status', 'new'),
+          
+          // Événements à venir (date >= today)
+          supabase
+            .from('events')
+            .select('id', { count: 'exact', head: true })
+            .eq('prestataire_id', user.id)
+            .gte('date', new Date().toISOString().split('T')[0]),
+          
+          // Messages non lus dans les conversations du prestataire
+          conversationIds.length > 0
+            ? supabase
+                .from('messages')
+                .select('id', { count: 'exact', head: true })
+                .eq('is_read', false)
+                .neq('sender_id', user.id)
+                .in('conversation_id', conversationIds)
+            : Promise.resolve({ count: 0, error: null }),
+          
+          // Demandes ce mois (créées ce mois)
+          supabase
+            .from('demandes')
+            .select('id', { count: 'exact', head: true })
+            .eq('prestataire_id', user.id)
+            .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+          
+          // Total demandes pour calculer le taux de réponse
+          supabase
+            .from('demandes')
+            .select('id', { count: 'exact', head: true })
+            .eq('prestataire_id', user.id)
+        ])
+
+        // Calculer le taux de réponse (demandes acceptées / total demandes)
+        const { count: demandesAcceptees } = await supabase
+          .from('demandes')
+          .select('id', { count: 'exact', head: true })
+          .eq('prestataire_id', user.id)
+          .eq('status', 'accepted')
+
+        const tauxReponse = totalDemandes && totalDemandes > 0
+          ? Math.round((demandesAcceptees || 0) / totalDemandes * 100)
+          : 0
+
+        setStats({
+          nouvelles_demandes: nouvellesDemandes || 0,
+          evenements_a_venir: evenementsAvenir || 0,
+          messages_non_lus: messagesNonLus || 0,
+          taux_reponse: tauxReponse,
+          demandes_ce_mois: demandesCeMois || 0,
+        })
         
         setUiState({ loading: 'success', error: null })
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Erreur chargement stats:', error)
+        toast.error('Erreur lors du chargement des statistiques')
         setUiState({ 
           loading: 'error', 
           error: 'Impossible de charger les statistiques' 
@@ -86,8 +159,8 @@ export default function DashboardPrestatairePage() {
       }
     }
 
-    // fetchStats()
-  }, [])
+    fetchStats()
+  }, [user])
 
   // Render loading state
   if (uiState.loading === 'loading') {

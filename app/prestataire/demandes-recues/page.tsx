@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
+import { DemandeCard } from '@/components/prestataire/demandes/DemandeCard'
+import { useUser } from '@/hooks/use-user'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
 
 export default function DemandesRecuesPage() {
@@ -27,33 +31,152 @@ export default function DemandesRecuesPage() {
     error: null,
   })
 
-  // TODO: Fetch demandes from Supabase
-  // Table: demandes
-  // Join: couples (pour couple_nom)
-  // Filter: prestataire_id = current_user_id
-  // Group by: statut
-  useEffect(() => {
-    const fetchDemandes = async () => {
-      setUiState({ loading: 'loading', error: null })
-      
-      try {
-        // const { data, error } = await supabase
-        //   .from('demandes')
-        //   .select(`
-        //     *,
-        //     couple:couples(nom, prenom)
-        //   `)
-        //   .eq('prestataire_id', user.id)
-        //   .order('created_at', { ascending: false })
-        
-        setUiState({ loading: 'success', error: null })
-      } catch (error) {
-        setUiState({ loading: 'error', error: 'Erreur de chargement' })
-      }
-    }
+  const { user } = useUser()
 
-    // fetchDemandes()
-  }, [])
+  interface DemandeWithCouple {
+    id: string
+    couple_id: string
+    date_mariage: string
+    budget_min?: number
+    budget_max?: number
+    location: string
+    status: string
+    message?: string
+    created_at: string
+    couple?: {
+      partner_1_name?: string
+      partner_2_name?: string
+      wedding_date?: string
+    } | null
+  }
+
+  const formatAndGroupDemandes = (data: DemandeWithCouple[]): { nouvelles: Demande[], en_cours: Demande[], terminees: Demande[] } => {
+    const nouvelles: Demande[] = []
+    const en_cours: Demande[] = []
+    const terminees: Demande[] = []
+
+    data.forEach((demande) => {
+      const coupleNom = demande.couple 
+        ? `${demande.couple.partner_1_name || ''} & ${demande.couple.partner_2_name || ''}`.trim() || 'Couple'
+        : 'Couple'
+
+      const demandeFormatted: Demande = {
+        id: demande.id,
+        couple_id: demande.couple_id,
+        couple_nom: coupleNom,
+        date_evenement: demande.couple?.wedding_date || demande.date_mariage,
+        budget_min: demande.budget_min || 0,
+        budget_max: demande.budget_max || 0,
+        lieu: demande.location || '',
+        statut: demande.status === 'new' ? 'nouvelle' 
+          : demande.status === 'in-progress' ? 'en_cours'
+          : demande.status === 'accepted' ? 'en_cours'
+          : demande.status === 'completed' ? 'terminee'
+          : 'nouvelle',
+        message: demande.message,
+        created_at: demande.created_at,
+      }
+
+      if (demandeFormatted.statut === 'nouvelle') {
+        nouvelles.push(demandeFormatted)
+      } else if (demandeFormatted.statut === 'en_cours') {
+        en_cours.push(demandeFormatted)
+      } else {
+        terminees.push(demandeFormatted)
+      }
+    })
+
+    return { nouvelles, en_cours, terminees }
+  }
+
+  const fetchDemandes = async () => {
+    if (!user) return
+
+    setUiState({ loading: 'loading', error: null })
+    
+    try {
+      const supabase = createClient()
+      
+      // Récupérer les demandes avec les données du couple
+      const { data: demandesData, error } = await supabase
+        .from('demandes')
+        .select('*')
+        .eq('prestataire_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      // Enrichir avec les données de couples
+      const coupleIds = [...new Set((demandesData || []).map((d: any) => d.couple_id))]
+      const { data: couplesData } = await supabase
+        .from('couples')
+        .select('user_id, partner_1_name, partner_2_name, wedding_date')
+        .in('user_id', coupleIds)
+
+      // Créer un mapping couple_id -> couple data
+      const couplesMap = new Map((couplesData || []).map((c: any) => [c.user_id, c]))
+      
+      // Fusionner les données
+      const data = (demandesData || []).map((demande: any) => ({
+        ...demande,
+        couple: couplesMap.get(demande.couple_id) || null
+      }))
+
+      if (error) throw error
+
+      setDemandes(formatAndGroupDemandes(data || []))
+      setUiState({ loading: 'success', error: null })
+    } catch (error) {
+      console.error('Erreur chargement demandes:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erreur de chargement'
+      toast.error('Erreur lors du chargement des demandes')
+      setUiState({ loading: 'error', error: errorMessage })
+    }
+  }
+
+  useEffect(() => {
+    fetchDemandes()
+  }, [user])
+
+  const handleAcceptDemande = async (demandeId: string) => {
+    if (!user) return
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('demandes')
+        .update({ status: 'accepted' })
+        .eq('id', demandeId)
+
+      if (error) throw error
+
+      toast.success('Demande acceptée')
+      await fetchDemandes()
+    } catch (error) {
+      console.error('Erreur acceptation:', error)
+      toast.error('Erreur lors de l\'acceptation')
+    }
+  }
+
+  const handleRejectDemande = async (demandeId: string) => {
+    if (!user) return
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('demandes')
+        .update({ status: 'rejected' })
+        .eq('id', demandeId)
+
+      if (error) throw error
+
+      toast.success('Demande refusée')
+      await fetchDemandes()
+    } catch (error) {
+      console.error('Erreur refus:', error)
+      toast.error('Erreur lors du refus')
+    }
+  }
 
   if (uiState.loading === 'loading') {
     return <LoadingSpinner size="lg" text="Chargement des demandes..." />
@@ -119,8 +242,20 @@ export default function DemandesRecuesPage() {
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.nouvelles */}
-              {/* <DemandeCard key={demande.id} data={demande} /> */}
+              {demandes.nouvelles
+                .filter((d) => 
+                  !searchTerm || 
+                  d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((demande) => (
+                  <DemandeCard
+                    key={demande.id}
+                    demande={demande}
+                    onAccept={handleAcceptDemande}
+                    onReject={handleRejectDemande}
+                  />
+                ))}
             </div>
           )}
         </TabsContent>
@@ -134,7 +269,15 @@ export default function DemandesRecuesPage() {
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.en_cours */}
+              {demandes.en_cours
+                .filter((d) => 
+                  !searchTerm || 
+                  d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((demande) => (
+                  <DemandeCard key={demande.id} demande={demande} />
+                ))}
             </div>
           )}
         </TabsContent>
@@ -148,7 +291,15 @@ export default function DemandesRecuesPage() {
             />
           ) : (
             <div className="space-y-4">
-              {/* TODO: Map through demandes.terminees */}
+              {demandes.terminees
+                .filter((d) => 
+                  !searchTerm || 
+                  d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((demande) => (
+                  <DemandeCard key={demande.id} demande={demande} />
+                ))}
             </div>
           )}
         </TabsContent>

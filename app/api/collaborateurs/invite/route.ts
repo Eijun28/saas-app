@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schema'
+import { Resend } from 'resend'
 
 export async function POST(request: Request) {
   try {
@@ -78,8 +79,46 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     const invitationUrl = `${baseUrl}/invitation/${invitationToken}`
 
-    // TODO: Envoyer l'email d'invitation via un service d'email (Resend, SendGrid, etc.)
-    // En production, ne pas retourner l'URL dans la réponse
+    // Envoyer l'email d'invitation via Resend
+    const resendApiKey = process.env.RESEND_API_KEY
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
+
+    if (resendApiKey) {
+      try {
+        const resend = new Resend(resendApiKey)
+        
+        await resend.emails.send({
+          from: fromEmail,
+          to: email,
+          subject: `Invitation à collaborer sur ${name || 'votre mariage'}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #823F91;">Invitation à collaborer</h2>
+              <p>Bonjour,</p>
+              <p>Vous avez été invité(e) à collaborer sur l'organisation d'un mariage en tant que <strong>${role}</strong>.</p>
+              ${message ? `<p><em>"${message}"</em></p>` : ''}
+              <p>
+                <a href="${invitationUrl}" 
+                   style="display: inline-block; padding: 12px 24px; background-color: #823F91; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">
+                  Accepter l'invitation
+                </a>
+              </p>
+              <p>Ou copiez ce lien dans votre navigateur :</p>
+              <p style="color: #666; font-size: 12px; word-break: break-all;">${invitationUrl}</p>
+              <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                Cette invitation expire dans 7 jours.
+              </p>
+            </div>
+          `,
+        })
+      } catch (emailError: any) {
+        console.error('Erreur envoi email:', emailError)
+        // Ne pas faire échouer la requête si l'email échoue
+        // L'invitation est quand même créée en DB
+      }
+    } else {
+      console.warn('RESEND_API_KEY non configurée - email non envoyé')
+    }
 
     return NextResponse.json({
       success: true,

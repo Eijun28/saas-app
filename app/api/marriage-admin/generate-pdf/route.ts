@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateMarriageDossierPDF } from '@/lib/pdf/marriage-dossier-generator'
+import { generatePdfSchema } from '@/lib/validations/marriage-admin.schema'
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,14 +16,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { marriageFileId } = await req.json()
+    const body = await req.json()
 
-    if (!marriageFileId) {
+    // Validation avec Zod
+    const validationResult = generatePdfSchema.safeParse(body)
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Missing marriageFileId' },
+        { error: validationResult.error.issues[0]?.message || 'Données invalides' },
         { status: 400 }
       )
     }
+
+    const { marriageFileId } = validationResult.data
 
     console.log('📄 Génération PDF pour dossier:', marriageFileId)
 

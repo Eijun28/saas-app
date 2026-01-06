@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { type BudgetCategory } from '@/lib/types/budget'
 import { updateCategoryBudget, deleteCategory } from '@/lib/actions/budget'
 import { addCustomCategory } from '@/lib/actions/budget-categories'
@@ -47,7 +48,7 @@ export function BudgetCategoriesSection({
   const handleEditBudget = async (categoryId: string) => {
     const budget = parseFloat(editBudget)
     if (isNaN(budget) || budget < 0) {
-      alert('Veuillez entrer un montant valide')
+      toast.error('Veuillez entrer un montant valide')
       return
     }
 
@@ -56,7 +57,7 @@ export function BudgetCategoriesSection({
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       setEditingCategory(null)
       setEditBudget('')
@@ -74,7 +75,7 @@ export function BudgetCategoriesSection({
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }
@@ -82,13 +83,13 @@ export function BudgetCategoriesSection({
 
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) {
-      alert('Veuillez entrer un nom de catégorie')
+      toast.error('Veuillez entrer un nom de catégorie')
       return
     }
 
     const budget = parseFloat(newCategoryBudget) || 0
     if (budget < 0) {
-      alert('Le budget doit être positif')
+      toast.error('Le budget doit être positif')
       return
     }
 
@@ -97,7 +98,7 @@ export function BudgetCategoriesSection({
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       setIsAddingCategory(false)
       setNewCategoryName('')
@@ -258,7 +259,7 @@ export function BudgetCategoriesSection({
                           size="sm"
                           onClick={() => {
                             // TODO: Ouvrir modal pour ajouter prestataire
-                            alert('Fonctionnalité à venir')
+                            toast.info('Fonctionnalité à venir')
                           }}
                         >
                           Ajouter un prestataire
@@ -268,7 +269,7 @@ export function BudgetCategoriesSection({
                           size="sm"
                           onClick={() => {
                             // TODO: Voir détails
-                            alert('Fonctionnalité à venir')
+                            toast.info('Fonctionnalité à venir')
                           }}
                         >
                           Voir détails

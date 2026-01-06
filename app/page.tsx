@@ -4,48 +4,36 @@ import Hero from '@/components/landing/Hero'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
-import Chatbot from '@/components/Chatbot'
 import { ArrowRight } from 'lucide-react'
-import { ShootingStars } from '@/components/ui/shooting-stars'
-import { StarsBackground } from '@/components/ui/stars-background'
+import Particles from '@/components/Particles'
 
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Fond dégradé violet clair inspiré eden.so */}
-      <div 
-        className="min-h-screen overflow-x-hidden relative"
-        style={{
-          background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
-        }}
-      >
-        {/* Étoiles et étoiles filantes - effet subtil sur fond clair */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <StarsBackground 
-            starDensity={0.00003}
-            allStarsTwinkle={true}
-            twinkleProbability={0.7}
-            minTwinkleSpeed={0.4}
-            maxTwinkleSpeed={1}
-            starColor="150, 100, 160"
-            moveSpeed={0.1}
-          />
-          <ShootingStars 
-            minSpeed={15}
-            maxSpeed={35}
-            minDelay={2000}
-            maxDelay={5000}
-            starColor="#823F91"
-            trailColor="#B855D6"
-            starWidth={12}
-            starHeight={2}
-            className="opacity-70"
-          />
-        </div>
+      {/* Background de particules - couvre toute la page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Particles
+          particleCount={200}
+          particleSpread={10}
+          speed={0.24}
+          particleColors={["#d51acf","#f231c8","#b611a8"]}
+          moveParticlesOnHover={false}
+          particleHoverFactor={1}
+          alphaParticles={false}
+          particleBaseSize={50}
+          sizeRandomness={0.5}
+          cameraDistance={20}
+          disableRotation={false}
+          className=""
+        />
+      </div>
 
-        <Hero />
-        <FeaturesGrid />
-        <CTA
+      {/* Contenu principal */}
+      <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
+        <div>
+          <Hero />
+          <FeaturesGrid />
+          <CTA
           title="Commencez votre mariage de rêve"
           buttons={[
             {
@@ -60,10 +48,8 @@ export default function HomePage() {
               variant: "outline",
             },
           ]}
-        />
-        
-        {/* Chatbot - Fixed bottom right */}
-        <Chatbot />
+          />
+        </div>
       </div>
     </SmoothScrollProvider>
   )

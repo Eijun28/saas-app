@@ -21,6 +21,7 @@ import {
   type BudgetProvider,
 } from '@/lib/actions/budget'
 import { PREDEFINED_CATEGORIES } from '@/lib/types/budget'
+import { toast } from 'sonner'
 import { Plus, Trash2, Loader2, Edit2, Check } from 'lucide-react'
 
 type BudgetProvidersProps = {
@@ -60,7 +61,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
 
     const devis = parseFloat(formData.devis)
     if (!formData.name.trim() || !formData.category || isNaN(devis) || devis < 0) {
-      alert('Veuillez remplir tous les champs correctement')
+      toast.error('Veuillez remplir tous les champs correctement')
       return
     }
 
@@ -75,7 +76,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       setFormData({
         name: '',
@@ -95,7 +96,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }
@@ -111,7 +112,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       onUpdate()
     }
@@ -131,7 +132,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
   const handleSaveEdit = async (providerId: string) => {
     const devis = parseFloat(formData.devis)
     if (!formData.name.trim() || !formData.category || isNaN(devis) || devis < 0) {
-      alert('Veuillez remplir tous les champs correctement')
+      toast.error('Veuillez remplir tous les champs correctement')
       return
     }
 
@@ -144,7 +145,7 @@ export function BudgetProviders({ providers, categories, onUpdate }: BudgetProvi
     setLoading(null)
 
     if (result.error) {
-      alert(`Erreur: ${result.error}`)
+      toast.error(`Erreur: ${result.error}`)
     } else {
       setEditingId(null)
       onUpdate()

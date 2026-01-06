@@ -208,8 +208,8 @@ export default function DemandesPage() {
     }
 
     // Charger les profils prestataires et profiles pour chaque demande
-    const transformedData = await Promise.all(
-      demandesData.map(async (demande: any) => {
+    const transformedData: Demande[] = await Promise.all(
+      demandesData.map(async (demande) => {
         const prestataireId = demande.prestataire_id
 
         // Charger le profil prestataire
@@ -276,8 +276,8 @@ export default function DemandesPage() {
     }
 
     // Charger les profils prestataires et demandes pour chaque devis
-    const transformedData = await Promise.all(
-      devisData.map(async (devis: any) => {
+    const transformedData: Devis[] = await Promise.all(
+      devisData.map(async (devis) => {
         const prestataireId = devis.prestataire_id || devis.provider_id
 
         // Charger le profil prestataire
@@ -348,8 +348,8 @@ export default function DemandesPage() {
     }
 
     // Charger les profils prestataires et profiles pour chaque favori
-    const transformedData = await Promise.all(
-      favorisData.map(async (favori: any) => {
+    const transformedData: Favori[] = await Promise.all(
+      favorisData.map(async (favori) => {
         const prestataireId = favori.prestataire_id
 
         // Charger le profil prestataire

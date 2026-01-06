@@ -13,9 +13,26 @@ import { useRouter } from 'next/navigation'
 export default function MessageriePage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
-  const [conversations, setConversations] = useState<any[]>([])
+  interface Conversation {
+    id: string
+    couple_id: string
+    prestataire_id: string
+    last_message_at: string | null
+    created_at: string
+  }
+
+  interface Message {
+    id: string
+    conversation_id: string
+    sender_id: string
+    content: string
+    is_read: boolean
+    created_at: string
+  }
+
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -30,6 +47,33 @@ export default function MessageriePage() {
       loadConversations()
     }
   }, [user, userLoading, router])
+
+  // Real-time: écouter les nouveaux messages
+  useEffect(() => {
+    if (!selectedConversation || !user) return
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`messages:${selectedConversation}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation}`
+        },
+        (payload) => {
+          const newMessage = payload.new as Message
+          setMessages(prev => [...prev, newMessage])
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedConversation, user])
 
   const loadConversations = async () => {
     if (!user) {
@@ -48,6 +92,7 @@ export default function MessageriePage() {
         return
       }
       
+      // Récupérer les conversations avec les données du prestataire
       const { data, error } = await supabase
         .from('conversations')
         .select('*')
@@ -59,39 +104,61 @@ export default function MessageriePage() {
       } else {
         setConversations(data || [])
         
+        // Construire le mapping des noms en récupérant les données séparément
         const names: Record<string, string> = {}
         
         if (data && data.length > 0) {
-          for (const conv of data) {
-            if (conv.prestataire_id) {
-              try {
-                const { data: prestataireProfile } = await supabase
-                  .from('prestataire_profiles')
-                  .select('nom_entreprise')
-                  .eq('user_id', conv.prestataire_id)
-                  .single()
-                
-                if (prestataireProfile?.nom_entreprise) {
-                  names[conv.id] = prestataireProfile.nom_entreprise
+          // Récupérer les IDs des prestataires uniques
+          const prestataireIds = [...new Set(data.map((conv: Conversation) => conv.prestataire_id).filter(Boolean))]
+          
+          if (prestataireIds.length > 0) {
+            // Récupérer les profils des prestataires
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('id, prenom, nom, avatar_url')
+              .in('id', prestataireIds)
+            
+            // Récupérer les profils publics des prestataires pour les noms d'entreprise
+            const { data: prestataireProfiles } = await supabase
+              .from('prestataire_profiles')
+              .select('user_id, nom_entreprise')
+              .in('user_id', prestataireIds)
+            
+            // Créer un mapping des données
+            const prestataireData: Record<string, { nom?: string, prenom?: string, nom_entreprise?: string, avatar_url?: string }> = {}
+            
+            if (profiles) {
+              profiles.forEach((p) => {
+                prestataireData[p.id] = { ...prestataireData[p.id], nom: p.nom, prenom: p.prenom, avatar_url: p.avatar_url }
+              })
+            }
+            
+            if (prestataireProfiles) {
+              prestataireProfiles.forEach((pp) => {
+                prestataireData[pp.user_id] = { ...prestataireData[pp.user_id], nom_entreprise: pp.nom_entreprise }
+              })
+            }
+            
+            // Construire les noms avec priorité: nom_entreprise > prenom + nom
+            data.forEach((conv: Conversation) => {
+              if (conv.prestataire_id && prestataireData[conv.prestataire_id]) {
+                const prestataire = prestataireData[conv.prestataire_id]
+                if (prestataire.nom_entreprise) {
+                  names[conv.id] = prestataire.nom_entreprise
+                } else if (prestataire.prenom || prestataire.nom) {
+                  names[conv.id] = `${prestataire.prenom || ''} ${prestataire.nom || ''}`.trim() || 'Prestataire'
                 } else {
-                  const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('prenom, nom')
-                    .eq('id', conv.prestataire_id)
-                    .single()
-                  
-                  if (profileData) {
-                    names[conv.id] = `${profileData.prenom || ''} ${profileData.nom || ''}`.trim() || 'Prestataire'
-                  } else {
-                    names[conv.id] = 'Prestataire'
-                  }
+                  names[conv.id] = 'Prestataire'
                 }
-              } catch (err) {
+              } else {
                 names[conv.id] = 'Prestataire'
               }
-            } else {
+            })
+          } else {
+            // Aucun prestataire, utiliser des noms par défaut
+            data.forEach((conv: Conversation) => {
               names[conv.id] = 'Prestataire'
-            }
+            })
           }
         }
         
@@ -108,14 +175,17 @@ export default function MessageriePage() {
     const supabase = createClient()
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
+      .select(`
+        *,
+        sender:profiles!messages_sender_id_fkey(prenom, nom, avatar_url)
+      `)
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
 
     if (error) {
       setMessages([])
     } else {
-      setMessages(data || [])
+      setMessages((data || []) as Message[])
     }
   }
 
@@ -130,6 +200,12 @@ export default function MessageriePage() {
     })
 
     if (!error) {
+      // Mettre à jour last_message_at
+      await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', selectedConversation)
+
       setNewMessage('')
       loadMessages(selectedConversation)
       loadConversations()
@@ -138,7 +214,7 @@ export default function MessageriePage() {
 
   const getLastMessage = (conversationId: string) => {
     // Récupérer le dernier message de cette conversation depuis les messages chargés
-    const convMessages = messages.filter(m => m.conversation_id === conversationId)
+    const convMessages = messages.filter((m: Message) => m.conversation_id === conversationId)
     if (convMessages.length > 0) {
       const lastMsg = convMessages[convMessages.length - 1]
       return {
@@ -194,12 +270,12 @@ export default function MessageriePage() {
                 </div>
               ) : (
                 conversations
-                  .filter((conv) => {
+                  .filter((conv: Conversation) => {
                     if (!searchQuery.trim()) return true
                     const name = prestataireNames[conv.id] || 'Prestataire'
                     return name.toLowerCase().includes(searchQuery.toLowerCase())
                   })
-                  .map((conv) => {
+                  .map((conv: Conversation) => {
                   const lastMsg = getLastMessage(conv.id)
                   return (
                     <button
@@ -248,7 +324,7 @@ export default function MessageriePage() {
                         <p>Aucun message dans cette conversation</p>
                       </div>
                     ) : (
-                      messages.map((msg) => (
+                      messages.map((msg: Message) => (
                         <div
                           key={msg.id}
                           className={`flex ${

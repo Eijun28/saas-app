@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge'
 import { Send, Paperclip, Search } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
+import { useUser } from '@/hooks/use-user'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import type { Conversation, Message, UIState } from '@/lib/types/prestataire'
 
 export default function PrestataireMessageriePage() {
@@ -22,65 +25,273 @@ export default function PrestataireMessageriePage() {
     error: null,
   })
 
-  // TODO: Fetch conversations from Supabase
-  // Table: conversations
-  // Filter: prestataire_id = current_user_id
-  // Sort: dernier_message_at DESC
+  const { user } = useUser()
+
   useEffect(() => {
+    if (!user) return
+
     const fetchConversations = async () => {
       setUiState({ loading: 'loading', error: null })
       
       try {
-        // const { data, error } = await supabase
-        //   .from('conversations')
-        //   .select(`
-        //     *,
-        //     couple:couples(nom, prenom, avatar_url)
-        //   `)
-        //   .eq('prestataire_id', user.id)
-        //   .order('dernier_message_at', { ascending: false })
+        const supabase = createClient()
         
+        // Fetch conversations avec join sur couples pour obtenir le nom du couple
+        const { data: conversationsData, error } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('prestataire_id', user.id)
+          .order('last_message_at', { ascending: false })
+
+        if (error) throw error
+
+        // Récupérer les données des couples
+        const coupleIds = [...new Set((conversationsData || []).map((c: any) => c.couple_id))]
+        const { data: couplesData } = await supabase
+          .from('couples')
+          .select('user_id, partner_1_name, partner_2_name')
+          .in('user_id', coupleIds)
+        
+        const couplesMap = new Map((couplesData || []).map((c: any) => [c.user_id, c]))
+
+        // Pour chaque conversation, récupérer le dernier message et compter les non lus
+        const enrichedConversations = await Promise.all(
+          (conversationsData || []).map(async (conv: any) => {
+            // Dernier message
+            const { data: lastMessage } = await supabase
+              .from('messages')
+              .select('content, created_at')
+              .eq('conversation_id', conv.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single()
+
+            // Compter les messages non lus (envoyés par le couple, non lus)
+            const { count: unreadCount } = await supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('conversation_id', conv.id)
+              .eq('is_read', false)
+              .neq('sender_id', user.id)
+
+            const couple = couplesMap.get(conv.couple_id)
+            const coupleNom = couple
+              ? `${couple.partner_1_name || ''} & ${couple.partner_2_name || ''}`.trim() || 'Couple'
+              : 'Couple'
+
+            return {
+              id: conv.id,
+              couple_id: conv.couple_id,
+              couple_nom: coupleNom,
+              dernier_message: lastMessage?.content || '',
+              dernier_message_at: lastMessage?.created_at || conv.last_message_at || conv.created_at,
+              non_lu: (unreadCount || 0) > 0,
+            } as Conversation
+          })
+        )
+
+        setConversations(enrichedConversations)
         setUiState({ loading: 'success', error: null })
       } catch (error) {
-        setUiState({ loading: 'error', error: 'Erreur de chargement' })
+        console.error('Erreur chargement conversations:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Erreur de chargement'
+        toast.error('Erreur lors du chargement des conversations')
+        setUiState({ loading: 'error', error: errorMessage })
       }
     }
 
-    // fetchConversations()
-  }, [])
+    fetchConversations()
+  }, [user])
 
-  // TODO: Fetch messages from Supabase when conversation is selected
-  // Table: messages
-  // Filter: conversation_id = selectedConversation
-  // Sort: created_at ASC
   useEffect(() => {
-    if (!selectedConversation) return
+    if (!selectedConversation || !user) return
 
     const fetchMessages = async () => {
       try {
-        // const { data, error } = await supabase
-        //   .from('messages')
-        //   .select('*')
-        //   .eq('conversation_id', selectedConversation)
-        //   .order('created_at', { ascending: true })
+        const supabase = createClient()
         
-        setMessages([])
+        const { data, error } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:profiles!messages_sender_id_fkey(prenom, nom, avatar_url)
+          `)
+          .eq('conversation_id', selectedConversation)
+          .order('created_at', { ascending: true })
+
+        if (error) throw error
+
+        // Transformer les messages pour correspondre au type Message
+        const formattedMessages: Message[] = (data || []).map((msg: any) => ({
+          id: msg.id,
+          conversation_id: msg.conversation_id,
+          sender_id: msg.sender_id,
+          sender_type: msg.sender_id === user.id ? 'prestataire' : 'couple',
+          contenu: msg.content,
+          created_at: msg.created_at,
+          lu: msg.is_read || false,
+        }))
+
+        setMessages(formattedMessages)
+
+        // Marquer les messages comme lus (ceux envoyés par le couple)
+        const unreadMessages = formattedMessages.filter(
+          m => !m.lu && m.sender_id !== user.id
+        )
+
+        if (unreadMessages.length > 0) {
+          await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .in('id', unreadMessages.map(m => m.id))
+        }
       } catch (error) {
         console.error('Erreur chargement messages', error)
+        toast.error('Erreur lors du chargement des messages')
       }
     }
 
-    // fetchMessages()
-  }, [selectedConversation])
+    fetchMessages()
 
-  const handleSendMessage = () => {
-    if (!messageText.trim() || !selectedConversation) return
+    // Real-time: écouter les nouveaux messages
+    if (!selectedConversation) return
 
-    // TODO: Send message to Supabase
-    // Table: messages
-    // Insert: conversation_id, sender_id, sender_type='prestataire', contenu, lu=false
-    
-    setMessageText('')
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`messages:${selectedConversation}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation}`
+        },
+        (payload) => {
+          const newMessage = payload.new as {
+            id: string
+            conversation_id: string
+            sender_id: string
+            content: string
+            is_read: boolean
+            created_at: string
+          }
+          const formattedMessage: Message = {
+            id: newMessage.id,
+            conversation_id: newMessage.conversation_id,
+            sender_id: newMessage.sender_id,
+            sender_type: newMessage.sender_id === user.id ? 'prestataire' : 'couple',
+            contenu: newMessage.content,
+            created_at: newMessage.created_at,
+            lu: newMessage.is_read || false,
+          }
+          setMessages(prev => [...prev, formattedMessage])
+          
+          // Marquer comme lu si c'est le prestataire qui reçoit
+          if (newMessage.sender_id !== user.id) {
+            supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', newMessage.id)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedConversation, user])
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !selectedConversation || !user) return
+
+    try {
+      const supabase = createClient()
+      
+      // Insérer le message
+      const { data: newMessage, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: selectedConversation,
+          sender_id: user.id,
+          content: messageText.trim(),
+          is_read: false,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Mettre à jour last_message_at de la conversation
+      await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', selectedConversation)
+
+      // Ajouter le message à la liste locale
+      const formattedMessage: Message = {
+        id: newMessage.id,
+        conversation_id: newMessage.conversation_id,
+        sender_id: newMessage.sender_id,
+        sender_type: 'prestataire',
+        contenu: newMessage.content,
+        created_at: newMessage.created_at,
+        lu: false,
+      }
+
+      setMessages([...messages, formattedMessage])
+      setMessageText('')
+
+      // Recharger les conversations pour mettre à jour le dernier message
+      const { data: conversationsData } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          couple:profiles!conversations_couple_id_fkey(prenom, nom, avatar_url)
+        `)
+        .eq('prestataire_id', user.id)
+        .order('last_message_at', { ascending: false })
+
+      if (conversationsData) {
+        const enrichedConversations = await Promise.all(
+          conversationsData.map(async (conv: any) => {
+            const { data: lastMessage } = await supabase
+              .from('messages')
+              .select('content, created_at')
+              .eq('conversation_id', conv.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single()
+
+            const { count: unreadCount } = await supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('conversation_id', conv.id)
+              .eq('is_read', false)
+              .neq('sender_id', user.id)
+
+            const coupleNom = conv.couple
+              ? `${conv.couple.prenom || ''} ${conv.couple.nom || ''}`.trim() || 'Couple'
+              : 'Couple'
+
+            return {
+              id: conv.id,
+              couple_id: conv.couple_id,
+              couple_nom: coupleNom,
+              dernier_message: lastMessage?.content || '',
+              dernier_message_at: lastMessage?.created_at || conv.last_message_at || conv.created_at,
+              non_lu: (unreadCount || 0) > 0,
+            } as Conversation
+          })
+        )
+
+        setConversations(enrichedConversations)
+      }
+    } catch (error) {
+      console.error('Erreur envoi message:', error)
+      toast.error('Erreur lors de l\'envoi du message')
+    }
   }
 
   if (uiState.loading === 'loading') {

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { UserPlus, Users, Edit2, X, Check, Mail, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -101,8 +102,7 @@ export default function CollaborateursPage() {
       setInviteError(null)
       loadCollaborateurs()
       
-      // Afficher un message de succès (vous pouvez utiliser un toast ici)
-      alert(`Invitation envoyée à ${formData.email}`)
+      toast.success(`Invitation envoyée à ${formData.email}`)
     } catch (error: any) {
       console.error('Erreur invitation:', error)
       setInviteError(error.message || 'Erreur lors de l\'envoi de l\'invitation')
@@ -120,7 +120,7 @@ export default function CollaborateursPage() {
 
     if (error) {
       console.error('Erreur mise à jour rôle:', error)
-      alert('Erreur lors de la mise à jour')
+      toast.error('Erreur lors de la mise à jour')
     } else {
       loadCollaborateurs()
       setEditingCollaborateur(null)
@@ -138,7 +138,7 @@ export default function CollaborateursPage() {
 
     if (error) {
       console.error('Erreur suppression:', error)
-      alert('Erreur lors de la suppression')
+      toast.error('Erreur lors de la suppression')
     } else {
       loadCollaborateurs()
     }

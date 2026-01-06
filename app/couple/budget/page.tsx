@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import { Wallet, Plus, Edit2, Trash2, X, Check } from 'lucide-react'
 import {
   Dialog,
@@ -125,7 +126,7 @@ export default function BudgetPage() {
     const amount = parseFloat(formData.amount)
 
     if (isNaN(amount) || amount <= 0) {
-      alert('Veuillez entrer un montant valide')
+      toast.error('Veuillez entrer un montant valide')
       return
     }
 
@@ -143,7 +144,7 @@ export default function BudgetPage() {
 
       if (error) {
         console.error('Erreur mise à jour:', error)
-        alert('Erreur lors de la mise à jour')
+        toast.error('Erreur lors de la mise à jour')
       } else {
         loadBudgetItems()
         setIsDialogOpen(false)
@@ -167,12 +168,12 @@ export default function BudgetPage() {
         console.error('Erreur création dépense:', error)
         // Si la table n'existe pas, donner des instructions claires
         if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-          alert(
+          toast.error(
             'La table budget_items n\'existe pas dans votre base de données Supabase. ' +
             'Veuillez exécuter le script SQL migrations/create_budget_items.sql dans votre projet Supabase pour créer la table.'
           )
         } else {
-          alert(`Erreur lors de la création de la dépense: ${error.message}`)
+          toast.error(`Erreur lors de la création de la dépense: ${error.message}`)
         }
         return
       }
@@ -193,9 +194,9 @@ export default function BudgetPage() {
     if (error) {
       console.error('Erreur suppression:', error)
       if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-        alert('La table budget_items n\'existe pas. Veuillez exécuter le script SQL migrations/create_budget_items.sql dans Supabase.')
+        toast.error('La table budget_items n\'existe pas. Veuillez exécuter le script SQL migrations/create_budget_items.sql dans Supabase.')
       } else {
-        alert(`Erreur lors de la suppression: ${error.message}`)
+        toast.error(`Erreur lors de la suppression: ${error.message}`)
       }
       return
     }

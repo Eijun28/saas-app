@@ -38,81 +38,203 @@ export default function CoupleDashboardPage() {
   const [nom, setNom] = useState('')
 
   useEffect(() => {
-    if (user) {
+    if (!user) return
+
+    const fetchDashboardData = async () => {
       const supabase = createClient()
       
-      // Récupérer le profil couple pour le prénom et nom
-      supabase
-        .from('couples')
-        .select('partner_1_name')
-        .eq('user_id', user.id)
-        .single()
-        .then(({ data }) => {
-          if (data?.partner_1_name) {
-            const nameParts = data.partner_1_name.split(' ')
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:43',message:'fetchDashboardData entry',data:{userId:user?.id,userExists:!!user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      
+      try {
+        // Récupérer les données du couple (sans relation inexistante)
+        const { data: coupleData, error: coupleError } = await supabase
+          .from('couples')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:56',message:'after couple query',data:{coupleErrorExists:!!coupleError,coupleErrorType:typeof coupleError,coupleErrorIsNull:coupleError===null,coupleErrorIsUndefined:coupleError===undefined,coupleErrorKeys:coupleError?Object.keys(coupleError):null,coupleErrorMessage:coupleError?.message,coupleErrorCode:coupleError?.code,coupleErrorDetails:coupleError?.details,coupleErrorHint:coupleError?.hint,coupleErrorStringified:coupleError?JSON.stringify(coupleError):null,coupleDataExists:!!coupleData},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D'})}).catch(()=>{});
+        // #endregion
+
+        if (coupleError) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:58',message:'coupleError detected before throw',data:{errorType:typeof coupleError,errorConstructor:coupleError?.constructor?.name,errorPrototype:Object.getPrototypeOf(coupleError)?.constructor?.name,allErrorProps:coupleError?Object.getOwnPropertyNames(coupleError):null,errorString:String(coupleError),errorJSON:JSON.stringify(coupleError,Object.getOwnPropertyNames(coupleError))},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+          // #endregion
+          // Améliorer l'affichage de l'erreur avec toutes ses propriétés
+          console.error('Erreur lors de la récupération du couple:', {
+            message: coupleError.message,
+            code: coupleError.code,
+            details: coupleError.details,
+            hint: coupleError.hint,
+            fullError: coupleError
+          })
+          throw coupleError
+        }
+
+        if (coupleData) {
+          // Extraire le prénom et nom depuis partner_1_name (qui existe dans la table couples)
+          if (coupleData.partner_1_name) {
+            const nameParts = coupleData.partner_1_name.split(' ')
             setPrenom(nameParts[0] || '')
             setNom(nameParts.slice(1).join(' ') || '')
           }
+
+          setCoupleProfile(coupleData)
+
+          // Calculer les jours restants
+          let joursRestants = null
+          if (coupleData.wedding_date) {
+            const dateMariage = new Date(coupleData.wedding_date)
+            const aujourdhui = new Date()
+            const diff = dateMariage.getTime() - aujourdhui.getTime()
+            joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
+          }
+
+          // Compter les favoris (depuis la relation ou requête séparée si nécessaire)
+          const { count: favorisCount, error: favorisError } = await supabase
+            .from('favoris')
+            .select('id', { count: 'exact', head: true })
+            .eq('couple_id', user.id)
+
+          if (favorisError) {
+            console.error('Erreur lors du comptage des favoris:', favorisError)
+          }
+
+          // Compter les messages non lus depuis les conversations
+          let messagesNonLus = 0
+          try {
+            const { data: conversations, error: conversationsError } = await supabase
+              .from('conversations')
+              .select('id')
+              .eq('couple_id', user.id)
+            
+            if (conversationsError) {
+              console.error('Erreur lors de la récupération des conversations:', conversationsError)
+            } else if (conversations && conversations.length > 0) {
+              const conversationIds = conversations.map((c: any) => c.id)
+              const { count, error: messagesError } = await supabase
+                .from('messages')
+                .select('id', { count: 'exact', head: true })
+                .in('conversation_id', conversationIds)
+                .neq('sender_id', user.id)
+                .eq('is_read', false)
+              
+              if (messagesError) {
+                console.error('Erreur lors du comptage des messages:', messagesError)
+              } else {
+                messagesNonLus = count || 0
+              }
+            }
+          } catch (messagesError: any) {
+            console.error('Erreur lors du traitement des messages:', messagesError)
+          }
+
+          setStats({
+            prestatairesTrouves: favorisCount || 0,
+            budgetAlloue: coupleData.budget_max || coupleData.budget_min || 0,
+            joursRestants,
+            messagesNonLus,
+          })
+        }
+      } catch (error: any) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:131',message:'catch block entry',data:{errorExists:!!error,errorType:typeof error,errorIsNull:error===null,errorIsUndefined:error===undefined,errorConstructor:error?.constructor?.name,errorMessage:error?.message,errorStack:error?.stack,errorKeys:error?Object.keys(error):null,allErrorProps:error?Object.getOwnPropertyNames(error):null,errorString:String(error),errorJSON:error?JSON.stringify(error,Object.getOwnPropertyNames(error)):null},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+        // #endregion
+        // Améliorer l'affichage de l'erreur avec toutes ses propriétés
+        console.error('Erreur chargement dashboard:', {
+          message: error?.message,
+          code: error?.code,
+          details: error?.details,
+          hint: error?.hint,
+          fullError: error
         })
-      
-      // Récupérer le profil couple
-      supabase
-        .from('couples')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-        .then(({ data }) => {
-          setCoupleProfile(data)
+        // En cas d'erreur, essayer avec les requêtes séparées (fallback)
+        try {
+          const fallbackSupabase = createClient()
           
-          if (data) {
+          // Récupérer les données du couple
+          const { data: coupleData, error: coupleError } = await fallbackSupabase
+            .from('couples')
+            .select('*')
+            .eq('user_id', user.id)
+            .single()
+          
+          if (coupleError) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:144',message:'fallback coupleError detected',data:{errorType:typeof coupleError,errorIsNull:coupleError===null,errorIsUndefined:coupleError===undefined,errorMessage:coupleError?.message,errorCode:coupleError?.code,errorDetails:coupleError?.details,errorHint:coupleError?.hint,errorKeys:coupleError?Object.keys(coupleError):null,allErrorProps:coupleError?Object.getOwnPropertyNames(coupleError):null,errorString:String(coupleError),errorJSON:coupleError?JSON.stringify(coupleError,Object.getOwnPropertyNames(coupleError)):null},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+            // #endregion
+            // Améliorer l'affichage de l'erreur avec toutes ses propriétés
+            console.error('Erreur lors de la récupération du couple (fallback):', {
+              message: coupleError.message,
+              code: coupleError.code,
+              details: coupleError.details,
+              hint: coupleError.hint,
+              fullError: coupleError
+            })
+            return
+          }
+          
+          if (coupleData) {
+            // Extraire le prénom et nom
+            if (coupleData.partner_1_name) {
+              const nameParts = coupleData.partner_1_name.split(' ')
+              setPrenom(nameParts[0] || '')
+              setNom(nameParts.slice(1).join(' ') || '')
+            }
+            
+            setCoupleProfile(coupleData)
+            
             // Calculer les jours restants
             let joursRestants = null
-            if (data.wedding_date) {
-              const dateMariage = new Date(data.wedding_date)
+            if (coupleData.wedding_date) {
+              const dateMariage = new Date(coupleData.wedding_date)
               const aujourdhui = new Date()
               const diff = dateMariage.getTime() - aujourdhui.getTime()
               joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
             }
             
-            // Compter les prestataires favoris
-            supabase
+            // Compter les favoris
+            const { count: favorisCount } = await fallbackSupabase
               .from('favoris')
               .select('id', { count: 'exact', head: true })
               .eq('couple_id', user.id)
-              .then(({ count }) => {
-                setStats(prev => ({
-                  ...prev,
-                  prestatairesTrouves: count || 0,
-                  budgetAlloue: data.budget_total || 0,
-                  joursRestants,
-                }))
-              })
             
             // Compter les messages non lus
-            supabase
+            const { data: conversations } = await fallbackSupabase
               .from('conversations')
               .select('id')
               .eq('couple_id', user.id)
-              .then(({ data: conversations }) => {
-                if (conversations && conversations.length > 0) {
-                  const conversationIds = conversations.map(c => c.id)
-                  supabase
-                    .from('messages')
-                    .select('id', { count: 'exact', head: true })
-                    .in('conversation_id', conversationIds)
-                    .neq('sender_id', user.id)
-                    .eq('is_read', false)
-                    .then(({ count }) => {
-                      setStats(prev => ({
-                        ...prev,
-                        messagesNonLus: count || 0,
-                      }))
-                    })
-                }
-              })
+            
+            let messagesNonLus = 0
+            if (conversations && conversations.length > 0) {
+              const conversationIds = conversations.map(c => c.id)
+              const { count } = await fallbackSupabase
+                .from('messages')
+                .select('id', { count: 'exact', head: true })
+                .in('conversation_id', conversationIds)
+                .neq('sender_id', user.id)
+                .eq('is_read', false)
+              
+              messagesNonLus = count || 0
+            }
+            
+            setStats({
+              prestatairesTrouves: favorisCount || 0,
+              budgetAlloue: coupleData.budget_max || coupleData.budget_min || 0,
+              joursRestants,
+              messagesNonLus,
+            })
           }
-        })
+        } catch (fallbackError: any) {
+          console.error('Erreur lors du fallback:', fallbackError)
+        }
+      }
     }
+
+    fetchDashboardData()
   }, [user])
 
   if (loading) {
@@ -139,7 +261,6 @@ export default function CoupleDashboardPage() {
       description: 'Trouvez les prestataires parfaits grâce à notre intelligence artificielle',
       icon: Sparkles,
       href: '/couple/matching',
-      gradient: 'from-purple-600 to-pink-600',
       badge: 'Nouveau',
     },
     {
@@ -147,21 +268,18 @@ export default function CoupleDashboardPage() {
       description: 'Gérez vos documents administratifs avec l\'IA',
       icon: FileText,
       href: '/dashboard/dossier-mariage',
-      gradient: 'from-rose-600 to-pink-600',
     },
     {
       title: 'Budget & Timeline',
       description: 'Gérez votre budget et planifiez votre mariage',
       icon: Wallet,
       href: '/couple/budget',
-      gradient: 'from-blue-600 to-purple-600',
     },
     {
       title: 'Messagerie',
       description: 'Communiquez avec tous vos prestataires',
       icon: MessageSquare,
       href: '/couple/messagerie',
-      gradient: 'from-pink-600 to-rose-600',
       badge: stats.messagesNonLus > 0 ? `${stats.messagesNonLus}` : undefined,
     },
     {
@@ -169,21 +287,18 @@ export default function CoupleDashboardPage() {
       description: 'Gérez vos demandes et devis reçus',
       icon: FileText,
       href: '/couple/demandes',
-      gradient: 'from-blue-600 to-cyan-600',
     },
     {
       title: 'Collaborateurs',
       description: 'Invitez des proches à vous aider dans l\'organisation',
       icon: Users,
       href: '/couple/collaborateurs',
-      gradient: 'from-purple-600 to-indigo-600',
     },
     {
       title: 'Profil',
       description: 'Modifiez vos informations personnelles et de mariage',
       icon: Calendar,
       href: '/couple/profil',
-      gradient: 'from-violet-600 to-purple-600',
     },
   ]
 
@@ -214,7 +329,7 @@ export default function CoupleDashboardPage() {
                   <Link href={section.href} className="block h-full">
                     <CardHeader>
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center shadow-lg shadow-purple-500/20 hover-gradient-purple`}>
+                        <div className="h-12 w-12 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 hover-gradient-purple">
                           <Icon className="h-6 w-6 text-white" />
                         </div>
                         {section.badge && (
@@ -237,7 +352,7 @@ export default function CoupleDashboardPage() {
                       <motion.div whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
                         <Button
                           variant="ghost"
-                          className="text-purple-600 hover:text-white hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 group"
+                          className="text-purple-600 hover:text-white hover:bg-purple-600 group"
                         >
                           Accéder
                           <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

@@ -68,11 +68,11 @@ export function DocumentUploader({
       if (!user) throw new Error('Non authentifié')
 
       // Prépare le FormData
+      // SÉCURITÉ: Ne plus envoyer userId, le serveur utilisera la session
       const formData = new FormData()
       formData.append('file', file)
       formData.append('marriageFileId', marriageFileId)
       formData.append('documentType', document.id)
-      formData.append('userId', user.id)
 
       // Appelle l'API
       const response = await fetch('/api/marriage-admin/upload-document', {

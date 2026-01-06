@@ -171,7 +171,7 @@ export function NuplyNavbarMenu() {
   }
 
   return (
-    <div className="relative w-full flex items-center justify-center">
+    <div className="relative w-full flex items-center justify-center" style={{ pointerEvents: 'none', zIndex: 99999 }}>
       <Navbar 
         className="top-2" 
         active={active} 
@@ -231,11 +231,13 @@ function Navbar({
 
   return (
     <div
-      className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto z-50 px-4", className)}
+      className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto px-4", className)}
+      style={{ zIndex: 99999, pointerEvents: 'auto', position: 'fixed' }}
+      onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center justify-between bg-white rounded-full border border-transparent shadow-input px-4 py-2">
+      <div className="flex items-center justify-between bg-white rounded-full border border-transparent shadow-input px-4 py-2" style={{ position: 'relative', zIndex: 99999, pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
         {/* Logo */}
-        <Link href="/" className="flex items-center h-8">
+        <Link href="/" className="flex items-center h-8" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
           <Image
             src="/images/logo.svg"
             alt="NUPLY Logo"
@@ -246,30 +248,45 @@ function Navbar({
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden md:flex items-center space-x-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
           <Link
             href="/#prestataires"
             onClick={() => setActive(null)}
-            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+            className="text-sm font-medium cursor-pointer transition-colors"
+            style={{ color: '#c081e3', pointerEvents: 'auto' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#a865d0'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#c081e3'
+            }}
           >
             Trouver un prestataire
           </Link>
           <Link
             href="/tarifs"
             onClick={() => setActive(null)}
-            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+            className="text-sm font-medium cursor-pointer transition-colors"
+            style={{ color: '#c081e3', pointerEvents: 'auto' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#a865d0'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#c081e3'
+            }}
           >
             Tarifs
           </Link>
         </div>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
           {user && !isHomePage ? (
             <>
               <Link
                 href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                 className="text-sm text-[#374151] hover:text-[#823F91] transition-colors flex items-center h-8"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
               </Link>
@@ -278,6 +295,7 @@ function Navbar({
                 variant="ghost"
                 size="sm"
                 className="text-sm h-8"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
               >
                 <LogOut className="h-4 w-4 mr-1" />
                 Déconnexion
@@ -285,20 +303,38 @@ function Navbar({
             </>
             ) : (
             <>
-              <Link href="/sign-in">
+              <Link href="/sign-in" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
                 <RippleButton
-                  className="text-sm h-8 px-4 bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0 font-medium"
-                  rippleColor="#823F91"
+                  className="text-sm h-8 px-4 border-0 font-medium"
+                  style={{ backgroundColor: '#a720f2', color: 'white', pointerEvents: 'auto' }}
+                  rippleColor="#ffffff"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#8a1ac9'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#a720f2'
+                    e.currentTarget.style.color = 'white'
+                  }}
                 >
-                  Se connecter
+                  <span style={{ color: 'white' }}>Se connecter</span>
                 </RippleButton>
               </Link>
-              <Link href="/sign-up">
+              <Link href="/sign-up" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
                 <RippleButton
-                  className="text-sm h-8 px-4 bg-[#823F91] hover:bg-[#6D3478] text-white border-0 font-medium"
+                  className="text-sm h-8 px-4 border-0 font-medium"
+                  style={{ backgroundColor: '#c081e3', color: 'white', pointerEvents: 'auto' }}
                   rippleColor="#ffffff"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#a865d0'
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#c081e3'
+                    e.currentTarget.style.color = 'white'
+                  }}
                 >
-                  Commencer
+                  <span style={{ color: 'white' }}>Commencer</span>
                 </RippleButton>
               </Link>
             </>
@@ -310,6 +346,7 @@ function Navbar({
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           aria-label="Toggle menu"
+          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
         >
           <AnimatePresence mode="wait">
             {isMobileMenuOpen ? (
@@ -346,20 +383,35 @@ function Navbar({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             className="md:hidden mt-2 overflow-hidden bg-white rounded-2xl border border-black/[0.1] shadow-xl"
+            style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
           >
             <div className="px-4 py-4 space-y-4">
               <div className="flex flex-col space-y-2">
                 <Link
                   href="/#prestataires"
                   onClick={() => handleLinkClick("/#prestataires")}
-                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
+                  className="text-sm py-2 transition-colors"
+                  style={{ color: '#c081e3' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a865d0'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#c081e3'
+                  }}
                 >
                   Trouver un prestataire
                 </Link>
                 <Link
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
-                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
+                  className="text-sm py-2 transition-colors"
+                  style={{ color: '#c081e3' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a865d0'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#c081e3'
+                  }}
                 >
                   Tarifs
                 </Link>
@@ -387,18 +439,36 @@ function Navbar({
                   <div className="flex flex-col gap-2">
                     <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
-                        rippleColor="#823F91"
+                        className="w-full h-9 text-xs font-medium border-0"
+                        style={{ backgroundColor: '#a720f2', color: 'white' }}
+                        rippleColor="#ffffff"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#8a1ac9'
+                          e.currentTarget.style.color = 'white'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#a720f2'
+                          e.currentTarget.style.color = 'white'
+                        }}
                       >
-                        Se connecter
+                        <span style={{ color: 'white' }}>Se connecter</span>
                       </RippleButton>
                     </Link>
                     <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                        className="w-full h-9 text-xs font-medium border-0"
+                        style={{ backgroundColor: '#c081e3', color: 'white' }}
                         rippleColor="#ffffff"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#a865d0'
+                          e.currentTarget.style.color = 'white'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#c081e3'
+                          e.currentTarget.style.color = 'white'
+                        }}
                       >
-                        Commencer
+                        <span style={{ color: 'white' }}>Commencer</span>
                       </RippleButton>
                     </Link>
                   </div>

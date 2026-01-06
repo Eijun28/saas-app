@@ -103,10 +103,7 @@ export default function PricingSection() {
 
   return (
     <Section 
-      className="min-h-screen"
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
-      }}
+      className="min-h-screen bg-background"
     >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-6">
         {/* Header */}

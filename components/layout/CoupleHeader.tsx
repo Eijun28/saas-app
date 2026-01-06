@@ -131,10 +131,10 @@ export function CoupleHeader() {
       }> = []
 
       try {
-        // Récupérer les messages non lus
+        // Récupérer les messages non lus (sans relation inexistante)
         const { data: conversations } = await supabase
           .from('conversations')
-          .select('id, prestataire_id, profiles!conversations_prestataire_id_fkey(nom)')
+          .select('id, prestataire_id')
           .eq('couple_id', user.id)
 
         if (conversations && conversations.length > 0) {
@@ -150,9 +150,26 @@ export function CoupleHeader() {
             .limit(5)
 
           if (messages) {
+            // Récupérer les noms des prestataires séparément si nécessaire
+            const prestataireIds = [...new Set(conversations.map((c: any) => c.prestataire_id).filter(Boolean))]
+            const prestataireNames: Record<string, string> = {}
+            
+            if (prestataireIds.length > 0) {
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, nom')
+                .in('id', prestataireIds)
+              
+              if (profiles) {
+                profiles.forEach((p: any) => {
+                  prestataireNames[p.id] = p.nom || 'Un prestataire'
+                })
+              }
+            }
+            
             messages.forEach((message: any) => {
               const conversation: any = conversations.find(c => c.id === message.conversation_id)
-              const prestataireNom = conversation?.profiles?.nom || 'Un prestataire'
+              const prestataireNom = conversation?.prestataire_id ? prestataireNames[conversation.prestataire_id] || 'Un prestataire' : 'Un prestataire'
               notificationsList.push({
                 id: message.id,
                 type: 'message',

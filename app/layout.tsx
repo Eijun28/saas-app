@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${GeistSans.className} antialiased bg-white`} suppressHydrationWarning>
+      <body className={`${GeistSans.className} antialiased bg-background`} suppressHydrationWarning>
         <NuplyNavbarMenu />
         <main>
           <MainWrapper>

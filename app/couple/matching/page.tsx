@@ -1,73 +1,56 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
-	ChatInput,
-	ChatInputSubmit,
-	ChatInputTextArea,
-} from '@/components/ui/chat-input'
-import { Sparkles, MessageSquare, Bot, Heart, Lightbulb } from 'lucide-react'
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import {
+	Zap,
+	ChevronDown,
+	Circle,
+	CircleDashed,
+	Cloud,
+	Code,
+	Laptop,
+	History,
+	Paperclip,
+	Plus,
+	Loader2,
+	Send,
+	Wand2,
+	Globe,
+} from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-
-interface Message {
-	id: string
-	role: 'user' | 'assistant'
-	content: string
-	timestamp: Date
-}
 
 export default function MatchingPage() {
 	const router = useRouter()
 	const { user, loading: userLoading } = useUser()
-	const [messages, setMessages] = useState<Message[]>([
-		{
-			id: '1',
-			role: 'assistant',
-			content: 'Bonjour ! Je suis votre conseiller en mariage virtuel. Dites-moi tout sur votre projet de mariage : la date, le lieu, le nombre d\'invités, votre budget, et vos préférences. Je vais vous aider à trouver les prestataires parfaits !',
-			timestamp: new Date(),
-		},
-	])
-	const [inputValue, setInputValue] = useState('')
-	const [isLoading, setIsLoading] = useState(false)
+	const [input, setInput] = useState('')
+	const [selectedModel, setSelectedModel] = useState('Local')
+	const [selectedPerformance, setSelectedPerformance] = useState('High')
+	const [autoMode, setAutoMode] = useState(false)
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
+	const handleSubmit = (e?: React.FormEvent) => {
+		if (e) e.preventDefault()
+		if (input.trim()) {
+			// Logique de soumission ici
+			console.log('Message envoyé:', input)
+		}
+	}
 
 	// Redirection si non connecté
 	if (!userLoading && !user) {
 		router.push('/sign-in')
 		return null
-	}
-
-	const handleSubmit = async () => {
-		if (!inputValue.trim() || isLoading) return
-
-		const userMessage: Message = {
-			id: Date.now().toString(),
-			role: 'user',
-			content: inputValue.trim(),
-			timestamp: new Date(),
-		}
-
-		setMessages((prev) => [...prev, userMessage])
-		setInputValue('')
-		setIsLoading(true)
-
-		// Simuler une réponse de l'assistant (à remplacer par l'API de matching plus tard)
-		setTimeout(() => {
-			const assistantMessage: Message = {
-				id: (Date.now() + 1).toString(),
-				role: 'assistant',
-				content: 'Merci pour ces informations ! Je prends note de vos besoins. Le système de matching va analyser votre demande et vous proposer les prestataires les plus adaptés. En attendant, avez-vous d\'autres détails à partager sur votre mariage ?',
-				timestamp: new Date(),
-			}
-			setMessages((prev) => [...prev, assistantMessage])
-			setIsLoading(false)
-			toast.success('Message envoyé', {
-				description: 'Votre demande a été enregistrée',
-			})
-		}, 1500)
 	}
 
 	if (userLoading) {
@@ -82,140 +65,208 @@ export default function MatchingPage() {
 		<div className="min-h-screen bg-white">
 			<div className="max-w-4xl mx-auto p-4 md:p-6 lg:p-8">
 				{/* En-tête */}
-				<motion.div
-					initial={{ opacity: 0, y: -20 }}
-					animate={{ opacity: 1, y: 0 }}
-					className="mb-8"
-				>
-					<div className="flex items-center gap-3 mb-4">
-						<div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center hover-gradient-purple">
-							<Sparkles className="h-6 w-6 text-white" />
+				<div className="mb-8">
+					<h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+						Commencez à trouver vos prestataires
+					</h1>
+					<p className="text-[#6B7280] text-lg">
+						Utilisez notre intelligence artificielle pour découvrir les prestataires parfaits pour votre mariage
+					</p>
+				</div>
+
+				<div className="w-full">
+					<div className="bg-background border border-border rounded-2xl overflow-hidden">
+						<input
+							ref={fileInputRef}
+							type="file"
+							multiple
+							className="sr-only"
+							onChange={(e) => {}}
+						/>
+
+						<div className="px-3 pt-3 pb-2 grow">
+							<form onSubmit={handleSubmit}>
+								<Textarea
+									value={input}
+									onChange={(e) => setInput(e.target.value)}
+									placeholder="Décrivez votre mariage : date, lieu, nombre d'invités, budget, style souhaité..."
+									className="w-full bg-transparent! p-0 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder-muted-foreground resize-none border-none outline-none text-sm min-h-10 max-h-[25vh]"
+									rows={1}
+									onInput={(e) => {
+										const target = e.target as HTMLTextAreaElement
+										target.style.height = 'auto'
+										target.style.height = target.scrollHeight + 'px'
+									}}
+								/>
+							</form>
 						</div>
-						<div>
-							<p className="text-[#6B7280]">
-								Parlez avec votre conseiller virtuel pour décrire votre mariage
-							</p>
+
+						<div className="mb-2 px-2 flex items-center justify-between">
+							<div className="flex items-center gap-1">
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button
+											variant="ghost"
+											size="sm"
+											type="button"
+											className="h-7 w-7 p-0 rounded-full border border-border hover:bg-accent"
+										>
+											<Plus className="size-3" />
+										</Button>
+									</DropdownMenuTrigger>
+
+									<DropdownMenuContent
+										align="start"
+										className="max-w-xs rounded-2xl p-1.5"
+									>
+										<DropdownMenuGroup className="space-y-1">
+											<DropdownMenuItem
+												className="rounded-[calc(1rem-6px)] text-xs"
+												onClick={() => fileInputRef.current?.click()}
+											>
+												<Paperclip size={16} className="opacity-60" />
+												Joindre des fichiers
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												className="rounded-[calc(1rem-6px)] text-xs"
+												onClick={() => {}}
+											>
+												<Code size={16} className="opacity-60" />
+												Interpréteur de code
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												className="rounded-[calc(1rem-6px)] text-xs"
+												onClick={() => {}}
+											>
+												<Globe size={16} className="opacity-60" />
+												Recherche web
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												className="rounded-[calc(1rem-6px)] text-xs"
+												onClick={() => {}}
+											>
+												<History size={16} className="opacity-60" />
+												Historique de chat
+											</DropdownMenuItem>
+										</DropdownMenuGroup>
+									</DropdownMenuContent>
+								</DropdownMenu>
+
+								<Button
+									variant="ghost"
+									size="sm"
+									type="button"
+									onClick={() => setAutoMode(!autoMode)}
+									className={cn(
+										'h-7 px-2 rounded-full border border-border hover:bg-accent ',
+										{
+											'bg-primary/10 text-primary border-primary/30': autoMode,
+											'text-muted-foreground': !autoMode,
+										}
+									)}
+								>
+									<Wand2 className="size-3" />
+									<span className="text-xs">Auto</span>
+								</Button>
+							</div>
+
+							<div>
+								<Button
+									type="submit"
+									disabled={!input.trim()}
+									className="size-7 p-0 rounded-full bg-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+									onClick={() => handleSubmit()}
+								>
+									<Send className="size-3.5 text-white" />
+								</Button>
+							</div>
 						</div>
 					</div>
-				</motion.div>
 
-				{/* Zone de chat */}
-				<Card className="border-gray-200 shadow-sm">
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Bot className="h-5 w-5 text-[#823F91]" />
-							Conversation avec votre conseiller
-						</CardTitle>
-						<CardDescription>
-							Décrivez votre mariage en détail pour obtenir des recommandations personnalisées
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{/* Messages */}
-						<div className="space-y-4 mb-6 min-h-[400px] max-h-[600px] overflow-y-auto pr-2">
-							{messages.map((message) => (
-								<motion.div
-									key={message.id}
-									initial={{ opacity: 0, y: 10 }}
-									animate={{ opacity: 1, y: 0 }}
-									className={`flex gap-3 ${
-										message.role === 'user' ? 'justify-end' : 'justify-start'
-									}`}
+					<div className="flex items-center gap-0 pt-2">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="sm"
+									type="button"
+									className="h-6 px-2 rounded-full border border-transparent hover:bg-accent text-muted-foreground text-xs"
 								>
-									{message.role === 'assistant' && (
-										<div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-											<Bot className="h-4 w-4 text-white" />
-										</div>
-									)}
-									<div
-										className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-											message.role === 'user'
-												? 'bg-[#823F91] text-white'
-												: 'bg-gray-100 text-gray-900'
-										}`}
-									>
-										<p className="text-sm whitespace-pre-wrap">{message.content}</p>
-										<p
-											className={`text-xs mt-2 ${
-												message.role === 'user'
-													? 'text-white/70'
-													: 'text-gray-500'
-											}`}
-										>
-											{message.timestamp.toLocaleTimeString('fr-FR', {
-												hour: '2-digit',
-												minute: '2-digit',
-											})}
-										</p>
-									</div>
-									{message.role === 'user' && (
-										<div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-											<MessageSquare className="h-4 w-4 text-gray-600" />
-										</div>
-									)}
-								</motion.div>
-							))}
-							{isLoading && (
-								<motion.div
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									className="flex gap-3 justify-start"
-								>
-									<div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-										<Bot className="h-4 w-4 text-white" />
-									</div>
-									<div className="bg-gray-100 rounded-2xl px-4 py-3">
-										<div className="flex gap-1">
-											<div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-											<div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-											<div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-										</div>
-									</div>
-								</motion.div>
-							)}
-						</div>
-
-						{/* Input de chat */}
-						<div className="border-t border-gray-200 pt-4">
-							<ChatInput
-								variant="default"
-								value={inputValue}
-								onChange={(e) => setInputValue(e.target.value)}
-								onSubmit={handleSubmit}
-								loading={isLoading}
-								onStop={() => setIsLoading(false)}
+									<Laptop className="size-3" />
+									<span>{selectedModel}</span>
+									<ChevronDown className="size-3" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="max-w-xs rounded-2xl p-1.5 bg-popover border-border"
 							>
-								<ChatInputTextArea 
-									placeholder="Décrivez votre mariage : date, lieu, nombre d'invités, budget, style souhaité..." 
-									rows={2}
-								/>
-								<ChatInputSubmit />
-							</ChatInput>
-						</div>
-					</CardContent>
-				</Card>
+								<DropdownMenuGroup className="space-y-1">
+									<DropdownMenuItem
+										className="rounded-[calc(1rem-6px)] text-xs"
+										onClick={() => setSelectedModel('Local')}
+									>
+										<Laptop size={16} className="opacity-60" />
+										Local
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="rounded-[calc(1rem-6px)] text-xs"
+										onClick={() => setSelectedModel('Cloud')}
+									>
+										<Cloud size={16} className="opacity-60" />
+										Cloud
+									</DropdownMenuItem>
+								</DropdownMenuGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
 
-				{/* Informations supplémentaires */}
-				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ delay: 0.2 }}
-					className="mt-6"
-				>
-					<Card className="border-gray-200 bg-gray-50">
-						<CardContent className="pt-6">
-							<p className="text-sm text-[#6B7280] text-center flex items-start gap-2">
-								<Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
-								<span>
-									<strong>Astuce :</strong> Plus vous décrivez votre mariage en détail, plus nos recommandations seront précises.
-									Parlez-nous de votre style, vos couleurs préférées, vos traditions, et tout ce qui compte pour vous !
-								</span>
-							</p>
-						</CardContent>
-					</Card>
-				</motion.div>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="sm"
+									type="button"
+									className="h-6 px-2 rounded-full border border-transparent hover:bg-accent text-muted-foreground text-xs"
+								>
+									<Zap className="size-3" />
+									<span>{selectedPerformance}</span>
+									<ChevronDown className="size-3" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="start"
+								className="max-w-xs rounded-2xl p-1.5 bg-popover border-border"
+							>
+								<DropdownMenuGroup className="space-y-1">
+									<DropdownMenuItem
+										className="rounded-[calc(1rem-6px)] text-xs"
+										onClick={() => setSelectedPerformance('High')}
+									>
+										<Circle size={16} className="opacity-60" />
+										Élevée
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="rounded-[calc(1rem-6px)] text-xs"
+										onClick={() => setSelectedPerformance('Medium')}
+									>
+										<Loader2 size={16} className="opacity-60" />
+										Moyenne
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										className="rounded-[calc(1rem-6px)] text-xs"
+										onClick={() => setSelectedPerformance('Low')}
+									>
+										<CircleDashed size={16} className="opacity-60" />
+										Faible
+									</DropdownMenuItem>
+								</DropdownMenuGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						<div className="flex-1" />
+					</div>
+				</div>
 			</div>
 		</div>
 	)
 }
-

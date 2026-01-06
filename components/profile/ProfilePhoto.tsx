@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { uploadProfilePhoto } from '@/lib/actions/profile'
+import { toast } from 'sonner'
 import { Camera, Loader2 } from 'lucide-react'
 
 type ProfilePhotoProps = {
@@ -24,14 +25,14 @@ export function ProfilePhoto({ photoUrl, name, onUpdate }: ProfilePhotoProps) {
     // Vérifier la taille (5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      alert('Le fichier est trop volumineux (max 5MB)')
+      toast.error('Le fichier est trop volumineux (max 5MB)')
       return
     }
 
     // Vérifier le type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      alert('Format non supporté (JPG, PNG, WEBP uniquement)')
+      toast.error('Format non supporté (JPG, PNG, WEBP uniquement)')
       return
     }
 
@@ -56,7 +57,7 @@ export function ProfilePhoto({ photoUrl, name, onUpdate }: ProfilePhotoProps) {
         ? `${result.error}\n\nConsultez SUPABASE_STORAGE_SETUP.md pour les instructions détaillées.`
         : `Erreur: ${result.error}`
       
-      alert(errorMessage)
+      toast.error(errorMessage)
       setPreview(null)
     } else {
       setPreview(null)

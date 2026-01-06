@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { uploadDocumentSchema } from '@/lib/validations/marriage-admin.schema'
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,13 +24,27 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File
     const marriageFileId = formData.get('marriageFileId') as string
     const documentType = formData.get('documentType') as string
-    const userId = formData.get('userId') as string || user.id
+    // SÉCURITÉ: Utiliser UNIQUEMENT user.id de la session, jamais depuis formData
+    const userId = user.id
 
     console.log('📤 Upload:', file?.name, documentType)
 
-    if (!file || !marriageFileId || !documentType) {
+    // Validation avec Zod
+    const validationResult = uploadDocumentSchema.safeParse({
+      marriageFileId,
+      documentType,
+    })
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: validationResult.error.issues[0]?.message || 'Données invalides' },
+        { status: 400 }
+      )
+    }
+
+    if (!file) {
+      return NextResponse.json(
+        { error: 'Fichier requis' },
         { status: 400 }
       )
     }
@@ -52,8 +67,9 @@ export async function POST(req: NextRequest) {
     const adminClient = createAdminClient()
 
     // Prépare le nom du fichier
+    // SÉCURITÉ: Utiliser user.id directement
     const fileExt = file.name.split('.').pop()
-    const fileName = `${userId}/${documentType}-${Date.now()}.${fileExt}`
+    const fileName = `${user.id}/${documentType}-${Date.now()}.${fileExt}`
 
     // Upload vers Storage
     const { error: uploadError } = await adminClient.storage
@@ -75,11 +91,12 @@ export async function POST(req: NextRequest) {
     console.log('🔗 URL:', urlData.publicUrl)
 
     // Enregistre dans la DB avec le client admin
+    // SÉCURITÉ: Utiliser user.id directement, pas userId qui pourrait être falsifié
     const { data: docData, error: docError } = await adminClient
       .from('uploaded_documents')
       .insert({
         marriage_file_id: marriageFileId,
-        couple_id: userId,
+        couple_id: user.id, // Utiliser directement user.id de la session
         document_type: documentType,
         file_url: urlData.publicUrl,
         original_filename: file.name,

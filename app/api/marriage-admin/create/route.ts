@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDocumentChecklist } from '@/lib/marriage-admin/checklist-generator'
 import type { QuestionnaireData } from '@/types/marriage-admin'
+import { createMarriageFileSchema } from '@/lib/validations/marriage-admin.schema'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,16 +18,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { userId, questionnaireData } = await req.json()
+    const body = await req.json()
 
-    if (!userId || !questionnaireData) {
+    // Validation avec Zod
+    const validationResult = createMarriageFileSchema.safeParse(body)
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Missing userId or questionnaireData' },
+        { error: validationResult.error.issues[0]?.message || 'Données invalides' },
         { status: 400 }
       )
     }
 
-    // Vérifier que l'utilisateur correspond
+    const { userId, questionnaireData } = validationResult.data
+
+    // Vérifier que l'utilisateur correspond (sécurité supplémentaire)
     if (userId !== user.id) {
       return NextResponse.json(
         { error: 'User ID mismatch' },

@@ -98,10 +98,7 @@ export default function SignUpPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-6 py-24"
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
-      }}
+      className="min-h-screen flex items-center justify-center px-6 py-24 bg-background"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Upload, FileText, Sparkles, Loader2, X, Check } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 interface Service {
@@ -46,7 +47,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
     if (!file) return
 
     if (file.type !== 'application/pdf') {
-      alert('Veuillez sélectionner un fichier PDF')
+      toast.error('Veuillez sélectionner un fichier PDF')
       return
     }
 
@@ -81,7 +82,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
 
     } catch (error) {
       console.error('Erreur extraction PDF:', error)
-      alert('Erreur lors de l\'extraction des services depuis le PDF. Veuillez réessayer ou utiliser le questionnaire IA.')
+      toast.error('Erreur lors de l\'extraction des services depuis le PDF. Veuillez réessayer ou utiliser le questionnaire IA.')
     } finally {
       setIsProcessing(false)
     }
@@ -89,7 +90,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
 
   const handleIAQuestionnaire = async () => {
     if (!iaQuestionnaire.type_activite.trim()) {
-      alert('Veuillez indiquer votre type d\'activité')
+      toast.error('Veuillez indiquer votre type d\'activité')
       return
     }
 
@@ -127,7 +128,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
 
     } catch (error) {
       console.error('Erreur génération IA:', error)
-      alert('Erreur lors de la génération des services. Veuillez réessayer.')
+      toast.error('Erreur lors de la génération des services. Veuillez réessayer.')
     } finally {
       setIsProcessing(false)
     }
@@ -135,7 +136,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
 
   const handleImport = () => {
     if (extractedServices.length === 0) {
-      alert('Aucun service à importer')
+      toast.error('Aucun service à importer')
       return
     }
 

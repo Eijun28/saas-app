@@ -6,30 +6,31 @@ import Link from 'next/link';
 export default function Hero() {
   return (
     <section className="relative pt-24 md:pt-28 pb-12 md:pb-16 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6">
-      <div className="container mx-auto text-center max-w-4xl">
-        {/* Titre principal - Style Eden.so */}
+      <div className="container mx-auto text-center max-w-4xl relative z-10">
+        {/* Titre - beige foncé */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-[3.5rem] md:text-[4.5rem] font-bold leading-tight mb-6 text-[#823F91]"
+          className="text-[3.5rem] md:text-[4.5rem] font-extrabold leading-tight mb-6 text-foreground"
         >
           Votre mariage,
           <br />
           vos racines.
         </motion.h1>
 
-        {/* Sous-texte accrocheur */}
+        {/* Sous-texte - beige moyen */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="text-lg text-gray-600/80 max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+          style={{ color: 'hsl(var(--beige-800))' }}
         >
           Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.
         </motion.p>
 
-        {/* CTA principal */}
+        {/* CTA - Violet */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -40,19 +41,24 @@ export default function Hero() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold rounded-full transition-all duration-300 shadow-lg shadow-[#823F91]/20 hover:shadow-xl hover:shadow-[#823F91]/30"
+              className="px-8 py-3.5 text-white font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+              style={{
+                backgroundColor: 'hsl(var(--violet-500))',
+                boxShadow: '0 4px 12px hsl(var(--violet-500) / 0.25)'
+              }}
             >
               Commencer gratuitement
             </motion.button>
           </Link>
         </motion.div>
 
-        {/* Texte sous le bouton */}
+        {/* Texte sous bouton - beige clair */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-          className="text-sm text-gray-500 text-center mt-4"
+          className="text-sm text-center mt-4"
+          style={{ color: 'hsl(var(--beige-700))' }}
         >
           Rejoignez la révolution du mariage
         </motion.p>

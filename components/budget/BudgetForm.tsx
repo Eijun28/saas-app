@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateBudget } from '@/lib/actions/budget'
+import { toast } from 'sonner'
 import { Loader2, Save } from 'lucide-react'
 
 type BudgetFormProps = {
@@ -25,12 +26,12 @@ export function BudgetForm({ initialBudgetMin = 0, initialBudgetMax = 0 }: Budge
     const max = parseFloat(budgetMax)
 
     if (isNaN(min) || isNaN(max) || min < 0 || max < 0) {
-      alert('Veuillez entrer des montants valides')
+      toast.error('Veuillez entrer des montants valides')
       return
     }
 
     if (min > max) {
-      alert('Le budget minimum ne peut pas être supérieur au budget maximum')
+      toast.error('Le budget minimum ne peut pas être supérieur au budget maximum')
       return
     }
 
@@ -41,7 +42,7 @@ export function BudgetForm({ initialBudgetMin = 0, initialBudgetMax = 0 }: Budge
     if (result.error) {
       alert(`Erreur: ${result.error}`)
     } else {
-      alert('Budget enregistré avec succès')
+      toast.success('Budget enregistré avec succès')
     }
   }
 

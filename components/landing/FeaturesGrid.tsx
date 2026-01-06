@@ -40,7 +40,7 @@ const SkeletonMatching = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 blur-3xl opacity-5" />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -62,7 +62,7 @@ const SkeletonMatching = () => {
                 <div className={`flex items-start space-x-2 max-w-[85%] ${
                   msg.from === "ai" ? "flex-row-reverse space-x-reverse" : ""
                 }`}>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(to right, #c081e3, #f231c8)' }}>
                     {msg.avatar === "couple" ? (
                       <Users className="w-4 h-4 text-white" />
                     ) : (
@@ -72,7 +72,9 @@ const SkeletonMatching = () => {
                   <div className={`rounded-2xl p-3 ${
                     msg.from === "couple" 
                       ? "bg-gray-100 text-gray-900" 
-                      : "bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white"
+                      : "text-white"
+                  }
+                  style={msg.from === "ai" ? { background: 'linear-gradient(to right, #c081e3, #f231c8)' } : {}}
                   }`}>
                     <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
                   </div>
@@ -120,7 +122,7 @@ const SkeletonMessaging = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 blur-3xl opacity-5" />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -141,8 +143,8 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-[#E8D4EF] text-[#823F91]"
-                    : "bg-[#E8D4EF] text-[#6D3478]"
+                    ? "bg-[#E8D4EF] text-[#c081e3]"
+                    : "bg-[#E8D4EF] text-[#a865d0]"
                 }`}>
                   <p className="text-xs leading-relaxed">{msg.text}</p>
                 </div>
@@ -234,7 +236,7 @@ const SkeletonPayments = () => {
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
-              <Users className="w-5 h-5 text-[#823F91]" />
+              <Users className="w-5 h-5" style={{ color: '#c081e3' }} />
             </div>
             <p className="text-xs text-gray-600">Couple</p>
           </motion.div>
@@ -243,7 +245,8 @@ const SkeletonPayments = () => {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.5 }}
-            className="flex-1 h-0.5 bg-gradient-to-r from-[#823F91] to-green-600 mx-2"
+            className="flex-1 h-0.5 mx-2"
+            style={{ background: 'linear-gradient(to right, #c081e3, #22c55e)' }}
           />
 
           <motion.div
@@ -328,7 +331,7 @@ const SkeletonTimeline = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-pink-600/10 to-rose-600/10 blur-3xl opacity-5" />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(182, 17, 168, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -348,7 +351,9 @@ const SkeletonTimeline = () => {
                 className="flex items-start space-x-3"
               >
                 <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                  event.color === "purple" ? "bg-purple-600" : "bg-pink-600"
+                  event.color === "purple" ? "" : "bg-pink-600"
+                  }
+                  style={event.color === "purple" ? { backgroundColor: '#c081e3' } : {}}
                 }`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-900 truncate">{event.title}</p>
@@ -369,35 +374,35 @@ const items = [
     description: "Notre IA connecte les couples avec des prestataires qui comprennent leurs traditions culturelles",
     header: <SkeletonMatching />,
     className: "md:col-span-2",
-    icon: <Sparkles className="h-4 w-4 text-purple-600" />,
+    icon: <Sparkles className="h-4 w-4" style={{ color: '#c081e3' }} />,
   },
   {
     title: "Messagerie sécurisée",
     description: "Échangez directement avec les prestataires, partagez vos attentes culturelles",
     header: <SkeletonMessaging />,
     className: "md:col-span-1",
-    icon: <MessageSquare className="h-4 w-4 text-purple-600" />,
+    icon: <MessageSquare className="h-4 w-4" style={{ color: '#c081e3' }} />,
   },
   {
     title: "Gestion du budget",
     description: "Suivez vos dépenses par catégorie et prestataire",
     header: <SkeletonBudget />,
     className: "md:col-span-1",
-    icon: <PiggyBank className="h-4 w-4 text-purple-600" />,
+    icon: <PiggyBank className="h-4 w-4" style={{ color: '#c081e3' }} />,
   },
   {
     title: "Paiements sécurisés",
     description: "Transactions protégées et acomptes gérés en toute confiance",
     header: <SkeletonPayments />,
     className: "md:col-span-1",
-    icon: <Shield className="h-4 w-4 text-purple-600" />,
+    icon: <Shield className="h-4 w-4" style={{ color: '#c081e3' }} />,
   },
   {
     title: "Timeline interactive",
     description: "Planifiez chaque étape avec des rappels intelligents",
     header: <SkeletonTimeline />,
     className: "md:col-span-1",
-    icon: <Calendar className="h-4 w-4 text-purple-600" />,
+    icon: <Calendar className="h-4 w-4" style={{ color: '#c081e3' }} />,
   },
 ];
 
@@ -406,15 +411,32 @@ export function FeaturesGrid() {
     <section id="features" className="py-12 md:py-16 lg:py-20 bg-transparent">
       <div className="max-w-7xl mx-auto px-6">
         <FadeInOnScroll className="text-center mb-16">
+          {/* Badge */}
           <div className="inline-flex items-center gap-2 mb-4">
-            <span className="px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-[#823F91] text-sm font-semibold border border-[#823F91]/20">
+            <span
+              className="px-4 py-1.5 rounded-full bg-white backdrop-blur-sm text-sm font-semibold border"
+              style={{
+                color: 'hsl(var(--violet-500))',
+                borderColor: 'hsl(var(--beige-300))'
+              }}
+            >
               Fonctionnalités
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#2D1B3D] mb-4">
+
+          {/* Titre - beige foncé */}
+          <h2
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+            style={{ color: 'hsl(var(--beige-900))' }}
+          >
             Tout ce dont vous avez besoin
           </h2>
-          <p className="text-lg text-[#5C4470] max-w-2xl mx-auto">
+
+          {/* Sous-titre - beige moyen */}
+          <p
+            className="text-xl max-w-2xl mx-auto"
+            style={{ color: 'hsl(var(--beige-800))' }}
+          >
             Une plateforme complète pour organiser votre mariage multiculturel
           </p>
         </FadeInOnScroll>

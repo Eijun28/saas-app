@@ -48,7 +48,7 @@ export default function CTA({
                 size="lg"
                 asChild
                 className={cn(
-                  button.variant === "default" && "bg-[#823F91] hover:bg-[#6D3478] text-white"
+                  button.variant === "default" && "bg-[#c081e3] hover:bg-[#a865d0] text-white"
                 )}
               >
                 <a href={button.href}>

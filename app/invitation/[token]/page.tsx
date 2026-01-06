@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Loader2, CheckCircle, XCircle, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function InvitationPage() {
@@ -93,7 +94,7 @@ export default function InvitationPage() {
       }, 2000)
     } catch (error: any) {
       console.error('Erreur lors de l\'acceptation:', error)
-      alert(error.message || 'Erreur lors de l\'acceptation de l\'invitation')
+      toast.error(error.message || 'Erreur lors de l\'acceptation de l\'invitation')
     }
   }
 

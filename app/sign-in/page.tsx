@@ -8,7 +8,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@/lib/validations/auth.schema'
 import { signIn } from '@/lib/auth/actions'
-import { RippleButton } from '@/components/ui/ripple-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -85,10 +84,7 @@ export default function SignInPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-6 py-24"
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
-      }}
+      className="min-h-screen flex items-center justify-center px-6 py-24 bg-background"
     >
       {/* Subtle decorative gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -101,9 +97,12 @@ export default function SignInPage() {
         animate="visible"
         className="relative w-full max-w-md"
       >
-        <Card className="border border-[#E5E7EB]/80 shadow-lg shadow-[#823F91]/[0.04] bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center space-y-3 pb-2">
-            <CardTitle className="text-2xl font-semibold text-[#1a1a1a] tracking-tight">
+        <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
+          {/* Reflets violets */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-400/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-purple-500/15 to-violet-300/15 rounded-full blur-3xl pointer-events-none" />
+          <CardHeader className="text-center space-y-3 pb-2 relative z-10">
+            <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent tracking-tight">
               Retrouvez votre espace mariage
             </CardTitle>
             <CardDescription className="text-[#6B7280] text-[15px] leading-relaxed">
@@ -111,7 +110,7 @@ export default function SignInPage() {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pt-4">
+          <CardContent className="pt-4 relative z-10">
             <motion.form
               variants={containerVariants}
               initial="hidden"
@@ -202,25 +201,28 @@ export default function SignInPage() {
 
               {/* CTA principal */}
               <motion.div variants={itemVariants} className="pt-1">
-                <RippleButton
+                <motion.button
                   type="submit"
-                  className="w-full h-12 bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl text-[15px] font-medium transition-all duration-200 border-0 shadow-md shadow-[#823F91]/20 hover:shadow-lg hover:shadow-[#823F91]/25"
-                  rippleColor="#ffffff"
                   disabled={isLoading}
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  className="group relative w-full h-12 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <motion.span
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                      />
-                      Connexion en cours...
-                    </span>
-                  ) : (
-                    'Accéder à mon espace mariage'
-                  )}
-                </RippleButton>
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
+                        />
+                        Connexion en cours...
+                      </>
+                    ) : (
+                      'Accéder à mon espace mariage'
+                    )}
+                  </span>
+                </motion.button>
               </motion.div>
 
               {/* Micro-reassurance */}

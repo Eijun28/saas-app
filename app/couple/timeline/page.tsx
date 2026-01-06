@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2 } from 'lucide-react'
 import {
   Dialog,
@@ -140,9 +141,9 @@ export default function TimelinePage() {
       if (error) {
         console.error('Erreur mise à jour événement:', error)
         if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-          alert('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
+          toast.error('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
         } else {
-          alert(`Erreur lors de la mise à jour: ${error.message}`)
+          toast.error(`Erreur lors de la mise à jour: ${error.message}`)
         }
         return
       }
@@ -162,9 +163,9 @@ export default function TimelinePage() {
       if (error) {
         console.error('Erreur création événement:', error)
         if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-          alert('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
+          toast.error('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
         } else {
-          alert(`Erreur lors de la création: ${error.message}`)
+          toast.error(`Erreur lors de la création: ${error.message}`)
         }
         return
       }
@@ -186,9 +187,9 @@ export default function TimelinePage() {
     if (error) {
       console.error('Erreur suppression:', error)
       if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-        alert('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
+        toast.error('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
       } else {
-        alert(`Erreur lors de la suppression: ${error.message}`)
+        toast.error(`Erreur lors de la suppression: ${error.message}`)
       }
       return
     }
