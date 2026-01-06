@@ -29,9 +29,9 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative py-20 md:py-32 flex items-center justify-center overflow-hidden bg-transparent px-6">
+    <section className="relative py-16 md:py-32 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6 min-h-[70vh] md:min-h-[80vh]">
       <motion.div
-        className="container mx-auto text-center"
+        className="container mx-auto text-center max-w-4xl"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -39,7 +39,7 @@ export default function Hero() {
         {/* Titre principal - ÉNORME style Eden.so */}
         <motion.h1 
           variants={itemVariants}
-          className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-6 text-purple-900"
+          className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight mb-4 md:mb-6 text-purple-900 px-2"
         >
           Votre mariage,
           <br />
@@ -49,7 +49,7 @@ export default function Hero() {
         {/* Sous-titre accrocheur - Émotionnel */}
         <motion.p 
           variants={itemVariants}
-          className="text-lg md:text-xl text-purple-600/70 max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-base md:text-lg lg:text-xl text-purple-600/70 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed px-2"
         >
           Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.
         </motion.p>
@@ -57,16 +57,11 @@ export default function Hero() {
         {/* CTA principal */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col md:flex-row gap-4 justify-center items-center"
+          className="flex justify-center items-center"
         >
-          <Link href="/sign-up" className="w-full md:w-auto">
-            <button className="w-full md:w-auto px-8 py-4 bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:shadow-[#823F91]/30 hover:scale-[1.02]">
+          <Link href="/sign-up" className="w-full max-w-xs md:max-w-none md:w-auto">
+            <button className="w-full md:w-auto px-6 py-3 md:px-8 md:py-4 bg-[#9D5FA8] hover:bg-[#8A4A95] text-white font-semibold text-sm md:text-lg rounded-xl transition-all duration-300 hover:shadow-xl hover:shadow-[#9D5FA8]/30 hover:scale-[1.02]">
               Commencer gratuitement
-            </button>
-          </Link>
-          <Link href="/#comment-ca-marche" className="w-full md:w-auto">
-            <button className="w-full md:w-auto px-8 py-4 bg-white/60 backdrop-blur-sm hover:bg-white/90 text-[#823F91] font-semibold text-lg rounded-xl border border-[#823F91]/20 hover:border-[#823F91]/40 transition-all duration-300">
-              Découvrir la plateforme
             </button>
           </Link>
         </motion.div>
@@ -74,7 +69,7 @@ export default function Hero() {
         {/* Stats en petit - discret */}
         <motion.div
           variants={itemVariants}
-          className="mt-8 text-sm text-muted-foreground"
+          className="mt-6 md:mt-8 text-xs md:text-sm text-muted-foreground px-2"
         >
           <span>127+ mariages</span>
           <span className="mx-2">•</span>
