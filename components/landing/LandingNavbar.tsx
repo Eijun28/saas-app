@@ -70,7 +70,7 @@ export function LandingNavbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -85,10 +85,10 @@ export function LandingNavbar() {
           </div>
 
           {/* Desktop CTA Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
             <Link href="/sign-in">
               <RippleButton
-                className="text-sm font-medium text-[#6B7280] hover:text-[#823F91] hover:bg-transparent px-4 border-transparent bg-transparent"
+                className="text-sm font-medium px-4 h-8 bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
                 rippleColor="#823F91"
               >
                 Se connecter
@@ -96,7 +96,7 @@ export function LandingNavbar() {
             </Link>
             <Link href="/sign-up">
               <RippleButton
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold px-6 py-2 rounded-lg transition-all duration-200 shadow-sm shadow-[#823F91]/20 hover:shadow-md hover:shadow-[#823F91]/30 border-0"
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold px-4 h-8 rounded-lg transition-all duration-200 shadow-sm shadow-[#823F91]/20 hover:shadow-md hover:shadow-[#823F91]/30 border-0"
                 rippleColor="#ffffff"
               >
                 Commencer
@@ -158,23 +158,25 @@ export function LandingNavbar() {
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-4 space-y-3 border-t border-gray-200">
-                  <Link href="/sign-in" onClick={() => setIsMenuOpen(false)}>
-                    <RippleButton
-                      className="w-full justify-start text-[#6B7280] hover:text-[#823F91] hover:bg-[#E8D4EF]/50 border-transparent bg-transparent"
-                      rippleColor="#823F91"
-                    >
-                      Se connecter
-                    </RippleButton>
-                  </Link>
-                  <Link href="/sign-up" onClick={() => setIsMenuOpen(false)}>
-                    <RippleButton
-                      className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
-                      rippleColor="#ffffff"
-                    >
-                      Commencer
-                    </RippleButton>
-                  </Link>
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex flex-col gap-2">
+                    <Link href="/sign-in" onClick={() => setIsMenuOpen(false)} className="w-full">
+                      <RippleButton
+                        className="w-full h-9 text-xs font-medium bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
+                        rippleColor="#823F91"
+                      >
+                        Se connecter
+                      </RippleButton>
+                    </Link>
+                    <Link href="/sign-up" onClick={() => setIsMenuOpen(false)} className="w-full">
+                      <RippleButton
+                        className="w-full h-9 text-xs font-medium bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                        rippleColor="#ffffff"
+                      >
+                        Commencer
+                      </RippleButton>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </motion.div>

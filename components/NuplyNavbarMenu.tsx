@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { HoveredLink, Menu, MenuItem } from "@/components/ui/navbar-menu";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/ripple-button";
-import { Menu as MenuIcon, X, LogOut, User } from "lucide-react";
+import { Menu as MenuIcon, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
@@ -247,36 +246,25 @@ function Navbar({
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:block">
-          <Menu setActive={setActive}>
-            <MenuItem setActive={setActive} active={active} item="Services" href="/#prestataires">
-              <div className="flex flex-col space-y-4 text-sm">
-                <HoveredLink href="/#prestataires">Trouver un prestataire</HoveredLink>
-                <HoveredLink href="#comment-ca-marche">Comment ça marche</HoveredLink>
-                <HoveredLink href="/#features">Fonctionnalités</HoveredLink>
-                <HoveredLink href="/#testimonials">Témoignages</HoveredLink>
-              </div>
-            </MenuItem>
-            <Link
-              href="/tarifs"
-              onClick={() => setActive(null)}
-              className="text-black hover:opacity-[0.9] text-sm font-medium cursor-pointer flex items-center h-8"
-            >
-              Tarifs
-            </Link>
-            <MenuItem setActive={setActive} active={active} item="Ressources" href="/blog">
-              <div className="flex flex-col space-y-4 text-sm">
-                <HoveredLink href="/blog">Blog</HoveredLink>
-                <HoveredLink href="/guides">Guides</HoveredLink>
-                <HoveredLink href="/templates">Modèles</HoveredLink>
-                <HoveredLink href="/contact">Contact</HoveredLink>
-              </div>
-            </MenuItem>
-          </Menu>
+        <div className="hidden md:flex items-center space-x-6">
+          <Link
+            href="/#prestataires"
+            onClick={() => setActive(null)}
+            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+          >
+            Trouver un prestataire
+          </Link>
+          <Link
+            href="/tarifs"
+            onClick={() => setActive(null)}
+            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+          >
+            Tarifs
+          </Link>
         </div>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-3">
           {user && !isHomePage ? (
             <>
               <Link
@@ -299,7 +287,7 @@ function Navbar({
             <>
               <Link href="/sign-in">
                 <RippleButton
-                  className="text-sm h-8 border-transparent bg-transparent"
+                  className="text-sm h-8 px-4 bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0 font-medium"
                   rippleColor="#823F91"
                 >
                   Se connecter
@@ -307,7 +295,7 @@ function Navbar({
               </Link>
               <Link href="/sign-up">
                 <RippleButton
-                  className="text-sm h-8 bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                  className="text-sm h-8 px-4 bg-[#823F91] hover:bg-[#6D3478] text-white border-0 font-medium"
                   rippleColor="#ffffff"
                 >
                   Commencer
@@ -359,82 +347,61 @@ function Navbar({
             transition={{ duration: 0.3 }}
             className="md:hidden mt-2 overflow-hidden bg-white rounded-2xl border border-black/[0.1] shadow-xl"
           >
-            <div className="px-6 py-4 space-y-4">
-              <div className="flex flex-col space-y-3">
+            <div className="px-4 py-4 space-y-4">
+              <div className="flex flex-col space-y-2">
                 <Link
                   href="/#prestataires"
                   onClick={() => handleLinkClick("/#prestataires")}
-                  className="text-neutral-700 hover:text-black text-sm"
+                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
                 >
                   Trouver un prestataire
                 </Link>
                 <Link
-                  href="#comment-ca-marche"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById('comment-ca-marche')?.scrollIntoView({ 
-                      behavior: 'smooth' 
-                    });
-                    setIsMobileMenuOpen(false);
-                    setActive(null);
-                  }}
-                  className="text-neutral-700 hover:text-black text-sm"
-                >
-                  Comment ça marche
-                </Link>
-                <Link
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
-                  className="text-neutral-700 hover:text-black text-sm"
+                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
                 >
                   Tarifs
                 </Link>
-                <Link
-                  href="/blog"
-                  onClick={() => handleLinkClick("/blog")}
-                  className="text-neutral-700 hover:text-black text-sm"
-                >
-                  Blog
-                </Link>
               </div>
-              <div className="pt-4 border-t border-gray-200 space-y-3">
+              <div className="pt-4 border-t border-gray-200">
                 {user && !isHomePage ? (
-                  <>
+                  <div className="space-y-2">
                     <Link
                       href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-4 py-2 text-sm text-neutral-700 hover:text-black"
+                      className="block w-full text-left px-3 py-2 text-sm text-neutral-700 hover:text-[#823F91] transition-colors"
                     >
                       {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                     </Link>
                     <Button
                       onClick={handleSignOutClick}
                       variant="ghost"
-                      className="w-full justify-start"
+                      className="w-full justify-start text-sm h-9"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Déconnexion
                     </Button>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="flex flex-col gap-2">
+                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full justify-start border-transparent bg-transparent"
+                        className="w-full h-9 text-xs font-medium bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
                         rippleColor="#823F91"
                       >
                         Se connecter
                       </RippleButton>
                     </Link>
-                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                        className="w-full h-9 text-xs font-medium bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
                         rippleColor="#ffffff"
                       >
                         Commencer
                       </RippleButton>
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
