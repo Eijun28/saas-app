@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="antialiased bg-gray-50" suppressHydrationWarning>
+      <body className="antialiased bg-white" suppressHydrationWarning>
         <NuplyNavbarMenu />
         <main>
           <MainWrapper>

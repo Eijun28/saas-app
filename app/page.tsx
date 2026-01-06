@@ -12,10 +12,37 @@ import { StarsBackground } from '@/components/ui/stars-background'
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Fond gris clair minimaliste - Style Resend */}
+      {/* Fond dégradé violet clair inspiré eden.so */}
       <div 
-        className="min-h-screen overflow-x-hidden relative bg-gray-50"
+        className="min-h-screen overflow-x-hidden relative"
+        style={{
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #f8f0fa 25%, #eecdf6 60%, #e8c4f0 100%)',
+        }}
       >
+        {/* Étoiles et étoiles filantes - effet subtil sur fond clair */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <StarsBackground 
+            starDensity={0.00003}
+            allStarsTwinkle={true}
+            twinkleProbability={0.7}
+            minTwinkleSpeed={0.4}
+            maxTwinkleSpeed={1}
+            starColor="150, 100, 160"
+            moveSpeed={0.1}
+          />
+          <ShootingStars 
+            minSpeed={15}
+            maxSpeed={35}
+            minDelay={2000}
+            maxDelay={5000}
+            starColor="#823F91"
+            trailColor="#B855D6"
+            starWidth={12}
+            starHeight={2}
+            className="opacity-70"
+          />
+        </div>
+
         <Hero />
         <FeaturesGrid />
         <CTA

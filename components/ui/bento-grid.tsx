@@ -14,7 +14,7 @@ export const BentoGrid = ({
   return (
     <div
       className={cn(
-        "grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto",
+        "grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto",
         className
       )}
     >
@@ -45,10 +45,10 @@ export const BentoGridItem = ({
       </div>
       <div className="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
         {icon}
-        <div className="text-xl font-semibold text-gray-900 mb-3 mt-2">
+        <div className="font-bold text-[#2D1B3D] mb-2 mt-2">
           {title}
         </div>
-        <div className="text-base text-gray-600 leading-relaxed">
+        <div className="text-[#5C4470] text-xs">
           {description}
         </div>
       </div>
@@ -60,7 +60,7 @@ export const BentoGridItem = ({
       <Link
         href={href}
         className={cn(
-          "row-span-1 rounded-2xl group/bento hover:shadow-lg transition-all duration-300 p-8 lg:p-10 bg-gray-50 hover:bg-white border border-gray-200 flex flex-col space-y-4 cursor-pointer relative overflow-hidden card",
+          "row-span-1 rounded-xl group/bento hover:shadow-2xl transition duration-200 shadow-input p-4 bg-white/70 backdrop-blur-sm border border-[#823F91]/10 hover:border-[#823F91]/20 flex flex-col space-y-4 cursor-pointer relative overflow-hidden",
           className
         )}
       >
@@ -72,7 +72,7 @@ export const BentoGridItem = ({
   return (
     <div
       className={cn(
-        "row-span-1 rounded-2xl group/bento hover:shadow-lg transition-all duration-300 p-8 lg:p-10 bg-gray-50 hover:bg-white border border-gray-200 flex flex-col space-y-4 relative overflow-hidden card",
+        "row-span-1 rounded-xl group/bento hover:shadow-2xl transition duration-200 shadow-input p-4 bg-white/70 backdrop-blur-sm border border-[#823F91]/10 hover:border-[#823F91]/20 flex flex-col space-y-4 relative overflow-hidden",
         className
       )}
     >
