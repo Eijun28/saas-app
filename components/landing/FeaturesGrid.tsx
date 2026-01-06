@@ -236,7 +236,7 @@ const SkeletonPayments = () => {
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
-              <Users className="w-5 h-5" style={{ color: '#c081e3' }} />
+              <Users className="w-5 h-5" style={{ color: 'rgba(236, 140, 238, 1)' }} />
             </div>
             <p className="text-xs text-gray-600">Couple</p>
           </motion.div>
@@ -274,7 +274,7 @@ const SkeletonPayments = () => {
             transition={{ delay: 1.1 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mb-1">
+            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
               <Music className="w-5 h-5 text-pink-600" style={{ color: 'rgba(236, 140, 238, 1)' }} />
             </div>
             <p className="text-xs text-gray-600">DJ</p>
@@ -416,8 +416,9 @@ export function FeaturesGrid() {
             <span
               className="px-4 py-1.5 rounded-full bg-white backdrop-blur-sm text-sm font-semibold border"
               style={{
-                color: 'hsl(var(--violet-500))',
-                borderColor: 'hsl(var(--beige-300))'
+                color: 'rgba(161, 104, 192, 1)',
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+                borderColor: 'rgba(193, 130, 227, 1)'
               }}
             >
               Fonctionnalités
@@ -427,7 +428,7 @@ export function FeaturesGrid() {
           {/* Titre - beige foncé */}
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
-            style={{ color: 'rgba(216, 91, 214, 1)' }}
+            style={{ color: 'rgba(193, 130, 227, 1)' }}
           >
             Tout ce dont vous avez besoin
           </h2>
