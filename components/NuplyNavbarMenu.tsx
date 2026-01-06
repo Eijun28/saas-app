@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "@/lib/auth/actions";
+import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export function NuplyNavbarMenu() {
   const [active, setActive] = useState<string | null>(null);
@@ -229,13 +230,29 @@ function Navbar({
     setActive(null);
   };
 
+  const scrolled = useScrollPosition();
+
   return (
     <div
       className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto px-4", className)}
       style={{ zIndex: 99999, pointerEvents: 'auto', position: 'fixed' }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center justify-between bg-white rounded-full border border-transparent shadow-input px-4 py-2" style={{ position: 'relative', zIndex: 99999, pointerEvents: 'auto' }} onClick={(e) => e.stopPropagation()}>
+      <div 
+        className={cn(
+          "flex items-center justify-between rounded-full px-4 py-2 transition-all duration-300 ease-in-out",
+          scrolled 
+            ? "bg-white/95 backdrop-blur-md shadow-lg border" 
+            : "bg-white/40 backdrop-blur-sm shadow-md border border-white/30"
+        )}
+        style={{
+          ...(scrolled && { borderColor: '#EBE4DA' }),
+          position: 'relative',
+          zIndex: 99999,
+          pointerEvents: 'auto'
+        }} 
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center h-8" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
           <Image
@@ -253,12 +270,16 @@ function Navbar({
             href="/#prestataires"
             onClick={() => setActive(null)}
             className="text-sm font-medium cursor-pointer transition-colors"
-            style={{ color: '#c081e3', pointerEvents: 'auto' }}
+            style={{ 
+              color: scrolled ? '#823F91' : '#4A3A2E',
+              pointerEvents: 'auto',
+              transition: 'color 0.3s ease'
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#a865d0'
+              e.currentTarget.style.color = '#a720f2'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#c081e3'
+              e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
             }}
           >
             Trouver un prestataire
@@ -267,12 +288,16 @@ function Navbar({
             href="/tarifs"
             onClick={() => setActive(null)}
             className="text-sm font-medium cursor-pointer transition-colors"
-            style={{ color: '#c081e3', pointerEvents: 'auto' }}
+            style={{ 
+              color: scrolled ? '#823F91' : '#4A3A2E',
+              pointerEvents: 'auto',
+              transition: 'color 0.3s ease'
+            }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#a865d0'
+              e.currentTarget.style.color = '#a720f2'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#c081e3'
+              e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
             }}
           >
             Tarifs
@@ -285,7 +310,12 @@ function Navbar({
             <>
               <Link
                 href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                className="text-sm text-[#374151] hover:text-[#823F91] transition-colors flex items-center h-8"
+                className={cn(
+                  "text-sm transition-colors flex items-center h-8",
+                  scrolled 
+                    ? "text-[#374151] hover:text-[#823F91]" 
+                    : "text-[#4A3A2E] hover:text-[#823F91]"
+                )}
                 style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
@@ -391,12 +421,15 @@ function Navbar({
                   href="/#prestataires"
                   onClick={() => handleLinkClick("/#prestataires")}
                   className="text-sm py-2 transition-colors"
-                  style={{ color: '#c081e3' }}
+                  style={{ 
+                    color: scrolled ? '#823F91' : '#4A3A2E',
+                    transition: 'color 0.3s ease'
+                  }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#a865d0'
+                    e.currentTarget.style.color = '#a720f2'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '#c081e3'
+                    e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
                   }}
                 >
                   Trouver un prestataire
@@ -405,12 +438,15 @@ function Navbar({
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
                   className="text-sm py-2 transition-colors"
-                  style={{ color: '#c081e3' }}
+                  style={{ 
+                    color: scrolled ? '#823F91' : '#4A3A2E',
+                    transition: 'color 0.3s ease'
+                  }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#a865d0'
+                    e.currentTarget.style.color = '#a720f2'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = '#c081e3'
+                    e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
                   }}
                 >
                   Tarifs

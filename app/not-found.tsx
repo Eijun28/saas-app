@@ -1,7 +1,9 @@
-import Link from 'next/link'
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, Search } from 'lucide-react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 export default function NotFound() {
@@ -21,11 +23,9 @@ export default function NotFound() {
               transition={{ delay: 0.2, type: 'spring' }}
               className="mx-auto mb-4"
             >
-              <h1 className="text-6xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
-                404
-              </h1>
+              <div className="text-6xl font-bold text-[#823F91]">404</div>
             </motion.div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
+            <CardTitle className="text-2xl text-[#0D0D0D]">
               Page introuvable
             </CardTitle>
           </CardHeader>
@@ -33,26 +33,22 @@ export default function NotFound() {
             <p className="text-center text-[#4A4A4A]">
               Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button
-                asChild
-                className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white"
-              >
-                <Link href="/">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/">
+                <Button
+                  className="w-full sm:w-auto bg-[#823F91] hover:bg-[#6A1FA8] text-white"
+                >
                   <Home className="h-4 w-4 mr-2" />
                   Retour à l'accueil
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               <Button
-                asChild
                 variant="outline"
-                className="flex-1 border-[#823F91]/20 hover:bg-[#823F91]/10"
+                className="w-full sm:w-auto border-[#823F91] text-[#823F91] hover:bg-[#E8D4EF]"
+                onClick={() => window.history.back()}
               >
-                <Link href="/search">
-                  <Search className="h-4 w-4 mr-2" />
-                  Rechercher
-                </Link>
+                <Search className="h-4 w-4 mr-2" />
+                Retour en arrière
               </Button>
             </div>
           </CardContent>
@@ -61,4 +57,3 @@ export default function NotFound() {
     </div>
   )
 }
-
