@@ -7,6 +7,8 @@ import { Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 
+export const dynamic = 'force-dynamic'
+
 export default function NotificationsPage() {
   const { user } = useUser()
   const [notifications, setNotifications] = useState<any[]>([])

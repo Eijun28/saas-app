@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +11,8 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ title }: DashboardHeaderProps) {
+  const [avatarError, setAvatarError] = useState(false)
+
   return (
     <motion.header 
       initial={{ opacity: 0, y: -8 }}
@@ -41,15 +44,18 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
         {/* User info with avatar */}
         <div className="flex items-center gap-2 ml-1">
           <div className="h-8 w-8 rounded-lg overflow-hidden">
-            <img 
-              src="/placeholder-avatar.jpg" 
-              alt="User" 
-              className="h-full w-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement!.innerHTML = '<div class="h-full w-full gradient-primary flex items-center justify-center"><span class="text-xs font-medium text-primary-foreground">M</span></div>';
-              }}
-            />
+            {avatarError ? (
+              <div className="h-full w-full gradient-primary flex items-center justify-center">
+                <span className="text-xs font-medium text-primary-foreground">M</span>
+              </div>
+            ) : (
+              <img 
+                src="/placeholder-avatar.jpg" 
+                alt="User" 
+                className="h-full w-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            )}
           </div>
           <span className="text-sm font-medium text-foreground hidden lg:block">malia & djamel</span>
         </div>

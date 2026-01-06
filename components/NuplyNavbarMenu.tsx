@@ -209,14 +209,24 @@ function Navbar({
   onSignOut: () => void;
   isHomePage: boolean;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const handleLinkClick = (href: string) => {
     if (href.startsWith('/#')) {
       // Vérifier que nous sommes côté client
       if (typeof window !== 'undefined') {
         const targetId = href.replace('/#', '');
-        const element = document.getElementById(targetId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Si on est déjà sur la page d'accueil, scroller directement
+        if (pathname === '/') {
+          const element = document.getElementById(targetId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        } else {
+          // Sinon, naviguer vers la page d'accueil avec le hash
+          router.push(href);
         }
       }
     }
@@ -240,16 +250,18 @@ function Navbar({
     >
       <div 
         className={cn(
-          "flex items-center justify-between rounded-full px-4 py-2 transition-all duration-300 ease-in-out",
+          "flex items-center justify-between rounded-full",
           scrolled 
-            ? "bg-white/95 backdrop-blur-md shadow-lg border" 
-            : "bg-white/40 backdrop-blur-sm shadow-md border border-white/30"
+            ? "bg-white/95 backdrop-blur-md shadow-lg border px-4 py-1.5" 
+            : "bg-transparent backdrop-blur-none shadow-none border-transparent px-4 py-2"
         )}
         style={{
-          ...(scrolled && { borderColor: '#EBE4DA' }),
+          borderColor: scrolled ? '#EBE4DA' : 'transparent',
+          transition: 'background-color 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), backdrop-filter 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           position: 'relative',
           zIndex: 99999,
-          pointerEvents: 'auto'
+          pointerEvents: 'auto',
+          willChange: 'background-color, padding, box-shadow'
         }} 
         onClick={(e) => e.stopPropagation()}
       >
@@ -265,21 +277,30 @@ function Navbar({
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
+        <div className="hidden md:flex items-center space-x-6" style={{ 
+          pointerEvents: 'auto', 
+          position: 'relative', 
+          zIndex: 100000
+        }}>
           <Link
             href="/#prestataires"
-            onClick={() => setActive(null)}
+            prefetch={false}
+            onClick={(e) => {
+              e.preventDefault();
+              setActive(null);
+              handleLinkClick("/#prestataires");
+            }}
             className="text-sm font-medium cursor-pointer transition-colors"
             style={{ 
-              color: scrolled ? '#823F91' : '#4A3A2E',
+              color: '#823F91',
               pointerEvents: 'auto',
-              transition: 'color 0.3s ease'
+              transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = '#a720f2'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
+              e.currentTarget.style.color = '#823F91'
             }}
           >
             Trouver un prestataire
@@ -289,15 +310,15 @@ function Navbar({
             onClick={() => setActive(null)}
             className="text-sm font-medium cursor-pointer transition-colors"
             style={{ 
-              color: scrolled ? '#823F91' : '#4A3A2E',
+              color: '#823F91',
               pointerEvents: 'auto',
-              transition: 'color 0.3s ease'
+              transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = '#a720f2'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
+              e.currentTarget.style.color = '#823F91'
             }}
           >
             Tarifs
@@ -305,7 +326,11 @@ function Navbar({
         </div>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden md:flex items-center gap-3" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
+        <div className="hidden md:flex items-center gap-3" style={{ 
+          pointerEvents: 'auto', 
+          position: 'relative', 
+          zIndex: 100000
+        }}>
           {user && !isHomePage ? (
             <>
               <Link
@@ -314,9 +339,14 @@ function Navbar({
                   "text-sm transition-colors flex items-center h-8",
                   scrolled 
                     ? "text-[#374151] hover:text-[#823F91]" 
-                    : "text-[#4A3A2E] hover:text-[#823F91]"
+                    : "text-white hover:text-[#E8D4EF]"
                 )}
-                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+                style={{
+                  ...(!scrolled && { textShadow: '0 1px 2px rgba(0,0,0,0.1)' }),
+                  pointerEvents: 'auto',
+                  position: 'relative',
+                  zIndex: 100000
+                }}
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
               </Link>
@@ -419,17 +449,21 @@ function Navbar({
               <div className="flex flex-col space-y-2">
                 <Link
                   href="/#prestataires"
-                  onClick={() => handleLinkClick("/#prestataires")}
+                  prefetch={false}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleLinkClick("/#prestataires");
+                  }}
                   className="text-sm py-2 transition-colors"
                   style={{ 
-                    color: scrolled ? '#823F91' : '#4A3A2E',
-                    transition: 'color 0.3s ease'
+                    color: '#823F91',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = '#a720f2'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
+                    e.currentTarget.style.color = '#823F91'
                   }}
                 >
                   Trouver un prestataire
@@ -439,14 +473,14 @@ function Navbar({
                   onClick={() => handleLinkClick("/tarifs")}
                   className="text-sm py-2 transition-colors"
                   style={{ 
-                    color: scrolled ? '#823F91' : '#4A3A2E',
-                    transition: 'color 0.3s ease'
+                    color: '#823F91',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = '#a720f2'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = scrolled ? '#823F91' : '#4A3A2E'
+                    e.currentTarget.style.color = '#823F91'
                   }}
                 >
                   Tarifs

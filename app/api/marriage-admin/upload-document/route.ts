@@ -6,6 +6,63 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadDocumentSchema } from '@/lib/validations/marriage-admin.schema'
 
+// Constantes de validation des fichiers
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.webp']
+
+/**
+ * Valide un fichier uploadé côté serveur
+ */
+function validateUploadedFile(file: File): { valid: boolean; error?: string } {
+  // Validation taille
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: 'Fichier trop volumineux (max 10MB)' }
+  }
+
+  if (file.size === 0) {
+    return { valid: false, error: 'Le fichier est vide' }
+  }
+
+  // Validation type MIME
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return { valid: false, error: 'Type de fichier non autorisé (PDF, JPG, PNG, WEBP uniquement)' }
+  }
+
+  // Validation extension
+  const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0]
+  if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+    return { valid: false, error: 'Extension de fichier non autorisée' }
+  }
+
+  // Vérifier que l'extension correspond au type MIME
+  const extToMime: Record<string, string[]> = {
+    '.pdf': ['application/pdf'],
+    '.jpg': ['image/jpeg', 'image/jpg'],
+    '.jpeg': ['image/jpeg', 'image/jpg'],
+    '.png': ['image/png'],
+    '.webp': ['image/webp'],
+  }
+
+  const expectedMimes = extToMime[ext]
+  if (!expectedMimes || !expectedMimes.includes(file.type)) {
+    return { valid: false, error: 'Le type MIME ne correspond pas à l\'extension du fichier' }
+  }
+
+  return { valid: true }
+}
+
+/**
+ * Nettoie le nom de fichier pour prévenir les attaques path traversal
+ */
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .replace(/[^a-zA-Z0-9.-]/g, '_') // Remplacer caractères spéciaux
+    .replace(/\.\./g, '') // Supprimer path traversal
+    .replace(/^\.+/, '') // Supprimer les points au début
+    .slice(0, 255) // Limiter la longueur
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Vérifier l'authentification avec le client server
@@ -27,8 +84,6 @@ export async function POST(req: NextRequest) {
     // SÉCURITÉ: Utiliser UNIQUEMENT user.id de la session, jamais depuis formData
     const userId = user.id
 
-    console.log('📤 Upload:', file?.name, documentType)
-
     // Validation avec Zod
     const validationResult = uploadDocumentSchema.safeParse({
       marriageFileId,
@@ -45,6 +100,15 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json(
         { error: 'Fichier requis' },
+        { status: 400 }
+      )
+    }
+
+    // Validation complète du fichier côté serveur
+    const fileValidation = validateUploadedFile(file)
+    if (!fileValidation.valid) {
+      return NextResponse.json(
+        { error: fileValidation.error || 'Fichier invalide' },
         { status: 400 }
       )
     }
@@ -66,10 +130,12 @@ export async function POST(req: NextRequest) {
     // Utiliser le client admin pour l'upload (bypass RLS)
     const adminClient = createAdminClient()
 
-    // Prépare le nom du fichier
-    // SÉCURITÉ: Utiliser user.id directement
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${user.id}/${documentType}-${Date.now()}.${fileExt}`
+    // Prépare le nom du fichier de manière sécurisée
+    // SÉCURITÉ: Utiliser user.id directement et nettoyer le nom
+    const sanitizedFileName = sanitizeFileName(file.name)
+    const fileExt = sanitizedFileName.split('.').pop()?.toLowerCase() || 'bin'
+    const safeDocumentType = sanitizeFileName(documentType)
+    const fileName = `${user.id}/${safeDocumentType}-${Date.now()}.${fileExt}`
 
     // Upload vers Storage
     const { error: uploadError } = await adminClient.storage
@@ -77,18 +143,17 @@ export async function POST(req: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError)
-      throw uploadError
+      console.error('❌ Upload error:', uploadError.message)
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'upload du fichier' },
+        { status: 500 }
+      )
     }
-
-    console.log('✅ Fichier uploadé:', fileName)
 
     // Récupère l'URL publique
     const { data: urlData } = adminClient.storage
       .from('marriage-documents')
       .getPublicUrl(fileName)
-
-    console.log('🔗 URL:', urlData.publicUrl)
 
     // Enregistre dans la DB avec le client admin
     // SÉCURITÉ: Utiliser user.id directement, pas userId qui pourrait être falsifié
@@ -99,7 +164,7 @@ export async function POST(req: NextRequest) {
         couple_id: user.id, // Utiliser directement user.id de la session
         document_type: documentType,
         file_url: urlData.publicUrl,
-        original_filename: file.name,
+        original_filename: sanitizeFileName(file.name),
         file_size: file.size,
         mime_type: file.type,
         status: 'uploaded',
@@ -107,9 +172,13 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
-    if (docError) throw docError
-
-    console.log('✅ Document enregistré:', docData.id)
+    if (docError) {
+      console.error('❌ Erreur enregistrement document:', docError.message)
+      return NextResponse.json(
+        { error: 'Erreur lors de l\'enregistrement du document' },
+        { status: 500 }
+      )
+    }
 
     // Met à jour le statut
     await adminClient
@@ -122,8 +191,11 @@ export async function POST(req: NextRequest) {
       data: docData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('❌ Erreur serveur:', error.message)
+    return NextResponse.json(
+      { error: 'Une erreur s\'est produite lors du traitement de votre demande' },
+      { status: 500 }
+    )
   }
 }
 

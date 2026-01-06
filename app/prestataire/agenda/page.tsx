@@ -43,9 +43,7 @@ interface Evenement {
 // Schéma de validation Zod
 const eventFormSchema = z.object({
   titre: z.string().min(3, 'Le titre doit contenir au moins 3 caractères').max(100, 'Le titre est trop long'),
-  date: z.date({
-    required_error: 'La date est requise',
-  }),
+  date: z.date(),
   heure_debut: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format d\'heure invalide (HH:MM)'),
   heure_fin: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Format d\'heure invalide (HH:MM)').optional().or(z.literal('')),
   lieu: z.string().max(200, 'Le lieu est trop long').optional(),

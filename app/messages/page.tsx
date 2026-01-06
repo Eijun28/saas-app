@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/client'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import type { UserType } from '@/types/messages'
 
+export const dynamic = 'force-dynamic'
+
 function MessagesContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
