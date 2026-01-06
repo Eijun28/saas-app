@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
+import { generateDocumentSchema } from '@/lib/validations/marriage-admin.schema'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -32,18 +33,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { documentType, userData } = await req.json()
+    const body = await req.json()
 
-    console.log('🤖 Génération:', documentType)
+    // Validation avec Zod (on valide marriageFileId et documentType)
+    const validationResult = generateDocumentSchema.safeParse({
+      marriageFileId: body.marriageFileId || '',
+      documentType: body.documentType,
+      data: body.userData,
+    })
 
-    if (!documentType || !userData) {
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Missing documentType or userData' },
+        { error: validationResult.error.issues[0]?.message || 'Données invalides' },
         { status: 400 }
       )
     }
 
-    // Valider le type de document
+    const { documentType, data: userData } = validationResult.data
+
+    // Vérifier que userData est présent
+    if (!userData) {
+      return NextResponse.json(
+        { error: 'User data is required' },
+        { status: 400 }
+      )
+    }
+
+    console.log('🤖 Génération:', documentType)
+
+    // Valider le type de document (vérification supplémentaire)
     if (!ALLOWED_DOCUMENT_TYPES.includes(documentType as any)) {
       return NextResponse.json(
         { error: 'Invalid document type' },

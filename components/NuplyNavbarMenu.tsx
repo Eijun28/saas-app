@@ -231,9 +231,9 @@ function Navbar({
 
   return (
     <div
-      className={cn("fixed top-4 inset-x-0 max-w-4xl mx-auto z-50 px-4", className)}
+      className={cn("fixed top-0 inset-x-0 z-50 px-6 lg:px-12", className)}
     >
-      <div className="flex items-center justify-between bg-white rounded-full border border-transparent shadow-input px-4 py-2">
+      <div className="flex items-center justify-between bg-white h-16 border-b border-gray-200 shadow-sm px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center h-8">
           <Image
@@ -250,14 +250,14 @@ function Navbar({
           <Link
             href="/#prestataires"
             onClick={() => setActive(null)}
-            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium cursor-pointer transition-colors"
           >
             Trouver un prestataire
           </Link>
           <Link
             href="/tarifs"
             onClick={() => setActive(null)}
-            className="text-black hover:text-[#823F91] text-sm font-medium cursor-pointer transition-colors"
+            className="text-gray-600 hover:text-gray-900 text-sm font-medium cursor-pointer transition-colors"
           >
             Tarifs
           </Link>
@@ -269,7 +269,7 @@ function Navbar({
             <>
               <Link
                 href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                className="text-sm text-[#374151] hover:text-[#823F91] transition-colors flex items-center h-8"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors flex items-center h-8"
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
               </Link>
@@ -286,20 +286,18 @@ function Navbar({
             ) : (
             <>
               <Link href="/sign-in">
-                <RippleButton
-                  className="text-sm h-8 px-4 bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0 font-medium"
-                  rippleColor="#823F91"
+                <button
+                  className="text-sm h-8 px-4 text-gray-600 hover:text-gray-900 font-medium transition-colors"
                 >
                   Se connecter
-                </RippleButton>
+                </button>
               </Link>
               <Link href="/sign-up">
-                <RippleButton
-                  className="text-sm h-8 px-4 bg-[#823F91] hover:bg-[#6D3478] text-white border-0 font-medium"
-                  rippleColor="#ffffff"
+                <button
+                  className="text-sm h-8 px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition-colors"
                 >
                   Commencer
-                </RippleButton>
+                </button>
               </Link>
             </>
           )}
@@ -345,21 +343,21 @@ function Navbar({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden mt-2 overflow-hidden bg-white rounded-2xl border border-black/[0.1] shadow-xl"
+            className="md:hidden mt-2 overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-lg"
           >
             <div className="px-4 py-4 space-y-4">
               <div className="flex flex-col space-y-2">
                 <Link
                   href="/#prestataires"
                   onClick={() => handleLinkClick("/#prestataires")}
-                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 text-sm py-2 transition-colors"
                 >
                   Trouver un prestataire
                 </Link>
                 <Link
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
-                  className="text-neutral-700 hover:text-[#823F91] text-sm py-2 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 text-sm py-2 transition-colors"
                 >
                   Tarifs
                 </Link>
@@ -370,7 +368,7 @@ function Navbar({
                     <Link
                       href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-3 py-2 text-sm text-neutral-700 hover:text-[#823F91] transition-colors"
+                      className="block w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
                     >
                       {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                     </Link>
@@ -386,20 +384,18 @@ function Navbar({
                 ) : (
                   <div className="flex flex-col gap-2">
                     <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-xs font-medium bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
-                        rippleColor="#823F91"
+                      <button
+                        className="w-full h-9 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                       >
                         Se connecter
-                      </RippleButton>
+                      </button>
                     </Link>
                     <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-xs font-medium bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
-                        rippleColor="#ffffff"
+                      <button
+                        className="w-full h-9 text-sm font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors"
                       >
                         Commencer
-                      </RippleButton>
+                      </button>
                     </Link>
                   </div>
                 )}

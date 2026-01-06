@@ -189,10 +189,19 @@ export default function DemandesPage() {
 
     const supabase = createClient()
     
-    // Charger les demandes
+    // OPTIMISATION: Utiliser un join pour éviter N+1 queries
     const { data: demandesData, error } = await supabase
       .from('demandes')
-      .select('*')
+      .select(`
+        *,
+        prestataire:profiles!demandes_prestataire_id_fkey(
+          id,
+          prenom,
+          nom,
+          avatar_url,
+          prestataire_profiles:prestataire_profiles(nom_entreprise, type_prestation)
+        )
+      `)
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -207,40 +216,25 @@ export default function DemandesPage() {
       return
     }
 
-    // Charger les profils prestataires et profiles pour chaque demande
-    const transformedData = await Promise.all(
-      demandesData.map(async (demande: any) => {
-        const prestataireId = demande.prestataire_id
+    // Transformer les données avec les joins
+    const transformedData = demandesData.map((demande: any) => {
+      const prestataire = demande.prestataire
+      const prestataireProfile = prestataire?.prestataire_profiles?.[0]
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar et le nom
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url, prenom, nom')
-          .eq('id', prestataireId)
-          .single()
-
-        return {
-          ...demande,
-          provider_id: prestataireId, // Alias pour compatibilité
-          service_type: prestataireProfile?.type_prestation || demande.type_prestation, // Alias pour compatibilité
-          wedding_date: demande.date_mariage, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            prenom: profile?.prenom,
-            nom: profile?.nom
-          } : undefined
-        }
-      })
-    )
+      return {
+        ...demande,
+        provider_id: demande.prestataire_id, // Alias pour compatibilité
+        service_type: prestataireProfile?.type_prestation || demande.type_prestation,
+        wedding_date: demande.date_mariage, // Alias pour compatibilité
+        provider: prestataire ? {
+          nom_entreprise: prestataireProfile?.nom_entreprise || '',
+          service_type: prestataireProfile?.type_prestation || '',
+          avatar_url: prestataire.avatar_url,
+          prenom: prestataire.prenom,
+          nom: prestataire.nom
+        } : undefined
+      }
+    })
 
     setDemandes(transformedData)
   }
@@ -250,11 +244,18 @@ export default function DemandesPage() {
 
     const supabase = createClient()
     
-    // Note: Si la table devis n'existe pas encore, cette requête échouera
-    // On gère l'erreur gracieusement
-    const { data: devisData, error } = await supabase
+    // OPTIMISATION: Utiliser des joins pour éviter N+1 queries
+    const { data: devisWithJoins, error } = await supabase
       .from('devis')
-      .select('*')
+      .select(`
+        *,
+        prestataire:profiles!devis_prestataire_id_fkey(
+          id,
+          avatar_url,
+          prestataire_profiles:prestataire_profiles(nom_entreprise, type_prestation)
+        ),
+        demande:demandes!devis_demande_id_fkey(type_prestation, date_mariage, message)
+      `)
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -270,56 +271,30 @@ export default function DemandesPage() {
       return
     }
 
-    if (!devisData || devisData.length === 0) {
+    if (!devisWithJoins || devisWithJoins.length === 0) {
       setDevis([])
       return
     }
 
-    // Charger les profils prestataires et demandes pour chaque devis
-    const transformedData = await Promise.all(
-      devisData.map(async (devis: any) => {
-        const prestataireId = devis.prestataire_id || devis.provider_id
+    // Transformer les données avec les joins
+    const transformedData = devisWithJoins.map((devis: any) => {
+      const prestataire = devis.prestataire
+      const prestataireProfile = prestataire?.prestataire_profiles?.[0]
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', prestataireId)
-          .single()
-
-        // Charger la demande associée si elle existe
-        let demandeData = null
-        if (devis.demande_id) {
-          const { data: demande } = await supabase
-            .from('demandes')
-            .select('type_prestation, date_mariage, message')
-            .eq('id', devis.demande_id)
-            .single()
-          demandeData = demande
-        }
-
-        return {
-          ...devis,
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url
-          } : undefined,
-          demande: demandeData ? {
-            service_type: demandeData.type_prestation || '',
-            wedding_date: demandeData.date_mariage,
-            message: demandeData.message
-          } : undefined
-        }
-      })
-    )
+      return {
+        ...devis,
+        provider: prestataire ? {
+          nom_entreprise: prestataireProfile?.nom_entreprise || '',
+          service_type: prestataireProfile?.type_prestation || '',
+          avatar_url: prestataire.avatar_url
+        } : undefined,
+        demande: devis.demande ? {
+          service_type: devis.demande.type_prestation || '',
+          wedding_date: devis.demande.date_mariage,
+          message: devis.demande.message
+        } : undefined
+      }
+    })
 
     setDevis(transformedData)
   }
@@ -347,38 +322,48 @@ export default function DemandesPage() {
       return
     }
 
-    // Charger les profils prestataires et profiles pour chaque favori
-    const transformedData = await Promise.all(
-      favorisData.map(async (favori: any) => {
-        const prestataireId = favori.prestataire_id
+    // OPTIMISATION: Utiliser un join pour éviter N+1 queries
+    const { data: favorisWithJoins, error: joinError } = await supabase
+      .from('favoris')
+      .select(`
+        *,
+        prestataire:profiles!favoris_prestataire_id_fkey(
+          id,
+          avatar_url,
+          prestataire_profiles:prestataire_profiles(nom_entreprise, type_prestation, ville_exercice)
+        )
+      `)
+      .eq('couple_id', user.id)
+      .order('created_at', { ascending: false })
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation, ville_exercice')
-          .eq('user_id', prestataireId)
-          .single()
+    if (joinError) {
+      console.error('Erreur chargement favoris:', joinError)
+      toast.error('Erreur lors du chargement des favoris')
+      return
+    }
 
-        // Charger le profil de base pour l'avatar
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', prestataireId)
-          .single()
+    if (!favorisWithJoins || favorisWithJoins.length === 0) {
+      setFavoris([])
+      return
+    }
 
-        return {
-          ...favori,
-          provider_id: prestataireId, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            ville_principale: prestataireProfile.ville_exercice,
-            description_courte: undefined
-          } : undefined
-        }
-      })
-    )
+    // Transformer les données avec les joins
+    const transformedData = favorisWithJoins.map((favori: any) => {
+      const prestataire = favori.prestataire
+      const prestataireProfile = prestataire?.prestataire_profiles?.[0]
+
+      return {
+        ...favori,
+        provider_id: favori.prestataire_id,
+        provider: prestataire ? {
+          nom_entreprise: prestataireProfile?.nom_entreprise || '',
+          service_type: prestataireProfile?.type_prestation || '',
+          avatar_url: prestataire.avatar_url,
+          ville_principale: prestataireProfile?.ville_exercice,
+          description_courte: undefined
+        } : undefined
+      }
+    })
 
     setFavoris(transformedData)
   }
