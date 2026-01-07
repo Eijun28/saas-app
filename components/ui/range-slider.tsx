@@ -40,8 +40,9 @@ export function RangeSlider({ min, max, value, onChange, step = 1, className }: 
     <div className={cn("relative w-full", className)}>
       <div className="relative h-2 bg-[#E5E7EB] rounded-full">
         <div
-          className="absolute h-2 bg-[#6D3478] rounded-full"
+          className="absolute h-2 rounded-full"
           style={{
+            backgroundColor: '#823F91',
             left: `${minPercent}%`,
             width: `${maxPercent - minPercent}%`,
           }}

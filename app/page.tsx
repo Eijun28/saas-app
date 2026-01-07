@@ -2,7 +2,7 @@
 
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
-import MatchingSection from '@/components/landing/MatchingSection'
+import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
@@ -35,7 +35,7 @@ export default function HomePage() {
         <div>
           <Hero />
           <PrestatairesMarquee />
-          <MatchingSection />
+          <MatchingQuizSection />
           <FeaturesGrid />
           <CTA
           title="Commencez votre mariage de rêve"
