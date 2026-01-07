@@ -76,7 +76,7 @@ const CommunityForm = ({
   onUpdate: (community: CommunitySelection) => void
 }) => {
   const availableCountries = community.continent ? COUNTRIES_BY_CONTINENT[community.continent] : []
-  const showReligionOther = community.religion === 'autre'
+  const showReligionOther = community.religion === 'oui' || community.religion === 'autre'
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -102,7 +102,7 @@ const CommunityForm = ({
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Sélectionnez un continent" />
           </SelectTrigger>
-          <SelectContent className="max-h-[300px] overflow-y-auto">
+          <SelectContent>
             {CONTINENTS.map((cont) => (
               <SelectItem key={cont.id} value={cont.id}>
                 {cont.label}
@@ -136,7 +136,7 @@ const CommunityForm = ({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sélectionnez un pays" />
               </SelectTrigger>
-              <SelectContent className="max-h-[300px] overflow-y-auto">
+              <SelectContent>
                 {availableCountries.map((countryName) => (
                   <SelectItem key={countryName} value={countryName}>
                     {countryName}
@@ -160,7 +160,7 @@ const CommunityForm = ({
             <label className="block text-sm sm:text-base font-medium mb-2 text-gray-700">
               Cérémonie religieuse ?
             </label>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {RELIGION_OPTIONS.map((option) => (
                 <motion.button
                   key={option.id}
@@ -170,11 +170,11 @@ const CommunityForm = ({
                     onUpdate({
                       ...community,
                       religion: option.id,
-                      religionOther: option.id !== 'autre' ? null : community.religionOther
+                      religionOther: (option.id === 'oui' || option.id === 'autre') ? community.religionOther : null
                     })
                   }}
                   className={cn(
-                    "px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 border-2",
+                    "px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 border-2",
                     community.religion === option.id
                       ? "border-[#823F91] bg-[#823F91] text-white shadow-md"
                       : "border-gray-200 bg-white text-gray-700 hover:border-[#823F91]/50 hover:bg-[#823F91]/5"
@@ -188,21 +188,21 @@ const CommunityForm = ({
         )}
       </AnimatePresence>
 
-      {/* Champ texte si "Autre" est sélectionné */}
+      {/* Champ texte si "Oui" ou "Autre" est sélectionné */}
       <AnimatePresence>
-        {showReligionOther && (
+        {(community.religion === 'oui' || community.religion === 'autre') && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <label className="block text-sm sm:text-base font-medium mb-2 text-gray-700">
-              Précisez votre religion
+            <label className="block text-sm sm:text-base font-medium mb-2 text-gray-700 mt-4">
+              {community.religion === 'oui' ? 'Quelle religion ?' : 'Précisez votre religion'}
             </label>
             <Input
               type="text"
-              placeholder="Ex: Bouddhiste, Hindouiste, Juif..."
+              placeholder={community.religion === 'oui' ? "Ex: Musulman, Chrétien, Juif, Hindou..." : "Ex: Bouddhiste, Hindouiste, Juif..."}
               value={community.religionOther || ''}
               onChange={(e) => {
                 onUpdate({
@@ -235,12 +235,14 @@ export default function Question1({ onSelect }: Props) {
   })
 
   const isEpoux1Complete = epoux1.continent && epoux1.country && epoux1.religion && 
-    (epoux1.religion !== 'autre' || (epoux1.religionOther && epoux1.religionOther.trim() !== ''))
+    (epoux1.religion === 'non' || (epoux1.religionOther && epoux1.religionOther.trim() !== ''))
   
   const isEpoux2Complete = epoux2.continent && epoux2.country && epoux2.religion && 
-    (epoux2.religion !== 'autre' || (epoux2.religionOther && epoux2.religionOther.trim() !== ''))
+    (epoux2.religion === 'non' || (epoux2.religionOther && epoux2.religionOther.trim() !== ''))
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
     if (isEpoux1Complete && isEpoux2Complete) {
       onSelect({
         epoux1,
@@ -294,7 +296,7 @@ export default function Question1({ onSelect }: Props) {
         >
           {/* Effet glow animé */}
           <motion.div
-            className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
+            className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
             style={{
               background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.1) 0%, transparent 70%)',
               filter: 'blur(20px)'
@@ -336,7 +338,7 @@ export default function Question1({ onSelect }: Props) {
         >
           {/* Effet glow animé */}
           <motion.div
-            className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
+            className="absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
             style={{
               background: 'radial-gradient(circle at center, rgba(130, 63, 145, 0.1) 0%, transparent 70%)',
               filter: 'blur(20px)'
@@ -373,6 +375,7 @@ export default function Question1({ onSelect }: Props) {
             <Button
               onClick={handleNext}
               disabled={!isComplete}
+              type="button"
               className={cn(
                 "text-sm sm:text-base px-6 sm:px-8 py-4 sm:py-5 w-full sm:w-auto",
                 !isComplete && "opacity-50 cursor-not-allowed"
@@ -381,6 +384,7 @@ export default function Question1({ onSelect }: Props) {
                 backgroundColor: isComplete ? '#823F91' : '#d1d5db',
                 color: 'white',
               }}
+              onFocus={(e) => e.preventDefault()}
             >
               <span>Suivant</span>
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />

@@ -77,26 +77,36 @@ const SelectContent = React.forwardRef<
       side="bottom"
       sideOffset={4}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] rounded-md border border-gray-200 bg-white text-gray-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
+        "relative z-50 min-w-[8rem] rounded-md border border-gray-200 bg-white text-gray-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1",
         className
       )}
       position={position}
       {...props}
+      style={{
+        maxHeight: 'var(--radix-select-content-available-height, 300px)',
+        ...props.style
+      }}
     >
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1 max-h-[300px] overflow-y-auto overscroll-contain",
+          "p-1",
           "scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-transparent",
           "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-purple-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent",
           position === "popper" &&
             "w-full min-w-[var(--radix-select-trigger-width)]"
         )}
         style={{
+          maxHeight: '300px',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
-          scrollBehavior: 'smooth'
+          scrollBehavior: 'smooth',
+          touchAction: 'pan-y',
+          overscrollBehavior: 'contain',
+          willChange: 'scroll-position'
         }}
       >
         {children}
@@ -126,12 +136,12 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center pointer-events-none">
       <SelectPrimitive.ItemIndicator>
         <Check className="h-4 w-4" />
       </SelectPrimitive.ItemIndicator>

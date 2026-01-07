@@ -27,8 +27,16 @@ export default function Question3({ prestataire, onSubmit, onBack }: Props) {
     setBudget(Number(e.target.value))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
     onSubmit(budget)
+  }
+
+  const handleBack = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    onBack()
   }
 
   const percent = ((budget - 1) / (1000000 - 1)) * 100
@@ -113,8 +121,10 @@ export default function Question3({ prestataire, onSubmit, onBack }: Props) {
         >
           <Button
             variant="ghost"
-            onClick={onBack}
+            onClick={handleBack}
+            type="button"
             className="text-sm sm:text-base w-full sm:w-auto"
+            onFocus={(e) => e.preventDefault()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour
@@ -126,11 +136,13 @@ export default function Question3({ prestataire, onSubmit, onBack }: Props) {
           >
             <Button
               onClick={handleSubmit}
+              type="button"
               className="text-sm sm:text-base px-6 sm:px-8 py-4 sm:py-5 w-full sm:w-auto"
               style={{
                 backgroundColor: '#823F91',
                 color: 'white',
               }}
+              onFocus={(e) => e.preventDefault()}
             >
               <span>Voir mes matches</span>
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />

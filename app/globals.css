@@ -640,3 +640,17 @@ nav[class*="fixed"] {
 .animate-infinite-scroll {
   animation: infinite-scroll 40s linear infinite;
 }
+
+/* Styles pour les cartes flip 3D */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

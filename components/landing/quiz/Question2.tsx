@@ -74,10 +74,18 @@ export default function Question2({ onSelect, onBack }: Props) {
 
   const availablePrestataires = category ? PRESTATAIRES_BY_CATEGORY[category] : []
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
     if (prestataire) {
       onSelect(prestataire)
     }
+  }
+
+  const handleBack = (e?: React.MouseEvent) => {
+    e?.preventDefault()
+    e?.stopPropagation()
+    onBack()
   }
 
   const isComplete = category && prestataire
@@ -114,7 +122,7 @@ export default function Question2({ onSelect, onBack }: Props) {
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Sélectionnez une catégorie" />
             </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto">
+            <SelectContent>
               {CATEGORIES.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.label}
@@ -143,7 +151,7 @@ export default function Question2({ onSelect, onBack }: Props) {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Sélectionnez un prestataire" />
                 </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto">
+            <SelectContent>
               {availablePrestataires.map((prestataireName) => (
                 <SelectItem key={prestataireName} value={prestataireName}>
                   {prestataireName}
@@ -166,8 +174,10 @@ export default function Question2({ onSelect, onBack }: Props) {
         >
           <Button
             variant="ghost"
-            onClick={onBack}
+            onClick={handleBack}
+            type="button"
             className="text-sm sm:text-base w-full sm:w-auto"
+            onFocus={(e) => e.preventDefault()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Retour
@@ -180,6 +190,7 @@ export default function Question2({ onSelect, onBack }: Props) {
             <Button
               onClick={handleNext}
               disabled={!isComplete}
+              type="button"
               className={cn(
                 "text-sm sm:text-base px-6 sm:px-8 py-4 sm:py-5 w-full sm:w-auto",
                 !isComplete && "opacity-50 cursor-not-allowed"
@@ -188,6 +199,7 @@ export default function Question2({ onSelect, onBack }: Props) {
                 backgroundColor: isComplete ? '#823F91' : '#d1d5db',
                 color: 'white',
               }}
+              onFocus={(e) => e.preventDefault()}
             >
               <span>Suivant</span>
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
