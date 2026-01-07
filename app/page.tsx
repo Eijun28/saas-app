@@ -37,7 +37,6 @@ export default function HomePage() {
           <Hero />
           <PrestatairesMarquee />
           <MatchingQuizSection />
-          <MatchingExplainerCards />
           <FeaturesGrid />
           <CTA
           title="Commencez votre mariage de rêve"

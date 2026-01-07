@@ -11,7 +11,7 @@ interface Props {
 
 export default function IntroStep({ onStart }: Props) {
   return (
-    <div className="w-full flex flex-col items-center justify-center py-8 sm:py-12 md:py-16 px-4">
+    <div className="w-full flex flex-col items-center justify-center pt-4 sm:pt-6 md:pt-8 pb-8 sm:pb-12 md:pb-16 px-4">
       {/* Bouton CTA */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

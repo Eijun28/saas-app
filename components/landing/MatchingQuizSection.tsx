@@ -10,6 +10,7 @@ import Question3 from './quiz/Question3'
 import MatchingAnimation from './quiz/MatchingAnimation'
 import ResultsDisplay from './quiz/ResultsDisplay'
 import { Orbit } from '@/components/animate-ui/icons/orbit'
+import MatchingExplainerCards from './MatchingExplainerCards'
 
 export default function MatchingQuizSection() {
   const [currentStep, setCurrentStep] = useState<QuizStep>('intro')
@@ -146,6 +147,13 @@ export default function MatchingQuizSection() {
             Matchez vos prestataires en 2 minutes
           </h2>
         </motion.div>
+
+        {/* Cartes explicatives - affichées uniquement à l'étape intro */}
+        {currentStep === 'intro' && (
+          <div className="mb-8 sm:mb-12">
+            <MatchingExplainerCards />
+          </div>
+        )}
 
         {/* Contenu du quiz (avec transitions) */}
         <motion.div
