@@ -626,3 +626,17 @@ nav[class*="fixed"] {
   position: fixed !important;
   pointer-events: auto !important;
 }
+
+/* Animation pour le marquee infini */
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 40s linear infinite;
+}

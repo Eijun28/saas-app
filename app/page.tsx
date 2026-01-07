@@ -1,6 +1,8 @@
 'use client'
 
 import Hero from '@/components/landing/Hero'
+import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
+import MatchingSection from '@/components/landing/MatchingSection'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
@@ -32,6 +34,8 @@ export default function HomePage() {
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
           <Hero />
+          <PrestatairesMarquee />
+          <MatchingSection />
           <FeaturesGrid />
           <CTA
           title="Commencez votre mariage de rêve"
