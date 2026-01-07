@@ -13,7 +13,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-[90px] md:text-[100px] font-extrabold leading-tight mb-6 text-foreground"
+          className="text-[42px] sm:text-[56px] md:text-[80px] lg:text-[100px] font-extrabold leading-[1.1] mb-6 text-foreground"
           style={{ color: 'rgba(139, 90, 159, 1)' }}
         >
           Votre mariage
@@ -26,7 +26,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="text-[25px] max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-base sm:text-lg md:text-xl lg:text-[25px] max-w-2xl mx-auto mb-10 leading-relaxed px-2"
           style={{ color: 'hsl(var(--beige-800))' }}
         >
           Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.

@@ -42,11 +42,11 @@ export default function CTA({
       }}
     >
       <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
-        <h2 className="max-w-[900px] text-3xl leading-tight font-black sm:text-[90px] sm:leading-tight" style={{ color: 'rgba(139, 90, 159, 1)', lineHeight: '110.5px' }}>
+        <h2 className="max-w-[900px] text-3xl leading-[1.1] font-black sm:text-[90px] sm:leading-[1.1]" style={{ color: 'rgba(139, 90, 159, 1)' }}>
           {typeof title === 'string' ? (
             <>
               <span className="block">Commencez votre</span>
-              <span className="block">mariage de rêve</span>
+              <span className="block -mt-1 sm:-mt-2">mariage de rêve</span>
             </>
           ) : (
             title
