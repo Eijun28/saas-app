@@ -169,7 +169,7 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
               <span>En savoir plus</span>
               <Sparkles className="w-4 h-4" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
     </motion.div>
