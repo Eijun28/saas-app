@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 export function PrestatairesMarquee() {
   const prestataires = [
     "Photographe", "Vidéaste", "DJ", "Traiteur", "Décorateur", 
@@ -7,10 +9,19 @@ export function PrestatairesMarquee() {
   return (
     <section className="w-full py-14 overflow-hidden">
       {/* Titre */}
-      <div className="text-center mb-8">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-gray-500">
-          Ils proposent leurs services
-        </p>
+      <div className="text-center mb-8 px-4">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase tracking-[0.1em] text-gray-900 text-center sm:text-left">
+            Ils proposent leurs services sur
+          </p>
+          <Image
+            src="/images/logo.svg"
+            alt="NUPLY Logo"
+            width={100}
+            height={36}
+            className="h-5 sm:h-6 md:h-7 w-auto"
+          />
+        </div>
       </div>
       
       {/* Container du marquee */}
@@ -21,7 +32,7 @@ export function PrestatairesMarquee() {
           {prestataires.map((metier, index) => (
             <span 
               key={`group1-${index}`}
-              className="mx-7 text-sm font-light uppercase text-purple-900 tracking-wider whitespace-nowrap"
+              className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase text-purple-900 tracking-wider whitespace-nowrap"
             >
               {metier}
             </span>
@@ -31,7 +42,7 @@ export function PrestatairesMarquee() {
           {prestataires.map((metier, index) => (
             <span 
               key={`group2-${index}`}
-              className="mx-7 text-sm font-light uppercase text-purple-900 tracking-wider whitespace-nowrap"
+              className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase text-purple-900 tracking-wider whitespace-nowrap"
             >
               {metier}
             </span>
@@ -41,7 +52,7 @@ export function PrestatairesMarquee() {
           {prestataires.map((metier, index) => (
             <span 
               key={`group3-${index}`}
-              className="mx-7 text-sm font-light uppercase text-purple-900 tracking-wider whitespace-nowrap"
+              className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase text-purple-900 tracking-wider whitespace-nowrap"
             >
               {metier}
             </span>
