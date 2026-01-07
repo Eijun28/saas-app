@@ -304,13 +304,13 @@ export default function CoupleDashboardPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-8">
+      <div className="w-full space-y-6">
         {/* Sections principales avec ModernCard */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {sections.map((section, index) => {
             const Icon = section.icon
@@ -320,42 +320,43 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: index * 0.1,
-                  duration: 0.4,
+                  delay: index * 0.05,
+                  duration: 0.3,
                   ease: [0.16, 1, 0.3, 1] as const,
                 }}
               >
-                <ModernCard delay={index * 0.1}>
+                <ModernCard delay={index * 0.05}>
                   <Link href={section.href} className="block h-full">
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="h-12 w-12 rounded-xl bg-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20 hover-gradient-purple">
-                          <Icon className="h-6 w-6 text-white" />
+                    <CardHeader className="pb-3 px-5 pt-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="h-10 w-10 rounded-lg bg-purple-600 flex items-center justify-center shadow-md shadow-purple-500/10">
+                          <Icon className="h-5 w-5 text-white" />
                         </div>
                         {section.badge && (
                           <Badge 
                             variant="secondary" 
-                            className="bg-purple-100 text-purple-700 border-purple-200"
+                            className="bg-purple-100 text-purple-700 border-0 text-xs px-2 py-0.5"
                           >
                             {section.badge}
                           </Badge>
                         )}
                       </div>
-                      <CardTitle className="text-xl font-semibold mb-2">
+                      <CardTitle className="text-base font-semibold mb-1.5 text-[#0D0D0D] leading-tight">
                         {section.title}
                       </CardTitle>
-                      <CardDescription className="text-sm">
+                      <CardDescription className="text-xs text-[#6B7280] leading-relaxed">
                         {section.description}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <motion.div whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
+                    <CardContent className="pt-0 px-5 pb-5">
+                      <motion.div whileHover={{ x: 2 }} transition={{ duration: 0.2 }}>
                         <Button
                           variant="ghost"
-                          className="text-purple-600 hover:text-white hover:bg-purple-600 group"
+                          size="sm"
+                          className="text-purple-600 hover:text-white hover:bg-purple-600 group h-8 text-xs px-3"
                         >
                           Accéder
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </Button>
                       </motion.div>
                     </CardContent>
@@ -370,88 +371,73 @@ export default function CoupleDashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          <ModernCard delay={0.5}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <ModernCard delay={0.3}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
+              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
                 Prestataires trouvés
               </CardTitle>
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-              </motion.div>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-6 pb-6">
               <motion.div
                 key={stats.prestatairesTrouves}
-                initial={{ opacity: 0, scale: 0.5 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-2xl md:text-3xl font-bold font-mono-numbers"
+                transition={{ duration: 0.3 }}
+                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
               >
                 {stats.prestatairesTrouves}
               </motion.div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-[#9CA3AF]">
                 Correspondances parfaites
               </p>
             </CardContent>
           </ModernCard>
 
-          <ModernCard delay={0.6}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <ModernCard delay={0.35}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
+              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
                 Budget alloué
               </CardTitle>
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Wallet className="h-4 w-4 text-purple-600" />
-              </motion.div>
+              <Wallet className="h-4 w-4 text-purple-600" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-6 pb-6">
               <motion.div
                 key={stats.budgetAlloue}
-                initial={{ opacity: 0, scale: 0.5 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-2xl md:text-3xl font-bold font-mono-numbers"
+                transition={{ duration: 0.3 }}
+                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
               >
                 {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
               </motion.div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-[#9CA3AF]">
                 Total planifié
               </p>
             </CardContent>
           </ModernCard>
 
-          <ModernCard delay={0.7}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <ModernCard delay={0.4}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
+              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
                 Jours restants
               </CardTitle>
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Calendar className="h-4 w-4 text-purple-600" />
-              </motion.div>
+              <Calendar className="h-4 w-4 text-purple-600" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-6 pb-6">
               <motion.div
                 key={stats.joursRestants}
-                initial={{ opacity: 0, scale: 0.5 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-2xl md:text-3xl font-bold font-mono-numbers"
+                transition={{ duration: 0.3 }}
+                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
               >
                 {stats.joursRestants !== null ? stats.joursRestants : '-'}
               </motion.div>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-xs text-[#9CA3AF]">
                 Jusqu'au grand jour
               </p>
             </CardContent>

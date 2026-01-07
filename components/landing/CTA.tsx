@@ -36,8 +36,15 @@ export default function CTA({
   return (
     <Section className={cn("group relative overflow-hidden", className)}>
       <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
-        <h2 className="max-w-[640px] text-3xl leading-tight font-semibold sm:text-[75px] sm:leading-tight" style={{ color: 'rgba(193, 130, 227, 1)' }}>
-          {title}
+        <h2 className="max-w-[900px] text-3xl leading-tight font-black sm:text-[90px] sm:leading-tight" style={{ color: 'rgba(139, 90, 159, 1)', lineHeight: '110.5px' }}>
+          {typeof title === 'string' ? (
+            <>
+              <span className="block">Commencez votre</span>
+              <span className="block">mariage de rêve</span>
+            </>
+          ) : (
+            title
+          )}
         </h2>
         {buttons !== false && buttons.length > 0 && (
           <div className="flex justify-center gap-4">

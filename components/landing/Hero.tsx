@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { TypingAnimation } from '@/components/magicui/typing-animation';
 
 export default function Hero() {
   return (
@@ -12,12 +13,12 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-[3.5rem] md:text-[4.5rem] font-extrabold leading-tight mb-6 text-foreground"
+          className="text-[90px] md:text-[100px] font-extrabold leading-tight mb-6 text-foreground"
           style={{ color: 'rgba(139, 90, 159, 1)' }}
         >
-          Votre mariage,
+          Votre mariage
           <br />
-          vos racines.
+          vos <TypingAnimation words={['racines', 'traditions', 'envies']} speed={350} deleteSpeed={100} delay={2000} loop={true} />
         </motion.h1>
 
         {/* Sous-texte - beige moyen */}
@@ -25,7 +26,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-[25px] max-w-2xl mx-auto mb-10 leading-relaxed"
           style={{ color: 'hsl(var(--beige-800))' }}
         >
           Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.

@@ -218,6 +218,8 @@ interface CoupleProfile {
 
   budget_max?: number
 
+  budget_total?: number
+
   budget_flexibility?: string
 
   planning_stage?: string
@@ -360,6 +362,8 @@ export default function CoupleProfilPage() {
 
           budget_max: data.budget_max || undefined,
 
+          budget_total: data.budget_total || undefined,
+
           budget_flexibility: data.budget_flexibility || '',
 
           planning_stage: data.planning_stage || '',
@@ -487,6 +491,8 @@ export default function CoupleProfilPage() {
           budget_min: formData.budget_min || null,
 
           budget_max: formData.budget_max || null,
+
+          budget_total: formData.budget_total || null,
 
           budget_flexibility: formData.budget_flexibility || null,
 
@@ -1027,6 +1033,28 @@ export default function CoupleProfilPage() {
                       placeholder="50, 100, 200..."
 
                       min="1"
+
+                    />
+
+                  </div>
+
+                  <div className="space-y-2">
+
+                    <Label htmlFor="budget_total">Budget total (€)</Label>
+
+                    <Input
+
+                      id="budget_total"
+
+                      type="number"
+
+                      value={formData.budget_total || ''}
+
+                      onChange={(e) => setFormData({ ...formData, budget_total: parseInt(e.target.value) || undefined })}
+
+                      placeholder="25000"
+
+                      min="0"
 
                     />
 

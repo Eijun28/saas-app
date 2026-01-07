@@ -112,7 +112,8 @@ export default function PricingSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl leading-tight font-semibold sm:text-5xl sm:leading-tight text-slate-900"
+            className="text-3xl leading-tight font-semibold sm:text-5xl sm:leading-tight"
+            style={{ color: 'rgba(130, 63, 145, 1)' }}
           >
             {title}
           </motion.h2>

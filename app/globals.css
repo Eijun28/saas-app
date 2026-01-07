@@ -217,7 +217,7 @@ button, .button, .btn {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .hover-gradient-purple:hover {
-    background: linear-gradient(135deg, hsl(250, 65%, 55%) 0%, hsl(270, 60%, 50%) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(128, 51, 204, 1) 100%);
   }
 }
 
@@ -404,13 +404,18 @@ button[class*="bg-\[#823F91\]"] * {
 .bg-white,
 [class*="bg-white"],
 button.bg-white,
-.bg-card,
 .bg-background,
 [style*="background-color: white"],
 [style*="background-color: #fff"],
 [style*="background-color: #ffffff"],
 [style*="background-color: rgb(255, 255, 255)"] {
   color: hsl(var(--foreground)) !important;
+}
+
+/* Card foreground color */
+.bg-card.text-card-foreground,
+.bg-card .text-card-foreground {
+  color: rgba(43, 30, 23, 1) !important;
 }
 
 /* Positionnement du toaster pour qu'il ne chevauche pas d'autres éléments */
@@ -589,6 +594,28 @@ textarea::selection {
 
 :root {
   --animate-rippling: rippling var(--duration) ease-out;
+}
+
+@keyframes dialog-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+}
+
+@keyframes dialog-out {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9) translateY(-10px);
+  }
 }
 
 /* Force la navbar en premier plan */

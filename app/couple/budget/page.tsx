@@ -55,6 +55,7 @@ export default function BudgetPage() {
   const [budgetData, setBudgetData] = useState({
     budget_min: null as number | null,
     budget_max: null as number | null,
+    budget_total: null as number | null,
   })
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -64,6 +65,7 @@ export default function BudgetPage() {
     category: '',
     amount: '',
     notes: '',
+    customCategory: '',
   })
 
   useEffect(() => {
@@ -80,8 +82,8 @@ export default function BudgetPage() {
     const supabase = createClient()
 
     const { data } = await supabase
-      .from('couple_profiles')
-      .select('budget_min, budget_max')
+      .from('couples')
+      .select('budget_min, budget_max, budget_total')
       .eq('user_id', user.id)
       .single()
 
@@ -89,6 +91,7 @@ export default function BudgetPage() {
       setBudgetData({
         budget_min: data.budget_min,
         budget_max: data.budget_max,
+        budget_total: data.budget_total,
       })
     }
 
@@ -121,6 +124,10 @@ export default function BudgetPage() {
 
   const handleCreateOrUpdate = async () => {
     if (!user || !formData.title || !formData.category || !formData.amount) return
+    if (formData.category === 'Autre' && !formData.customCategory) {
+      toast.error('Veuillez préciser la catégorie')
+      return
+    }
 
     const supabase = createClient()
     const amount = parseFloat(formData.amount)
@@ -130,13 +137,15 @@ export default function BudgetPage() {
       return
     }
 
+    const categoryToSave = formData.category === 'Autre' ? formData.customCategory : formData.category
+
     if (editingItem) {
       // Mettre à jour
       const { error } = await supabase
         .from('budget_items')
         .update({
           title: formData.title,
-          category: formData.category,
+          category: categoryToSave,
           amount: amount,
           notes: formData.notes || null,
         })
@@ -157,7 +166,7 @@ export default function BudgetPage() {
         .insert({
           couple_id: user.id,
           title: formData.title,
-          category: formData.category,
+          category: categoryToSave,
           amount: amount,
           notes: formData.notes || null,
         })
@@ -207,11 +216,13 @@ export default function BudgetPage() {
 
   const handleEdit = (item: BudgetItem) => {
     setEditingItem(item)
+    const isCustomCategory = !categories.includes(item.category)
     setFormData({
       title: item.title,
-      category: item.category,
+      category: isCustomCategory ? 'Autre' : item.category,
       amount: item.amount.toString(),
       notes: item.notes || '',
+      customCategory: isCustomCategory ? item.category : '',
     })
     setIsDialogOpen(true)
   }
@@ -222,14 +233,16 @@ export default function BudgetPage() {
       category: '',
       amount: '',
       notes: '',
+      customCategory: '',
     })
     setEditingItem(null)
   }
 
   const totalSpent = budgetItems.reduce((sum, item) => sum + item.amount, 0)
+  const budgetTotal = budgetData.budget_total || budgetData.budget_max || budgetData.budget_min || 0
   const budgetMax = budgetData.budget_max || 0
   const budgetMin = budgetData.budget_min || 0
-  const budgetAverage = budgetMax > 0 ? budgetMax : budgetMin
+  const budgetAverage = budgetTotal > 0 ? budgetTotal : (budgetMax > 0 ? budgetMax : budgetMin)
   const remaining = budgetAverage > 0 ? budgetAverage - totalSpent : 0
   const percentageUsed = budgetAverage > 0 ? (totalSpent / budgetAverage) * 100 : 0
 
@@ -276,12 +289,14 @@ export default function BudgetPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl md:text-3xl font-bold text-[#0D0D0D]">
-                  {budgetAverage > 0
+                <p className="text-2xl md:text-3xl font-medium text-[#0D0D0D]">
+                  {budgetTotal > 0
+                    ? `${budgetTotal.toLocaleString('fr-FR')} €`
+                    : budgetAverage > 0
                     ? `${budgetAverage.toLocaleString('fr-FR')} €`
                     : 'Non défini'}
                 </p>
-                {budgetData.budget_min && budgetData.budget_max && (
+                {budgetData.budget_min && budgetData.budget_max && !budgetData.budget_total && (
                   <p className="text-sm text-[#6B7280] mt-1">
                     {budgetData.budget_min.toLocaleString('fr-FR')} € -{' '}
                     {budgetData.budget_max.toLocaleString('fr-FR')} €
@@ -308,7 +323,7 @@ export default function BudgetPage() {
 
             <Card className="border-gray-200">
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-[#4A4A4A]">
+                <CardTitle className="text-sm font-semibold text-[#4A4A4A]">
                   Budget restant
                 </CardTitle>
               </CardHeader>
@@ -387,7 +402,7 @@ export default function BudgetPage() {
                           <h3 className="font-semibold text-[#0D0D0D]">
                             {item.title}
                           </h3>
-                          <span className="px-2 py-1 text-xs bg-[#E8D4EF] text-[#823F91] rounded-full">
+                          <span className="px-2 py-1 text-xs bg-[rgba(212,99,253,1)] text-white rounded-full">
                             {item.category}
                           </span>
                         </div>
@@ -430,8 +445,8 @@ export default function BudgetPage() {
             </CardContent>
           </Card>
 
-          {!budgetData.budget_min && !budgetData.budget_max && (
-            <Card className="border-gray-200 bg-yellow-50">
+          {!budgetData.budget_total && !budgetData.budget_min && !budgetData.budget_max && (
+            <Card className="border-gray-200 bg-[#FEF0FF] text-[rgba(24,19,17,1)]">
               <CardContent className="pt-6">
                 <p className="text-sm text-[#4A4A4A]">
                   Vous n'avez pas encore défini votre budget. Vous pouvez le faire dans la section{' '}
@@ -446,34 +461,35 @@ export default function BudgetPage() {
 
         {/* Dialog de création/édition */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-lg">
                 {editingItem ? 'Modifier la dépense' : 'Ajouter une dépense'}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-sm">
                 Enregistrez une nouvelle dépense pour votre mariage
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="expense-title">Titre</Label>
+                <Label htmlFor="expense-title" className="text-sm">Titre</Label>
                 <Input
                   id="expense-title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Ex: Photographe, Traiteur..."
+                  className="h-9"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expense-category">Catégorie</Label>
+                <Label htmlFor="expense-category" className="text-sm">Catégorie</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) => setFormData({ ...formData, category: value, customCategory: value === 'Autre' ? formData.customCategory : '' })}
                 >
-                  <SelectTrigger id="expense-category">
+                  <SelectTrigger id="expense-category" className="h-9">
                     <SelectValue placeholder="Sélectionner une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
@@ -484,10 +500,22 @@ export default function BudgetPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {formData.category === 'Autre' && (
+                  <div className="space-y-2 mt-2">
+                    <Label htmlFor="custom-category" className="text-sm">Précisez la catégorie</Label>
+                    <Input
+                      id="custom-category"
+                      value={formData.customCategory}
+                      onChange={(e) => setFormData({ ...formData, customCategory: e.target.value })}
+                      placeholder="Ex: Location de voiture, Coiffeur..."
+                      className="h-9"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expense-amount">Montant (€)</Label>
+                <Label htmlFor="expense-amount" className="text-sm">Montant (€)</Label>
                 <Input
                   id="expense-amount"
                   type="number"
@@ -496,16 +524,18 @@ export default function BudgetPage() {
                   placeholder="0.00"
                   min="0"
                   step="0.01"
+                  className="h-9"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expense-notes">Notes (optionnel)</Label>
+                <Label htmlFor="expense-notes" className="text-sm">Notes (optionnel)</Label>
                 <Input
                   id="expense-notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Ajoutez des détails..."
+                  className="h-9"
                 />
               </div>
             </div>
@@ -513,6 +543,7 @@ export default function BudgetPage() {
             <DialogFooter>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   setIsDialogOpen(false)
                   resetForm()
@@ -521,9 +552,10 @@ export default function BudgetPage() {
                 Annuler
               </Button>
               <Button
+                size="sm"
                 onClick={handleCreateOrUpdate}
                 className="bg-[#823F91] hover:bg-[#6D3478] text-white"
-                disabled={!formData.title || !formData.category || !formData.amount}
+                disabled={!formData.title || !formData.category || !formData.amount || (formData.category === 'Autre' && !formData.customCategory)}
               >
                 {editingItem ? 'Modifier' : 'Ajouter'}
               </Button>

@@ -29,18 +29,18 @@ export function ModernCard({
         ease: [0.16, 1, 0.3, 1] as const // Custom easing pour un effet plus fluide
       }}
       whileHover={{ 
-        y: -4, 
-        scale: 1.02,
-        transition: { duration: 0.3, ease: 'easeOut' }
+        y: -2, 
+        scale: 1.01,
+        transition: { duration: 0.2, ease: 'easeOut' }
       }}
       className="h-full"
       {...props}
     >
       <Card
         className={cn(
-          'h-full rounded-2xl transition-all duration-300',
-          'hover:shadow-xl hover:shadow-purple-500/10',
-          'bg-card/50 backdrop-blur-sm',
+          'h-full rounded-xl transition-all duration-300 border-0 shadow-sm',
+          'hover:shadow-md hover:shadow-purple-500/5',
+          'bg-white gap-4 py-4',
           glassmorphism && 'backdrop-blur-md bg-purple-500/5',
           className
         )}

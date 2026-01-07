@@ -427,7 +427,7 @@ function Navbar({
                 exit={{ rotate: -90, opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <MenuIcon className="h-6 w-6" />
+                <MenuIcon className="h-6 w-6" style={{ color: 'rgba(139, 90, 159, 1)' }} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -454,7 +454,7 @@ function Navbar({
                     e.preventDefault();
                     handleLinkClick("/#prestataires");
                   }}
-                  className="text-sm py-2 transition-colors"
+                  className="text-base py-2 transition-colors"
                   style={{ 
                     color: '#823F91',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -471,7 +471,7 @@ function Navbar({
                 <Link
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
-                  className="text-sm py-2 transition-colors"
+                  className="text-base py-2 transition-colors"
                   style={{ 
                     color: '#823F91',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -509,7 +509,7 @@ function Navbar({
                   <div className="flex flex-col gap-2">
                     <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium border-0"
+                        className="w-full h-9 text-base font-medium border-0"
                         style={{ backgroundColor: '#a720f2', color: 'white' }}
                         rippleColor="#ffffff"
                         onMouseEnter={(e) => {
@@ -526,7 +526,7 @@ function Navbar({
                     </Link>
                     <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium border-0"
+                        className="w-full h-9 text-base font-medium border-0"
                         style={{ backgroundColor: '#c081e3', color: 'white' }}
                         rippleColor="#ffffff"
                         onMouseEnter={(e) => {

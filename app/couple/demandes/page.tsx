@@ -19,7 +19,8 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Eye
+  Eye,
+  ArrowRight
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -779,11 +780,12 @@ export default function DemandesPage() {
                       )}
                       <div className="flex gap-2">
                         <Button
-                          variant="outline"
-                          className="flex-1"
+                          variant="ghost"
+                          className="flex-1 text-purple-600 hover:text-white hover:bg-purple-600 group"
                           onClick={() => router.push(`/provider/${favori.provider_id || favori.prestataire_id}`)}
                         >
                           Voir le profil
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                         <Button
                           variant="outline"

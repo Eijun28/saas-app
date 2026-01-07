@@ -143,10 +143,10 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-[#E8D4EF] text-[#c081e3]"
-                    : "bg-[#E8D4EF] text-[#a865d0]"
+                    ? "bg-[#E8D4EF]"
+                    : "bg-[#E8D4EF]"
                 }`}>
-                  <p className="text-xs leading-relaxed" style={{ color: 'rgba(0, 0, 0, 1)' }}>{msg.text}</p>
+                  <p className="text-xs leading-relaxed text-white" style={{ color: 'rgba(255, 255, 255, 1)' }}>{msg.text}</p>
                 </div>
               </motion.div>
             ))}
@@ -179,31 +179,39 @@ const SkeletonBudget = () => {
       whileHover="animate"
       className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 items-center justify-center relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-emerald-600/10 to-teal-600/10 blur-3xl opacity-5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-100/20 via-[#823F91]/10 to-purple-200/20 blur-3xl opacity-30" />
       <motion.div
         variants={variants}
-        className="relative w-20 h-20 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center relative z-10"
+        className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#9D5FA8] via-[#C081E3] to-[#EB95EE] flex items-center justify-center relative z-10 shadow-lg shadow-purple-500/30"
       >
-        <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
+        <div className="absolute inset-0 rounded-full border-4 border-white/30" />
         <svg className="absolute inset-0 w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#EB95EE" stopOpacity="1" />
+              <stop offset="50%" stopColor="#C081E3" stopOpacity="1" />
+              <stop offset="100%" stopColor="#9D5FA8" stopOpacity="1" />
+            </linearGradient>
+          </defs>
           <circle
             cx="50"
             cy="50"
             r="40"
             fill="none"
-            stroke="rgb(34, 197, 94)"
+            stroke="url(#progressGradient)"
             strokeWidth="8"
             strokeDasharray={`${2 * Math.PI * 40}`}
             strokeDashoffset={`${2 * Math.PI * 40 * 0.35}`}
             className="transition-all duration-1000"
+            strokeLinecap="round"
           />
         </svg>
-        <div className="text-white font-bold text-sm">65%</div>
+        <div className="text-white font-bold text-sm drop-shadow-sm">65%</div>
       </motion.div>
       <div className="flex flex-row space-x-2 mt-2 relative z-10">
-        <div className="h-2 w-6 bg-green-500 rounded-full" />
-        <div className="h-2 w-6 bg-emerald-600 rounded-full" />
-        <div className="h-2 w-6 bg-green-400 rounded-full" />
+        <div className="h-2 w-6 bg-gradient-to-r from-[#823F91] to-purple-500 rounded-full opacity-80" />
+        <div className="h-2 w-6 bg-gradient-to-r from-purple-500 to-[#9D5FA8] rounded-full opacity-60" />
+        <div className="h-2 w-6 bg-gradient-to-r from-[#9D5FA8] to-purple-400 rounded-full opacity-40" />
       </div>
     </motion.div>
   );
@@ -216,7 +224,7 @@ const SkeletonPayments = () => {
       className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col justify-center items-center p-4 space-y-3 relative"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-teal-600/10 to-cyan-600/10 blur-3xl opacity-5" />
-      <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full">
+      <div className="relative z-10 flex flex-col justify-center items-center space-y-3 w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}>
         {/* Montant en tiers de confiance */}
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
@@ -256,7 +264,7 @@ const SkeletonPayments = () => {
             className="text-center"
           >
             <div className="w-10 h-10 rounded-full bg-[#E8D4EF] border border-white flex items-center justify-center mb-1">
-              <Lock className="w-5 h-5 text-green-600" />
+              <Lock className="w-5 h-5" style={{ color: 'rgba(235, 149, 238, 1)' }} />
             </div>
             <p className="text-xs text-gray-600">Escrow</p>
           </motion.div>
@@ -287,8 +295,8 @@ const SkeletonPayments = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 1.3 }}
         >
-          <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full inline-flex items-center gap-1">
-            <Lock className="w-3 h-3" />
+          <span className="text-xs bg-white text-blue-500 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-blue-200" style={{ color: 'var(--color-blue-500)' }}>
+            <Lock className="w-3 h-3" style={{ color: 'rgba(236, 144, 238, 1)' }} />
             SSL sécurisé
           </span>
         </motion.div>
@@ -350,11 +358,10 @@ const SkeletonTimeline = () => {
                 transition={{ delay: i * 0.2, duration: 0.4 }}
                 className="flex items-start space-x-3"
               >
-                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                  event.color === "purple" ? "" : "bg-pink-600"
-                  }
-                  style={event.color === "purple" ? { backgroundColor: '#c081e3' } : {}}
-                }`} />
+                <div 
+                  className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                  style={event.color === "purple" ? { backgroundColor: '#22c55e' } : { backgroundColor: '#ec4899' }}
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-900 truncate">{event.title}</p>
                   <p className="text-xs text-gray-500 truncate">{event.time}</p>

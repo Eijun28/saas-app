@@ -108,10 +108,17 @@ export default function DemandesRecuesPage() {
 
       // Enrichir avec les données de couples
       const coupleIds = [...new Set((demandesData || []).map((d: any) => d.couple_id))]
-      const { data: couplesData } = await supabase
-        .from('couples')
-        .select('user_id, partner_1_name, partner_2_name, wedding_date')
-        .in('user_id', coupleIds)
+      
+      let couplesData = null
+      if (coupleIds.length > 0) {
+        const { data, error: couplesError } = await supabase
+          .from('couples')
+          .select('user_id, partner_1_name, partner_2_name, wedding_date')
+          .in('user_id', coupleIds)
+        
+        if (couplesError) throw couplesError
+        couplesData = data
+      }
 
       // Créer un mapping couple_id -> couple data
       const couplesMap = new Map((couplesData || []).map((c: any) => [c.user_id, c]))
@@ -122,13 +129,28 @@ export default function DemandesRecuesPage() {
         couple: couplesMap.get(demande.couple_id) || null
       }))
 
-      if (error) throw error
-
       setDemandes(formatAndGroupDemandes(data || []))
       setUiState({ loading: 'success', error: null })
     } catch (error) {
-      console.error('Erreur chargement demandes:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Erreur de chargement'
+      // Improved error logging for Supabase errors
+      const errorDetails = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null
+        ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+        : String(error)
+      
+      console.error('Erreur chargement demandes:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        details: errorDetails
+      })
+      
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'message' in error
+        ? String(error.message)
+        : 'Erreur de chargement'
+      
       toast.error('Erreur lors du chargement des demandes')
       setUiState({ loading: 'error', error: errorMessage })
     }
