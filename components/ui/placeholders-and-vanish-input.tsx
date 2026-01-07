@@ -201,9 +201,10 @@ export function PlaceholdersAndVanishInput({
         value={value}
         type="text"
         className={cn(
-          "w-full relative text-sm sm:text-base z-50 border-none md:dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-3 sm:pl-4 md:pl-10 pr-12 sm:pr-16 md:pr-20",
+          "w-full relative text-base sm:text-base md:text-base z-50 border-none md:dark:text-white bg-transparent text-black h-full rounded-full focus:outline-none focus:ring-0 pl-3 sm:pl-4 md:pl-10 pr-12 sm:pr-16 md:pr-20",
           animating && "text-transparent md:dark:text-transparent"
         )}
+        style={{ fontSize: '16px' }}
       />
 
       <button
@@ -264,7 +265,8 @@ export function PlaceholdersAndVanishInput({
                 duration: 0.3,
                 ease: "linear",
               }}
-              className="md:dark:text-zinc-500 text-xs sm:text-sm md:text-base font-normal text-neutral-500 pl-3 sm:pl-4 md:pl-12 text-left w-[calc(100%-3rem)] sm:w-[calc(100%-2.5rem)] md:w-[calc(100%-2rem)] truncate"
+              className="md:dark:text-zinc-500 text-base sm:text-sm md:text-base font-normal text-neutral-500 pl-3 sm:pl-4 md:pl-12 text-left w-[calc(100%-3rem)] sm:w-[calc(100%-2.5rem)] md:w-[calc(100%-2rem)] truncate"
+              style={{ fontSize: '16px' }}
             >
               {placeholders[currentPlaceholder]}
             </motion.p>
