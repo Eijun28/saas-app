@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Glow from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
+import LightRays from "@/components/LightRays";
 
 interface CTAButtonProps {
   href: string;
@@ -34,7 +35,12 @@ export default function CTA({
   className,
 }: CTAProps) {
   return (
-    <Section className={cn("group relative overflow-hidden", className)}>
+    <Section 
+      className={cn("group relative overflow-hidden bg-transparent", className)}
+      style={{ 
+        background: 'radial-gradient(circle at top center, rgba(255, 255, 255, 0.1), transparent 70%)'
+      }}
+    >
       <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
         <h2 className="max-w-[900px] text-3xl leading-tight font-black sm:text-[90px] sm:leading-tight" style={{ color: 'rgba(139, 90, 159, 1)', lineHeight: '110.5px' }}>
           {typeof title === 'string' ? (
@@ -68,33 +74,24 @@ export default function CTA({
           </div>
         )}
       </div>
-      {/* Glows blancs subtils pour illuminer la section */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Glow blanc principal - effet lumière douce */}
-        <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[300px] rounded-full blur-3xl opacity-40"
-          style={{
-            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 30%, transparent 70%)',
-          }}
-        />
-        
-        {/* Glow blanc secondaire - accent lumineux */}
-        <div 
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[50%] h-[150px] rounded-full blur-2xl opacity-50"
-          style={{
-            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 40%, transparent 70%)',
-          }}
-        />
-        
-        {/* Petits glows blancs dispersés */}
-        <div 
-          className="absolute top-1/4 left-1/4 w-24 h-24 rounded-full blur-2xl opacity-30"
-          style={{ background: 'rgba(255, 255, 255, 0.6)' }}
-        />
-        <div 
-          className="absolute bottom-1/3 right-1/4 w-32 h-32 rounded-full blur-2xl opacity-25"
-          style={{ background: 'rgba(255, 255, 255, 0.5)' }}
-        />
+      {/* Light Rays - effet de rayons lumineux */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-transparent z-0" style={{ opacity: 0.6 }}>
+        <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent' }}>
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#c081e3"
+            raysSpeed={0.4}
+            lightSpread={0.4}
+            rayLength={2.0}
+            pulsating={false}
+            fadeDistance={1.5}
+            saturation={0.8}
+            followMouse={false}
+            mouseInfluence={0}
+            noiseAmount={0}
+            distortion={0}
+          />
+        </div>
       </div>
     </Section>
   );

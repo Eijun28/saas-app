@@ -1,0 +1,12 @@
+.light-rays-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+  background: transparent;
+  mix-blend-mode: soft-light;
+  mask-image: radial-gradient(ellipse at top center, black 30%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse at top center, black 30%, transparent 90%);
+}
