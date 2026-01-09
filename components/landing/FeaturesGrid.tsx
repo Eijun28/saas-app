@@ -143,10 +143,10 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-[#c081e3]/20"
-                    : "bg-[#c081e3]/20"
+                    ? "bg-[#823F91]"
+                    : "bg-[#823F91]"
                 }`}>
-                  <p className="text-xs leading-relaxed text-white" style={{ color: 'rgba(255, 255, 255, 1)' }}>{msg.text}</p>
+                  <p className="text-xs leading-relaxed text-white">{msg.text}</p>
                 </div>
               </motion.div>
             ))}

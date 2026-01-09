@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import Particles from '@/components/Particles'
 
 // Animation variants pour une entrée élégante
 const containerVariants = {
@@ -83,13 +84,32 @@ export default function SignInPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center px-6 py-24 bg-background"
-    >
-      {/* Subtle decorative gradient */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#823F91]/[0.03] to-transparent rounded-full blur-3xl" />
+    <>
+      {/* Background de particules - couvre toute la page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Particles
+          particleCount={200}
+          particleSpread={10}
+          speed={0.24}
+          particleColors={["#823F91","#c081e3","#823F91"]}
+          moveParticlesOnHover={false}
+          particleHoverFactor={1}
+          alphaParticles={false}
+          particleBaseSize={50}
+          sizeRandomness={0.5}
+          cameraDistance={20}
+          disableRotation={false}
+          className=""
+        />
       </div>
+
+      <div 
+        className="min-h-screen flex items-center justify-center px-6 py-24 bg-background relative z-10"
+      >
+        {/* Subtle decorative gradient */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#823F91]/[0.03] to-transparent rounded-full blur-3xl" />
+        </div>
 
       <motion.div
         variants={cardVariants}
@@ -260,5 +280,6 @@ export default function SignInPage() {
         </Card>
       </motion.div>
     </div>
+    </>
   )
 }

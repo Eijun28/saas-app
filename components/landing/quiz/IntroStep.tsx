@@ -35,7 +35,7 @@ export default function IntroStep({ onStart }: Props) {
               "text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-10 py-4 sm:py-5 md:py-6 shadow-lg hover:shadow-xl w-full sm:w-auto"
             )}
             style={{
-              backgroundColor: '#823F91',
+              backgroundColor: '#c081e3',
               color: 'white',
             }}
             onFocus={(e) => e.preventDefault()}

@@ -6,6 +6,7 @@ import { User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PricingColumn, PricingColumnProps } from '@/components/ui/pricing-column';
 import { Section } from '@/components/ui/section';
+import Particles from '@/components/Particles';
 
 export default function PricingSection() {
   const [userType, setUserType] = useState<'couples' | 'prestataires'>('couples');
@@ -102,9 +103,28 @@ export default function PricingSection() {
   const description = "Pas de frais cachés. Changez ou annulez quand vous voulez.";
 
   return (
-    <Section 
-      className="min-h-screen bg-background"
-    >
+    <>
+      {/* Background de particules - couvre toute la page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Particles
+          particleCount={200}
+          particleSpread={10}
+          speed={0.24}
+          particleColors={["#823F91","#c081e3","#823F91"]}
+          moveParticlesOnHover={false}
+          particleHoverFactor={1}
+          alphaParticles={false}
+          particleBaseSize={50}
+          sizeRandomness={0.5}
+          cameraDistance={20}
+          disableRotation={false}
+          className=""
+        />
+      </div>
+
+      <Section 
+        className="min-h-screen bg-background relative z-10"
+      >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-6">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 px-4 text-center sm:gap-8">
@@ -216,5 +236,6 @@ export default function PricingSection() {
         </motion.div>
       </div>
     </Section>
+    </>
   );
 }
