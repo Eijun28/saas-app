@@ -288,10 +288,10 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                 <Link href="/sign-in">
                   <RippleButton
                     className={cn(
-                      'hidden md:inline-flex text-sm h-8 border-transparent bg-transparent',
-                      isScrolled ? 'text-gray-700' : 'text-white'
+                      'hidden md:inline-flex text-sm h-8 border-0 text-white',
+                      'bg-[#823F91] hover:bg-[#6D3478]'
                     )}
-                    rippleColor={isScrolled ? '#374151' : '#ffffff'}
+                    rippleColor="#ffffff"
                   >
                     Se connecter
                   </RippleButton>
@@ -401,8 +401,8 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       <>
                         <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
                           <RippleButton
-                            className="w-full justify-start border-transparent bg-transparent"
-                            rippleColor="#823F91"
+                            className="w-full justify-start border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                            rippleColor="#ffffff"
                           >
                             Se connecter
                           </RippleButton>

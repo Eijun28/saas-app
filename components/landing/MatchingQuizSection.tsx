@@ -1,15 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, useInView } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { Sparkles, Users, Send } from 'lucide-react'
-import { QuizAnswers, QuizStep, CoupleCommunities } from './quiz/types'
-import IntroStep from './quiz/IntroStep'
-import Question1 from './quiz/Question1'
-import Question2 from './quiz/Question2'
-import Question3 from './quiz/Question3'
-import MatchingAnimation from './quiz/MatchingAnimation'
-import ResultsDisplay from './quiz/ResultsDisplay'
+import { useRouter } from 'next/navigation'
 import { Orbit } from '@/components/animate-ui/icons/orbit'
 import MatchingExplainerCards from './MatchingExplainerCards'
 
@@ -360,17 +354,11 @@ const SkeletonMatchingFullWidth = () => {
 };
 
 export default function MatchingQuizSection() {
-  const [currentStep, setCurrentStep] = useState<QuizStep>('intro')
-  const [answers, setAnswers] = useState<QuizAnswers>({
-    communities: null,
-    prestataire: null,
-    budget: null
-  })
+  const router = useRouter()
   
   // Pattern d'animation au scroll (existant dans le projet)
   const [isVisible, setIsVisible] = useState(false)
   const sectionRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -394,67 +382,6 @@ export default function MatchingQuizSection() {
       }
     }
   }, [])
-
-  // Empêcher le scroll automatique lors du changement d'étape
-  const scrollPositionRef = useRef<number>(0)
-  const isChangingStepRef = useRef<boolean>(false)
-  
-  useEffect(() => {
-    // Sauvegarder la position de scroll avant le changement
-    if (typeof window !== 'undefined') {
-      scrollPositionRef.current = window.scrollY
-    }
-    isChangingStepRef.current = true
-    
-    // Réinitialiser le flag après un court délai
-    const timer = setTimeout(() => {
-      isChangingStepRef.current = false
-    }, 100)
-    
-    return () => clearTimeout(timer)
-  }, [currentStep])
-
-  useEffect(() => {
-    // Empêcher le scroll automatique pendant les changements d'étape
-    let scrollTimeout: NodeJS.Timeout | null = null
-
-    const handleScroll = () => {
-      if (isChangingStepRef.current) {
-        // Utiliser requestAnimationFrame pour éviter les conflits
-        if (scrollTimeout) {
-          clearTimeout(scrollTimeout)
-        }
-        scrollTimeout = setTimeout(() => {
-          window.scrollTo({ 
-            top: scrollPositionRef.current, 
-            behavior: 'instant' 
-          })
-        }, 0)
-      }
-    }
-
-    // Maintenir la position de scroll après le rendu
-    if (currentStep !== 'intro' && isChangingStepRef.current) {
-      const savedScroll = scrollPositionRef.current
-      // Utiliser requestAnimationFrame pour s'assurer que le DOM est complètement mis à jour
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo({ 
-            top: savedScroll, 
-            behavior: 'instant' 
-          })
-        })
-      })
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout)
-      }
-    }
-  }, [currentStep])
 
   return (
     <section
@@ -507,129 +434,45 @@ export default function MatchingQuizSection() {
         </motion.div>
       </div>
 
-      {/* Section Matching intelligent dupliquée - alignée avec le reste */}
-      {currentStep === 'intro' && (
-        <div className="w-full px-3 sm:px-4">
-          <SkeletonMatchingFullWidth />
-        </div>
-      )}
+      {/* Section Matching intelligent */}
+      <div className="w-full px-3 sm:px-4">
+        <SkeletonMatchingFullWidth />
+      </div>
 
       <div className="max-w-4xl mx-auto">
+        {/* Cartes explicatives */}
+        <div className="mb-8 sm:mb-12">
+          <MatchingExplainerCards />
+        </div>
 
-        {/* Cartes explicatives - affichées uniquement à l'étape intro */}
-        {currentStep === 'intro' && (
-          <div className="mb-8 sm:mb-12">
-            <MatchingExplainerCards />
-          </div>
-        )}
-
-        {/* Contenu du quiz (avec transitions) */}
+        {/* Bouton CTA */}
         <motion.div
-          ref={contentRef}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={isVisible || currentStep !== 'intro' ? { opacity: 1, scale: 1 } : {}}
-          transition={{ delay: currentStep === 'intro' ? 0.3 : 0, duration: 0.5 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="flex items-center justify-center w-full mb-8 sm:mb-10 px-4"
         >
-          <AnimatePresence mode="wait">
-            {currentStep === 'intro' && (
-              <motion.div
-                key="intro"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <IntroStep onStart={() => setCurrentStep('q1')} />
-              </motion.div>
-            )}
-            
-            {currentStep === 'q1' && (
-              <motion.div
-                key="q1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Question1 
-                  onSelect={(communities: CoupleCommunities) => {
-                    setAnswers({...answers, communities})
-                    setCurrentStep('q2')
-                  }}
-                />
-              </motion.div>
-            )}
-            
-            {currentStep === 'q2' && (
-              <motion.div
-                key="q2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Question2 
-                  onSelect={(prestataire) => {
-                    setAnswers({...answers, prestataire})
-                    setCurrentStep('q3')
-                  }}
-                  onBack={() => setCurrentStep('q1')}
-                />
-              </motion.div>
-            )}
-            
-            {currentStep === 'q3' && answers.prestataire && (
-              <motion.div
-                key="q3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Question3 
-                  prestataire={answers.prestataire}
-                  onSubmit={(budget: number) => {
-                    setAnswers({...answers, budget})
-                    setCurrentStep('loading')
-                    
-                    // Simulation API (2.5s)
-                    setTimeout(() => setCurrentStep('results'), 2500)
-                  }}
-                  onBack={() => setCurrentStep('q2')}
-                />
-              </motion.div>
-            )}
-            
-            {currentStep === 'loading' && (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <MatchingAnimation />
-              </motion.div>
-            )}
-            
-            {currentStep === 'results' && (
-              <motion.div
-                key="results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ResultsDisplay 
-                  answers={answers}
-                  onReset={() => {
-                    setCurrentStep('intro')
-                    setAnswers({ communities: null, prestataire: null, budget: null })
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <button
+              onClick={() => router.push('/tarifs')}
+              type="button"
+              className="text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 shadow-lg hover:shadow-xl w-full sm:w-auto rounded-lg font-semibold text-white transition-all"
+              style={{
+                backgroundColor: '#c081e3',
+                color: 'white',
+              }}
+            >
+              <span className="flex items-center justify-center gap-2">
+                Tester le matching
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </span>
+            </button>
+          </motion.div>
         </motion.div>
       </div>
     </section>

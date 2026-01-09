@@ -93,9 +93,9 @@ export function LandingNavbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link href="/sign-in">
               <RippleButton
-                className="text-sm font-medium px-4 h-8 text-[#823F91] border-0 transition-all duration-200 hover:opacity-90"
-                style={{ backgroundColor: '#c081e3', color: '#823F91' }}
-                rippleColor="#823F91"
+                className="text-sm font-medium px-4 h-8 text-white border-0 transition-all duration-200 hover:opacity-90"
+                style={{ backgroundColor: '#823F91', color: 'white' }}
+                rippleColor="#ffffff"
               >
                 Se connecter
               </RippleButton>
@@ -168,9 +168,9 @@ export function LandingNavbar() {
                   <div className="flex flex-col gap-2">
                     <Link href="/sign-in" onClick={() => setIsMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium text-[#823F91] border-0 transition-all duration-200 hover:opacity-90"
-                        style={{ backgroundColor: '#c081e3' }}
-                        rippleColor="#823F91"
+                        className="w-full h-9 text-xs font-medium text-white border-0 transition-all duration-200 hover:opacity-90"
+                        style={{ backgroundColor: '#823F91', color: 'white' }}
+                        rippleColor="#ffffff"
                       >
                         Se connecter
                       </RippleButton>

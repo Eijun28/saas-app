@@ -384,14 +384,14 @@ function Navbar({
               <Link href="/sign-in" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
                 <RippleButton
                   className="text-sm h-8 px-4 border-0 font-medium"
-                  style={{ backgroundColor: '#a720f2', color: 'white', pointerEvents: 'auto' }}
+                  style={{ backgroundColor: '#823F91', color: 'white', pointerEvents: 'auto' }}
                   rippleColor="#ffffff"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(130, 63, 145, 1)'
+                    e.currentTarget.style.backgroundColor = '#6D3478'
                     e.currentTarget.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#a720f2'
+                    e.currentTarget.style.backgroundColor = '#823F91'
                     e.currentTarget.style.color = 'white'
                   }}
                 >
@@ -545,14 +545,14 @@ function Navbar({
                     <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
                       <RippleButton
                         className="w-full h-9 text-base font-medium border-0"
-                        style={{ backgroundColor: '#a720f2', color: 'white' }}
+                        style={{ backgroundColor: '#823F91', color: 'white' }}
                         rippleColor="#ffffff"
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'rgba(130, 63, 145, 1)'
+                          e.currentTarget.style.backgroundColor = '#6D3478'
                           e.currentTarget.style.color = 'white'
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#a720f2'
+                          e.currentTarget.style.backgroundColor = '#823F91'
                           e.currentTarget.style.color = 'white'
                         }}
                       >

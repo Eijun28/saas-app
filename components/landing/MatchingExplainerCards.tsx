@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { Rocket, Users, Briefcase, CheckCircle, Sparkles, TrendingUp, Target, Award } from 'lucide-react'
+import { Users, Briefcase, Sparkles, Rocket, Target, CheckCircle, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -71,11 +71,11 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             WebkitBackfaceVisibility: 'hidden'
           }}
         >
-          {/* Dégradé violet subtil en fond */}
+          {/* Dégradé violet avec nuance douce */}
           <div 
-            className="absolute inset-0 opacity-5"
+            className="absolute inset-0 opacity-10"
             style={{
-              background: `linear-gradient(to bottom right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`
+              background: `linear-gradient(135deg, ${data.gradientColors.from}15, ${data.gradientColors.via}20, ${data.gradientColors.to}15)`
             }}
           />
 
@@ -112,7 +112,7 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             <h3 className="text-2xl font-bold text-gray-900">
               {data.title}
             </h3>
-            <p className="text-sm text-gray-700 leading-relaxed px-2">
+            <p className="text-sm text-gray-600 leading-relaxed px-2">
               {data.description}
             </p>
           </div>
@@ -133,12 +133,12 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             transform: 'rotateY(180deg)',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: `linear-gradient(to bottom right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`,
-            boxShadow: `0 0 20px ${data.glowColor}, 0 0 40px rgba(168, 85, 247, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1)`
+            background: `linear-gradient(135deg, ${data.gradientColors.from}85, ${data.gradientColors.via}90, ${data.gradientColors.to}85)`,
+            boxShadow: `0 0 15px ${data.glowColor}40, 0 0 30px rgba(168, 85, 247, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15)`
           }}
         >
-          {/* Pattern overlay */}
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
+          {/* Pattern overlay plus doux */}
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_60%)]" />
 
           {/* Features */}
           <div className="relative z-10 space-y-3 flex-1">
@@ -147,9 +147,9 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
               return (
                 <div
                   key={index}
-                  className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20"
+                  className="flex items-start gap-3 bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-white/30 flex items-center justify-center flex-shrink-0">
                     <FeatureIcon className="w-4 h-4 text-white" />
                   </div>
                   <p className="text-sm text-white font-medium leading-snug">

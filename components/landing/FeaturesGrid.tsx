@@ -146,7 +146,7 @@ const SkeletonMessaging = () => {
                     ? "bg-[#823F91]"
                     : "bg-[#823F91]"
                 }`}>
-                  <p className="text-xs leading-relaxed text-white">{msg.text}</p>
+                  <p className="text-xs leading-relaxed text-white" style={{ color: 'white' }}>{msg.text}</p>
                 </div>
               </motion.div>
             ))}
