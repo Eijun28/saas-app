@@ -55,14 +55,14 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             // Fond blanc avec accents violets subtils
             'bg-white',
             'border-2',
-            // Bordure violette douce
-            'border-purple-200',
+            // Bordure violette douce harmonisée
+            'border-[#c081e3]/30',
             'shadow-lg',
             'overflow-hidden',
             // Effet glow sur les contours
             'shadow-[0_0_20px_rgba(168,85,247,0.3),0_0_40px_rgba(168,85,247,0.15),inset_0_0_20px_rgba(168,85,247,0.1)]',
             'hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(168,85,247,0.2),inset_0_0_30px_rgba(168,85,247,0.15)]',
-            'hover:border-purple-300',
+            'hover:border-[#c081e3]/50',
             'transition-all duration-500'
           )}
           style={{
@@ -90,7 +90,8 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
           {/* Icône avec glow INTENSIFIÉ */}
           <div className="relative mb-6">
             <div 
-              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2 ring-purple-100"
+              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2"
+              style={{ ringColor: '#c081e3' }}
               style={{
                 background: `linear-gradient(to bottom right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`,
                 boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
@@ -188,12 +189,12 @@ export default function MatchingExplainerCards() {
         { icon: Target, text: 'Matching instantané et personnalisé' },
         { icon: CheckCircle, text: 'Profils vérifiés et avis certifiés' }
       ],
-      gradient: 'from-purple-500 via-pink-400 to-purple-500',
-      glowColor: 'rgba(168,85,247,0.6)',
+      gradient: 'from-[#823F91] via-[#c081e3] to-[#823F91]',
+      glowColor: 'rgba(130,63,145,0.6)',
       gradientColors: {
-        from: '#c084fc',
-        via: '#f9a8d4',
-        to: '#e9d5ff'
+        from: '#823F91',
+        via: '#c081e3',
+        to: '#823F91'
       }
     },
     {
@@ -206,12 +207,12 @@ export default function MatchingExplainerCards() {
         { icon: Sparkles, text: 'Zéro prospection nécessaire' },
         { icon: TrendingUp, text: '+40% de réservations en moyenne' }
       ],
-      gradient: 'from-blue-500 via-purple-400 to-pink-500',
-      glowColor: 'rgba(147,51,234,0.6)',
+      gradient: 'from-[#c081e3] via-[#823F91] to-[#c081e3]',
+      glowColor: 'rgba(192,129,227,0.6)',
       gradientColors: {
-        from: '#93c5fd',
-        via: '#c4b5fd',
-        to: '#fbcfe8'
+        from: '#c081e3',
+        via: '#823F91',
+        to: '#c081e3'
       }
     }
   ]
