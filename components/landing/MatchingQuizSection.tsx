@@ -75,10 +75,10 @@ const SkeletonMatchingFullWidth = () => {
       
       // Fonction pour obtenir la vitesse de frappe (variable selon le caractère)
       const getTypingSpeed = (char: string, nextChar?: string) => {
-        if (char === ' ') return 30; // Espaces plus rapides
-        if (char === '•') return 100; // Pause après les puces
-        if (nextChar === ' ') return 40; // Avant un espace
-        return 50 + Math.random() * 30; // Variation naturelle
+        if (char === ' ') return 15; // Espaces plus rapides
+        if (char === '•') return 40; // Pause après les puces
+        if (nextChar === ' ') return 20; // Avant un espace
+        return 20 + Math.random() * 15; // Variation naturelle (plus rapide)
       };
       
       // Simuler la frappe du message du couple avec vitesse variable
@@ -401,7 +401,7 @@ export default function MatchingQuizSection() {
             className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg flex items-center justify-center"
             style={{ 
               backgroundColor: '#823F91',
-              boxShadow: '0 0 30px rgba(130, 63, 145, 0.8), 0 0 60px rgba(130, 63, 145, 0.6), 0 0 90px rgba(130, 63, 145, 0.4)'
+              boxShadow: '0 0 30px rgba(130, 63, 145, 0.3), 0 0 60px rgba(130, 63, 145, 0.2), 0 0 90px rgba(130, 63, 145, 0.1)'
             }}
           >
             <div className="text-white">

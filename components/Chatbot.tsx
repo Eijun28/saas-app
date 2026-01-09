@@ -293,19 +293,21 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed h-16 w-16 rounded-full text-white shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-[9998]"
+          className="nuply-chatbot-button fixed h-16 w-16 rounded-full text-white shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center z-[9999]"
           style={{
-            background: 'linear-gradient(to right, #c081e3, #f231c8)',
-            boxShadow: '0 20px 25px -5px rgba(192, 129, 227, 0.3), 0 10px 10px -5px rgba(192, 129, 227, 0.2)',
+            background: 'linear-gradient(135deg, #823F91 0%, #c081e3 50%, #9333ea 100%)',
+            boxShadow: '0 20px 25px -5px rgba(130, 63, 145, 0.4), 0 10px 10px -5px rgba(130, 63, 145, 0.3)',
             right: '24px',
             bottom: '24px',
-            position: 'fixed'
+            position: 'fixed',
+            left: 'auto',
+            top: 'auto'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(192, 129, 227, 0.5), 0 10px 10px -5px rgba(192, 129, 227, 0.3)'
+            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(130, 63, 145, 0.6), 0 10px 10px -5px rgba(130, 63, 145, 0.4)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(192, 129, 227, 0.3), 0 10px 10px -5px rgba(192, 129, 227, 0.2)'
+            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(130, 63, 145, 0.4), 0 10px 10px -5px rgba(130, 63, 145, 0.3)'
           }}
           aria-label="Ouvrir le chatbot"
         >
@@ -320,16 +322,28 @@ export default function Chatbot() {
       
       {/* WIDGET CHATBOT */}
       {isOpen && (
-        <div className="fixed w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-[9998] animate-in slide-in-from-bottom-5" style={{ right: '24px', bottom: '24px' }}>
+        <div 
+          className="nuply-chatbot-widget fixed w-[380px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-[9999]"
+          style={{ 
+            right: '24px', 
+            bottom: '24px',
+            left: 'auto',
+            top: 'auto',
+            position: 'fixed',
+            animation: 'slideInUp 0.3s ease-out',
+            transform: 'translateY(0)',
+            opacity: 1
+          }}
+        >
           
           {/* HEADER */}
-          <div className="text-white p-4 rounded-t-2xl flex items-center justify-between" style={{ background: 'linear-gradient(to right, #c081e3, #c081e3, #f231c8)' }}>
+          <div className="text-white p-4 rounded-t-2xl flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #823F91 0%, #c081e3 50%, #9333ea 100%)' }}>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold">
+              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-white">
                 N
               </div>
               <div>
-                <h3 className="font-semibold">NUPLY Assistant</h3>
+                <h3 className="font-semibold text-white" style={{ color: 'rgba(255, 255, 255, 1)' }}>NUPLY Assistant</h3>
                 <div className="flex items-center gap-2 text-xs text-white/80">
                   <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse" />
                   <span>En ligne</span>
@@ -384,9 +398,8 @@ export default function Chatbot() {
                     message.role === 'user'
                       ? 'text-white'
                       : 'bg-white border border-gray-200 text-gray-800'
-                  }
-                  style={message.role === 'user' ? { background: 'linear-gradient(to right, #c081e3, #f231c8)' } : {}}
                   }`}
+                  style={message.role === 'user' ? { background: 'linear-gradient(135deg, #823F91 0%, #c081e3 50%, #9333ea 100%)' } : {}}
                 >
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
                     {message.content}
@@ -442,9 +455,9 @@ export default function Chatbot() {
                 placeholder="Posez votre question..."
                 disabled={isLoading}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                style={{ '--tw-ring-color': '#c081e3' } as React.CSSProperties}
+                style={{ '--tw-ring-color': '#823F91' } as React.CSSProperties}
                 onFocus={(e) => {
-                  e.currentTarget.style.boxShadow = '0 0 0 2px rgba(192, 129, 227, 0.5)'
+                  e.currentTarget.style.boxShadow = '0 0 0 2px rgba(130, 63, 145, 0.5)'
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.boxShadow = ''
@@ -455,7 +468,7 @@ export default function Chatbot() {
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isLoading}
                 className="h-10 w-10 rounded-full text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all"
-                style={{ background: 'linear-gradient(to right, #c081e3, #f231c8)' }}
+                style={{ background: 'linear-gradient(135deg, #823F91 0%, #c081e3 50%, #9333ea 100%)' }}
                 aria-label="Envoyer"
               >
                 <Send className="h-4 w-4" />

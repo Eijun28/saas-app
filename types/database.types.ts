@@ -1,3 +1,5 @@
+import type { SubscriptionTier } from './early-adopter.types'
+
 export type Json =
   | string
   | number
@@ -27,6 +29,11 @@ export type Profile = {
   nom: string | null
   nom_entreprise: string | null
   avatar_url: string | null
+  is_early_adopter: boolean
+  early_adopter_enrolled_at: string | null
+  early_adopter_trial_end_date: string | null
+  early_adopter_notified: boolean
+  subscription_tier: SubscriptionTier
   created_at: string
   updated_at: string
 }

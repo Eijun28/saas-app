@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Inbox, Calendar, MessageSquare, Menu } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare, Menu, Sparkles } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useUser } from '@/hooks/use-user'
@@ -25,6 +25,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 import ProfileDropdown from '@/components/shadcn-studio/blocks/dropdown-profile'
 
@@ -67,6 +72,8 @@ export function PrestataireHeader() {
     name?: string
     email?: string
     avatar?: string
+    isEarlyAdopter?: boolean
+    trialEndDate?: string | null
   } | null>(null)
   const [notifications, setNotifications] = useState<Array<{
     id: string
@@ -87,7 +94,7 @@ export function PrestataireHeader() {
       // Récupérer le profil du prestataire
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('prenom, nom, email, avatar_url')
+        .select('prenom, nom, email, avatar_url, is_early_adopter, early_adopter_trial_end_date')
         .eq('id', user.id)
         .single()
 
@@ -96,13 +103,17 @@ export function PrestataireHeader() {
         setProfile({
           name: fullName,
           email: profileData.email || user.email || '',
-          avatar: profileData.avatar_url || undefined
+          avatar: profileData.avatar_url || undefined,
+          isEarlyAdopter: profileData.is_early_adopter || false,
+          trialEndDate: profileData.early_adopter_trial_end_date || null
         })
       } else {
         setProfile({
           name: 'Prestataire',
           email: user.email || '',
-          avatar: undefined
+          avatar: undefined,
+          isEarlyAdopter: false,
+          trialEndDate: null
         })
       }
     }
@@ -316,28 +327,77 @@ export function PrestataireHeader() {
                     </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <ProfileDropdown
-                  trigger={
-                    <Button variant='ghost' className='h-auto gap-2 px-2 py-1.5'>
-                      <Avatar className='h-9 w-9 rounded-md'>
-                        <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                        <AvatarFallback>
-                          {profile?.name
-                            ?.split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()
-                            .slice(0, 2) || 'P'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className='hidden sm:block text-sm font-medium text-gray-700'>
-                        {profile?.name || 'Prestataire'}
-                      </span>
-                    </Button>
-                  }
-                  user={profile || undefined}
-                  onLogout={handleLogout}
-                />
+                <div className="flex flex-col items-end gap-1">
+                  <ProfileDropdown
+                    trigger={
+                      <Button variant='ghost' className='h-auto gap-2 px-2 py-1.5'>
+                        <Avatar className='h-9 w-9 rounded-md'>
+                          <AvatarImage src={profile?.avatar} alt={profile?.name} />
+                          <AvatarFallback>
+                            {profile?.name
+                              ?.split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .slice(0, 2) || 'P'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className='hidden sm:block text-sm font-medium text-gray-700'>
+                          {profile?.name || 'Prestataire'}
+                        </span>
+                      </Button>
+                    }
+                    user={profile || undefined}
+                    onLogout={handleLogout}
+                  />
+                  {profile?.isEarlyAdopter && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs font-semibold hover:opacity-90 transition-opacity">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Early</span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-4 bg-white/95 backdrop-blur-md border border-gray-200 shadow-lg" align="end">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-purple-600" />
+                            <h4 className="font-bold text-sm">Badge Early Adopter</h4>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Vous faites partie des 50 premiers prestataires !
+                          </p>
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold">Vos avantages :</p>
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Profil mis en avant dans les recherches</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Messagerie illimitée avec les couples</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Badge "Founding Member" permanent</span>
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Support prioritaire</span>
+                              </li>
+                            </ul>
+                          </div>
+                          {profile.trialEndDate && (
+                            <p className="text-xs text-purple-600 font-medium">
+                              Accès premium jusqu'au {new Date(profile.trialEndDate).toLocaleDateString('fr-FR')}
+                            </p>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
               </div>
       </div>
     </header>

@@ -654,3 +654,26 @@ nav[class*="fixed"] {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+/* Animation pour le chatbot */
+@keyframes slideInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Styles pour le chatbot - positionnement fixe en bas à droite */
+.nuply-chatbot-button,
+.nuply-chatbot-widget {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 9999 !important;
+}

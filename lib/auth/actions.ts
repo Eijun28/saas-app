@@ -113,6 +113,54 @@ export async function signUp(
             return { error: `Erreur lors de la création du profil: ${profileError.message}` }
           }
         }
+
+        // NOUVELLE LOGIQUE : Vérifier les places Early Adopter disponibles
+        try {
+          const { data: programData } = await adminClient
+            .from('early_adopter_program')
+            .select('id, total_slots, used_slots, program_active')
+            .single()
+          
+          const isEarlyAdopterSlotAvailable = 
+            programData?.program_active && 
+            programData.used_slots < programData.total_slots
+          
+          if (isEarlyAdopterSlotAvailable) {
+            // Ce prestataire obtient le badge !
+            const trialEndDate = new Date()
+            trialEndDate.setDate(trialEndDate.getDate() + 90) // +3 mois
+            
+            await adminClient
+              .from('profiles')
+              .update({
+                is_early_adopter: true,
+                early_adopter_enrolled_at: new Date().toISOString(),
+                early_adopter_trial_end_date: trialEndDate.toISOString(),
+                subscription_tier: 'early_adopter'
+              })
+              .eq('id', data.user.id)
+            
+            // Incrémenter le compteur
+            await adminClient
+              .from('early_adopter_program')
+              .update({ 
+                used_slots: programData.used_slots + 1,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', programData.id)
+            
+            // Créer notification de bienvenue
+            await adminClient
+              .from('early_adopter_notifications')
+              .insert({
+                user_id: data.user.id,
+                notification_type: 'welcome'
+              })
+          }
+        } catch (earlyAdopterError) {
+          // Ne pas bloquer l'inscription si la logique Early Adopter échoue
+          console.warn('Erreur lors de l\'attribution du badge Early Adopter (non bloquant):', earlyAdopterError)
+        }
       }
     } catch (err: any) {
       console.error('Erreur lors de la création du profil:', err)

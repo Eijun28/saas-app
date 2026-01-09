@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -30,6 +30,7 @@ interface ProfilePreviewDialogProps {
     budget_max?: number
     annees_experience?: number
     ville_principale?: string
+    is_early_adopter?: boolean
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
@@ -140,6 +141,13 @@ export function ProfilePreviewDialog({
 
                 {/* Badges infos clés */}
                 <div className="flex flex-wrap gap-1">
+                  {profile.is_early_adopter && (
+                    <Badge className="text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Partenaire Fondateur
+                    </Badge>
+                  )}
+                  
                   {profile.ville_principale && (
                     <Badge variant="outline" className="text-xs bg-[#823F91]/5 border-[#823F91]/20 text-[#823F91]">
                       <MapPin className="h-3 w-3 mr-1" />

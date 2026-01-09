@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,10 +15,12 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Lock, Sparkles, Building2 } from 'lucide-react'
 import Particles from '@/components/Particles'
+import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [earlyAdopterSlotsLeft, setEarlyAdopterSlotsLeft] = useState<number | null>(null)
   const router = useRouter()
 
   const {
@@ -42,6 +44,33 @@ export default function SignUpPage() {
   })
 
   const selectedRole = watch('role')
+
+  useEffect(() => {
+    async function checkSlots() {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('early_adopter_program')
+          .select('total_slots, used_slots')
+          .single()
+        
+        if (error) {
+          console.error('Erreur lors de la récupération des places Early Adopter:', error)
+          // Ne pas bloquer l'inscription si la requête échoue
+          return
+        }
+        
+        if (data) {
+          const remaining = data.total_slots - data.used_slots
+          setEarlyAdopterSlotsLeft(remaining > 0 ? remaining : 0)
+        }
+      } catch (err) {
+        console.error('Erreur lors de la vérification des places Early Adopter:', err)
+        // Ne pas bloquer l'inscription si la requête échoue
+      }
+    }
+    checkSlots()
+  }, [])
 
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true)
@@ -347,6 +376,39 @@ export default function SignUpPage() {
                 </motion.div>
               )}
 
+              {/* Afficher le badge early adopter si places disponibles */}
+              {selectedRole === 'prestataire' && earlyAdopterSlotsLeft !== null && earlyAdopterSlotsLeft > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4 mb-6"
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles className="w-6 h-6 text-purple-600 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold text-purple-900">
+                        🎁 Devenez Founding Member !
+                      </p>
+                      <p className="text-sm text-purple-700">
+                        Plus que <strong>{earlyAdopterSlotsLeft} places</strong> pour obtenir 3 mois gratuits + badge permanent
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {selectedRole === 'prestataire' && earlyAdopterSlotsLeft === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mb-4"
+                >
+                  <p className="text-sm text-gray-600 text-center">
+                    Programme Early Adopter complet. Choisissez votre abonnement après inscription.
+                  </p>
+                </motion.div>
+              )}
+
               <motion.div variants={itemVariants} className="space-y-4 pt-2">
                 <motion.button
                   type="submit"
@@ -367,7 +429,10 @@ export default function SignUpPage() {
                       </>
                     ) : (
                       <>
-                        Commencer mon aventure
+                        {selectedRole === 'prestataire' && earlyAdopterSlotsLeft !== null && earlyAdopterSlotsLeft > 0
+                          ? '🚀 Récupérer mon badge Early Adopter'
+                          : 'Commencer mon aventure'
+                        }
                         <motion.span
                           initial={{ x: 0 }}
                           animate={{ x: [0, 4, 0] }}

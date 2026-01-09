@@ -38,6 +38,7 @@ export default function ProfilPublicPage() {
     budget_max?: number
     ville_principale?: string
     annees_experience?: number
+    is_early_adopter?: boolean
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
   const [zones, setZones] = useState<Array<{ id: string; label: string }>>([])
@@ -76,7 +77,7 @@ export default function ProfilPublicPage() {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter')
         .eq('id', userId)
         .maybeSingle()
 
@@ -128,6 +129,7 @@ export default function ProfilPublicPage() {
         budget_max: profileData?.budget_max ?? undefined,
         ville_principale: profileData?.ville_principale || undefined,
         annees_experience: profileData?.annees_experience ?? undefined,
+        is_early_adopter: profileData?.is_early_adopter || false,
       })
 
       setCultures(mappedCultures)
@@ -203,6 +205,7 @@ export default function ProfilPublicPage() {
                 budget_max: profile?.budget_max,
                 annees_experience: profile?.annees_experience,
                 ville_principale: profile?.ville_principale,
+                is_early_adopter: profile?.is_early_adopter || false,
               }}
               cultures={cultures}
               zones={zones}
