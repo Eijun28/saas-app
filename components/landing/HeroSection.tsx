@@ -6,7 +6,7 @@ export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background (optionnel - ajoute un bg Aceternity si tu veux) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-purple-50 to-white" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#c081e3]/10 to-white" />
       
       <div className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -26,7 +26,7 @@ export default function HeroSection() {
             </div>
             
             <div className="flex gap-4">
-              <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity">
+              <button className="px-8 py-4 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity" style={{ background: 'linear-gradient(to right, #823F91, #c081e3)' }}>
                 Commencer gratuitement
               </button>
               <button className="px-8 py-4 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
@@ -53,7 +53,7 @@ export default function HeroSection() {
 
           {/* Right side - Animated List */}
           <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur-2xl opacity-20" />
+            <div className="absolute -inset-4 rounded-lg blur-2xl opacity-20" style={{ background: 'linear-gradient(to right, #823F91, #c081e3)' }} />
             <AnimatedListNuply className="relative" />
           </div>
         </div>

@@ -46,7 +46,7 @@ export default function MatchingSection() {
         transition={{ duration: 0.6 }}
         className="text-center mb-6 sm:mb-8 md:mb-12 max-w-4xl mx-auto"
       >
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2 break-words" style={{ color: 'rgba(139, 90, 159, 1)' }}>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2 break-words" style={{ color: '#823F91' }}>
           Le matching qui comprend vraiment vos besoins
         </h2>
         <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-2 break-words leading-relaxed">

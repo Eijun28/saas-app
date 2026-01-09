@@ -286,12 +286,12 @@ export default function Question1({ onSelect }: Props) {
           }}
           className={cn(
             "relative rounded-xl p-4 sm:p-6 border-2 transition-all duration-300",
-            "bg-gradient-to-br from-purple-50 via-white to-purple-50/30",
-            "border-purple-200/50",
-            "shadow-lg shadow-purple-200/20"
+            "bg-gradient-to-br from-[#c081e3]/10 via-white to-[#c081e3]/10",
+            "border-[#c081e3]/30",
+            "shadow-lg"
           )}
           style={{
-            boxShadow: '0 4px 20px rgba(130, 63, 145, 0.15), 0 0 0 1px rgba(130, 63, 145, 0.1)'
+            boxShadow: '0 4px 20px rgba(192, 129, 227, 0.2), 0 0 0 1px rgba(192, 129, 227, 0.1)'
           }}
         >
           {/* Effet glow animé */}
@@ -328,12 +328,12 @@ export default function Question1({ onSelect }: Props) {
           }}
           className={cn(
             "relative rounded-xl p-4 sm:p-6 border-2 transition-all duration-300",
-            "bg-gradient-to-br from-purple-50 via-white to-purple-50/30",
-            "border-purple-200/50",
-            "shadow-lg shadow-purple-200/20"
+            "bg-gradient-to-br from-[#c081e3]/10 via-white to-[#c081e3]/10",
+            "border-[#c081e3]/30",
+            "shadow-lg"
           )}
           style={{
-            boxShadow: '0 4px 20px rgba(130, 63, 145, 0.15), 0 0 0 1px rgba(130, 63, 145, 0.1)'
+            boxShadow: '0 4px 20px rgba(192, 129, 227, 0.2), 0 0 0 1px rgba(192, 129, 227, 0.1)'
           }}
         >
           {/* Effet glow animé */}

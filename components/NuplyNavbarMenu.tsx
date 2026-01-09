@@ -283,12 +283,12 @@ function Navbar({
           zIndex: 100000
         }}>
           <Link
-            href="/#prestataires"
+            href="/#trouver-un-prestataire"
             prefetch={false}
             onClick={(e) => {
               e.preventDefault();
               setActive(null);
-              handleLinkClick("/#prestataires");
+              handleLinkClick("/#trouver-un-prestataire");
             }}
             className="text-sm font-medium cursor-pointer transition-colors"
             style={{ 
@@ -322,6 +322,24 @@ function Navbar({
             }}
           >
             Tarifs
+          </Link>
+          <Link
+            href="/blog"
+            onClick={() => setActive(null)}
+            className="text-sm font-medium cursor-pointer transition-colors"
+            style={{ 
+              color: '#823F91',
+              pointerEvents: 'auto',
+              transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#a720f2'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#823F91'
+            }}
+          >
+            Blog
           </Link>
         </div>
 
@@ -369,7 +387,7 @@ function Navbar({
                   style={{ backgroundColor: '#a720f2', color: 'white', pointerEvents: 'auto' }}
                   rippleColor="#ffffff"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#8a1ac9'
+                    e.currentTarget.style.backgroundColor = 'rgba(130, 63, 145, 1)'
                     e.currentTarget.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
@@ -448,11 +466,11 @@ function Navbar({
             <div className="px-4 py-4 space-y-4">
               <div className="flex flex-col space-y-2">
                 <Link
-                  href="/#prestataires"
+                  href="/#trouver-un-prestataire"
                   prefetch={false}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleLinkClick("/#prestataires");
+                    handleLinkClick("/#trouver-un-prestataire");
                   }}
                   className="text-base py-2 transition-colors"
                   style={{ 
@@ -485,6 +503,23 @@ function Navbar({
                 >
                   Tarifs
                 </Link>
+                <Link
+                  href="/blog"
+                  onClick={() => handleLinkClick("/blog")}
+                  className="text-base py-2 transition-colors"
+                  style={{ 
+                    color: '#823F91',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a720f2'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#823F91'
+                  }}
+                >
+                  Blog
+                </Link>
               </div>
               <div className="pt-4 border-t border-gray-200">
                 {user && !isHomePage ? (
@@ -513,7 +548,7 @@ function Navbar({
                         style={{ backgroundColor: '#a720f2', color: 'white' }}
                         rippleColor="#ffffff"
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#8a1ac9'
+                          e.currentTarget.style.backgroundColor = 'rgba(130, 63, 145, 1)'
                           e.currentTarget.style.color = 'white'
                         }}
                         onMouseLeave={(e) => {

@@ -355,11 +355,11 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       Comment ça marche
                     </Link>
                     <Link
-                      href="/#prestataires"
-                      onClick={() => handleLinkClick('/#prestataires')}
+                      href="/#trouver-un-prestataire"
+                      onClick={() => handleLinkClick('/#trouver-un-prestataire')}
                       className="block text-base font-medium text-gray-700 hover:text-gray-900 transition-colors"
                     >
-                      Prestataires
+                      Trouver un prestataire
                     </Link>
                     <Link
                       href="/tarifs"

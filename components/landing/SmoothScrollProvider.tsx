@@ -1,10 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { initSmoothScroll } from '@/lib/scroll'
 
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false)
+
   useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isMounted) return
+
     // Check if user prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     
@@ -15,9 +23,11 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     const lenis = initSmoothScroll()
     
     return () => {
-      lenis.destroy()
+      if (lenis) {
+        lenis.destroy()
+      }
     }
-  }, [])
+  }, [isMounted])
 
   return <>{children}</>
 }

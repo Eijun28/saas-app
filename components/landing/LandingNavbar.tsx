@@ -16,13 +16,18 @@ export function LandingNavbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
     }
-    window.addEventListener('scroll', handleScroll)
+    
+    // Vérifier que window existe (SSR)
+    if (typeof window === 'undefined') return
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const navLinks = [
     { href: '#how-it-works', label: 'Comment ça marche' },
     { href: '/tarifs', label: 'Tarifs' },
+    { href: '/blog', label: 'Blog' },
     { href: '#about', label: 'À propos' },
   ]
 
@@ -88,7 +93,8 @@ export function LandingNavbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link href="/sign-in">
               <RippleButton
-                className="text-sm font-medium px-4 h-8 bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
+                className="text-sm font-medium px-4 h-8 text-[#823F91] border-0 transition-all duration-200 hover:opacity-90"
+                style={{ backgroundColor: '#c081e3', color: '#823F91' }}
                 rippleColor="#823F91"
               >
                 Se connecter
@@ -107,7 +113,7 @@ export function LandingNavbar() {
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-[#E8D4EF]/50 transition-colors duration-200"
+            className="md:hidden p-2 rounded-lg transition-colors duration-200 hover:bg-[#c081e3]/50"
             aria-label="Toggle menu"
             aria-expanded={isMenuOpen}
           >
@@ -162,7 +168,8 @@ export function LandingNavbar() {
                   <div className="flex flex-col gap-2">
                     <Link href="/sign-in" onClick={() => setIsMenuOpen(false)} className="w-full">
                       <RippleButton
-                        className="w-full h-9 text-xs font-medium bg-[#E8D4EF] hover:bg-[#D4B8DF] text-[#823F91] border-0"
+                        className="w-full h-9 text-xs font-medium text-[#823F91] border-0 transition-all duration-200 hover:opacity-90"
+                        style={{ backgroundColor: '#c081e3' }}
                         rippleColor="#823F91"
                       >
                         Se connecter

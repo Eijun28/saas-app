@@ -1,9 +1,11 @@
 import Image from 'next/image'
 
-export function PrestatairesMarquee() {
-  const prestataires = [
-    "Photographe", "Vidéaste", "DJ", "Traiteur", "Décorateur", 
-    "Fleuriste", "Wedding Planner", "Pâtissier", "Musicien", "Coiffeur"
+export function CulturesMarquee() {
+  const cultures = [
+    "Marocaine", "Algérienne", "Tunisienne", "Sénégalaise", "Camerounaise", 
+    "Ivoirienne", "Indienne", "Pakistanaise", "Libanaise", "Turque",
+    "Italienne", "Espagnole", "Portugaise", "Chinoise", "Vietnamienne",
+    "Antillaise", "Africaine", "Asiatique", "Européenne", "Multiculturelle"
   ]
 
   return (
@@ -12,7 +14,7 @@ export function PrestatairesMarquee() {
       <div className="text-center mb-8 px-4">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2">
           <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold uppercase tracking-[0.1em] text-gray-900 text-center sm:text-left">
-            Ils proposent leurs services sur
+            Retrouvez vos cultures
           </p>
           <Image
             src="/images/logo.svg"
@@ -29,35 +31,35 @@ export function PrestatairesMarquee() {
         {/* Wrapper avec animation */}
         <div className="flex w-max animate-infinite-scroll">
           {/* Premier groupe d'éléments */}
-          {prestataires.map((metier, index) => (
+          {cultures.map((culture, index) => (
             <span 
               key={`group1-${index}`}
               className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider whitespace-nowrap"
               style={{ color: '#823F91' }}
             >
-              {metier}
+              {culture}
             </span>
           ))}
           
           {/* Duplication pour créer la boucle infinie */}
-          {prestataires.map((metier, index) => (
+          {cultures.map((culture, index) => (
             <span 
               key={`group2-${index}`}
               className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider whitespace-nowrap"
               style={{ color: '#823F91' }}
             >
-              {metier}
+              {culture}
             </span>
           ))}
           
           {/* Troisième groupe pour garantir la continuité */}
-          {prestataires.map((metier, index) => (
+          {cultures.map((culture, index) => (
             <span 
               key={`group3-${index}`}
               className="mx-7 text-base sm:text-lg md:text-xl font-bold uppercase tracking-wider whitespace-nowrap"
               style={{ color: '#823F91' }}
             >
-              {metier}
+              {culture}
             </span>
           ))}
         </div>

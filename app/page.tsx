@@ -2,6 +2,7 @@
 
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
+import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
 import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
 import MatchingExplainerCards from '@/components/landing/MatchingExplainerCards'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
@@ -19,7 +20,7 @@ export default function HomePage() {
           particleCount={200}
           particleSpread={10}
           speed={0.24}
-          particleColors={["#d51acf","#f231c8","#b611a8"]}
+          particleColors={["#823F91","#c081e3","#823F91"]}
           moveParticlesOnHover={false}
           particleHoverFactor={1}
           alphaParticles={false}
@@ -35,8 +36,9 @@ export default function HomePage() {
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
           <Hero />
-          <PrestatairesMarquee />
+          <CulturesMarquee />
           <MatchingQuizSection />
+          <PrestatairesMarquee />
           <FeaturesGrid />
           <CTA
           title="Commencez votre mariage de rêve"

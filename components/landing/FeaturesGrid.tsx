@@ -40,7 +40,7 @@ const SkeletonMatching = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(192, 129, 227, 0.1))' }} />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -62,7 +62,7 @@ const SkeletonMatching = () => {
                 <div className={`flex items-start space-x-2 max-w-[85%] ${
                   msg.from === "ai" ? "flex-row-reverse space-x-reverse" : ""
                 }`}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(to right, #c081e3, #f231c8)' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
                     {msg.avatar === "couple" ? (
                       <Users className="w-4 h-4 text-white" />
                     ) : (
@@ -74,7 +74,7 @@ const SkeletonMatching = () => {
                       ? "bg-gray-100 text-gray-900" 
                       : "text-white"
                   }
-                  style={msg.from === "ai" ? { background: 'linear-gradient(to right, #c081e3, #f231c8)' } : {}}
+                  style={msg.from === "ai" ? { background: 'linear-gradient(to right, #c081e3, #823F91)' } : {}}
                   }`}>
                     <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
                   </div>
@@ -122,7 +122,7 @@ const SkeletonMessaging = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 p-4 relative">
-      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(192, 129, 227, 0.1))' }} />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-2 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -143,8 +143,8 @@ const SkeletonMessaging = () => {
               >
                 <div className={`rounded-lg px-3 py-2 max-w-[80%] ${
                   msg.sender === "couple"
-                    ? "bg-[#E8D4EF]"
-                    : "bg-[#E8D4EF]"
+                    ? "bg-[#c081e3]/20"
+                    : "bg-[#c081e3]/20"
                 }`}>
                   <p className="text-xs leading-relaxed text-white" style={{ color: 'rgba(255, 255, 255, 1)' }}>{msg.text}</p>
                 </div>
@@ -179,18 +179,19 @@ const SkeletonBudget = () => {
       whileHover="animate"
       className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-2 items-center justify-center relative"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-100/20 via-[#823F91]/10 to-purple-200/20 blur-3xl opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#c081e3]/20 via-[#823F91]/10 to-[#c081e3]/20 blur-3xl opacity-30" />
       <motion.div
         variants={variants}
-        className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#9D5FA8] via-[#C081E3] to-[#EB95EE] flex items-center justify-center relative z-10 shadow-lg shadow-purple-500/30"
+        className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#823F91] via-[#c081e3] to-[#823F91] flex items-center justify-center relative z-10 shadow-lg"
+        style={{ boxShadow: '0 10px 40px rgba(130, 63, 145, 0.3)' }}
       >
         <div className="absolute inset-0 rounded-full border-4 border-white/30" />
         <svg className="absolute inset-0 w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#EB95EE" stopOpacity="1" />
-              <stop offset="50%" stopColor="#C081E3" stopOpacity="1" />
-              <stop offset="100%" stopColor="#9D5FA8" stopOpacity="1" />
+              <stop offset="0%" stopColor="#823F91" stopOpacity="1" />
+              <stop offset="50%" stopColor="#c081e3" stopOpacity="1" />
+              <stop offset="100%" stopColor="#823F91" stopOpacity="1" />
             </linearGradient>
           </defs>
           <circle
@@ -209,9 +210,9 @@ const SkeletonBudget = () => {
         <div className="text-white font-bold text-sm drop-shadow-sm">65%</div>
       </motion.div>
       <div className="flex flex-row space-x-2 mt-2 relative z-10">
-        <div className="h-2 w-6 bg-gradient-to-r from-[#823F91] to-purple-500 rounded-full opacity-80" />
-        <div className="h-2 w-6 bg-gradient-to-r from-purple-500 to-[#9D5FA8] rounded-full opacity-60" />
-        <div className="h-2 w-6 bg-gradient-to-r from-[#9D5FA8] to-purple-400 rounded-full opacity-40" />
+        <div className="h-2 w-6 bg-gradient-to-r from-[#823F91] to-[#c081e3] rounded-full opacity-80" />
+        <div className="h-2 w-6 bg-gradient-to-r from-[#c081e3] to-[#823F91] rounded-full opacity-60" />
+        <div className="h-2 w-6 bg-gradient-to-r from-[#823F91] to-[#c081e3] rounded-full opacity-40" />
       </div>
     </motion.div>
   );
@@ -243,8 +244,8 @@ const SkeletonPayments = () => {
             transition={{ delay: 0.3 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
-              <Users className="w-5 h-5" style={{ color: 'rgba(236, 140, 238, 1)' }} />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1" style={{ backgroundColor: '#c081e3' }}>
+              <Users className="w-5 h-5" style={{ color: '#823F91' }} />
             </div>
             <p className="text-xs text-gray-600">Couple</p>
           </motion.div>
@@ -254,7 +255,7 @@ const SkeletonPayments = () => {
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.5 }}
             className="flex-1 h-0.5 mx-2"
-            style={{ background: 'linear-gradient(to right, #c081e3, #22c55e)' }}
+            style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
           />
 
           <motion.div
@@ -263,8 +264,8 @@ const SkeletonPayments = () => {
             transition={{ delay: 0.7 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] border border-white flex items-center justify-center mb-1">
-              <Lock className="w-5 h-5" style={{ color: 'rgba(235, 149, 238, 1)' }} />
+            <div className="w-10 h-10 rounded-full border border-white flex items-center justify-center mb-1" style={{ backgroundColor: '#c081e3' }}>
+              <Lock className="w-5 h-5" style={{ color: '#823F91' }} />
             </div>
             <p className="text-xs text-gray-600">Escrow</p>
           </motion.div>
@@ -282,8 +283,8 @@ const SkeletonPayments = () => {
             transition={{ delay: 1.1 }}
             className="text-center"
           >
-            <div className="w-10 h-10 rounded-full bg-[#E8D4EF] flex items-center justify-center mb-1">
-              <Music className="w-5 h-5 text-pink-600" style={{ color: 'rgba(236, 140, 238, 1)' }} />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1" style={{ backgroundColor: '#c081e3' }}>
+              <Music className="w-5 h-5" style={{ color: '#823F91' }} />
             </div>
             <p className="text-xs text-gray-600">DJ</p>
           </motion.div>
@@ -296,7 +297,7 @@ const SkeletonPayments = () => {
           transition={{ delay: 1.3 }}
         >
           <span className="text-xs bg-white text-blue-500 px-2 py-1 rounded-full inline-flex items-center gap-1 border border-blue-200" style={{ color: 'var(--color-blue-500)' }}>
-            <Lock className="w-3 h-3" style={{ color: 'rgba(236, 144, 238, 1)' }} />
+            <Lock className="w-3 h-3" style={{ color: '#823F91' }} />
             SSL sécurisé
           </span>
         </motion.div>
@@ -339,7 +340,7 @@ const SkeletonTimeline = () => {
 
   return (
     <div ref={ref} className="flex flex-1 w-full h-full min-h-[6rem] bg-dot-black/[0.05] flex-col space-y-3 p-4 relative">
-      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(242, 49, 200, 0.1), rgba(182, 17, 168, 0.1))' }} />
+      <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col space-y-3 h-full justify-center">
         <AnimatePresence mode="wait">
           <motion.div
@@ -360,7 +361,7 @@ const SkeletonTimeline = () => {
               >
                 <div 
                   className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                  style={event.color === "purple" ? { backgroundColor: '#22c55e' } : { backgroundColor: '#ec4899' }}
+                  style={event.color === "purple" ? { backgroundColor: '#823F91' } : { backgroundColor: '#c081e3' }}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-900 truncate">{event.title}</p>
@@ -423,9 +424,9 @@ export function FeaturesGrid() {
             <span
               className="px-4 py-1.5 rounded-full bg-white backdrop-blur-sm text-sm font-semibold border"
               style={{
-                color: 'rgba(161, 104, 192, 1)',
+                color: '#823F91',
                 backgroundColor: 'rgba(255, 255, 255, 1)',
-                borderColor: 'rgba(193, 130, 227, 1)'
+                borderColor: '#c081e3'
               }}
             >
               Fonctionnalités
@@ -435,7 +436,7 @@ export function FeaturesGrid() {
           {/* Titre - beige foncé */}
           <h2
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
-            style={{ color: 'rgba(193, 130, 227, 1)' }}
+            style={{ color: '#823F91' }}
           >
             Tout ce dont vous avez besoin
           </h2>
