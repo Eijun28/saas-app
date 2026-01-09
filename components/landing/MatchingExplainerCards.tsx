@@ -90,8 +90,7 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
           {/* Icône avec glow INTENSIFIÉ */}
           <div className="relative mb-6">
             <div 
-              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2"
-              style={{ ringColor: '#c081e3' }}
+              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2 ring-[#c081e3]"
               style={{
                 background: `linear-gradient(to bottom right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`,
                 boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
