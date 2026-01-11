@@ -1,6 +1,6 @@
 import { 
   Camera, Video, UtensilsCrossed, Music, Flower2, ClipboardList, Building2, 
-  Scissors, Cake, Tent, UserRound, Music2, PenTool, Pen, Violin, 
+  Scissors, Cake, Tent, UserRound, Music2, PenTool, Pen, 
   Sparkles, Shirt, Gem, FileText, Scroll, Car, Sparkle
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -80,7 +80,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
       { value: 'zaffa', label: 'Zaffa (Procession musicale)', icon: Music2 },
       { value: 'henna_artiste', label: 'Artiste Henna', icon: PenTool },
       { value: 'calligraphe', label: 'Calligraphe', icon: Pen },
-      { value: 'musicien_traditionnel', label: 'Musicien traditionnel (Oud, Darbouka...)', icon: Violin },
+      { value: 'musicien_traditionnel', label: 'Musicien traditionnel (Oud, Darbouka...)', icon: Music2 },
       { value: 'danseuse_orientale', label: 'Danseuse orientale / Belly dancer', icon: Sparkles },
       { value: 'couturier_traditionnel', label: 'Couturier traditionnel', icon: Shirt },
       { value: 'decorateur_maghrebin', label: 'Décorateur spécialisé mariages maghrébins', icon: Flower2 },

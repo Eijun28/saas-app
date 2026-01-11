@@ -28,6 +28,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
 
 interface Evenement {
   id: string
@@ -96,92 +97,6 @@ export default function AgendaPage() {
 
   useEffect(() => {
     if (!user) return
-
-    const loadEvenements = async () => {
-      setLoading(true)
-      try {
-        const supabase = createClient()
-        
-        const { data, error } = await supabase
-          .from('evenements_prestataire')
-          .select('*')
-          .eq('prestataire_id', user.id)
-          .gte('date', new Date().toISOString().split('T')[0])
-          .order('date', { ascending: true })
-          .order('heure_debut', { ascending: true })
-
-        // Si erreur, vérifier si c'est une vraie erreur critique
-        if (error) {
-          // Codes d'erreur à ignorer (cas normaux)
-          const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
-          const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
-          
-          const isIgnorableError = ignorableErrorCodes.includes(error.code) || 
-            ignorableMessages.some(msg => error.message?.toLowerCase().includes(msg.toLowerCase()))
-          
-          if (!isIgnorableError) {
-            // Vraie erreur critique : vérifier si c'est une erreur réseau
-            if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('timeout')) {
-              throw error
-            }
-            // Sinon, ignorer silencieusement (probablement RLS ou autre cas normal)
-          }
-        }
-        
-        // Si pas de données, initialiser avec un tableau vide (pas d'erreur)
-        if (!data || data.length === 0) {
-          setEvenements([])
-          setLoading(false)
-          return
-        }
-
-        // Transformer les données de Supabase vers le format Evenement
-        const formattedEvents: Evenement[] = (data || []).map((e) => ({
-          id: e.id,
-          titre: e.titre,
-          date: new Date(e.date),
-          heure_debut: e.heure_debut,
-          heure_fin: e.heure_fin || undefined,
-          lieu: e.lieu || undefined,
-          notes: e.notes || undefined,
-          status: undefined, // Pas de colonne status dans la table
-        }))
-
-        setEvenements(formattedEvents)
-      } catch (error: any) {
-        console.error('Erreur chargement événements:', error)
-        // Codes d'erreur à ignorer (cas normaux)
-        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
-        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
-        
-        const isIgnorableError = ignorableErrorCodes.includes(error?.code) || 
-          ignorableMessages.some(msg => error?.message?.toLowerCase().includes(msg.toLowerCase()))
-        
-        if (isIgnorableError) {
-          setEvenements([])
-          setLoading(false)
-          return
-        }
-        
-        // Vérifier si c'est une vraie erreur réseau
-        const isNetworkError = error?.message?.includes('fetch') || 
-          error?.message?.includes('network') || 
-          error?.message?.includes('timeout')
-        
-        if (!isNetworkError) {
-          // Probablement RLS ou autre cas normal, ignorer silencieusement
-          setEvenements([])
-          setLoading(false)
-          return
-        }
-        
-        // Vraie erreur critique : afficher le message
-        toast.error('Erreur lors du chargement des événements')
-      } finally {
-        setLoading(false)
-      }
-    }
-
     loadEvenements()
   }, [user])
 
@@ -260,6 +175,134 @@ export default function AgendaPage() {
       setIsSubmitting(false)
     }
   }
+
+  const handleCalendarEventCreate = async (eventData: Omit<CalendarEvent, 'id'>) => {
+    if (!user) return
+
+    setIsSubmitting(true)
+    try {
+      const supabase = createClient()
+      
+      const { error } = await supabase
+        .from('evenements_prestataire')
+        .insert({
+          prestataire_id: user.id,
+          titre: eventData.title,
+          date: eventData.date,
+          heure_debut: eventData.time || '09:00',
+          heure_fin: null,
+          lieu: null,
+          notes: eventData.description || null,
+        })
+
+      if (error) throw error
+
+      await loadEvenements()
+      toast.success('Événement créé avec succès')
+    } catch (error: any) {
+      console.error('Erreur création événement:', error)
+      toast.error(`Erreur lors de la création: ${error?.message || 'Erreur inconnue'}`)
+      throw error
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const loadEvenements = async () => {
+    if (!user) return
+
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      
+      const { data, error } = await supabase
+        .from('evenements_prestataire')
+        .select('*')
+        .eq('prestataire_id', user.id)
+        .gte('date', new Date().toISOString().split('T')[0])
+        .order('date', { ascending: true })
+        .order('heure_debut', { ascending: true })
+
+      // Si erreur, vérifier si c'est une vraie erreur critique
+      if (error) {
+        // Codes d'erreur à ignorer (cas normaux)
+        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
+        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
+        
+        const isIgnorableError = ignorableErrorCodes.includes(error.code) || 
+          ignorableMessages.some(msg => error.message?.toLowerCase().includes(msg.toLowerCase()))
+        
+        if (!isIgnorableError) {
+          // Vraie erreur critique : vérifier si c'est une erreur réseau
+          if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('timeout')) {
+            throw error
+          }
+          // Sinon, ignorer silencieusement (probablement RLS ou autre cas normal)
+        }
+      }
+      
+      // Si pas de données, initialiser avec un tableau vide (pas d'erreur)
+      if (!data || data.length === 0) {
+        setEvenements([])
+        setLoading(false)
+        return
+      }
+
+      // Transformer les données de Supabase vers le format Evenement
+      const formattedEvents: Evenement[] = (data || []).map((e) => ({
+        id: e.id,
+        titre: e.titre,
+        date: new Date(e.date),
+        heure_debut: e.heure_debut,
+        heure_fin: e.heure_fin || undefined,
+        lieu: e.lieu || undefined,
+        notes: e.notes || undefined,
+        status: undefined, // Pas de colonne status dans la table
+      }))
+
+      setEvenements(formattedEvents)
+    } catch (error: any) {
+      console.error('Erreur chargement événements:', error)
+      // Codes d'erreur à ignorer (cas normaux)
+      const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
+      const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
+      
+      const isIgnorableError = ignorableErrorCodes.includes(error?.code) || 
+        ignorableMessages.some(msg => error?.message?.toLowerCase().includes(msg.toLowerCase()))
+      
+      if (isIgnorableError) {
+        setEvenements([])
+        setLoading(false)
+        return
+      }
+      
+      // Vérifier si c'est une vraie erreur réseau
+      const isNetworkError = error?.message?.includes('fetch') || 
+        error?.message?.includes('network') || 
+        error?.message?.includes('timeout')
+      
+      if (!isNetworkError) {
+        // Probablement RLS ou autre cas normal, ignorer silencieusement
+        setEvenements([])
+        setLoading(false)
+        return
+      }
+      
+      // Vraie erreur critique : afficher le message
+      toast.error('Erreur lors du chargement des événements')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Convertir les événements au format attendu par le calendrier
+  const calendarEvents = evenements.map(event => ({
+    id: event.id,
+    title: event.titre,
+    date: event.date.toISOString().split('T')[0],
+    time: event.heure_debut,
+    description: event.notes || undefined,
+  }))
 
   const handleEditEvent = (event: Evenement) => {
     setSelectedEvent(event)
@@ -364,8 +407,23 @@ export default function AgendaPage() {
         </motion.div>
       </div>
 
+      {/* Calendrier */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="mb-8"
+      >
+        <CalendarDashboard
+          events={calendarEvents}
+          onEventCreate={handleCalendarEventCreate}
+          showTime={true}
+          loading={loading}
+        />
+      </motion.div>
+
       {/* Bouton Ajouter */}
-      <div className="flex justify-end">
+      <div className="flex justify-end mb-8">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 

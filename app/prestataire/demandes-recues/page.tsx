@@ -67,7 +67,7 @@ export default function DemandesRecuesPage() {
         id: demande.id,
         couple_id: demande.couple_id,
         couple_nom: coupleNom,
-        date_evenement: demande.wedding_date || demande.couple?.wedding_date || demande.date_mariage,
+        date_evenement: demande.wedding_date || demande.couple?.wedding_date || demande.date_mariage || '',
         budget_min: demande.budget_indicatif || demande.budget_min || 0,
         budget_max: demande.budget_indicatif || demande.budget_max || 0,
         lieu: demande.location || '', // Note: location n'existe plus dans le schéma

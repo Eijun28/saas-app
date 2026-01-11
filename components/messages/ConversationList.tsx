@@ -108,7 +108,7 @@ export function ConversationList({
                 </p>
               )}
 
-              {conversation.unread_count > 0 && (
+              {(conversation.unread_count || 0) > 0 && (
                 <div className="mt-1">
                   <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-[#823F91] rounded-full">
                     {conversation.unread_count}

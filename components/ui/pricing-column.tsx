@@ -65,11 +65,17 @@ export function PricingColumn({
       {/* Price */}
       <div className="mb-2">
         <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold text-slate-900 tracking-tight">
-            {price === 0 ? "0€" : `${price}€`}
-          </span>
-          {price > 0 && (
-            <span className="text-base text-slate-500">/ mois</span>
+          {price === 0 ? (
+            <span className="text-4xl font-bold text-slate-900 tracking-tight">
+              Gratuit
+            </span>
+          ) : (
+            <>
+              <span className="text-4xl font-bold text-slate-900 tracking-tight">
+                {price}€
+              </span>
+              <span className="text-base text-slate-500">/ mois</span>
+            </>
           )}
         </div>
         {priceNote && (

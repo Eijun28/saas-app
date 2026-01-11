@@ -743,7 +743,7 @@ export default function RecherchePage() {
             profile={{
               nom_entreprise: selectedProvider.nom_entreprise || '',
               service_type: selectedProvider.service_type || '',
-              avatar_url: selectedProvider.avatar_url,
+              avatar_url: selectedProvider.avatar_url || undefined,
               prenom: selectedProvider.prenom,
               nom: selectedProvider.nom,
               description_courte: selectedProvider.description_courte || undefined,

@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { createCheckoutSession } from '@/lib/actions/stripe'
-import { Loader2 } from 'lucide-react'
+import { activateFreePlan } from '@/lib/actions/stripe'
+import { Loader2, Check } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface CheckoutButtonProps {
   planType: 'premium' | 'pro'
@@ -15,37 +16,48 @@ interface CheckoutButtonProps {
 
 export function CheckoutButton({ planType, children, className, variant = 'default' }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
-  const handleCheckout = async () => {
+  const handleActivate = async () => {
     setLoading(true)
     try {
-      const result = await createCheckoutSession(planType)
+      const result = await activateFreePlan(planType)
       
-      if (result.success && result.url) {
-        // Rediriger vers Stripe Checkout
-        window.location.href = result.url
+      if (result.success) {
+        setSuccess(true)
+        toast.success(`Abonnement ${planType} activé avec succès !`)
+        // Rediriger vers le dashboard après 1 seconde
+        setTimeout(() => {
+          router.push('/prestataire/dashboard?plan=activated')
+          router.refresh()
+        }, 1000)
       } else {
-        throw new Error(result.error || 'Erreur lors de la création de la session')
+        throw new Error(result.error || 'Erreur lors de l\'activation du plan')
       }
     } catch (error: any) {
-      console.error('Erreur checkout:', error)
-      alert('Erreur lors du démarrage du paiement. Veuillez réessayer.')
+      console.error('Erreur activation:', error)
+      toast.error(error.message || 'Erreur lors de l\'activation. Veuillez réessayer.')
       setLoading(false)
     }
   }
 
   return (
     <Button
-      onClick={handleCheckout}
-      disabled={loading}
+      onClick={handleActivate}
+      disabled={loading || success}
       className={className}
       variant={variant === 'glow' ? 'default' : variant}
     >
       {loading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Redirection...
+          Activation...
+        </>
+      ) : success ? (
+        <>
+          <Check className="mr-2 h-4 w-4" />
+          Activé !
         </>
       ) : (
         children

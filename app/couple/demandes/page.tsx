@@ -314,8 +314,8 @@ export default function DemandesPage() {
             avatar_url: profile?.avatar_url
           } : undefined,
           demande: demandeData ? {
-            service_type: demandeData.type_prestation || '',
-            wedding_date: demandeData.wedding_date || demandeData.date_mariage,
+            service_type: demandeData.service_type || '',
+            wedding_date: demandeData.wedding_date,
             message: demandeData.message
           } : undefined
         }

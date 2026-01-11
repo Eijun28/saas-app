@@ -6,10 +6,6 @@ import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-if (!webhookSecret) {
-  throw new Error('STRIPE_WEBHOOK_SECRET is not set')
-}
-
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const headersList = await headers()
@@ -19,6 +15,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Missing stripe-signature header' },
       { status: 400 }
+    )
+  }
+
+  if (!webhookSecret) {
+    return NextResponse.json(
+      { error: 'STRIPE_WEBHOOK_SECRET is not configured' },
+      { status: 500 }
     )
   }
 

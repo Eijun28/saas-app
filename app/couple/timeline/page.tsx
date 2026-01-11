@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
+import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
 
 interface Event {
   id: string
@@ -178,6 +179,41 @@ export default function TimelinePage() {
     setEditingEvent(null)
   }
 
+  const handleCalendarEventCreate = async (eventData: Omit<CalendarEvent, 'id'>) => {
+    if (!user) return
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('timeline_events')
+      .insert({
+        couple_id: user.id,
+        title: eventData.title,
+        description: eventData.description || null,
+        event_date: eventData.date,
+      })
+
+    if (error) {
+      console.error('Erreur création événement:', error)
+      if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
+        toast.error('La table timeline_events n\'existe pas. Veuillez exécuter le script SQL migrations/create_timeline_events.sql dans Supabase.')
+      } else {
+        toast.error(`Erreur lors de la création: ${error.message}`)
+      }
+      throw error
+    }
+
+    await loadEvents()
+    toast.success('Événement créé avec succès')
+  }
+
+  // Convertir les événements au format attendu par le calendrier
+  const calendarEvents = events.map(event => ({
+    id: event.id,
+    title: event.title,
+    date: event.event_date,
+    description: event.description || undefined,
+  }))
+
   const handleDeleteEvent = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
 
@@ -285,6 +321,16 @@ export default function TimelinePage() {
                 Créer un événement
               </Button>
             </div>
+          </div>
+
+          {/* Calendrier */}
+          <div className="mb-8">
+            <CalendarDashboard
+              events={calendarEvents}
+              onEventCreate={handleCalendarEventCreate}
+              showTime={false}
+              loading={loading}
+            />
           </div>
 
           {/* Liste des événements */}

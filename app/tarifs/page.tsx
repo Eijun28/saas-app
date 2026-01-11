@@ -65,11 +65,11 @@ export default function PricingSection() {
       name: "Premium",
       icon: <User className="size-4" />,
       description: "Pour les professionnels qui veulent plus de visibilité.",
-      price: 49,
-      priceNote: "Sans engagement • Résiliable à tout moment",
+      price: 0,
+      priceNote: "Gratuit pendant la période de lancement",
       cta: {
         variant: "glow",
-        label: user ? "Passer Premium" : "S'inscrire et passer Premium",
+        label: user ? "Activer Premium" : "S'inscrire et activer Premium",
         href: user ? undefined : "/sign-up?plan=premium",
         planType: "premium",
         onClick: user ? undefined : () => router.push("/sign-up?plan=premium"),
@@ -87,11 +87,11 @@ export default function PricingSection() {
       name: "Pro",
       icon: <Users className="size-4" />,
       description: "Pour dominer votre catégorie et maximiser vos réservations.",
-      price: 79,
-      priceNote: "Sans engagement • Résiliable à tout moment",
+      price: 0,
+      priceNote: "Gratuit pendant la période de lancement",
       cta: {
         variant: "glow",
-        label: user ? "Devenir Pro" : "S'inscrire et devenir Pro",
+        label: user ? "Activer Pro" : "S'inscrire et activer Pro",
         href: user ? undefined : "/sign-up?plan=pro",
         planType: "pro",
         onClick: user ? undefined : () => router.push("/sign-up?plan=pro"),
@@ -265,7 +265,7 @@ export default function PricingSection() {
           <p className="text-slate-600 text-sm">
             {userType === 'couples' 
               ? "Aucune carte bancaire requise • Gratuit pour toujours"
-              : "Sans engagement • Résiliable à tout moment"}
+              : "Gratuit pendant la période de lancement • Aucune carte bancaire requise"}
           </p>
         </motion.div>
       </div>
