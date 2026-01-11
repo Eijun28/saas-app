@@ -18,7 +18,7 @@ export default function Hero() {
         >
           Votre mariage
           <br />
-          vos <TypingAnimation words={['racines', 'traditions', 'envies']} speed={350} deleteSpeed={100} delay={2000} loop={true} />
+          vos <TypingAnimation words={['racines', 'traditions', 'envies']} speed={250} deleteSpeed={100} delay={1400} loop={true} />
         </motion.h1>
 
         {/* Sous-texte - beige moyen */}

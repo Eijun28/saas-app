@@ -211,7 +211,7 @@ export default function DemandesPage() {
     // Charger les profils prestataires et profiles pour chaque demande
     const transformedData: Demande[] = await Promise.all(
       demandesData.map(async (demande) => {
-        const prestataireId = demande.prestataire_id
+        const prestataireId = demande.provider_id || demande.prestataire_id
 
         // Charger le profil prestataire
         const { data: prestataireProfile } = await supabase
@@ -231,7 +231,7 @@ export default function DemandesPage() {
           ...demande,
           provider_id: prestataireId, // Alias pour compatibilité
           service_type: prestataireProfile?.type_prestation || demande.type_prestation, // Alias pour compatibilité
-          wedding_date: demande.date_mariage, // Alias pour compatibilité
+          wedding_date: demande.wedding_date || demande.date_mariage, // Alias pour compatibilité
           provider: prestataireProfile ? {
             nom_entreprise: prestataireProfile.nom_entreprise || '',
             service_type: prestataireProfile.type_prestation || '',
@@ -300,7 +300,7 @@ export default function DemandesPage() {
         if (devis.demande_id) {
           const { data: demande } = await supabase
             .from('demandes')
-            .select('type_prestation, date_mariage, message')
+            .select('service_type, wedding_date, message')
             .eq('id', devis.demande_id)
             .single()
           demandeData = demande
@@ -315,7 +315,7 @@ export default function DemandesPage() {
           } : undefined,
           demande: demandeData ? {
             service_type: demandeData.type_prestation || '',
-            wedding_date: demandeData.date_mariage,
+            wedding_date: demandeData.wedding_date || demandeData.date_mariage,
             message: demandeData.message
           } : undefined
         }
@@ -561,10 +561,10 @@ export default function DemandesPage() {
                         </div>
                         
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          {demande.date_mariage && (
+                          {(demande.wedding_date || demande.date_mariage) && (
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
-                              {new Date(demande.date_mariage).toLocaleDateString('fr-FR')}
+                              {new Date(demande.wedding_date || demande.date_mariage || '').toLocaleDateString('fr-FR')}
                             </div>
                           )}
                           {demande.guest_count && (

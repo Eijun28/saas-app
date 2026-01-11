@@ -20,7 +20,9 @@ import { ZoneSelector } from '@/components/provider/ZoneSelector'
 import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
+import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
 import { CULTURES } from '@/lib/constants/cultures'
+import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 
 export default function ProfilPublicPage() {
@@ -39,6 +41,11 @@ export default function ProfilPublicPage() {
     ville_principale?: string
     annees_experience?: number
     is_early_adopter?: boolean
+    instagram_url?: string | null
+    facebook_url?: string | null
+    website_url?: string | null
+    linkedin_url?: string | null
+    tiktok_url?: string | null
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
   const [zones, setZones] = useState<Array<{ id: string; label: string }>>([])
@@ -50,6 +57,7 @@ export default function ProfilPublicPage() {
     cultures: false,
     zones: false,
     portfolio: false,
+    reseaux: false,
   })
 
   useEffect(() => {
@@ -77,7 +85,7 @@ export default function ProfilPublicPage() {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, service_type')
         .eq('id', userId)
         .maybeSingle()
 
@@ -130,6 +138,11 @@ export default function ProfilPublicPage() {
         ville_principale: profileData?.ville_principale || undefined,
         annees_experience: profileData?.annees_experience ?? undefined,
         is_early_adopter: profileData?.is_early_adopter || false,
+        instagram_url: profileData?.instagram_url || null,
+        facebook_url: profileData?.facebook_url || null,
+        website_url: profileData?.website_url || null,
+        linkedin_url: profileData?.linkedin_url || null,
+        tiktok_url: profileData?.tiktok_url || null,
       })
 
       setCultures(mappedCultures)
@@ -195,7 +208,7 @@ export default function ProfilPublicPage() {
               userId={user.id}
               profile={{
                 nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
-                service_type: profile?.service_type || 'Prestataire',
+                service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
                 avatar_url: profile?.avatar_url || undefined,
                 prenom: profile?.prenom,
                 nom: profile?.nom,
@@ -206,6 +219,11 @@ export default function ProfilPublicPage() {
                 annees_experience: profile?.annees_experience,
                 ville_principale: profile?.ville_principale,
                 is_early_adopter: profile?.is_early_adopter || false,
+                instagram_url: profile?.instagram_url,
+                facebook_url: profile?.facebook_url,
+                website_url: profile?.website_url,
+                linkedin_url: profile?.linkedin_url,
+                tiktok_url: profile?.tiktok_url,
               }}
               cultures={cultures}
               zones={zones}
@@ -314,6 +332,17 @@ export default function ProfilPublicPage() {
                     currentBudgetMax={profile?.budget_max}
                     currentExperience={profile?.annees_experience}
                     currentVille={profile?.ville_principale}
+                    onSave={reloadData}
+                  />
+                  <SocialLinksEditor
+                    userId={user.id}
+                    currentLinks={{
+                      instagram_url: profile?.instagram_url,
+                      facebook_url: profile?.facebook_url,
+                      website_url: profile?.website_url,
+                      linkedin_url: profile?.linkedin_url,
+                      tiktok_url: profile?.tiktok_url,
+                    }}
                     onSave={reloadData}
                   />
                 </div>

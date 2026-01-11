@@ -1,168 +1,773 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Filter, MapPin, Star } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
-import Link from 'next/link'
+import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
+import { CULTURES } from '@/lib/constants/cultures'
+import { DEPARTEMENTS } from '@/lib/constants/zones'
+import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
+
+interface Provider {
+  id: string
+  nom_entreprise: string
+  prenom?: string
+  nom?: string
+  avatar_url?: string | null
+  ville_principale?: string | null
+  description_courte?: string | null
+  budget_min?: number | null
+  budget_max?: number | null
+  service_type?: string | null
+  cultures: Array<{ id: string; label: string }>
+  zones: Array<{ id: string; label: string }>
+  completionPercentage?: number
+}
+
+// Utiliser la constante partagée (déjà importée)
+
+// Pays organisés par continents
+const COUNTRIES_BY_CONTINENT: Record<string, string[]> = {
+  'afrique': [
+    'Maroc', 'Algérie', 'Tunisie', 'Sénégal', 'Cameroun', 'Côte d\'Ivoire',
+    'Mali', 'Burkina Faso', 'Niger', 'Tchad', 'Guinée', 'Bénin', 'Togo',
+    'Gabon', 'Congo', 'Madagascar', 'Mauritanie', 'Autre'
+  ],
+  'asie': [
+    'Inde', 'Pakistan', 'Bangladesh', 'Chine', 'Japon', 'Corée du Sud',
+    'Vietnam', 'Thaïlande', 'Philippines', 'Indonésie', 'Malaisie', 'Singapour',
+    'Sri Lanka', 'Népal', 'Autre'
+  ],
+  'europe': [
+    'France', 'Italie', 'Espagne', 'Portugal', 'Allemagne', 'Belgique',
+    'Suisse', 'Royaume-Uni', 'Pays-Bas', 'Grèce', 'Pologne', 'Roumanie',
+    'Bulgarie', 'Autre'
+  ],
+  'amerique': [
+    'États-Unis', 'Canada', 'Brésil', 'Mexique', 'Argentine', 'Colombie',
+    'Chili', 'Pérou', 'Venezuela', 'Cuba', 'Haïti', 'Jamaïque', 'Autre'
+  ],
+  'oceanie': [
+    'Australie', 'Nouvelle-Zélande', 'Fidji', 'Papouasie-Nouvelle-Guinée',
+    'Polynésie française', 'Nouvelle-Calédonie', 'Autre'
+  ],
+  'moyen-orient': [
+    'Turquie', 'Liban', 'Syrie', 'Jordanie', 'Égypte', 'Arabie Saoudite',
+    'Émirats arabes unis', 'Koweït', 'Qatar', 'Bahreïn', 'Oman', 'Yémen',
+    'Irak', 'Iran', 'Israël', 'Palestine', 'Autre'
+  ]
+}
+
+const CONTINENTS = [
+  { id: 'afrique', label: 'Afrique' },
+  { id: 'asie', label: 'Asie' },
+  { id: 'europe', label: 'Europe' },
+  { id: 'amerique', label: 'Amérique' },
+  { id: 'oceanie', label: 'Océanie' },
+  { id: 'moyen-orient', label: 'Moyen-Orient' }
+]
 
 export default function RecherchePage() {
   const { user } = useUser()
   const [searchQuery, setSearchQuery] = useState('')
-  const [prestataires, setPrestataires] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCulture, setSelectedCulture] = useState<string | null>(null)
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
+  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | null>(null)
+  const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (user) {
-      loadPrestataires()
+      searchProviders()
     }
-  }, [user, searchQuery])
+  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry])
 
-  const loadPrestataires = async () => {
+  // Fonction pour calculer le pourcentage de complétion du profil
+  const calculateProfileCompletion = async (
+    profileId: string,
+    profile: any,
+    culturesCount: number,
+    zonesCount: number,
+    portfolioCount: number
+  ): Promise<number> => {
+    const fields = [
+      profile.nom_entreprise ? 1 : 0,
+      profile.service_type ? 1 : 0,
+      profile.ville_principale ? 1 : 0,
+      profile.description_courte ? 1 : 0,
+      profile.avatar_url ? 1 : 0,
+      profile.budget_min || profile.budget_max ? 1 : 0,
+      culturesCount > 0 ? 1 : 0,
+      zonesCount > 0 ? 1 : 0,
+      portfolioCount > 0 ? 1 : 0,
+    ]
+    
+    const completedFields = fields.reduce((sum, val) => sum + val, 0)
+    return (completedFields / fields.length) * 100
+  }
+
+  const searchProviders = async () => {
+    if (!user) return
+
     setLoading(true)
     const supabase = createClient()
-    
-    let query = supabase
-      .from('prestataire_profiles')
-      .select(`
-        *,
-        profiles:prestataire_profiles!inner(
+
+    try {
+      // Construire la requête de base
+      let query = supabase
+        .from('profiles')
+        .select(`
           id,
+          nom_entreprise,
           prenom,
-          nom
-        ),
-        prestataire_public_profiles(
-          rating,
-          total_reviews,
-          is_verified
+          nom,
+          avatar_url,
+          ville_principale,
+          description_courte,
+          budget_min,
+          budget_max,
+          service_type
+        `)
+        .eq('role', 'prestataire')
+
+      // Filtrer par catégorie si sélectionnée
+      if (selectedCategory) {
+        query = query.eq('service_type', selectedCategory)
+      }
+
+      // Si recherche, filtrer par mots-clés
+      if (searchQuery.trim()) {
+        const searchTerm = `%${searchQuery.trim().toLowerCase()}%`
+        // Syntaxe correcte pour Supabase: colonne.operateur.valeur,colonne.operateur.valeur (sans espaces)
+        query = query.or(`nom_entreprise.ilike.${searchTerm},ville_principale.ilike.${searchTerm},service_type.ilike.${searchTerm},description_courte.ilike.${searchTerm}`)
+      }
+
+      const { data: profilesData, error } = await query.limit(50)
+
+      if (error) {
+        console.error('Erreur recherche:', error)
+        // Codes d'erreur à ignorer (cas normaux)
+        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
+        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'column']
+        
+        const isIgnorableError = ignorableErrorCodes.includes(error.code) || 
+          ignorableMessages.some(msg => error.message?.toLowerCase().includes(msg.toLowerCase()))
+        
+        if (isIgnorableError) {
+          // Erreur ignorable : probablement colonne manquante ou pas de données
+          setProviders([])
+          setLoading(false)
+          return
+        }
+        
+        // Vraie erreur : logger et afficher
+        console.error('Erreur détaillée:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        setProviders([])
+        setLoading(false)
+        return
+      }
+
+      if (!profilesData || profilesData.length === 0) {
+        setProviders([])
+        setLoading(false)
+        return
+      }
+
+      // Pour chaque profil, récupérer les cultures, zones et portfolio
+      const enrichedProviders = await Promise.all(
+        profilesData.map(async (profile) => {
+          // Récupérer les cultures
+          const { data: culturesData } = await supabase
+            .from('provider_cultures')
+            .select('culture_id')
+            .eq('profile_id', profile.id)
+
+          // Récupérer les zones
+          const { data: zonesData } = await supabase
+            .from('provider_zones')
+            .select('zone_id')
+            .eq('profile_id', profile.id)
+
+          // Récupérer le portfolio pour compter les photos
+          const { data: portfolioData } = await supabase
+            .from('provider_portfolio')
+            .select('id')
+            .eq('profile_id', profile.id)
+            .limit(1)
+
+          // Mapper les cultures
+          const cultures = (culturesData || [])
+            .map(c => {
+              const culture = CULTURES.find(cult => cult.id === c.culture_id)
+              return culture ? { id: c.culture_id, label: culture.label } : null
+            })
+            .filter(Boolean) as Array<{ id: string; label: string }>
+
+          // Mapper les zones
+          const zones = (zonesData || [])
+            .map(z => {
+              const zone = DEPARTEMENTS.find(dept => dept.id === z.zone_id)
+              return zone ? { id: z.zone_id, label: zone.label } : null
+            })
+            .filter(Boolean) as Array<{ id: string; label: string }>
+
+          // Calculer le pourcentage de complétion
+          const completionPercentage = await calculateProfileCompletion(
+            profile.id,
+            profile,
+            cultures.length,
+            zones.length,
+            portfolioData?.length || 0
+          )
+
+          // Vérifier si la recherche correspond aussi aux cultures ou zones
+          let matchesSearch = true
+          if (searchQuery.trim()) {
+            const searchLower = searchQuery.toLowerCase()
+            const cultureMatch = cultures.some(c => c.label.toLowerCase().includes(searchLower))
+            const zoneMatch = zones.some(z => z.label.toLowerCase().includes(searchLower))
+            matchesSearch = cultureMatch || zoneMatch || true // On garde tous les résultats de la requête principale
+          }
+
+          return {
+            ...profile,
+            cultures,
+            zones,
+            completionPercentage,
+          } as Provider & { completionPercentage: number }
+        })
+      )
+
+      // Filtrer par complétion minimale de 70%
+      let filteredProviders = enrichedProviders.filter(p => 
+        p.completionPercentage >= 70
+      )
+
+      // Filtrer par cultures/zones si recherche
+      if (searchQuery.trim()) {
+        filteredProviders = filteredProviders.filter(p => {
+          const searchLower = searchQuery.toLowerCase()
+          return (
+            p.nom_entreprise?.toLowerCase().includes(searchLower) ||
+            p.ville_principale?.toLowerCase().includes(searchLower) ||
+            p.service_type?.toLowerCase().includes(searchLower) ||
+            p.description_courte?.toLowerCase().includes(searchLower) ||
+            p.cultures.some(c => c.label.toLowerCase().includes(searchLower)) ||
+            p.zones.some(z => z.label.toLowerCase().includes(searchLower))
+          )
+        })
+      }
+
+      // Filtrer par culture sélectionnée
+      if (selectedCulture) {
+        filteredProviders = filteredProviders.filter(p => 
+          p.cultures.some(c => c.id === selectedCulture)
         )
-      `)
+      }
 
-    if (searchQuery.trim()) {
-      query = query.or(`nom_entreprise.ilike.%${searchQuery}%,type_prestation.ilike.%${searchQuery}%,ville_exercice.ilike.%${searchQuery}%`)
+      // Filtrer par pays sélectionné (via zones ou ville)
+      if (selectedCountry) {
+        filteredProviders = filteredProviders.filter(p => 
+          p.ville_principale?.toLowerCase().includes(selectedCountry.toLowerCase()) ||
+          p.zones.some(z => z.label.toLowerCase().includes(selectedCountry.toLowerCase()))
+        )
+      }
+
+      setProviders(filteredProviders)
+    } catch (error) {
+      console.error('Erreur recherche:', error)
+      setProviders([])
+    } finally {
+      setLoading(false)
     }
+  }
 
-    const { data, error } = await query.limit(20)
-
-    if (error) {
-      console.error('Erreur lors du chargement des prestataires:', error)
-      setPrestataires([])
-    } else {
-      setPrestataires(data || [])
+  const handleProviderClick = async (provider: Provider) => {
+    // Réinitialiser le portfolio avant de charger le nouveau
+    setPortfolio([])
+    setSelectedProvider(provider)
+    
+    // Charger le portfolio du prestataire
+    const supabase = createClient()
+    try {
+      const { data: portfolioData, error } = await supabase
+        .from('provider_portfolio')
+        .select('id, image_url, title')
+        .eq('profile_id', provider.id)
+        .order('display_order', { ascending: true })
+      
+      if (error) {
+        console.error('Erreur chargement portfolio:', error)
+        setPortfolio([])
+      } else {
+        console.log('Portfolio chargé:', portfolioData?.length || 0, 'photos pour prestataire', provider.id)
+        setPortfolio(portfolioData || [])
+      }
+    } catch (error) {
+      console.error('Erreur chargement portfolio:', error)
+      setPortfolio([])
     }
-    setLoading(false)
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-white p-4 md:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
-          <p className="text-[#4A4A4A]">
-            Trouvez les prestataires qui correspondent à vos besoins
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Rechercher un prestataire
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Trouvez le prestataire parfait pour votre mariage
           </p>
         </motion.div>
 
-        {/* Barre de recherche */}
-        <Card className="border-gray-200">
-          <CardContent className="p-4">
-            <div className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#4A4A4A]" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher un prestataire, un type de prestation, une ville..."
-                  className="pl-10 border-gray-200 focus-visible:ring-[#823F91]"
-                />
-              </div>
-              <Button variant="outline" className="gap-2">
-                <Filter className="h-4 w-4" />
-                Filtres
-              </Button>
+        {/* Barre de recherche avec dropdown */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative space-y-3"
+        >
+          <div className="flex gap-3">
+            {/* Dropdown filtres avec sous-menus */}
+            <Popover open={showFiltersDropdown} onOpenChange={setShowFiltersDropdown}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-14 px-4 border-2 border-gray-200 hover:border-[#823F91] focus-visible:border-[#823F91] rounded-xl flex items-center gap-2 min-w-[200px]"
+                >
+                  <Filter className="h-5 w-5 text-gray-400" />
+                  <span className="text-sm font-medium">
+                    {selectedCategory || selectedCulture || selectedCountry 
+                      ? 'Filtres actifs'
+                      : 'Filtres'}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-gray-400 ml-auto" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[280px] p-2 bg-white" align="start">
+                <div className="space-y-1">
+                  {/* Métier */}
+                  <Popover open={openSubDropdown === 'metier'} onOpenChange={(open) => setOpenSubDropdown(open ? 'metier' : null)}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          Métier
+                            {selectedCategory && (
+                              <Badge variant="secondary" className="ml-2 text-xs">
+                                {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
+                              </Badge>
+                            )}
+                        </span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                        <div className="space-y-1">
+                          <Button
+                            variant={selectedCategory === null ? "default" : "ghost"}
+                            className="w-full justify-start text-sm font-medium"
+                            onClick={() => {
+                              setSelectedCategory(null)
+                              setOpenSubDropdown(null)
+                            }}
+                          >
+                            Tous les métiers
+                          </Button>
+                          <div className="border-t border-gray-200 my-2"></div>
+                          {SERVICE_CATEGORIES.map((category) => {
+                            const CategoryIcon = category.icon
+                            return (
+                              <div key={category.id} className="space-y-1">
+                                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
+                                  <CategoryIcon className="h-3.5 w-3.5 text-[#823F91]" />
+                                  {category.label}
+                                </div>
+                                {category.services.map((service) => {
+                                  const ServiceIcon = service.icon
+                                  return (
+                                    <Button
+                                      key={service.value}
+                                      variant={selectedCategory === service.value ? "default" : "ghost"}
+                                      className="w-full justify-start text-sm pl-6"
+                                      onClick={() => {
+                                        setSelectedCategory(service.value)
+                                        setOpenSubDropdown(null)
+                                      }}
+                                    >
+                                      <ServiceIcon className="mr-2 h-4 w-4 text-[#823F91]" />
+                                      {service.label}
+                                    </Button>
+                                  )
+                                })}
+                              </div>
+                            )
+                          })}
+                        </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Culture */}
+                  <Popover open={openSubDropdown === 'culture'} onOpenChange={(open) => setOpenSubDropdown(open ? 'culture' : null)}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          Culture
+                          {selectedCulture && (
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {CULTURES.find(c => c.id === selectedCulture)?.label}
+                            </Badge>
+                          )}
+                        </span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                      <div className="space-y-1">
+                        <Button
+                          variant={selectedCulture === null ? "default" : "ghost"}
+                          className="w-full justify-start text-sm"
+                          onClick={() => {
+                            setSelectedCulture(null)
+                            setOpenSubDropdown(null)
+                          }}
+                        >
+                          Toutes les cultures
+                        </Button>
+                        {CULTURES.map((culture) => (
+                          <Button
+                            key={culture.id}
+                            variant={selectedCulture === culture.id ? "default" : "ghost"}
+                            className="w-full justify-start text-sm"
+                            onClick={() => {
+                              setSelectedCulture(culture.id)
+                              setOpenSubDropdown(null)
+                            }}
+                          >
+                            {culture.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Pays */}
+                  <Popover open={openSubDropdown === 'pays'} onOpenChange={(open) => setOpenSubDropdown(open ? 'pays' : null)}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                      >
+                        <span className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          Pays
+                          {selectedCountry && (
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {selectedCountry}
+                            </Badge>
+                          )}
+                        </span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                      <div className="space-y-1">
+                        <Button
+                          variant={selectedCountry === null ? "default" : "ghost"}
+                          className="w-full justify-start text-sm"
+                          onClick={() => {
+                            setSelectedCountry(null)
+                            setOpenSubDropdown(null)
+                          }}
+                        >
+                          Tous les pays
+                        </Button>
+                        {CONTINENTS.map((continent) => (
+                          <div key={continent.id} className="space-y-1">
+                            <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                              {continent.label}
+                            </div>
+                            {COUNTRIES_BY_CONTINENT[continent.id]?.map((country) => (
+                              <Button
+                                key={country}
+                                variant={selectedCountry === country ? "default" : "ghost"}
+                                className="w-full justify-start text-sm pl-4"
+                                onClick={() => {
+                                  setSelectedCountry(country)
+                                  setOpenSubDropdown(null)
+                                }}
+                              >
+                                {country}
+                              </Button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Barre de recherche */}
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                ref={inputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowFiltersDropdown(false)}
+                placeholder="Rechercher par nom, ville, culture..."
+                className="pl-12 pr-12 h-14 text-lg border-2 border-gray-200 focus-visible:border-[#823F91] focus-visible:ring-[#823F91] rounded-xl bg-white"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          {/* Filtres actifs */}
+          {(selectedCategory || selectedCulture || selectedCountry || searchQuery) && (
+            <div className="flex flex-wrap gap-2">
+              {selectedCategory && (
+                <Badge 
+                  variant="secondary" 
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  Métier: {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
+                  <X className="h-3 w-3 ml-2" />
+                </Badge>
+              )}
+              {selectedCulture && (
+                <Badge 
+                  variant="secondary" 
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  onClick={() => setSelectedCulture(null)}
+                >
+                  Culture: {CULTURES.find(c => c.id === selectedCulture)?.label}
+                  <X className="h-3 w-3 ml-2" />
+                </Badge>
+              )}
+              {selectedCountry && (
+                <Badge 
+                  variant="secondary" 
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  onClick={() => setSelectedCountry(null)}
+                >
+                  Pays: {selectedCountry}
+                  <X className="h-3 w-3 ml-2" />
+                </Badge>
+              )}
+              {searchQuery && (
+                <Badge 
+                  variant="secondary" 
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  onClick={() => setSearchQuery('')}
+                >
+                  "{searchQuery}"
+                  <X className="h-3 w-3 ml-2" />
+                </Badge>
+              )}
+            </div>
+          )}
+        </motion.div>
 
         {/* Résultats */}
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-[#4A4A4A]">Chargement...</p>
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#823F91]"></div>
+            <p className="text-gray-600 mt-4">Recherche en cours...</p>
           </div>
-        ) : prestataires.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="p-12 text-center">
-              <p className="text-[#4A4A4A]">
-                {searchQuery ? 'Aucun prestataire trouvé pour votre recherche.' : 'Commencez votre recherche pour trouver des prestataires.'}
-              </p>
-            </CardContent>
-          </Card>
+        ) : providers.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm"
+          >
+            <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-600 text-lg">
+              {searchQuery
+                ? 'Aucun prestataire trouvé pour votre recherche.'
+                : 'Commencez votre recherche pour trouver des prestataires.'}
+            </p>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prestataires.map((prestataire) => (
-              <motion.div
-                key={prestataire.user_id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -4 }}
-              >
-                <Card className="h-full cursor-pointer hover:shadow-lg transition-all border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-xl">
-                      {prestataire.nom_entreprise || `${prestataire.profiles?.prenom} ${prestataire.profiles?.nom}`}
-                    </CardTitle>
-                    {prestataire.prestataire_public_profiles?.is_verified && (
-                      <span className="text-xs text-[#823F91] font-medium">✓ Vérifié</span>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-[#4A4A4A]">
-                      <span className="font-medium">{prestataire.type_prestation}</span>
-                    </div>
-                    {prestataire.ville_exercice && (
-                      <div className="flex items-center gap-2 text-sm text-[#4A4A4A]">
-                        <MapPin className="h-4 w-4" />
-                        <span>{prestataire.ville_exercice}</span>
-                      </div>
-                    )}
-                    {prestataire.prestataire_public_profiles?.rating && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-[#0D0D0D]">
-                          {prestataire.prestataire_public_profiles.rating.toFixed(1)}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-3"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-600">
+                <span className="font-semibold text-gray-900">{providers.length}</span>{' '}
+                prestataire{providers.length > 1 ? 's' : ''} trouvé{providers.length > 1 ? 's' : ''}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {providers.map((provider, index) => (
+                <motion.div
+                  key={provider.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  className="bg-white rounded-xl border border-gray-200 hover:border-[#823F91]/50 hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col"
+                  onClick={() => handleProviderClick(provider)}
+                >
+                  {/* Avatar et image de fond optionnelle */}
+                  <div className="relative h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                    {provider.avatar_url ? (
+                      <img
+                        src={provider.avatar_url}
+                        alt={provider.nom_entreprise}
+                        className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-md"
+                      />
+                    ) : (
+                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-4 border-white shadow-md">
+                        <span className="text-2xl font-semibold text-white">
+                          {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>
-                        {prestataire.prestataire_public_profiles.total_reviews > 0 && (
-                          <span className="text-[#4A4A4A]">
-                            ({prestataire.prestataire_public_profiles.total_reviews} avis)
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contenu */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
+                        {provider.nom_entreprise || `${provider.prenom || ''} ${provider.nom || ''}`.trim() || 'Prestataire'}
+                      </h3>
+                      {provider.service_type && (
+                        <p className="text-sm text-gray-600 flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          <span className="capitalize">{provider.service_type.replace('_', ' ')}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {provider.ville_principale && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {provider.ville_principale}
+                        </Badge>
+                      )}
+                      {provider.cultures.slice(0, 1).map((culture) => (
+                        <Badge
+                          key={culture.id}
+                          variant="outline"
+                          className="text-xs px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700"
+                        >
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          {culture.label}
+                        </Badge>
+                      ))}
+                      {provider.cultures.length > 1 && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          +{provider.cultures.length - 1}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Budget */}
+                    {(provider.budget_min || provider.budget_max) && (
+                      <div className="mt-auto pt-3 border-t border-gray-100">
+                        <p className="text-sm text-gray-600">
+                          <span className="font-semibold text-gray-900">
+                            {provider.budget_min?.toLocaleString('fr-FR')}€
+                            {provider.budget_max && ` - ${provider.budget_max.toLocaleString('fr-FR')}€`}
                           </span>
-                        )}
+                        </p>
                       </div>
                     )}
-                    {prestataire.tarif_min && prestataire.tarif_max && (
-                      <div className="text-sm text-[#0D0D0D] font-semibold">
-                        {prestataire.tarif_min.toLocaleString('fr-FR')} € - {prestataire.tarif_max.toLocaleString('fr-FR')} €
-                      </div>
-                    )}
-                    <Link href={`/prestataire/${prestataire.user_id}`}>
-                      <Button className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white mt-4">
-                        Voir le profil
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Dialog pour afficher la carte du prestataire */}
+        {selectedProvider && user && (
+          <ProfilePreviewDialog
+            userId={selectedProvider.id}
+            profile={{
+              nom_entreprise: selectedProvider.nom_entreprise || '',
+              service_type: selectedProvider.service_type || '',
+              avatar_url: selectedProvider.avatar_url,
+              prenom: selectedProvider.prenom,
+              nom: selectedProvider.nom,
+              description_courte: selectedProvider.description_courte || undefined,
+              bio: selectedProvider.description_courte || undefined,
+              budget_min: selectedProvider.budget_min || undefined,
+              budget_max: selectedProvider.budget_max || undefined,
+              ville_principale: selectedProvider.ville_principale || undefined,
+            }}
+            cultures={selectedProvider.cultures}
+            zones={selectedProvider.zones}
+            portfolio={portfolio}
+            open={!!selectedProvider}
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedProvider(null)
+                setPortfolio([]) // Réinitialiser le portfolio quand on ferme
+              }
+            }}
+            showTriggerButton={false}
+            isCoupleView={true}
+            coupleId={user.id}
+          />
         )}
       </div>
     </div>
   )
 }
-

@@ -27,7 +27,7 @@ export function EmptyState({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
     >
-      <Card className="border-[#823F91]/20 bg-gradient-to-br from-white via-[#823F91]/5 to-white">
+      <Card className="border-[#823F91]/20 bg-white">
         <CardContent className="py-16 text-center">
           {Icon && (
             <Icon className="h-16 w-16 text-[#823F91]/30 mx-auto mb-4" />

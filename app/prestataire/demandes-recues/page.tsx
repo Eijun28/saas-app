@@ -13,6 +13,7 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
+import { getOrCreateConversation } from '@/lib/supabase/messages'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
@@ -36,10 +37,12 @@ export default function DemandesRecuesPage() {
   interface DemandeWithCouple {
     id: string
     couple_id: string
-    date_mariage: string
-    budget_min?: number
-    budget_max?: number
-    location: string
+    wedding_date?: string
+    date_mariage?: string // Alias pour compatibilité
+    budget_indicatif?: number
+    budget_min?: number // Alias pour compatibilité
+    budget_max?: number // Alias pour compatibilité
+    location?: string // N'existe plus dans le schéma
     status: string
     message?: string
     created_at: string
@@ -64,14 +67,15 @@ export default function DemandesRecuesPage() {
         id: demande.id,
         couple_id: demande.couple_id,
         couple_nom: coupleNom,
-        date_evenement: demande.couple?.wedding_date || demande.date_mariage,
-        budget_min: demande.budget_min || 0,
-        budget_max: demande.budget_max || 0,
-        lieu: demande.location || '',
-        statut: demande.status === 'new' ? 'nouvelle' 
-          : demande.status === 'in-progress' ? 'en_cours'
+        date_evenement: demande.wedding_date || demande.couple?.wedding_date || demande.date_mariage,
+        budget_min: demande.budget_indicatif || demande.budget_min || 0,
+        budget_max: demande.budget_indicatif || demande.budget_max || 0,
+        lieu: demande.location || '', // Note: location n'existe plus dans le schéma
+        statut: demande.status === 'pending' ? 'nouvelle' 
+          : demande.status === 'viewed' ? 'nouvelle'
+          : demande.status === 'responded' ? 'en_cours'
           : demande.status === 'accepted' ? 'en_cours'
-          : demande.status === 'completed' ? 'terminee'
+          : demande.status === 'rejected' ? 'terminee'
           : 'nouvelle',
         message: demande.message,
         created_at: demande.created_at,
@@ -101,7 +105,7 @@ export default function DemandesRecuesPage() {
       const { data: demandesData, error } = await supabase
         .from('demandes')
         .select('*')
-        .eq('prestataire_id', user.id)
+        .eq('provider_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -165,14 +169,47 @@ export default function DemandesRecuesPage() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase
+      
+      // 1. Récupérer les données de la demande avant de la mettre à jour
+      const { data: demandeData, error: fetchError } = await supabase
+        .from('demandes')
+        .select('couple_id, provider_id, service_type, wedding_date, guest_count, budget_indicatif')
+        .eq('id', demandeId)
+        .single()
+
+      if (fetchError) throw fetchError
+      if (!demandeData) {
+        throw new Error('Demande introuvable')
+      }
+
+      // 2. Mettre à jour le statut de la demande
+      const { error: updateError } = await supabase
         .from('demandes')
         .update({ status: 'accepted' })
         .eq('id', demandeId)
 
-      if (error) throw error
+      if (updateError) throw updateError
 
-      toast.success('Demande acceptée')
+      // 3. Créer automatiquement une conversation (ou réutiliser si elle existe déjà)
+      try {
+        await getOrCreateConversation(
+          demandeData.couple_id,
+          demandeData.provider_id || user.id,
+          demandeId, // Lier la conversation à cette demande
+          demandeData.service_type || undefined,
+          undefined, // cultures - à récupérer si nécessaire
+          demandeData.wedding_date || undefined,
+          undefined, // eventLocation - à récupérer si nécessaire
+          demandeData.budget_indicatif || undefined,
+          demandeData.guest_count || undefined
+        )
+      } catch (conversationError) {
+        // Ne pas bloquer l'acceptation si la création de conversation échoue
+        console.warn('Erreur lors de la création de la conversation:', conversationError)
+        // On continue quand même, la conversation pourra être créée manuellement plus tard
+      }
+
+      toast.success('Demande acceptée - La conversation a été créée')
       await fetchDemandes()
     } catch (error) {
       console.error('Erreur acceptation:', error)

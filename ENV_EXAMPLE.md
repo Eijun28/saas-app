@@ -27,6 +27,15 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 OPENAI_API_KEY=sk-your-openai-api-key-here
 
 # ============================================
+# STRIPE (OBLIGATOIRE pour les abonnements prestataires)
+# ============================================
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+STRIPE_PRICE_ID_PREMIUM=price_your_premium_price_id
+STRIPE_PRICE_ID_PRO=price_your_pro_price_id
+
+# ============================================
 # N8N (optionnel)
 # ============================================
 N8N_WEBHOOK_CHATBOT_URL=https://your-n8n-instance.com/webhook/chatbot

@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, PanelLeftClose, PanelLeft } from "lucide-react"
+import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, PanelLeftClose, PanelLeft, Search } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button"
 
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
+  { href: "/couple/recherche", icon: Search, label: "Rechercher" },
   { href: "/couple/matching", icon: Sparkles, label: "Matching IA" },
   { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
   { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },

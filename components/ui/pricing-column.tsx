@@ -13,7 +13,9 @@ export interface PricingColumnProps {
   cta: {
     variant: "default" | "glow" | "outline";
     label: string;
-    href: string;
+    href?: string;
+    planType?: "premium" | "pro";
+    onClick?: () => void;
   };
   features: string[];
   variant?: "default" | "glow" | "glow-brand";
@@ -86,28 +88,54 @@ export function PricingColumn({
       </ul>
 
       {/* CTA Button */}
-      <Link href={cta.href} className="mt-auto">
-        <Button
-          variant={
-            cta.variant === "glow"
-              ? "default"
-              : cta.variant === "outline"
-              ? "outline"
-              : "default"
-          }
-          className={cn(
-            "w-full mt-6",
-            cta.variant === "glow" &&
-              "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all",
-            cta.variant === "default" &&
-              "bg-slate-900 text-white hover:bg-slate-800",
-            cta.variant === "outline" &&
-              "border-slate-300 text-slate-900 hover:bg-slate-50"
-          )}
-        >
-          {cta.label}
-        </Button>
-      </Link>
+      {cta.href ? (
+        <Link href={cta.href} className="mt-auto">
+          <Button
+            variant={
+              cta.variant === "glow"
+                ? "default"
+                : cta.variant === "outline"
+                ? "outline"
+                : "default"
+            }
+            className={cn(
+              "w-full mt-6",
+              cta.variant === "glow" &&
+                "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all",
+              cta.variant === "default" &&
+                "bg-slate-900 text-white hover:bg-slate-800",
+              cta.variant === "outline" &&
+                "border-slate-300 text-slate-900 hover:bg-slate-50"
+            )}
+          >
+            {cta.label}
+          </Button>
+        </Link>
+      ) : (
+        <div className="mt-auto">
+          <Button
+            onClick={cta.onClick}
+            variant={
+              cta.variant === "glow"
+                ? "default"
+                : cta.variant === "outline"
+                ? "outline"
+                : "default"
+            }
+            className={cn(
+              "w-full mt-6",
+              cta.variant === "glow" &&
+                "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all",
+              cta.variant === "default" &&
+                "bg-slate-900 text-white hover:bg-slate-800",
+              cta.variant === "outline" &&
+                "border-slate-300 text-slate-900 hover:bg-slate-50"
+            )}
+          >
+            {cta.label}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

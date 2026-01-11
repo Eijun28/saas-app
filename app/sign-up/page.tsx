@@ -55,7 +55,6 @@ export default function SignUpPage() {
           .single()
         
         if (error) {
-          console.error('Erreur lors de la récupération des places Early Adopter:', error)
           // Ne pas bloquer l'inscription si la requête échoue
           return
         }
@@ -65,7 +64,6 @@ export default function SignUpPage() {
           setEarlyAdopterSlotsLeft(remaining > 0 ? remaining : 0)
         }
       } catch (err) {
-        console.error('Erreur lors de la vérification des places Early Adopter:', err)
         // Ne pas bloquer l'inscription si la requête échoue
       }
     }

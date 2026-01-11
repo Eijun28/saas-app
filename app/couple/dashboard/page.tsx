@@ -2,21 +2,16 @@
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ModernCard } from '@/components/ui/modern-card'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { RippleButton } from "@/components/ui/ripple-button"
 import { Badge } from '@/components/ui/badge'
 import { 
   Sparkles, 
   Wallet, 
   MessageSquare, 
-  Users, 
   Calendar, 
   TrendingUp,
   ArrowRight,
-  Zap,
-  FileText
+  FileText,
+  Search
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import Link from 'next/link'
@@ -120,7 +115,7 @@ export default function CoupleDashboardPage() {
                 .select('id', { count: 'exact', head: true })
                 .in('conversation_id', conversationIds)
                 .neq('sender_id', user.id)
-                .eq('is_read', false)
+                .is('read_at', null)
               
               if (messagesError) {
                 console.error('Erreur lors du comptage des messages:', messagesError)
@@ -216,7 +211,7 @@ export default function CoupleDashboardPage() {
                 .select('id', { count: 'exact', head: true })
                 .in('conversation_id', conversationIds)
                 .neq('sender_id', user.id)
-                .eq('is_read', false)
+                .is('read_at', null)
               
               messagesNonLus = count || 0
             }
@@ -257,17 +252,18 @@ export default function CoupleDashboardPage() {
 
   const sections = [
     {
+      title: 'Rechercher des prestataires',
+      description: 'Trouvez des prestataires par métier, culture ou ville',
+      icon: Search,
+      href: '/couple/recherche',
+      badge: undefined,
+    },
+    {
       title: 'Matching IA',
       description: 'Trouvez les prestataires parfaits grâce à notre intelligence artificielle',
       icon: Sparkles,
       href: '/couple/matching',
       badge: 'Nouveau',
-    },
-    {
-      title: 'Dossier de Mariage',
-      description: 'Gérez vos documents administratifs avec l\'IA',
-      icon: FileText,
-      href: '/dashboard/dossier-mariage',
     },
     {
       title: 'Budget & Timeline',
@@ -289,12 +285,6 @@ export default function CoupleDashboardPage() {
       href: '/couple/demandes',
     },
     {
-      title: 'Collaborateurs',
-      description: 'Invitez des proches à vous aider dans l\'organisation',
-      icon: Users,
-      href: '/couple/collaborateurs',
-    },
-    {
       title: 'Profil',
       description: 'Modifiez vos informations personnelles et de mariage',
       icon: Calendar,
@@ -304,144 +294,103 @@ export default function CoupleDashboardPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-6">
-        {/* Sections principales avec ModernCard */}
+      <div className="w-full space-y-8">
+        {/* Statistiques rapides - intégrées en haut */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-3"
+        >
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
+            <div className="h-10 w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#6B7280] mb-0.5">Prestataires trouvés</p>
+              <p className="text-xl font-bold text-[#0D0D0D]">{stats.prestatairesTrouves}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
+            <div className="h-10 w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
+              <Wallet className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#6B7280] mb-0.5">Budget alloué</p>
+              <p className="text-xl font-bold text-[#0D0D0D]">
+                {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
+            <div className="h-10 w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-[#6B7280] mb-0.5">Jours restants</p>
+              <p className="text-xl font-bold text-[#0D0D0D]">
+                {stats.joursRestants !== null ? stats.joursRestants : '-'}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Sections principales - design plus épuré */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
         >
           {sections.map((section, index) => {
             const Icon = section.icon
             return (
               <motion.div
                 key={section.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: index * 0.05,
+                  delay: index * 0.03,
                   duration: 0.3,
                   ease: [0.16, 1, 0.3, 1] as const,
                 }}
               >
-                <ModernCard delay={index * 0.05}>
-                  <Link href={section.href} className="block h-full">
-                    <CardHeader className="pb-3 px-5 pt-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-purple-600 flex items-center justify-center shadow-md shadow-purple-500/10">
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        {section.badge && (
-                          <Badge 
-                            variant="secondary" 
-                            className="bg-purple-100 text-purple-700 border-0 text-xs px-2 py-0.5"
-                          >
-                            {section.badge}
-                          </Badge>
-                        )}
+                <Link href={section.href} className="block">
+                  <div className="group relative p-4 rounded-xl bg-white border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5 transition-all duration-200">
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <Icon className="h-4 w-4 text-white" />
                       </div>
-                      <CardTitle className="text-base font-semibold mb-1.5 text-[#0D0D0D] leading-tight">
-                        {section.title}
-                      </CardTitle>
-                      <CardDescription className="text-xs text-[#6B7280] leading-relaxed">
-                        {section.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0 px-5 pb-5">
-                      <motion.div whileHover={{ x: 2 }} transition={{ duration: 0.2 }}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-purple-600 hover:text-white hover:bg-purple-600 group h-8 text-xs px-3"
-                        >
-                          Accéder
-                          <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                        </Button>
-                      </motion.div>
-                    </CardContent>
-                  </Link>
-                </ModernCard>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="text-sm font-semibold text-[#0D0D0D] leading-tight group-hover:text-[#823F91] transition-colors">
+                            {section.title}
+                          </h3>
+                          {section.badge && (
+                            <Badge 
+                              variant="secondary" 
+                              className="bg-[#E8D4EF] text-[#823F91] border-0 text-xs px-1.5 py-0 h-5 flex-shrink-0"
+                            >
+                              {section.badge}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-2">
+                          {section.description}
+                        </p>
+                        <div className="mt-2 flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-xs font-medium">Accéder</span>
+                          <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             )
           })}
-        </motion.div>
-
-        {/* Statistiques rapides modernisées */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          <ModernCard delay={0.3}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
-              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                Prestataires trouvés
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <motion.div
-                key={stats.prestatairesTrouves}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
-              >
-                {stats.prestatairesTrouves}
-              </motion.div>
-              <p className="text-xs text-[#9CA3AF]">
-                Correspondances parfaites
-              </p>
-            </CardContent>
-          </ModernCard>
-
-          <ModernCard delay={0.35}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
-              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                Budget alloué
-              </CardTitle>
-              <Wallet className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <motion.div
-                key={stats.budgetAlloue}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
-              >
-                {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
-              </motion.div>
-              <p className="text-xs text-[#9CA3AF]">
-                Total planifié
-              </p>
-            </CardContent>
-          </ModernCard>
-
-          <ModernCard delay={0.4}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 px-6 pt-6">
-              <CardTitle className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                Jours restants
-              </CardTitle>
-              <Calendar className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <motion.div
-                key={stats.joursRestants}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-2xl font-bold font-mono-numbers text-[#0D0D0D] mb-1"
-              >
-                {stats.joursRestants !== null ? stats.joursRestants : '-'}
-              </motion.div>
-              <p className="text-xs text-[#9CA3AF]">
-                Jusqu'au grand jour
-              </p>
-            </CardContent>
-          </ModernCard>
         </motion.div>
       </div>
     </div>

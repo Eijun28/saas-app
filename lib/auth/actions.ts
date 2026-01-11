@@ -196,7 +196,7 @@ export async function signIn(email: string, password: string) {
     const { data: couple } = await supabase
       .from('couples')
       .select('id')
-      .eq('id', data.user.id)
+      .eq('user_id', data.user.id)
       .single()
 
     if (couple) {
@@ -204,16 +204,17 @@ export async function signIn(email: string, password: string) {
       return { success: true, redirectTo: '/couple/dashboard' }
     }
 
-    // Sinon vérifier dans profiles (prestataires)
+    // Sinon vérifier dans profiles (prestataires uniquement)
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
+      .eq('role', 'prestataire')
       .single()
 
     revalidatePath('/', 'layout')
 
-    if (profile) {
+    if (profile && profile.role === 'prestataire') {
       return { success: true, redirectTo: '/prestataire/dashboard' }
     }
 

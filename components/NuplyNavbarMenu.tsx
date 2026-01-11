@@ -290,7 +290,7 @@ function Navbar({
               setActive(null);
               handleLinkClick("/#trouver-un-prestataire");
             }}
-            className="text-sm font-medium cursor-pointer transition-colors"
+            className="text-base font-bold cursor-pointer transition-colors"
             style={{ 
               color: '#823F91',
               pointerEvents: 'auto',
@@ -308,7 +308,7 @@ function Navbar({
           <Link
             href="/tarifs"
             onClick={() => setActive(null)}
-            className="text-sm font-medium cursor-pointer transition-colors"
+            className="text-base font-bold cursor-pointer transition-colors"
             style={{ 
               color: '#823F91',
               pointerEvents: 'auto',
@@ -326,7 +326,7 @@ function Navbar({
           <Link
             href="/blog"
             onClick={() => setActive(null)}
-            className="text-sm font-medium cursor-pointer transition-colors"
+            className="text-base font-bold cursor-pointer transition-colors"
             style={{ 
               color: '#823F91',
               pointerEvents: 'auto',

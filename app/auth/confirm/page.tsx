@@ -3,6 +3,8 @@
 'use client';
 
 import Particles from '@/components/Particles'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default function ConfirmEmail() {
 
@@ -44,11 +46,19 @@ export default function ConfirmEmail() {
 
         </p>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 mb-6">
 
           Vous n'avez pas reçu l'email ? Vérifiez vos spams.
 
         </p>
+
+        <Link href="/sign-in">
+          <Button 
+            className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 px-8 py-6 text-base"
+          >
+            Se connecter
+          </Button>
+        </Link>
 
       </div>
 

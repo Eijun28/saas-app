@@ -47,21 +47,22 @@ export default async function proxy(request: NextRequest) {
     const { data: couple } = await supabase
       .from('couples')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (couple) {
       return NextResponse.redirect(new URL('/couple/dashboard', request.url))
     }
 
-    // Sinon vérifier dans profiles (prestataires)
+    // Sinon vérifier dans profiles (prestataires uniquement)
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
+      .eq('role', 'prestataire')
       .single()
 
-    if (profile) {
+    if (profile && profile.role === 'prestataire') {
       return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
     }
   }
@@ -75,7 +76,7 @@ export default async function proxy(request: NextRequest) {
     const { data: couple } = await supabase
       .from('couples')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single()
 
     if (couple) {
@@ -87,14 +88,15 @@ export default async function proxy(request: NextRequest) {
       return supabaseResponse
     }
 
-    // Sinon vérifier dans profiles (prestataires)
+    // Sinon vérifier dans profiles (prestataires uniquement)
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
+      .eq('role', 'prestataire')
       .single()
 
-    if (profile) {
+    if (profile && profile.role === 'prestataire') {
       // Prestataire essaie d'accéder à une route couple
       if (isTryingToAccessCouple) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))

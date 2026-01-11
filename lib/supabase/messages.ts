@@ -10,7 +10,7 @@ export async function getConversations(
 ): Promise<Conversation[]> {
   const supabase = createClient()
 
-  const column = userType === 'couple' ? 'couple_id' : 'prestataire_id'
+  const column = userType === 'couple' ? 'couple_id' : 'provider_id'
 
   // Récupérer les conversations
   const { data: conversations, error } = await supabase
@@ -36,7 +36,7 @@ export async function getConversations(
         supabase
           .from('profiles')
           .select('id, prenom, nom')
-          .eq('id', conv.prestataire_id)
+          .eq('id', conv.provider_id)
           .single(),
       ])
 
@@ -115,7 +115,7 @@ export async function getMessages(
       // Déterminer le sender_type en vérifiant la conversation
       const { data: conversation } = await supabase
         .from('conversations')
-        .select('couple_id, prestataire_id')
+        .select('couple_id, provider_id')
         .eq('id', msg.conversation_id)
         .single()
 
@@ -260,7 +260,7 @@ export async function getUnreadConversationsCount(
     const { data: conversations, error: countError } = await supabase
       .from('conversations')
       .select('unread_count')
-      .or(`couple_id.eq.${userId},prestataire_id.eq.${userId}`)
+      .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
       .eq('status', 'active')
 
     if (countError) {
@@ -275,10 +275,12 @@ export async function getUnreadConversationsCount(
 
 /**
  * Obtient ou crée une conversation entre un couple et un prestataire
+ * Si une conversation existe déjà, la met à jour avec le demande_id si fourni
  */
 export async function getOrCreateConversation(
   coupleId: string,
-  prestataireId: string,
+  providerId: string,
+  demandeId?: string,
   demandeType?: string,
   cultures?: string[],
   eventDate?: string,
@@ -291,13 +293,26 @@ export async function getOrCreateConversation(
   // D'abord, vérifier si une conversation existe déjà
   const { data: existing, error: checkError } = await supabase
     .from('conversations')
-    .select('id')
+    .select('id, demande_id')
     .eq('couple_id', coupleId)
-    .eq('prestataire_id', prestataireId)
+    .eq('provider_id', providerId)
     .eq('status', 'active')
     .single()
 
+  // Si une conversation existe déjà
   if (existing) {
+    // Si un demande_id est fourni et que la conversation n'en a pas encore, le mettre à jour
+    if (demandeId && !existing.demande_id) {
+      const { error: updateError } = await supabase
+        .from('conversations')
+        .update({ demande_id: demandeId })
+        .eq('id', existing.id)
+
+      if (updateError) {
+        console.warn('Erreur lors de la mise à jour du demande_id:', updateError)
+        // Ne pas throw, on continue avec la conversation existante
+      }
+    }
     return existing.id
   }
 
@@ -305,7 +320,8 @@ export async function getOrCreateConversation(
   const { data: rpcData, error: rpcError } = await supabase
     .rpc('get_or_create_conversation', {
       p_couple_id: coupleId,
-      p_prestataire_id: prestataireId,
+      p_provider_id: providerId,
+      p_demande_id: demandeId || null,
       p_demande_type: demandeType || null,
       p_cultures: cultures || null,
       p_event_date: eventDate || null,
@@ -323,7 +339,8 @@ export async function getOrCreateConversation(
     .from('conversations')
     .insert({
       couple_id: coupleId,
-      prestataire_id: prestataireId,
+      provider_id: providerId,
+      demande_id: demandeId || null,
       status: 'active',
     })
     .select('id')
@@ -357,7 +374,7 @@ export async function archiveConversation(
       .from('conversations')
       .update({ status: 'archived' })
       .eq('id', conversationId)
-      .or(`couple_id.eq.${userId},prestataire_id.eq.${userId}`)
+      .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
 
     if (updateError) {
       throw updateError

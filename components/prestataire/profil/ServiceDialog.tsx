@@ -19,25 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SERVICE_TYPES_LIST } from '@/lib/constants/service-types'
 
-const SERVICES_LIST = [
-  'Traiteur',
-  'Photographe',
-  'Vidéaste',
-  'DJ / Musicien',
-  'Salle de réception',
-  'Décorateur / Fleuriste',
-  'Coiffeur / Maquilleur',
-  'Pâtissier (Wedding cake)',
-  'Robe de mariée / Costume',
-  'Bijoutier',
-  'Faire-part / Papeterie',
-  'Animation (photobooth, jeux...)',
-  'Wedding planner',
-  'Officiant de cérémonie',
-  'Location de véhicules',
-  'Autre',
-]
+const SERVICES_LIST = SERVICE_TYPES_LIST
 
 interface Service {
   id: string

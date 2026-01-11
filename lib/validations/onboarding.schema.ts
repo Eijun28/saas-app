@@ -1,18 +1,10 @@
 import { z } from 'zod'
+import { SERVICE_TYPES } from '@/lib/constants/service-types'
 
-export const prestataireTypeSchema = z.enum([
-  'photographe',
-  'videaste',
-  'traiteur',
-  'dj',
-  'fleuriste',
-  'wedding_planner',
-  'salle',
-  'coiffure_maquillage',
-  'patissier',
-  'location_materiel',
-  'autre',
-])
+// Extraire les valeurs pour le schéma Zod
+const serviceTypeValues = SERVICE_TYPES.map(s => s.value) as [string, ...string[]]
+
+export const prestataireTypeSchema = z.enum(serviceTypeValues)
 
 export const roleSchema = z.enum(['couple', 'prestataire'])
 

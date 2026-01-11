@@ -31,14 +31,15 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
       }
 
-      // Sinon vérifier dans profiles
+      // Sinon vérifier dans profiles (prestataires uniquement)
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
+        .eq('role', 'prestataire')
         .single()
 
-      if (profile) {
+      if (profile && profile.role === 'prestataire') {
         return NextResponse.redirect(`${requestUrl.origin}/prestataire/dashboard`)
       }
     }

@@ -35,7 +35,7 @@ export default function NotificationsPage() {
         messages:messages!inner(
           id,
           content,
-          is_read,
+          read_at,
           created_at
         )
       `)
@@ -45,7 +45,7 @@ export default function NotificationsPage() {
 
     if (conversations) {
       const notifs = conversations
-        .filter((conv: any) => conv.messages?.some((msg: any) => !msg.is_read))
+        .filter((conv: any) => conv.messages?.some((msg: any) => msg.read_at === null))
         .map((conv: any) => ({
           id: conv.id,
           type: 'message',

@@ -1,10 +1,11 @@
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import type { Couple, CouplePreferences, CoupleWithPreferences } from '@/types/couples.types'
 
 /**
  * Récupère le profil couple complet (avec préférences)
  */
 export async function getCurrentCoupleProfile(): Promise<CoupleWithPreferences | null> {
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
@@ -36,6 +37,7 @@ export async function getCurrentCoupleProfile(): Promise<CoupleWithPreferences |
  * Crée un profil couple (données de base uniquement)
  */
 export async function createCoupleProfile(data: Partial<Couple>): Promise<Couple> {
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
@@ -66,6 +68,7 @@ export async function createCoupleProfile(data: Partial<Couple>): Promise<Couple
  * Met à jour le profil couple (données de base)
  */
 export async function updateCoupleProfile(updates: Partial<Couple>): Promise<Couple> {
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
@@ -97,6 +100,7 @@ export async function createCouplePreferences(
   coupleId: string,
   preferences: Partial<CouplePreferences>
 ): Promise<CouplePreferences> {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('couple_preferences')
     .insert({
@@ -130,6 +134,7 @@ export async function updateCouplePreferences(
   coupleId: string,
   updates: Partial<CouplePreferences>
 ): Promise<CouplePreferences> {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('couple_preferences')
     .update({
@@ -152,6 +157,7 @@ export async function updateCouplePreferences(
  * Vérifie si le profil couple existe
  */
 export async function checkCoupleProfileExists(): Promise<boolean> {
+  const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) return false
@@ -174,6 +180,7 @@ export async function checkCoupleProfileExists(): Promise<boolean> {
  * Récupère uniquement les préférences du couple
  */
 export async function getCouplePreferences(coupleId: string): Promise<CouplePreferences | null> {
+  const supabase = createClient()
   const { data, error } = await supabase
     .from('couple_preferences')
     .select('*')

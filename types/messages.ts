@@ -3,13 +3,17 @@ export type UserType = 'couple' | 'prestataire'
 export interface Conversation {
   id: string
   couple_id: string
-  prestataire_id: string
+  provider_id: string // Nom réel dans la DB
+  prestataire_id?: string // Alias pour compatibilité
   last_message?: string | null
   last_message_at?: string | null
-  unread_count: number
+  unread_count_couple?: number // Nom réel dans la DB
+  unread_count_provider?: number // Nom réel dans la DB
+  unread_count?: number // Alias pour compatibilité
   created_at: string
   updated_at: string
   status?: 'active' | 'archived'
+  demande_id?: string | null
   // Relations
   couple?: {
     id: string

@@ -7,9 +7,14 @@ import { cn } from '@/lib/utils';
 import { PricingColumn, PricingColumnProps } from '@/components/ui/pricing-column';
 import { Section } from '@/components/ui/section';
 import Particles from '@/components/Particles';
+import { CheckoutButton } from '@/components/stripe/CheckoutButton';
+import { useUser } from '@/hooks/use-user';
+import { useRouter } from 'next/navigation';
 
 export default function PricingSection() {
   const [userType, setUserType] = useState<'couples' | 'prestataires'>('couples');
+  const { user } = useUser();
+  const router = useRouter();
 
   // Plan unique pour les couples
   const couplesPricing: PricingColumnProps[] = [
@@ -64,8 +69,10 @@ export default function PricingSection() {
       priceNote: "Sans engagement • Résiliable à tout moment",
       cta: {
         variant: "glow",
-        label: "Passer Premium",
-        href: "/sign-up?plan=premium",
+        label: user ? "Passer Premium" : "S'inscrire et passer Premium",
+        href: user ? undefined : "/sign-up?plan=premium",
+        planType: "premium",
+        onClick: user ? undefined : () => router.push("/sign-up?plan=premium"),
       },
       features: [
         "Demandes de contacts illimitées",
@@ -84,8 +91,10 @@ export default function PricingSection() {
       priceNote: "Sans engagement • Résiliable à tout moment",
       cta: {
         variant: "glow",
-        label: "Devenir Pro",
-        href: "/sign-up?plan=pro",
+        label: user ? "Devenir Pro" : "S'inscrire et devenir Pro",
+        href: user ? undefined : "/sign-up?plan=pro",
+        planType: "pro",
+        onClick: user ? undefined : () => router.push("/sign-up?plan=pro"),
       },
       features: [
         "Tout de Premium, plus :",
@@ -205,17 +214,42 @@ export default function PricingSection() {
                 transition={{ delay: index * 0.1 }}
                 className="h-full"
               >
-                <PricingColumn
-                  name={plan.name}
-                  icon={plan.icon}
-                  description={plan.description}
-                  price={plan.price}
-                  priceNote={plan.priceNote}
-                  cta={plan.cta}
-                  features={plan.features}
-                  variant={plan.variant}
-                  className={plan.className}
-                />
+                <div className="relative flex flex-col h-full">
+                  <PricingColumn
+                    name={plan.name}
+                    icon={plan.icon}
+                    description={plan.description}
+                    price={plan.price}
+                    priceNote={plan.priceNote}
+                    cta={
+                      user && plan.cta.planType && plan.price > 0
+                        ? {
+                            ...plan.cta,
+                            href: undefined,
+                            onClick: undefined,
+                          }
+                        : plan.cta
+                    }
+                    features={plan.features}
+                    variant={plan.variant}
+                    className={plan.className}
+                  />
+                  {user && plan.cta.planType && plan.price > 0 && (
+                    <div className="px-6 pb-6">
+                      <CheckoutButton
+                        planType={plan.cta.planType}
+                        variant={plan.cta.variant}
+                        className={cn(
+                          "w-full mt-4",
+                          plan.cta.variant === "glow" &&
+                            "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all"
+                        )}
+                      >
+                        {plan.cta.label}
+                      </CheckoutButton>
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ))}
           </motion.div>
