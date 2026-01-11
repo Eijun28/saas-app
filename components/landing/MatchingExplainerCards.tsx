@@ -1,7 +1,16 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { Users, Briefcase, Sparkles, Rocket, Target, CheckCircle, TrendingUp } from 'lucide-react'
+import { 
+  Users, 
+  Briefcase, 
+  Sparkles, 
+  MessageCircle, 
+  HeartHandshake, 
+  BadgeCheck, 
+  Gift, 
+  TrendingUp
+} from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -52,48 +61,27 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
           className={cn(
             'absolute inset-0 [backface-visibility:hidden]',
             'rounded-2xl p-6',
-            // Fond blanc avec accents violets subtils
-            'bg-white',
-            'border-2',
-            // Bordure violette douce harmonisée
-            'border-[#c081e3]/30',
-            'shadow-lg',
             'overflow-hidden',
-            // Effet glow sur les contours
-            'shadow-[0_0_20px_rgba(168,85,247,0.3),0_0_40px_rgba(168,85,247,0.15),inset_0_0_20px_rgba(168,85,247,0.1)]',
-            'hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(168,85,247,0.2),inset_0_0_30px_rgba(168,85,247,0.15)]',
-            'hover:border-[#c081e3]/50',
             'transition-all duration-500'
           )}
           style={{
             transform: 'rotateY(0deg)',
             backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
+            WebkitBackfaceVisibility: 'hidden',
+            background: 'white',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)'
           }}
         >
-          {/* Dégradé violet avec nuance douce */}
-          <div 
-            className="absolute inset-0 opacity-10"
-            style={{
-              background: `linear-gradient(135deg, ${data.gradientColors.from}15, ${data.gradientColors.via}20, ${data.gradientColors.to}15)`
-            }}
-          />
-
-          {/* Effet glow autour de la carte - SUBTIL */}
-          <div 
-            className="absolute -inset-1 rounded-2xl opacity-5 blur-2xl group-hover:opacity-10 transition-opacity duration-500"
-            style={{
-              background: `linear-gradient(to right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`
-            }}
-          />
+          {/* Pattern overlay plus doux */}
+          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.05),transparent_60%)]" />
 
           {/* Icône avec glow INTENSIFIÉ */}
-          <div className="relative mb-6">
+          <div className="relative mb-6 z-10">
             <div 
-              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2 ring-[#c081e3]"
+              className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center shadow-lg relative z-10 ring-2 ring-gray-200"
               style={{
                 background: `linear-gradient(to bottom right, ${data.gradientColors.from}, ${data.gradientColors.via}, ${data.gradientColors.to})`,
-                boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)'
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
               }}
             >
               <Icon className="w-8 h-8 text-white" />
@@ -107,19 +95,19 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             />
           </div>
 
-          {/* Texte - COULEURS ADAPTÉES */}
+          {/* Texte */}
           <div className="relative z-10 text-center space-y-2">
             <h3 className="text-2xl font-bold text-gray-900">
               {data.title}
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed px-2">
+            <p className="text-sm text-gray-700 leading-relaxed px-2">
               {data.description}
             </p>
           </div>
 
           {/* Indicateur hover */}
-          <div className="absolute bottom-4 left-0 right-0 text-center">
-            <div className="inline-flex items-center gap-2 text-xs text-gray-500">
+          <div className="absolute bottom-4 left-0 right-0 text-center z-10">
+            <div className="inline-flex items-center gap-2 text-xs text-gray-600">
               <Sparkles className="w-3 h-3" />
               <span>Survolez pour voir les détails</span>
             </div>
@@ -133,29 +121,76 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
             transform: 'rotateY(180deg)',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: `linear-gradient(135deg, ${data.gradientColors.from}85, ${data.gradientColors.via}90, ${data.gradientColors.to}85)`,
-            boxShadow: `0 0 15px ${data.glowColor}40, 0 0 30px rgba(168, 85, 247, 0.2), inset 0 0 30px rgba(255, 255, 255, 0.15)`
+            background: `linear-gradient(135deg, ${data.gradientColors.from}15, ${data.gradientColors.via}10, ${data.gradientColors.to}15)`,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)'
           }}
         >
           {/* Pattern overlay plus doux */}
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_60%)]" />
+          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.05),transparent_60%)]" />
 
           {/* Features */}
           <div className="relative z-10 space-y-3 flex-1">
             {data.features.map((feature, index) => {
               const FeatureIcon = feature.icon
+              // Animations différentes selon le type d'icône
+              const getAnimationProps = () => {
+                if (feature.icon === HeartHandshake) {
+                  return {
+                    animate: { scale: [1, 1.1, 1] },
+                    transition: { duration: 2, repeat: Infinity, delay: index * 0.2 }
+                  }
+                }
+                if (feature.icon === Gift) {
+                  return {
+                    animate: { y: [0, -3, 0] },
+                    transition: { duration: 2, repeat: Infinity, delay: index * 0.2 }
+                  }
+                }
+                if (feature.icon === MessageCircle) {
+                  return {
+                    animate: { rotate: [0, 5, -5, 0] },
+                    transition: { duration: 3, repeat: Infinity, delay: index * 0.2 }
+                  }
+                }
+                if (feature.icon === BadgeCheck) {
+                  return {
+                    animate: { scale: [1, 1.08, 1] },
+                    transition: { duration: 1.5, repeat: Infinity, delay: index * 0.2 }
+                  }
+                }
+                if (feature.icon === TrendingUp) {
+                  return {
+                    animate: { y: [0, -2, 0] },
+                    transition: { duration: 2, repeat: Infinity, delay: index * 0.2 }
+                  }
+                }
+                return {
+                  animate: { scale: [1, 1.05, 1] },
+                  transition: { duration: 2, repeat: Infinity, delay: index * 0.2 }
+                }
+              }
+              
+              const iconAnimation = getAnimationProps()
+              
               return (
-                <div
+                <motion.div
                   key={index}
-                  className="flex items-start gap-3 bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  className="flex items-start gap-3 bg-gray-50 rounded-lg p-3 border border-gray-200"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-white/30 flex items-center justify-center flex-shrink-0">
+                  <motion.div 
+                    className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0"
+                    animate={iconAnimation.animate}
+                    transition={iconAnimation.transition}
+                  >
                     <FeatureIcon className="w-4 h-4 text-white" />
-                  </div>
-                  <p className="text-sm text-white font-medium leading-snug">
+                  </motion.div>
+                  <p className="text-sm text-gray-900 font-medium leading-snug">
                     {feature.text}
                   </p>
-                </div>
+                </motion.div>
               )
             })}
           </div>
@@ -164,7 +199,7 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
           <div className="relative z-10 mt-4">
             <Link
               href="/sign-up"
-              className="w-full py-3 px-4 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold text-sm hover:bg-white/30 transition-all duration-300 flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#823F91] to-[#9D5FA8] border border-transparent text-white font-semibold text-sm hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-2"
             >
               <span>En savoir plus</span>
               <Sparkles className="w-4 h-4" />
@@ -184,9 +219,9 @@ export default function MatchingExplainerCards() {
       subtitle: 'Trouvez vos prestataires idéaux',
       description: 'Décrivez votre événement en 30 secondes et laissez notre algorithme intelligent trouver les prestataires parfaits.',
       features: [
-        { icon: Rocket, text: 'Quiz rapide de 3 questions' },
-        { icon: Target, text: 'Matching instantané et personnalisé' },
-        { icon: CheckCircle, text: 'Profils vérifiés et avis certifiés' }
+        { icon: MessageCircle, text: 'Quiz rapide de 3 questions' },
+        { icon: HeartHandshake, text: 'Matching instantané et personnalisé' },
+        { icon: BadgeCheck, text: 'Profils vérifiés et avis certifiés' }
       ],
       gradient: 'from-[#823F91] via-[#c081e3] to-[#823F91]',
       glowColor: 'rgba(130,63,145,0.6)',
@@ -202,8 +237,8 @@ export default function MatchingExplainerCards() {
       subtitle: 'Recevez des demandes qualifiées',
       description: 'Créez votre profil et recevez automatiquement des demandes qui correspondent exactement à vos services.',
       features: [
-        { icon: Target, text: 'Leads 100% qualifiés et ciblés' },
-        { icon: Sparkles, text: 'Zéro prospection nécessaire' },
+        { icon: Gift, text: 'Leads 100% qualifiés et ciblés' },
+        { icon: HeartHandshake, text: 'Zéro prospection nécessaire' },
         { icon: TrendingUp, text: '+40% de réservations en moyenne' }
       ],
       gradient: 'from-[#c081e3] via-[#823F91] to-[#c081e3]',
