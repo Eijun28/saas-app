@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { Sparkles, Users, Send } from 'lucide-react'
+import { Sparkles, Users, Send, HeartHandshake } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Orbit } from '@/components/animate-ui/icons/orbit'
 import MatchingExplainerCards from './MatchingExplainerCards'
 
 // Composant SkeletonMatching adapté pour pleine largeur
@@ -208,7 +207,7 @@ const SkeletonMatchingFullWidth = () => {
           </div>
           <div className="flex-1">
             <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Matching intelligent</h3>
-            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Notre IA analyse vos critères (prestataire recherché, budget, traditions culturelles) pour vous proposer les meilleures correspondances en quelques secondes</p>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Matchez avec des prestataires qui vous ressemblent en 10 secondes</p>
           </div>
         </div>
 
@@ -390,32 +389,49 @@ export default function MatchingQuizSection() {
       className="py-8 sm:py-12 md:py-20 px-3 sm:px-4 bg-background relative overflow-hidden scroll-mt-20"
     >
       <div className="max-w-4xl mx-auto">
-        {/* Rectangle avec icône Orbit */}
+        {/* Rectangle avec icône HeartHandshake */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={isVisible ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.5 }}
           className="mb-6 sm:mb-8 flex items-center justify-center"
         >
-          <div 
+          <motion.div 
             className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg flex items-center justify-center"
             style={{ 
               backgroundColor: '#823F91',
               boxShadow: '0 0 30px rgba(130, 63, 145, 0.3), 0 0 60px rgba(130, 63, 145, 0.2), 0 0 90px rgba(130, 63, 145, 0.1)'
             }}
+            animate={isVisible ? {
+              scale: [1, 1.05, 1],
+            } : {}}
+            transition={{
+              scale: {
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
           >
-            <div className="text-white">
-              <Orbit 
-                animate={true}
-                loop={true}
-                animation="default"
-                loopDelay={3000}
-                size={48}
+            <motion.div 
+              className="text-white"
+              animate={isVisible ? {
+                rotate: [0, 5, -5, 0],
+              } : {}}
+              transition={{
+                rotate: {
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+            >
+              <HeartHandshake 
                 className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16"
-                strokeWidth={3}
+                strokeWidth={2.5}
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </motion.div>
 
         {/* Titre principal (apparaît au scroll) */}
