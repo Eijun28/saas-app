@@ -19,6 +19,9 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:12',message:'signUp entry',data:{email,role,prenom:profileData.prenom},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   // ✅ VALIDATION 1: Vérifier format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
@@ -47,6 +50,9 @@ export async function signUp(
     profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
   }
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:50',message:'before supabase.auth.signUp',data:{email,role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.signUp({
@@ -63,6 +69,9 @@ export async function signUp(
     },
   })
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:66',message:'after supabase.auth.signUp',data:{hasError:!!error,errorMessage:error?.message,hasUser:!!data?.user,userId:data?.user?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
@@ -70,14 +79,23 @@ export async function signUp(
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:73',message:'returning error from signUp',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       return { error: error.message }
     }
   }
 
   if (data.user) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:77',message:'user created, entering profile creation',data:{role,userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     try {
       if (role === 'couple') {
         // Utiliser le client admin pour contourner les politiques RLS
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:81',message:'before createAdminClient for couple',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
         const adminClient = createAdminClient()
         
         // Insérer dans la table couples (nouvelle structure)
@@ -90,6 +108,9 @@ export async function signUp(
           return { error: 'ID utilisateur invalide' }
         }
 
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:93',message:'before couples insert',data:{userId,email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
@@ -100,6 +121,9 @@ export async function signUp(
             partner_2_name: profileData.nom || null,
           })
 
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:104',message:'after couples insert',data:{hasError:!!coupleError,errorMessage:coupleError?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
           // Rollback : supprimer l'utilisateur si couple échoue
@@ -129,6 +153,9 @@ export async function signUp(
         }
       } else {
         // Utiliser le client admin pour contourner les politiques RLS
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:132',message:'before createAdminClient for prestataire',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+        // #endregion
         const adminClient = createAdminClient()
         
         // ✅ VALIDATION 6: Vérifier que l'ID utilisateur existe
@@ -140,6 +167,9 @@ export async function signUp(
         }
 
         // Insérer dans la table profiles (prestataires)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:143',message:'before profiles insert',data:{userId,email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         const { error: profileError } = await adminClient
           .from('profiles')
           .insert({
@@ -151,6 +181,9 @@ export async function signUp(
             nom_entreprise: profileData.nomEntreprise ? profileData.nomEntreprise.trim().substring(0, 200) : null,
           })
 
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:154',message:'after profiles insert',data:{hasError:!!profileError,errorMessage:profileError?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         if (profileError) {
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
@@ -206,11 +239,17 @@ export async function signUp(
         }
       }
     } catch (err: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:208',message:'catch block in signUp',data:{errorMessage:err?.message,errorStack:err?.stack?.substring(0,200),errorName:err?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
       logger.error('Erreur lors de la création du profil', err)
       // Si c'est une erreur RLS mais que l'utilisateur est créé, on continue
       if (err.message?.includes('row-level security')) {
         logger.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
       } else {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:214',message:'returning error from catch',data:{errorMessage:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
         return { error: `Erreur lors de la création du profil: ${err.message}` }
       }
     }
@@ -234,10 +273,24 @@ export async function signUp(
       logger.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant)', emailError)
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:237',message:'before redirect',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     revalidatePath('/', 'layout')
-    redirect('/auth/confirm')
+    try {
+      redirect('/auth/confirm')
+    } catch (redirectErr: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:240',message:'redirect exception caught',data:{errorMessage:redirectErr?.message,errorName:redirectErr?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      // Next.js redirect() lance une exception spéciale, on la laisse passer
+      throw redirectErr
+    }
   }
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:247',message:'signUp returning success',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   return { success: true }
 }
 

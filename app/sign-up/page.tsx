@@ -92,27 +92,69 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError(null)
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:91',message:'onSubmit entry',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     try {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:96',message:'before signUp call',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
       const result = await signUp(data.email, data.password, data.role, {
         prenom: data.prenom,
         nom: data.nom,
         nomEntreprise: data.nomEntreprise,
       })
 
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:102',message:'after signUp call',data:{hasResult:!!result,hasError:!!result?.error,errorMessage:result?.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
+      
+      // Vérifier si result est null ou undefined (réponse inattendue)
+      if (!result) {
+        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
+        return
+      }
+
       if (result?.error) {
+        // Gérer les erreurs spécifiques
         if (result.error.includes('Invalid API key') || result.error.includes('invalid') || result.error.includes('Variables d\'environnement')) {
           setError('Erreur de configuration. Veuillez contacter le support.')
+        } else if (result.error.includes('User already registered') || result.error.includes('already registered')) {
+          setError('Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.')
+        } else if (result.error.includes('Password')) {
+          setError('Le mot de passe ne respecte pas les critères requis.')
+        } else if (result.error.includes('Email')) {
+          setError('L\'adresse email n\'est pas valide.')
         } else {
           setError(result.error)
         }
-      } else {
+      } else if (result?.success) {
+        // Redirection vers onboarding ou confirmation
         router.push('/onboarding')
+      } else {
+        // Cas où result existe mais n'a ni error ni success
+        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {
-      if (err.message?.includes('Variables d\'environnement') || err.message?.includes('Invalid API key') || err.message?.includes('invalid')) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:111',message:'catch block in onSubmit',data:{errorMessage:err?.message,errorStack:err?.stack?.substring(0,200),errorName:err?.name,hasMessage:!!err?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      
+      // Gérer différents types d'erreurs
+      const errorMessage = err?.message || ''
+      
+      if (errorMessage.includes('Variables d\'environnement') || errorMessage.includes('Invalid API key') || errorMessage.includes('invalid')) {
         setError('Erreur de configuration. Veuillez contacter le support.')
+      } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('NetworkError')) {
+        setError('Erreur de connexion au serveur. Vérifiez votre connexion internet et réessayez.')
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+        setError('La requête a pris trop de temps. Veuillez réessayer.')
+      } else if (errorMessage.includes('Unexpected') || errorMessage.includes('unexpected response')) {
+        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
+      } else if (errorMessage) {
+        setError(errorMessage)
       } else {
-        setError(err.message || 'Une erreur est survenue')
+        setError('Une erreur est survenue lors de l\'inscription. Veuillez réessayer.')
       }
     } finally {
       setIsLoading(false)
@@ -412,9 +454,9 @@ export default function SignUpPage() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-red-50 border border-red-200 rounded-xl text-center"
+                  className="p-4 bg-rose-50/80 border border-red-200/60 rounded-xl text-center"
                 >
-                  <p className="text-sm text-red-600">{error}</p>
+                  <p className="text-sm text-blue-900 font-medium">{error}</p>
                 </motion.div>
               )}
 
