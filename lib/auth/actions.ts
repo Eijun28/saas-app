@@ -99,16 +99,39 @@ export async function signUp(
         
         const userId = data.user.id
 
-        // Attendre un peu pour s'assurer que l'utilisateur est disponible dans auth.users
-        // (nécessaire si la contrainte couples_user_id_fkey référence auth.users)
-        await new Promise(resolve => setTimeout(resolve, 200))
+        // Vérifier que l'utilisateur existe bien dans auth.users avant d'insérer
+        // (nécessaire pour la contrainte couples_user_id_fkey qui référence auth.users(id))
+        let userExists = false
+        let retries = 0
+        const maxRetries = 5
+        
+        while (!userExists && retries < maxRetries) {
+          try {
+            const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
+            if (userData && userData.user && !userCheckError) {
+              userExists = true
+            } else {
+              retries++
+              await new Promise(resolve => setTimeout(resolve, 100))
+            }
+          } catch (err) {
+            retries++
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+        }
+
+        if (!userExists) {
+          logger.error('Utilisateur non trouvé dans auth.users après plusieurs tentatives')
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: 'Erreur lors de la création du compte. Veuillez réessayer.' }
+        }
 
         // Créer directement dans couples (pas de profil dans profiles pour les couples)
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
             id: userId,
-            user_id: userId, // ✅ Utiliser user_id
+            user_id: userId, // ✅ Utiliser user_id - référence auth.users(id)
             email: email,
             partner_1_name: profileData.prenom || null,
             partner_2_name: profileData.nom || null,
