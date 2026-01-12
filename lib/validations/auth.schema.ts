@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const signUpSchema = z
   .object({
     role: z.enum(['couple', 'prestataire'], {
-      errorMap: () => ({ message: 'Veuillez sélectionner un rôle' }),
+      message: 'Veuillez sélectionner un rôle',
     }),
     prenom: z.string().min(1, 'Le prénom est requis').min(2, 'Le prénom doit contenir au moins 2 caractères'),
     nom: z.string().min(1, 'Le nom est requis').min(2, 'Le nom doit contenir au moins 2 caractères'),
