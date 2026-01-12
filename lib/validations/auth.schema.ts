@@ -2,17 +2,20 @@ import { z } from 'zod'
 
 export const signUpSchema = z
   .object({
-    role: z.enum(['couple', 'prestataire']),
-    prenom: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
-    nom: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+    role: z.enum(['couple', 'prestataire'], {
+      errorMap: () => ({ message: 'Veuillez sélectionner un rôle' }),
+    }),
+    prenom: z.string().min(1, 'Le prénom est requis').min(2, 'Le prénom doit contenir au moins 2 caractères'),
+    nom: z.string().min(1, 'Le nom est requis').min(2, 'Le nom doit contenir au moins 2 caractères'),
     nomEntreprise: z.string().optional(),
-    email: z.string().email('Email invalide'),
+    email: z.string().min(1, 'L\'email est requis').email('Email invalide'),
     password: z
       .string()
-      .min(8, 'Minimum 8 caractères')
-      .regex(/[A-Z]/, 'Au moins une majuscule')
-      .regex(/[0-9]/, 'Au moins un chiffre'),
-    confirmPassword: z.string(),
+      .min(1, 'Le mot de passe est requis')
+      .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+      .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
+      .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre'),
+    confirmPassword: z.string().min(1, 'La confirmation du mot de passe est requise'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Les mots de passe ne correspondent pas',
@@ -20,11 +23,11 @@ export const signUpSchema = z
   })
   .refine((data) => {
     if (data.role === 'prestataire') {
-      return data.nomEntreprise && data.nomEntreprise.length >= 2
+      return data.nomEntreprise && data.nomEntreprise.trim().length >= 2
     }
     return true
   }, {
-    message: 'Le nom de l\'entreprise est requis pour les prestataires',
+    message: 'Le nom de l\'entreprise est requis pour les prestataires (minimum 2 caractères)',
     path: ['nomEntreprise'],
   })
 

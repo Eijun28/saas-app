@@ -28,7 +28,8 @@ export default function SignUpPage() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isValid, isDirty },
+    trigger,
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -40,10 +41,27 @@ export default function SignUpPage() {
       confirmPassword: '',
       nomEntreprise: '',
     },
-    mode: 'onSubmit',
+    mode: 'onChange', // Validation en temps réel
   })
-
+  
+  const password = watch('password')
   const selectedRole = watch('role')
+  const prenom = watch('prenom')
+  const nom = watch('nom')
+  const email = watch('email')
+  const confirmPassword = watch('confirmPassword')
+  const nomEntreprise = watch('nomEntreprise')
+  
+  // Vérifier si le formulaire est valide : pas d'erreurs ET tous les champs requis remplis
+  const hasRequiredFields = 
+    prenom?.trim() && 
+    nom?.trim() && 
+    email?.trim() && 
+    password?.trim() && 
+    confirmPassword?.trim() &&
+    (selectedRole === 'couple' || (selectedRole === 'prestataire' && nomEntreprise?.trim()))
+  
+  const isFormValid = Object.keys(errors).length === 0 && hasRequiredFields
 
   useEffect(() => {
     async function checkSlots() {
@@ -234,12 +252,13 @@ export default function SignUpPage() {
               <motion.div variants={itemVariants} className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
                 <LabelInputContainer className="flex-1">
                   <Label htmlFor="prenom" className="text-sm font-medium text-neutral-700">
-                    Prénom
+                    Prénom <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="prenom"
                     placeholder="Votre prénom"
                     type="text"
+                    required
                     {...register('prenom')}
                     disabled={isLoading}
                     className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
@@ -251,12 +270,13 @@ export default function SignUpPage() {
 
                 <LabelInputContainer className="flex-1">
                   <Label htmlFor="nom" className="text-sm font-medium text-neutral-700">
-                    Nom
+                    Nom <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="nom"
                     placeholder="Votre nom"
                     type="text"
+                    required
                     {...register('nom')}
                     disabled={isLoading}
                     className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
@@ -283,12 +303,13 @@ export default function SignUpPage() {
                   
                   <LabelInputContainer>
                     <Label htmlFor="nomEntreprise" className="text-sm font-medium text-neutral-700">
-                      Nom de l'entreprise
+                      Nom de l'entreprise <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="nomEntreprise"
                       placeholder="Ex: Studio Photo Lumière"
                       type="text"
+                      required
                       {...register('nomEntreprise')}
                       disabled={isLoading}
                       className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
@@ -308,12 +329,13 @@ export default function SignUpPage() {
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
                   <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
-                    Adresse email
+                    Adresse email <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="email"
                     placeholder="votre@email.com"
                     type="email"
+                    required
                     {...register('email')}
                     disabled={isLoading}
                     className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
@@ -328,18 +350,39 @@ export default function SignUpPage() {
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
                   <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
-                    Mot de passe
+                    Mot de passe <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="password"
                     placeholder="Minimum 8 caractères"
                     type="password"
+                    required
                     {...register('password')}
                     disabled={isLoading}
                     className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
                   />
                   {errors.password && (
                     <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                  )}
+                  {/* Aide pour les prérequis du mot de passe */}
+                  {password && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
+                      <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
+                        <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : ''}`}>
+                          <span>{password.length >= 8 ? '✓' : '○'}</span>
+                          <span>Au moins 8 caractères</span>
+                        </li>
+                        <li className={`flex items-center gap-1 ${/[A-Z]/.test(password) ? 'text-green-600' : ''}`}>
+                          <span>{/[A-Z]/.test(password) ? '✓' : '○'}</span>
+                          <span>Au moins une majuscule</span>
+                        </li>
+                        <li className={`flex items-center gap-1 ${/[0-9]/.test(password) ? 'text-green-600' : ''}`}>
+                          <span>{/[0-9]/.test(password) ? '✓' : '○'}</span>
+                          <span>Au moins un chiffre</span>
+                        </li>
+                      </ul>
+                    </div>
                   )}
                 </LabelInputContainer>
               </motion.div>
@@ -348,12 +391,13 @@ export default function SignUpPage() {
               <motion.div variants={itemVariants}>
                 <LabelInputContainer>
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
-                    Confirmer le mot de passe
+                    Confirmer le mot de passe <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="confirmPassword"
                     placeholder="Répétez votre mot de passe"
                     type="password"
+                    required
                     {...register('confirmPassword')}
                     disabled={isLoading}
                     className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
@@ -410,9 +454,9 @@ export default function SignUpPage() {
               <motion.div variants={itemVariants} className="space-y-4 pt-2">
                 <motion.button
                   type="submit"
-                  disabled={isLoading}
-                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  disabled={isLoading || !isFormValid}
+                  whileHover={{ scale: isLoading || !isFormValid ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading || !isFormValid ? 1 : 0.98 }}
                   className="group relative w-full h-14 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -424,6 +468,10 @@ export default function SignUpPage() {
                           className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
                         />
                         Création en cours...
+                      </>
+                    ) : !isFormValid ? (
+                      <>
+                        Veuillez remplir tous les champs obligatoires
                       </>
                     ) : (
                       <>
@@ -443,6 +491,18 @@ export default function SignUpPage() {
                   </span>
                 </motion.button>
 
+                {!isFormValid && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-amber-50 border border-amber-200 rounded-lg"
+                  >
+                    <p className="text-xs text-amber-700 text-center">
+                      <span className="font-semibold">Veuillez remplir tous les champs obligatoires</span> (marqués d'un <span className="text-red-500">*</span>) pour continuer.
+                    </p>
+                  </motion.div>
+                )}
+                
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -454,6 +514,10 @@ export default function SignUpPage() {
                     Vos données sont sécurisées et protégées. Inscription gratuite, sans engagement.
                   </span>
                 </motion.div>
+                
+                <p className="text-xs text-neutral-400 text-center">
+                  Les champs marqués d'un <span className="text-red-500">*</span> sont obligatoires
+                </p>
               </motion.div>
 
               <motion.div
