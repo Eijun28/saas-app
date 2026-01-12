@@ -86,7 +86,24 @@ export function ProfileDescriptionEditor({
 
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        
+        // Message d'erreur plus détaillé pour aider au débogage
+        let errorMessage = 'Erreur lors de la sauvegarde';
+        if (error.code === '42703') {
+          errorMessage = 'Erreur : Une ou plusieurs colonnes n\'existent pas dans la base de données. Veuillez contacter le support.';
+        } else if (error.code === '42501') {
+          errorMessage = 'Erreur : Vous n\'avez pas les permissions nécessaires pour modifier ce profil.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       // Mettre à jour les valeurs initiales avec les valeurs sauvegardées

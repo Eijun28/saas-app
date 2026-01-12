@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Users } from 'lucide-react';
+import { User, Users, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PricingColumn, PricingColumnProps } from '@/components/ui/pricing-column';
 import { Section } from '@/components/ui/section';
@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 
 export default function PricingSection() {
   const [userType, setUserType] = useState<'couples' | 'prestataires'>('couples');
+  const [billingPeriod, setBillingPeriod] = useState<'day' | 'month'>('month');
   const { user } = useUser();
   const router = useRouter();
 
@@ -23,6 +24,7 @@ export default function PricingSection() {
       description: "Tout ce dont vous avez besoin pour trouver vos prestataires parfaits.",
       price: 0,
       priceNote: "Gratuit pour toujours",
+      billingPeriod: "month",
       cta: {
         variant: "glow",
         label: "Créer mon compte gratuit",
@@ -39,56 +41,40 @@ export default function PricingSection() {
     },
   ];
 
-  // Plans pour les prestataires
-  const prestatairesPricing: PricingColumnProps[] = [
+  // Fonction pour calculer le prix selon la période
+  const calculatePrice = (monthlyPrice: number, period: 'day' | 'month'): number => {
+    if (period === 'day') {
+      return monthlyPrice / 30; // Approximation : 30 jours par mois
+    }
+    return monthlyPrice;
+  };
+
+  // Plans pour les prestataires (prix mensuels de base)
+  const prestatairesPricingBase: Array<Omit<PricingColumnProps, 'price' | 'billingPeriod'> & { monthlyPrice: number }> = [
     {
-      name: "Gratuit",
-      description: "Testez la plateforme sans engagement.",
-      price: 0,
-      priceNote: "Gratuit pour toujours",
+      name: "PACK STARTER",
+      description: "Pour tester NUPLY",
+      monthlyPrice: 29,
+      priceNote: "",
       cta: {
         variant: "outline",
-        label: "Créer mon profil",
-        href: "/sign-up",
+        label: user ? "Activer Starter" : "S'inscrire et activer Starter",
+        href: "/sign-up?plan=starter",
       },
       features: [
-        "Créer votre profil professionnel",
-        "Apparaître dans les recherches",
-        "Recevoir jusqu'à 3 demandes par mois",
-        "Portfolio basique (10 photos max)",
-        "Support par email",
+        "Profil prestataire basique (10 photos)",
+        "5 demandes de contact/mois",
+        "Messagerie avec couples (48h de délai de réponse max)",
+        "Visibilité dans les résultats de recherche",
       ],
       variant: "default",
-      className: "hidden lg:flex",
     },
     {
-      name: "Premium",
+      name: "PACK PRO",
       icon: <User className="size-4" />,
-      description: "Pour les professionnels qui veulent plus de visibilité.",
-      price: 0,
-      priceNote: "Gratuit pendant la période de lancement",
-      cta: {
-        variant: "glow",
-        label: user ? "Activer Premium" : "S'inscrire et activer Premium",
-        href: user ? undefined : "/sign-up?plan=premium",
-        planType: "premium",
-        onClick: user ? undefined : () => router.push("/sign-up?plan=premium"),
-      },
-      features: [
-        "Demandes de contacts illimitées",
-        "Portfolio illimité avec galeries privées",
-        "Badge professionnel vérifié",
-        "Apparition prioritaire dans les matchs",
-        "Support prioritaire par email et chat",
-      ],
-      variant: "glow-brand",
-    },
-    {
-      name: "Pro",
-      icon: <Users className="size-4" />,
-      description: "Pour dominer votre catégorie et maximiser vos réservations.",
-      price: 0,
-      priceNote: "Gratuit pendant la période de lancement",
+      description: "L'essentiel pour réussir sur NUPLY",
+      monthlyPrice: 59,
+      priceNote: "",
       cta: {
         variant: "glow",
         label: user ? "Activer Pro" : "S'inscrire et activer Pro",
@@ -97,15 +83,52 @@ export default function PricingSection() {
         onClick: user ? undefined : () => router.push("/sign-up?plan=pro"),
       },
       features: [
-        "Tout de Premium, plus :",
-        "Position #1 garanti dans votre spécialité",
-        "Analytics détaillés et reporting mensuel",
-        "Publicité sponsorisée sur la plateforme",
-        "Account manager dédié et formation incluse",
+        "Demandes illimitées",
+        "Galerie professionnelle (40 photos + 3 vidéos)",
+        "Calendrier de disponibilités synchronisé",
+        "Intégration Google Calendar (sync auto)",
+        "Système de devis en ligne",
+        "Messagerie instantanée",
+        "Tableau de bord analytics (conversions, vues)",
+        "Badge \"Prestataire Pro\"",
+        "Contrats numériques avec signature",
+        "Paiements en ligne + acomptes sécurisés",
+      ],
+      variant: "glow-brand",
+    },
+    {
+      name: "PACK PREMIUM",
+      icon: <Users className="size-4" />,
+      description: "Pour les prestataires établis",
+      monthlyPrice: 89,
+      priceNote: "",
+      cta: {
+        variant: "glow",
+        label: user ? "Activer Premium" : "S'inscrire et activer Premium",
+        href: user ? undefined : "/sign-up?plan=premium",
+        planType: "premium",
+        onClick: user ? undefined : () => router.push("/sign-up?plan=premium"),
+      },
+      features: [
+        "Tout du pack Pro",
+        "Page prestataire personnalisée (mini-site brandé)",
+        "Paiements en ligne + acomptes sécurisés",
+        "Multi-comptes équipe (jusqu'à 3 utilisateurs)",
+        "Galerie illimitée + portfolio interactif",
+        "CRM intégré (suivi clients, relances auto)",
+        "Support prioritaire + account manager dédié",
+        "Exports comptables automatisés",
       ],
       variant: "glow",
     },
   ];
+
+  // Convertir les prix de base en prix selon la période sélectionnée
+  const prestatairesPricing: PricingColumnProps[] = prestatairesPricingBase.map(plan => ({
+    ...plan,
+    price: calculatePrice(plan.monthlyPrice, billingPeriod),
+    billingPeriod,
+  }));
 
   const currentPricing = userType === 'couples' ? couplesPricing : prestatairesPricing;
   const title = "Tarifs simples et transparents";
@@ -157,13 +180,33 @@ export default function PricingSection() {
           </motion.p>
         </div>
 
+        {/* Bandeau Offre Gratuite */}
+        {userType === 'prestataires' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15 }}
+            className="w-full max-w-2xl"
+          >
+            <div className="relative overflow-hidden rounded-lg border border-[#823F91]/20 bg-gradient-to-r from-[#823F91]/5 via-[#E8D4EF]/10 to-[#823F91]/5 px-4 py-3 backdrop-blur-sm">
+              <div className="flex items-center justify-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#823F91]" />
+                <span className="text-sm font-medium text-slate-700">
+                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit pendant 3 mois
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Toggle Couples / Prestataires */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="flex justify-center"
+          className="flex flex-col items-center gap-4"
         >
           <div className="inline-flex items-center bg-white rounded-full p-1 shadow-sm border border-slate-200">
             <button
@@ -189,6 +232,39 @@ export default function PricingSection() {
               Pour les prestataires
             </button>
           </div>
+
+          {/* Toggle Période de facturation (uniquement pour prestataires) */}
+          {userType === 'prestataires' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="inline-flex items-center bg-white rounded-full p-1 shadow-sm border border-slate-200"
+            >
+              <button
+                onClick={() => setBillingPeriod('day')}
+                className={cn(
+                  "px-4 py-2 rounded-full font-medium text-xs transition-all duration-300",
+                  billingPeriod === 'day'
+                    ? 'bg-[#823F91] text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+                )}
+              >
+                Par jour
+              </button>
+              <button
+                onClick={() => setBillingPeriod('month')}
+                className={cn(
+                  "px-4 py-2 rounded-full font-medium text-xs transition-all duration-300",
+                  billingPeriod === 'month'
+                    ? 'bg-[#823F91] text-white'
+                    : 'text-slate-600 hover:text-slate-900'
+                )}
+              >
+                Par mois
+              </button>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Pricing Cards */}
@@ -221,6 +297,7 @@ export default function PricingSection() {
                     description={plan.description}
                     price={plan.price}
                     priceNote={plan.priceNote}
+                    billingPeriod={plan.billingPeriod}
                     cta={
                       user && plan.cta.planType && plan.price > 0
                         ? {
@@ -265,7 +342,7 @@ export default function PricingSection() {
           <p className="text-slate-600 text-sm">
             {userType === 'couples' 
               ? "Aucune carte bancaire requise • Gratuit pour toujours"
-              : "Gratuit pendant la période de lancement • Aucune carte bancaire requise"}
+              : "Annulez à tout moment • Aucun engagement"}
           </p>
         </motion.div>
       </div>

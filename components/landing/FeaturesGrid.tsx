@@ -13,16 +13,16 @@ const SkeletonMatching = () => {
   
   const conversationSets = [
     [
-      { from: "couple", text: "Cherchons negafa franco-algérienne", avatar: "couple" },
-      { from: "ai", text: "3 prestataires trouvés !", avatar: "ai" },
+      { from: "couple", text: "Traiteur halal certifié • Couscous marocain + gastronomie française • 150 invités • Personnel bilingue • IDF", avatar: "couple" },
+      { from: "ai", text: "3 traiteurs experts matchés ! Tous certifiés halal + bilingues. Budget : 6200-6800€", avatar: "ai" },
     ],
     [
-      { from: "couple", text: "DJ qui fait dabké et variété française ?", avatar: "couple" },
-      { from: "ai", text: "2 DJs spécialisés multiculturel !", avatar: "ai" },
+      { from: "couple", text: "Traiteur 100% végétarien + vegan • Gestion allergies gluten/lactose • Dégustation incluse • Lyon • 80 pers", avatar: "couple" },
+      { from: "ai", text: "4 traiteurs spécialisés trouvés ! Experts fusion végé + allergies. Budget : 4000-4400€", avatar: "ai" },
     ],
     [
-      { from: "couple", text: "Traiteur végétarien indien + français", avatar: "couple" },
-      { from: "ai", text: "5 traiteurs disponibles !", avatar: "ai" },
+      { from: "couple", text: "Buffet libanais authentique • Animation cuisson pain live • Vaisselle orientale • 200 invités • Marseille", avatar: "couple" },
+      { from: "ai", text: "2 traiteurs ultra-spécialisés ! Animation live + équipement inclus. Budget : 7800-8200€", avatar: "ai" },
     ],
   ];
 

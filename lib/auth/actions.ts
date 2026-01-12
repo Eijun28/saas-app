@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendWelcomeEmail } from '@/lib/email/resend'
 
 import { revalidatePath } from 'next/cache'
 
@@ -170,6 +171,25 @@ export async function signUp(
       } else {
         return { error: `Erreur lors de la création du profil: ${err.message}` }
       }
+    }
+
+    // Envoyer l'email de bienvenue avec Resend (non bloquant)
+    try {
+      console.log('📧 Tentative d\'envoi email de bienvenue Resend pour:', email)
+      const emailResult = await sendWelcomeEmail(
+        email,
+        role,
+        profileData.prenom,
+        profileData.nom
+      )
+      if (emailResult.success) {
+        console.log('✅ Email de bienvenue Resend envoyé avec succès')
+      } else {
+        console.warn('⚠️ Email de bienvenue Resend non envoyé:', emailResult.error)
+      }
+    } catch (emailError) {
+      // Ne pas bloquer l'inscription si l'email échoue
+      console.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant):', emailError)
     }
 
     revalidatePath('/', 'layout')

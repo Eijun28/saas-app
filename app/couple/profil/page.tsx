@@ -210,6 +210,8 @@ interface CoupleProfile {
 
   service_priorities?: string[]
 
+  other_services_text?: string
+
   
 
   // Budget
@@ -263,6 +265,8 @@ export default function CoupleProfilPage() {
     services_needed: [],
 
     service_priorities: [],
+
+    other_services_text: '',
 
     wedding_country: 'France',
 
@@ -357,6 +361,8 @@ export default function CoupleProfilPage() {
           services_needed: data.services_needed || [],
 
           service_priorities: data.service_priorities || [],
+
+          other_services_text: data.other_services_text || '',
 
           budget_min: data.budget_min || undefined,
 
@@ -487,6 +493,8 @@ export default function CoupleProfilPage() {
           services_needed: formData.services_needed || [],
 
           service_priorities: formData.service_priorities || [],
+
+          other_services_text: formData.other_services_text || null,
 
           budget_min: formData.budget_min || null,
 
@@ -1408,13 +1416,23 @@ export default function CoupleProfilPage() {
 
                           }`}
 
-                          onClick={() => setFormData({
+                          onClick={() => {
 
-                            ...formData,
+                            const newServices = toggleArrayItem(formData.services_needed || [], service)
 
-                            services_needed: toggleArrayItem(formData.services_needed || [], service)
+                            setFormData({
 
-                          })}
+                              ...formData,
+
+                              services_needed: newServices,
+
+                              // Réinitialiser le texte personnalisé si "Autre" est désélectionné
+
+                              ...(service === 'Autre' && !newServices.includes('Autre') ? { other_services_text: '' } : {})
+
+                            })
+
+                          }}
 
                         >
 
@@ -1425,6 +1443,40 @@ export default function CoupleProfilPage() {
                       ))}
 
                     </div>
+
+                    {/* Champ de texte pour préciser les services "Autre" */}
+
+                    {formData.services_needed?.includes('Autre') && (
+
+                      <div className="mt-4 space-y-2">
+
+                        <Label htmlFor="other_services_text">Précisez les services nécessaires</Label>
+
+                        <Textarea
+
+                          id="other_services_text"
+
+                          value={formData.other_services_text || ''}
+
+                          onChange={(e) => setFormData({ ...formData, other_services_text: e.target.value })}
+
+                          placeholder="Ex: Location de matériel de sonorisation, Service de traduction, etc."
+
+                          rows={3}
+
+                          className="resize-none"
+
+                        />
+
+                        <p className="text-xs text-gray-500">
+
+                          Décrivez les services supplémentaires dont vous avez besoin
+
+                        </p>
+
+                      </div>
+
+                    )}
 
                   </div>
 

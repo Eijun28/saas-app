@@ -10,6 +10,7 @@ export interface PricingColumnProps {
   description: string;
   price: number;
   priceNote?: string;
+  billingPeriod?: "day" | "month";
   cta: {
     variant: "default" | "glow" | "outline";
     label: string;
@@ -28,6 +29,7 @@ export function PricingColumn({
   description,
   price,
   priceNote,
+  billingPeriod = "month",
   cta,
   features,
   variant = "default",
@@ -48,23 +50,23 @@ export function PricingColumn({
       )}
     >
       {/* Header */}
-      <div className="mb-4 flex items-start justify-between">
+      <div className="mb-4 flex items-center justify-center">
         <div className="flex items-center gap-2">
           {icon && (
             <div className="text-[#823F91]">{icon}</div>
           )}
-          <h3 className="text-lg font-semibold text-slate-900">{name}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 text-center">{name}</h3>
         </div>
       </div>
 
       {/* Description */}
-      <p className="mb-6 text-sm text-slate-600 leading-relaxed">
+      <p className="mb-6 text-sm text-slate-600 leading-relaxed text-center">
         {description}
       </p>
 
       {/* Price */}
       <div className="mb-2">
-        <div className="flex items-baseline gap-1">
+        <div className="flex items-baseline gap-1 justify-center">
           {price === 0 ? (
             <span className="text-4xl font-bold text-slate-900 tracking-tight">
               Gratuit
@@ -72,14 +74,16 @@ export function PricingColumn({
           ) : (
             <>
               <span className="text-4xl font-bold text-slate-900 tracking-tight">
-                {price}€
+                {price % 1 === 0 ? price.toFixed(0) : price.toFixed(2)}€
               </span>
-              <span className="text-base text-slate-500">/ mois</span>
+              <span className="text-base text-slate-500">
+                {billingPeriod === "day" ? "/ jour" : "/ mois"}
+              </span>
             </>
           )}
         </div>
         {priceNote && (
-          <p className="mt-2 text-xs text-slate-500">{priceNote}</p>
+          <p className="mt-2 text-xs text-slate-500 text-center">{priceNote}</p>
         )}
       </div>
 

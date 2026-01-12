@@ -250,11 +250,11 @@ export function PrestataireHeader() {
           <Button
             variant='ghost'
             size='icon'
-            className='md:hidden'
-            onClick={() => setOpenMobile(!openMobile)}
-            aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
+            className='md:hidden z-50 relative h-10 w-10 min-w-[2.5rem] touch-manipulation'
+            onClick={() => setOpenMobile(true)}
+            aria-label='Ouvrir le menu'
           >
-            <Menu className='h-5 w-5' />
+            <Menu className='h-6 w-6' />
           </Button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>

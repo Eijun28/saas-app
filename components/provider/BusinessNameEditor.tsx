@@ -57,8 +57,25 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
 
     if (error) {
       console.error('Update error:', error)
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
+      
+      // Message d'erreur plus détaillé pour aider au débogage
+      let errorMessage = 'Erreur lors de la sauvegarde'
+      if (error.code === '42703') {
+        errorMessage = 'Erreur : La colonne "nom_entreprise" n\'existe pas dans la base de données. Veuillez contacter le support.'
+      } else if (error.code === '42501') {
+        errorMessage = 'Erreur : Vous n\'avez pas les permissions nécessaires pour modifier ce profil.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
       toast.error('Erreur', {
-        description: error.message || 'Erreur lors de la sauvegarde',
+        description: errorMessage,
       })
       setIsSaving(false)
       return

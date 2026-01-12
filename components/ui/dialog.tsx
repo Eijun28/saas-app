@@ -71,6 +71,7 @@ function DialogContent({
           transform: 'translate(-50%, -50%)',
           maxHeight: '80vh',
           overflowY: 'auto',
+          ...props.style,
         }}
         {...props}
       >

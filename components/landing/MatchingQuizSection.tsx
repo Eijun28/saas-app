@@ -13,16 +13,16 @@ const SkeletonMatchingFullWidth = () => {
   
   const conversationSets = [
     {
-      query: "Cherchons une negafa franco-algérienne pour notre mariage • Budget : 1500€ • Spécialisée en traditions franco-algériennes",
-      result: "3 negafas trouvées ! Budget : 1200-1800€. Voulez-vous les contacter ?"
+      query: "Traiteur spécialisé cuisine marocaine traditionnelle (couscous, tajine) + menu français gastronomique • 150 invités • Budget 6000-7000€ • Halal certifié • Service à table avec personnel bilingue arabe-français • Région Île-de-France • Date : 15 juin 2026",
+      result: "3 traiteurs parfaitement matchés ! Tous certifiés halal, bilingues, expérience mariages mixtes. Budget : 6200-6800€. Voulez-vous les contacter ?"
     },
     {
-      query: "DJ qui fait dabké et variété française • Budget : 2500€ • Répertoire multiculturel",
-      result: "2 DJs spécialisés ! Budget : 2000-3000€. Voulez-vous les contacter ?"
+      query: "Traiteur fusion indienne-française • Menu 100% végétarien avec options vegan • 80 personnes • Budget max 4500€ • Présentation moderne • Doit gérer allergies (gluten, lactose) • Dégustation gratuite avant mariage • Disponible août 2026 • Lyon et alentours",
+      result: "4 traiteurs experts trouvés ! Spécialistes fusion végé + gestion allergies. Tous proposent dégustation incluse. Budget : 4000-4400€. Voulez-vous les contacter ?"
     },
     {
-      query: "Traiteur végétarien indien + français pour 150 invités • Budget : 4500€ • Service complet",
-      result: "5 traiteurs disponibles ! Budget : 4000-5000€. Voulez-vous les contacter ?"
+      query: "Traiteur buffet libanais authentique (mezze, grillades) + desserts pâtisserie orientale française • 200 invités • Budget 8000€ • Service traiteur + location vaisselle orientale • Animation live cuisson pain • Mariage mixte libano-français • Marseille • Septembre 2026",
+      result: "2 traiteurs ultra-spécialisés ! Équipement animation live inclus, vaisselle orientale fournie. Expérience mariages mixtes confirmée. Budget : 7800-8200€. Voulez-vous les contacter ?"
     },
   ];
 
@@ -223,7 +223,7 @@ const SkeletonMatchingFullWidth = () => {
                 <Sparkles className="w-8 h-8" style={{ color: '#c081e3' }} />
               </div>
               <p className="text-sm font-medium mb-1">Commencez votre recherche</p>
-              <p className="text-xs text-gray-500">Ex: Cherchez une negafa pour votre mariage...</p>
+              <p className="text-xs text-gray-500">Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...</p>
             </div>
           ) : (
             <>
@@ -324,7 +324,7 @@ const SkeletonMatchingFullWidth = () => {
                 </div>
                 {!typedText && !isTyping && (
                   <div className="absolute inset-0 flex items-center pointer-events-none">
-                    <span className="text-gray-400 text-sm sm:text-base">Ex: Cherchez une negafa pour votre mariage...</span>
+                    <span className="text-gray-400 text-sm sm:text-base">Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...</span>
                   </div>
                 )}
               </div>
