@@ -269,7 +269,7 @@ export function CoupleHeader() {
           <Button
             variant='ghost'
             size='icon'
-            className='md:hidden z-[60] relative h-10 w-10 min-w-[2.5rem] touch-manipulation pointer-events-auto'
+            className='md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] rounded-xl touch-manipulation pointer-events-auto transition-all duration-300 hover:bg-[#823F91]/10 active:scale-95 active:bg-[#823F91]/20'
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -278,7 +278,7 @@ export function CoupleHeader() {
             aria-label='Ouvrir le menu'
             type='button'
           >
-            <Menu className='h-6 w-6 pointer-events-none' />
+            <Menu className='h-6 w-6 pointer-events-none transition-transform duration-300' />
           </Button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>

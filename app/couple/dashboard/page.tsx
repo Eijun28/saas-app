@@ -300,37 +300,37 @@ export default function CoupleDashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4"
         >
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10 shadow-lg shadow-black/5 backdrop-blur-sm hover:shadow-xl hover:shadow-black/10 transition-all duration-300 active:scale-[0.98]">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-[#823F91] flex items-center justify-center flex-shrink-0 shadow-md">
+              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Prestataires trouvés</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">{stats.prestatairesTrouves}</p>
+              <p className="text-xs sm:text-sm text-[#6B7280] mb-1 font-medium">Prestataires trouvés</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#0D0D0D]">{stats.prestatairesTrouves}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10 shadow-lg shadow-black/5 backdrop-blur-sm hover:shadow-xl hover:shadow-black/10 transition-all duration-300 active:scale-[0.98]">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-[#823F91] flex items-center justify-center flex-shrink-0 shadow-md">
+              <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Budget alloué</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">
+              <p className="text-xs sm:text-sm text-[#6B7280] mb-1 font-medium">Budget alloué</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#0D0D0D]">
                 {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10 shadow-lg shadow-black/5 backdrop-blur-sm hover:shadow-xl hover:shadow-black/10 transition-all duration-300 active:scale-[0.98]">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-[#823F91] flex items-center justify-center flex-shrink-0 shadow-md">
+              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Jours restants</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">
+              <p className="text-xs sm:text-sm text-[#6B7280] mb-1 font-medium">Jours restants</p>
+              <p className="text-xl sm:text-2xl font-bold text-[#0D0D0D]">
                 {stats.joursRestants !== null ? stats.joursRestants : '-'}
               </p>
             </div>
@@ -342,7 +342,7 @@ export default function CoupleDashboardPage() {
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
         >
           {sections.map((section, index) => {
             const Icon = section.icon
@@ -357,32 +357,32 @@ export default function CoupleDashboardPage() {
                   ease: [0.16, 1, 0.3, 1] as const,
                 }}
               >
-                <Link href={section.href} className="block">
-                  <div className="group relative p-3 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5 transition-all duration-200">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+                <Link href={section.href} className="block h-full">
+                  <div className="group relative p-4 sm:p-5 rounded-2xl bg-white border border-gray-100 hover:border-[#823F91]/40 shadow-md shadow-black/5 hover:shadow-xl hover:shadow-black/10 transition-all duration-300 active:scale-[0.98] h-full">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-[#823F91] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-md">
+                        <Icon className="h-5 w-5 sm:h-5.5 sm:w-5.5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="text-xs sm:text-sm font-semibold text-[#0D0D0D] leading-tight group-hover:text-[#823F91] transition-colors">
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <h3 className="text-sm sm:text-base font-semibold text-[#0D0D0D] leading-tight group-hover:text-[#823F91] transition-colors duration-300">
                             {section.title}
                           </h3>
                           {section.badge && (
-                            <Badge 
-                              variant="secondary" 
-                              className="bg-[#E8D4EF] text-[#823F91] border-0 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 h-4 sm:h-5 flex-shrink-0"
+                            <Badge
+                              variant="secondary"
+                              className="bg-[#E8D4EF] text-[#823F91] border-0 text-xs px-2 py-0.5 h-5 flex-shrink-0 rounded-full shadow-sm"
                             >
                               {section.badge}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-[10px] sm:text-xs text-[#6B7280] leading-relaxed line-clamp-2">
+                        <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed line-clamp-2 mb-2">
                           {section.description}
                         </p>
-                        <div className="mt-1.5 sm:mt-2 flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-[10px] sm:text-xs font-medium">Accéder</span>
-                          <ArrowRight className="ml-1 h-2.5 w-2.5 sm:h-3 sm:w-3 group-hover:translate-x-0.5 transition-transform" />
+                        <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-xs sm:text-sm font-medium">Accéder</span>
+                          <ArrowRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
                         </div>
                       </div>
                     </div>
