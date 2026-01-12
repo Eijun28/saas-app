@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateMarriageDossierPDF } from '@/lib/pdf/marriage-dossier-generator'
 import { generatePdfSchema } from '@/lib/validations/marriage-admin.schema'
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const { marriageFileId } = validationResult.data
 
-    console.log('📄 Génération PDF pour dossier:', marriageFileId)
+    logger.info('📄 Génération PDF pour dossier:', marriageFileId)
 
     // 1. Récupère le dossier
     const { data: marriageFile, error: fileError } = await supabase
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     if (docsError) throw docsError
 
-    console.log('✅ Données récupérées:', {
+    logger.info('✅ Données récupérées:', {
       dossier: marriageFile.id,
       documents: uploadedDocs?.length || 0
     })
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     // 3. Génère le PDF
     const pdfBytes = await generateMarriageDossierPDF(marriageFile, uploadedDocs || [])
 
-    console.log('✅ PDF généré:', pdfBytes.length, 'bytes')
+    logger.info('✅ PDF généré:', pdfBytes.length, 'bytes')
 
     // 4. Retourne le PDF
     return new NextResponse(Buffer.from(pdfBytes), {
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
       }
     })
   } catch (error: any) {
-    console.error('❌ Erreur génération PDF:', error)
+    logger.error('❌ Erreur génération PDF', error)
     return NextResponse.json(
       { error: error.message || 'Erreur lors de la génération du PDF' },
       { status: 500 }

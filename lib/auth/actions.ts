@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email/resend'
+import { logger } from '@/lib/logger'
 
 import { revalidatePath } from 'next/cache'
 
@@ -18,6 +19,34 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
+  // ✅ VALIDATION 1: Vérifier format email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return { error: 'Email invalide' }
+  }
+
+  // ✅ VALIDATION 2: Vérifier userType autorisé
+  const ALLOWED_USER_TYPES = ['couple', 'prestataire']
+  if (!ALLOWED_USER_TYPES.includes(role)) {
+    return { error: 'Type utilisateur non autorisé' }
+  }
+
+  // ✅ VALIDATION 3: Pour couples, vérifier noms requis
+  if (role === 'couple') {
+    if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
+      return { error: 'Les noms des partenaires sont requis' }
+    }
+
+    // Sanitize les noms (protection XSS)
+    profileData.prenom = profileData.prenom.trim().substring(0, 100)
+    profileData.nom = profileData.nom.trim().substring(0, 100)
+  }
+
+  // ✅ VALIDATION 4: Pour prestataires, vérifier nom entreprise si fourni
+  if (role === 'prestataire' && profileData.nomEntreprise) {
+    profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.signUp({
@@ -38,7 +67,7 @@ export async function signUp(
   if (error) {
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
     if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
-      console.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
+      logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
       return { error: error.message }
@@ -53,22 +82,29 @@ export async function signUp(
         
         // Insérer dans la table couples (nouvelle structure)
         // Note: currency a une valeur par défaut 'EUR' dans le schéma
+        // ✅ VALIDATION 5: Vérifier que l'ID utilisateur existe
+        const userId = data.user.id
+        if (!userId || typeof userId !== 'string') {
+          // Rollback : supprimer l'utilisateur si ID invalide
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: 'ID utilisateur invalide' }
+        }
+
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
-            id: data.user.id,
-            user_id: data.user.id,
+            id: userId,
+            user_id: userId, // ✅ Utiliser user_id, pas partner1_id
             email: email,
             partner_1_name: profileData.prenom || null,
-            partner_2_name: profileData.nom || null, // Temporairement, on met le nom ici
+            partner_2_name: profileData.nom || null,
           })
 
+        // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
-          console.error('Erreur création couple:', coupleError)
-          // Ne pas bloquer si l'utilisateur existe déjà (peut arriver si le trigger a créé le profil)
-          if (!coupleError.message.includes('duplicate key') && !coupleError.message.includes('already exists')) {
-            return { error: `Erreur lors de la création du profil: ${coupleError.message}` }
-          }
+          // Rollback : supprimer l'utilisateur si couple échoue
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: `Erreur création couple: ${coupleError.message}` }
         } else {
           // Créer les préférences vides pour le nouveau couple
           try {
@@ -88,31 +124,37 @@ export async function signUp(
               })
           } catch (prefError) {
             // Ne pas bloquer l'inscription si les préférences échouent
-            console.warn('Erreur création préférences (non bloquant):', prefError)
+            logger.warn('Erreur création préférences (non bloquant):', prefError)
           }
         }
       } else {
         // Utiliser le client admin pour contourner les politiques RLS
         const adminClient = createAdminClient()
         
+        // ✅ VALIDATION 6: Vérifier que l'ID utilisateur existe
+        const userId = data.user.id
+        if (!userId || typeof userId !== 'string') {
+          // Rollback : supprimer l'utilisateur si ID invalide
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: 'ID utilisateur invalide' }
+        }
+
         // Insérer dans la table profiles (prestataires)
         const { error: profileError } = await adminClient
           .from('profiles')
           .insert({
-            id: data.user.id,
+            id: userId,
             email: email,
             role: 'prestataire',
-            prenom: profileData.prenom,
-            nom: profileData.nom,
-            nom_entreprise: profileData.nomEntreprise || null,
+            prenom: profileData.prenom.trim().substring(0, 100),
+            nom: profileData.nom.trim().substring(0, 100),
+            nom_entreprise: profileData.nomEntreprise ? profileData.nomEntreprise.trim().substring(0, 200) : null,
           })
 
         if (profileError) {
-          console.error('Erreur création prestataire:', profileError)
-          // Ne pas bloquer si l'utilisateur existe déjà
-          if (!profileError.message.includes('duplicate key') && !profileError.message.includes('already exists')) {
-            return { error: `Erreur lors de la création du profil: ${profileError.message}` }
-          }
+          // Rollback : supprimer l'utilisateur si profil échoue
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: `Erreur création profil: ${profileError.message}` }
         }
 
         // NOUVELLE LOGIQUE : Vérifier les places Early Adopter disponibles
@@ -160,14 +202,14 @@ export async function signUp(
           }
         } catch (earlyAdopterError) {
           // Ne pas bloquer l'inscription si la logique Early Adopter échoue
-          console.warn('Erreur lors de l\'attribution du badge Early Adopter (non bloquant):', earlyAdopterError)
+          logger.warn('Erreur lors de l\'attribution du badge Early Adopter (non bloquant):', earlyAdopterError)
         }
       }
     } catch (err: any) {
-      console.error('Erreur lors de la création du profil:', err)
+      logger.error('Erreur lors de la création du profil', err)
       // Si c'est une erreur RLS mais que l'utilisateur est créé, on continue
       if (err.message?.includes('row-level security')) {
-        console.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
+        logger.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
       } else {
         return { error: `Erreur lors de la création du profil: ${err.message}` }
       }
@@ -175,7 +217,7 @@ export async function signUp(
 
     // Envoyer l'email de bienvenue avec Resend (non bloquant)
     try {
-      console.log('📧 Tentative d\'envoi email de bienvenue Resend pour:', email)
+      logger.info('📧 Tentative d\'envoi email de bienvenue Resend pour:', email)
       const emailResult = await sendWelcomeEmail(
         email,
         role,
@@ -183,13 +225,13 @@ export async function signUp(
         profileData.nom
       )
       if (emailResult.success) {
-        console.log('✅ Email de bienvenue Resend envoyé avec succès')
+        logger.info('✅ Email de bienvenue Resend envoyé avec succès')
       } else {
-        console.warn('⚠️ Email de bienvenue Resend non envoyé:', emailResult.error)
+        logger.warn('⚠️ Email de bienvenue Resend non envoyé:', emailResult.error)
       }
     } catch (emailError) {
       // Ne pas bloquer l'inscription si l'email échoue
-      console.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant):', emailError)
+      logger.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant)', emailError)
     }
 
     revalidatePath('/', 'layout')
@@ -250,7 +292,7 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut()
 
   if (error) {
-    console.error('Erreur lors de la déconnexion:', error)
+    logger.error('Erreur lors de la déconnexion', error)
   }
 
   revalidatePath('/', 'layout')

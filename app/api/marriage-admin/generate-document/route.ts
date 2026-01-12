@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
+import { logger } from '@/lib/logger'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     const { documentType, userData } = await req.json()
 
-    console.log('🤖 Génération:', documentType)
+    logger.info('🤖 Génération:', documentType)
 
     if (!documentType || !userData) {
       return NextResponse.json(
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     // Vérifier que la clé API est présente
     if (!process.env.OPENAI_API_KEY) {
-      console.error('❌ OPENAI_API_KEY manquante')
+      logger.error('❌ OPENAI_API_KEY manquante')
       return NextResponse.json(
         { error: 'OpenAI API key not configured' },
         { status: 500 }
@@ -171,7 +172,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
 
     const content = completion.choices[0].message.content
 
-    console.log('✅ Document généré')
+    logger.info('✅ Document généré')
 
     return NextResponse.json({
       success: true,
@@ -179,7 +180,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
       documentType,
     })
   } catch (error: any) {
-    console.error('❌ Erreur génération:', error)
+    logger.error('❌ Erreur génération', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

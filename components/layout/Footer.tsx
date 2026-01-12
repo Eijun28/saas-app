@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-[#6B7280] font-medium">
-            © 2024 NUPLY. Tous droits réservés.
+            © 2026 NUPLY. Tous droits réservés.
           </div>
           <div className="flex items-center gap-6 text-sm">
             <Link 

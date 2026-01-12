@@ -6,6 +6,7 @@ import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schema'
 import { Resend } from 'resend'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: Request) {
   try {
@@ -29,13 +30,56 @@ export async function POST(request: Request) {
 
     const { email, name, role, message } = validationResult.data
 
+    // ✅ VALIDATION 1: Vérifier que l'inviteur existe et est un couple
+    const { data: inviter, error: inviterError } = await supabase
+      .from('couples')
+      .select('id, partner_1_name, partner_2_name')
+      .eq('user_id', user.id)
+      .single()
+
+    if (inviterError || !inviter) {
+      return NextResponse.json(
+        { error: 'Inviteur non trouvé ou non autorisé' },
+        { status: 403 }
+      )
+    }
+
+    // ✅ VALIDATION 2: Limiter nombre d'invitations par couple
+    const { count, error: countError } = await supabase
+      .from('collaborateurs')
+      .select('*', { count: 'exact', head: true })
+      .eq('couple_id', user.id)
+
+    if (countError) {
+      return NextResponse.json(
+        { error: 'Erreur lors de la vérification des invitations' },
+        { status: 500 }
+      )
+    }
+
+    if (count && count >= 10) {
+      return NextResponse.json(
+        { error: 'Limite d\'invitations atteinte (max 10)' },
+        { status: 429 }
+      )
+    }
+
+    // ✅ VALIDATION 3: Vérifier que l'email n'existe pas déjà comme utilisateur
+    const adminClient = createAdminClient()
+    const { data: existingUsers } = await adminClient.auth.admin.listUsers()
+    const emailExists = existingUsers?.users?.some(u => u.email === email.toLowerCase())
+
+    if (emailExists) {
+      return NextResponse.json(
+        { error: 'Un utilisateur avec cet email existe déjà' },
+        { status: 409 }
+      )
+    }
+
     // Générer un token d'invitation unique
     const invitationToken = randomBytes(32).toString('hex')
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7) // Expire dans 7 jours
-
-    // Utiliser le client admin pour insérer l'invitation
-    const adminClient = createAdminClient()
     
     // Vérifier si une invitation existe déjà pour cet email
     const { data: existingInvitation } = await adminClient
@@ -68,7 +112,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Erreur lors de la création de l\'invitation:', error)
+      logger.error('Erreur lors de la création de l\'invitation', error)
       return NextResponse.json(
         { error: 'Erreur lors de la création de l\'invitation' },
         { status: 500 }
@@ -112,12 +156,12 @@ export async function POST(request: Request) {
           `,
         })
       } catch (emailError: any) {
-        console.error('Erreur envoi email:', emailError)
+        logger.error('Erreur envoi email', emailError)
         // Ne pas faire échouer la requête si l'email échoue
         // L'invitation est quand même créée en DB
       }
     } else {
-      console.warn('RESEND_API_KEY non configurée - email non envoyé')
+      logger.warn('RESEND_API_KEY non configurée - email non envoyé')
     }
 
     return NextResponse.json({
@@ -129,7 +173,7 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Erreur serveur:', error)
+    logger.error('Erreur serveur', error)
     return NextResponse.json(
       { error: 'Erreur serveur interne' },
       { status: 500 }

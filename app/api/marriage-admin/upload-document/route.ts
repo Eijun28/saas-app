@@ -5,11 +5,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadDocumentSchema } from '@/lib/validations/marriage-admin.schema'
+import { logger } from '@/lib/logger'
 
 // Constantes de validation des fichiers
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.webp']
+const ALLOWED_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+]
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.docx', '.xlsx']
 
 /**
  * Valide un fichier uploadé côté serveur
@@ -63,6 +73,39 @@ function sanitizeFileName(fileName: string): string {
     .slice(0, 255) // Limiter la longueur
 }
 
+/**
+ * Vérifie la signature binaire (magic number) d'un fichier
+ * @param buffer - Buffer du fichier
+ * @param mimeType - Type MIME déclaré
+ * @returns true si la signature correspond au MIME type
+ */
+function verifyFileSignature(buffer: Buffer, mimeType: string): boolean {
+  const signatures: Record<string, number[][]> = {
+    'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
+    'image/jpeg': [[0xFF, 0xD8, 0xFF]],
+    'image/png': [[0x89, 0x50, 0x4E, 0x47]],
+    'image/gif': [[0x47, 0x49, 0x46, 0x38]],
+    'image/webp': [[0x52, 0x49, 0x46, 0x46]], // RIFF
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
+      [0x50, 0x4B, 0x03, 0x04] // ZIP (DOCX est un ZIP)
+    ],
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+      [0x50, 0x4B, 0x03, 0x04] // ZIP (XLSX est un ZIP)
+    ]
+  }
+
+  const expectedSignatures = signatures[mimeType]
+  if (!expectedSignatures) {
+    // Type non supporté pour vérification
+    return true
+  }
+
+  // Vérifier si une des signatures correspond
+  return expectedSignatures.some(signature => {
+    return signature.every((byte, index) => buffer[index] === byte)
+  })
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Vérifier l'authentification avec le client server
@@ -113,6 +156,41 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // ✅ VALIDATION : Vérifier la signature binaire
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    const isValidSignature = verifyFileSignature(buffer, file.type)
+    if (!isValidSignature) {
+      return NextResponse.json(
+        { error: 'Le contenu du fichier ne correspond pas à son extension' },
+        { status: 400 }
+      )
+    }
+
+    // ✅ Extraire la vraie dernière extension
+    const parts = sanitizeFileName(file.name).split('.')
+    const fileExt = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'bin'
+
+    // ✅ Vérifier que l'extension correspond au MIME type
+    const mimeToExt: Record<string, string[]> = {
+      'application/pdf': ['pdf'],
+      'image/jpeg': ['jpg', 'jpeg'],
+      'image/png': ['png'],
+      'image/gif': ['gif'],
+      'image/webp': ['webp'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['xlsx']
+    }
+
+    const allowedExts = mimeToExt[file.type] || []
+    if (!allowedExts.includes(fileExt)) {
+      return NextResponse.json(
+        { error: `Extension .${fileExt} ne correspond pas au type ${file.type}` },
+        { status: 400 }
+      )
+    }
+
     // Vérifier que l'utilisateur peut accéder à ce dossier de mariage
     const { data: marriageFile, error: fileError } = await supabase
       .from('marriage_administrative_files')
@@ -133,7 +211,8 @@ export async function POST(req: NextRequest) {
     // Prépare le nom du fichier de manière sécurisée
     // SÉCURITÉ: Utiliser user.id directement et nettoyer le nom
     const sanitizedFileName = sanitizeFileName(file.name)
-    const fileExt = sanitizedFileName.split('.').pop()?.toLowerCase() || 'bin'
+    const parts = sanitizedFileName.split('.')
+    const fileExt = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'bin'
     const safeDocumentType = sanitizeFileName(documentType)
     const fileName = `${user.id}/${safeDocumentType}-${Date.now()}.${fileExt}`
 
@@ -143,7 +222,7 @@ export async function POST(req: NextRequest) {
       .upload(fileName, file)
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError.message)
+      logger.error('❌ Upload error', uploadError)
       return NextResponse.json(
         { error: 'Erreur lors de l\'upload du fichier' },
         { status: 500 }
@@ -173,7 +252,7 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (docError) {
-      console.error('❌ Erreur enregistrement document:', docError.message)
+      logger.error('❌ Erreur enregistrement document', docError)
       return NextResponse.json(
         { error: 'Erreur lors de l\'enregistrement du document' },
         { status: 500 }
@@ -191,7 +270,7 @@ export async function POST(req: NextRequest) {
       data: docData,
     })
   } catch (error: any) {
-    console.error('❌ Erreur serveur:', error.message)
+    logger.error('❌ Erreur serveur', error)
     return NextResponse.json(
       { error: 'Une erreur s\'est produite lors du traitement de votre demande' },
       { status: 500 }

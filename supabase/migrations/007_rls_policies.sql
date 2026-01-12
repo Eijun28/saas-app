@@ -9,17 +9,17 @@ ALTER TABLE couples ENABLE ROW LEVEL SECURITY;
 -- Policy: Users can view own couple
 CREATE POLICY "Users can view own couple" ON couples
   FOR SELECT
-  USING (auth.uid() = partner1_id OR auth.uid() = partner2_id);
+  USING (auth.uid() = user_id);
 
 -- Policy: Users can update own couple
 CREATE POLICY "Users can update own couple" ON couples
   FOR UPDATE
-  USING (auth.uid() = partner1_id OR auth.uid() = partner2_id);
+  USING (auth.uid() = user_id);
 
 -- Policy: Users can insert own couple
 CREATE POLICY "Users can insert own couple" ON couples
   FOR INSERT
-  WITH CHECK (auth.uid() = partner1_id OR auth.uid() = partner2_id);
+  WITH CHECK (auth.uid() = user_id);
 
 -- ============================================
 -- COUPLE_PREFERENCES

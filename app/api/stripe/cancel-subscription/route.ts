@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { stripe } from '@/lib/stripe/config'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       current_period_end: subscription.current_period_end,
     })
   } catch (error: any) {
-    console.error('Erreur annulation abonnement:', error)
+    logger.error('Erreur annulation abonnement', error)
     return NextResponse.json(
       { error: 'Erreur lors de l\'annulation de l\'abonnement' },
       { status: 500 }

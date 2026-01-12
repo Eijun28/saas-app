@@ -8,7 +8,7 @@ import Chatbot from "@/components/Chatbot";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "NUPLY — La plateforme mariage next-gen",
+  title: "NUPLY — Le mariage moderne",
   description: "Matching IA, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
   icons: {
     icon: [

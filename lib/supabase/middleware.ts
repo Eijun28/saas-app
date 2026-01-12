@@ -1,8 +1,46 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireEnv } from '@/lib/security';
+import { logger } from '@/lib/logger';
 
 export async function updateSession(request: NextRequest) {
+  // ✅ PROTECTION CSRF : Vérifier origin pour les requêtes mutantes
+  const method = request.method
+  const isMutating = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)
+
+  if (isMutating) {
+    const origin = request.headers.get('origin')
+    const host = request.headers.get('host')
+
+    // Autoriser uniquement les requêtes du même origin
+    if (origin && host && !origin.includes(host)) {
+      return NextResponse.json(
+        { error: 'CSRF detected: Invalid origin' },
+        { status: 403 }
+      )
+    }
+
+    // En production, vérifier aussi le referer
+    if (process.env.NODE_ENV === 'production') {
+      const referer = request.headers.get('referer')
+      const allowedDomains = [
+        process.env.NEXT_PUBLIC_SITE_URL,
+        // Ajouter d'autres domaines autorisés si nécessaire
+      ].filter(Boolean)
+
+      const isValidReferer = referer && allowedDomains.some(
+        domain => referer.startsWith(domain as string)
+      )
+
+      if (!isValidReferer) {
+        return NextResponse.json(
+          { error: 'CSRF detected: Invalid referer' },
+          { status: 403 }
+        )
+      }
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -42,7 +80,7 @@ export async function updateSession(request: NextRequest) {
   // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
   // On ne fait rien, on retourne simplement null pour user
   if (error && !error.message.includes('Auth session missing')) {
-    console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+    logger.error('Erreur lors de la récupération de l\'utilisateur', error);
   }
 
   return { supabaseResponse, user: error ? null : user };

@@ -7,7 +7,7 @@
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.timeline_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  couple_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  couple_id UUID NOT NULL REFERENCES couples(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
   event_date DATE NOT NULL,
@@ -42,20 +42,50 @@ DROP POLICY IF EXISTS "Users can delete own timeline events" ON public.timeline_
 -- Lecture : L'utilisateur peut voir ses propres événements
 CREATE POLICY "Users can view own timeline events"
   ON public.timeline_events FOR SELECT
-  USING (auth.uid() = couple_id);
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.couples
+      WHERE couples.id = timeline_events.couple_id
+      AND couples.user_id = auth.uid()
+    )
+  );
 
 -- Insertion : L'utilisateur peut créer ses propres événements
 CREATE POLICY "Users can insert own timeline events"
   ON public.timeline_events FOR INSERT
-  WITH CHECK (auth.uid() = couple_id);
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.couples
+      WHERE couples.id = timeline_events.couple_id
+      AND couples.user_id = auth.uid()
+    )
+  );
 
 -- Mise à jour : L'utilisateur peut mettre à jour ses propres événements
 CREATE POLICY "Users can update own timeline events"
   ON public.timeline_events FOR UPDATE
-  USING (auth.uid() = couple_id)
-  WITH CHECK (auth.uid() = couple_id);
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.couples
+      WHERE couples.id = timeline_events.couple_id
+      AND couples.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.couples
+      WHERE couples.id = timeline_events.couple_id
+      AND couples.user_id = auth.uid()
+    )
+  );
 
 -- Suppression : L'utilisateur peut supprimer ses propres événements
 CREATE POLICY "Users can delete own timeline events"
   ON public.timeline_events FOR DELETE
-  USING (auth.uid() = couple_id);
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.couples
+      WHERE couples.id = timeline_events.couple_id
+      AND couples.user_id = auth.uid()
+    )
+  );

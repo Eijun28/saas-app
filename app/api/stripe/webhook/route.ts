@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { stripe, STRIPE_PRICE_IDS } from '@/lib/stripe/config'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Stripe from 'stripe'
+import { logger } from '@/lib/logger'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+    logger.error('Webhook signature verification failed', err)
     return NextResponse.json(
       { error: `Webhook Error: ${err.message}` },
       { status: 400 }
@@ -131,12 +132,12 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.info(`Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
   } catch (error: any) {
-    console.error('Erreur traitement webhook:', error)
+    logger.error('Erreur traitement webhook', error)
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
