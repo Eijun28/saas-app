@@ -1,9 +1,10 @@
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export default async function proxy(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request)
+  const result = await updateSession(request) as UpdateSessionResult
+  const { supabaseResponse, user } = result
 
   const isAuthRoute =
     request.nextUrl.pathname.startsWith('/sign-in') ||

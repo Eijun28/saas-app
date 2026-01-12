@@ -2,8 +2,14 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireEnv } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import type { User } from '@supabase/supabase-js';
 
-export async function updateSession(request: NextRequest) {
+export type UpdateSessionResult = {
+  supabaseResponse: NextResponse;
+  user: User | null;
+};
+
+export async function updateSession(request: NextRequest): Promise<UpdateSessionResult> {
   // ✅ PROTECTION CSRF : Vérifier origin pour les requêtes mutantes
   const method = request.method
   const isMutating = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)
@@ -14,10 +20,13 @@ export async function updateSession(request: NextRequest) {
 
     // Autoriser uniquement les requêtes du même origin
     if (origin && host && !origin.includes(host)) {
-      return NextResponse.json(
-        { error: 'CSRF detected: Invalid origin' },
-        { status: 403 }
-      )
+      return {
+        supabaseResponse: NextResponse.json(
+          { error: 'CSRF detected: Invalid origin' },
+          { status: 403 }
+        ),
+        user: null
+      }
     }
 
     // En production, vérifier aussi le referer
@@ -33,10 +42,13 @@ export async function updateSession(request: NextRequest) {
       )
 
       if (!isValidReferer) {
-        return NextResponse.json(
-          { error: 'CSRF detected: Invalid referer' },
-          { status: 403 }
-        )
+        return {
+          supabaseResponse: NextResponse.json(
+            { error: 'CSRF detected: Invalid referer' },
+            { status: 403 }
+          ),
+          user: null
+        }
       }
     }
   }
