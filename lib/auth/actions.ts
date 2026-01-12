@@ -19,23 +19,35 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:12',message:'signUp ENTRY',data:{email,role,hasPrenom:!!profileData.prenom,hasNom:!!profileData.nom},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
   
   // ✅ VALIDATION 1: Vérifier format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:27',message:'RETURN email invalid',data:{email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return { error: 'Email invalide' }
   }
 
   // ✅ VALIDATION 2: Vérifier userType autorisé
   const ALLOWED_USER_TYPES = ['couple', 'prestataire']
   if (!ALLOWED_USER_TYPES.includes(role)) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:33',message:'RETURN role invalid',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return { error: 'Type utilisateur non autorisé' }
   }
 
   // ✅ VALIDATION 3: Pour couples, vérifier noms requis
   if (role === 'couple') {
     if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:39',message:'RETURN names required',data:{hasPrenom:!!profileData.prenom?.trim(),hasNom:!!profileData.nom?.trim()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       return { error: 'Les noms des partenaires sont requis' }
     }
 
@@ -51,6 +63,9 @@ export async function signUp(
 
   const supabase = await createClient()
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:52',message:'BEFORE supabase.auth.signUp',data:{email,role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -65,6 +80,10 @@ export async function signUp(
     },
   })
 
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:69',message:'AFTER supabase.auth.signUp',data:{hasError:!!error,hasUser:!!data?.user,userId:data?.user?.id,errorMessage:error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+  // #endregion
+
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
@@ -72,12 +91,18 @@ export async function signUp(
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:75',message:'RETURN error from signUp',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       return { error: error.message }
     }
   }
 
   // Vérifier que l'utilisateur a été créé
   if (!data?.user) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:82',message:'RETURN no user created',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
     logger.error('Aucun utilisateur créé après signUp')
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
@@ -139,6 +164,9 @@ export async function signUp(
         }
 
         if (!userExists) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:141',message:'RETURN user not found',data:{userId,email,maxRetries},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          // #endregion
           logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives', {
             userId,
             email,
@@ -164,6 +192,9 @@ export async function signUp(
 
         // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:166',message:'RETURN couple error',data:{userId,email,errorMessage:coupleError.message,errorCode:coupleError.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          // #endregion
           logger.critical('🚨 ÉCHEC: Erreur création couple', {
             userId,
             email,
@@ -203,6 +234,9 @@ export async function signUp(
         try {
           adminClient = createAdminClient()
         } catch (adminError: any) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:236',message:'RETURN admin client error prestataire',data:{errorMessage:adminError?.message,userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
           logger.error('Erreur création client admin:', adminError)
           // Essayer de supprimer l'utilisateur créé
           try {
@@ -213,6 +247,54 @@ export async function signUp(
         }
         
         const userId = data.user.id
+
+        // Vérifier que l'utilisateur existe bien dans auth.users avant d'insérer
+        // (nécessaire pour la contrainte profiles_id_fkey qui référence auth.users(id))
+        let userExists = false
+        let retries = 0
+        const maxRetries = 10 // Augmenté de 5 à 10 pour production mobile
+        const retryDelay = 200 // Augmenté de 100ms à 200ms pour latence réseau mobile
+        
+        logger.critical('🔍 Vérification existence utilisateur dans auth.users (prestataire)', { userId, email })
+        
+        while (!userExists && retries < maxRetries) {
+          try {
+            const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
+            if (userData && userData.user && !userCheckError) {
+              userExists = true
+              logger.critical('✅ Utilisateur trouvé dans auth.users (prestataire)', { userId, attemptNumber: retries + 1 })
+            } else {
+              retries++
+              logger.critical(`⏳ Tentative ${retries}/${maxRetries} - utilisateur non encore disponible (prestataire)`, {
+                userId,
+                error: userCheckError?.message
+              })
+              if (retries < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, retryDelay))
+              }
+            }
+          } catch (err: any) {
+            retries++
+            logger.critical(`❌ Erreur tentative ${retries}/${maxRetries} (prestataire)`, {
+              userId,
+              error: err?.message || String(err)
+            })
+            if (retries < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, retryDelay))
+            }
+          }
+        }
+
+        if (!userExists) {
+          logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives (prestataire)', {
+            userId,
+            email,
+            maxRetries,
+            totalWaitTime: maxRetries * retryDelay
+          })
+          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
+          return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
+        }
 
         // Insérer dans la table profiles (prestataires)
         logger.critical('📝 Tentative création profil prestataire', { userId, email })
@@ -229,6 +311,9 @@ export async function signUp(
           })
 
         if (profileError) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:231',message:'RETURN profile error',data:{userId,email,errorMessage:profileError.message,errorCode:profileError.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+          // #endregion
           logger.critical('🚨 ÉCHEC: Erreur création profil prestataire', {
             userId,
             email,
@@ -292,16 +377,35 @@ export async function signUp(
         }
       }
     } catch (err: any) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:294',message:'CATCH block in signUp',data:{errorMessage:err?.message,errorName:err?.name,isRLSError:err?.message?.includes('row-level security')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       logger.error('Erreur lors de la création du profil', err)
       // Si c'est une erreur RLS mais que l'utilisateur est créé, on continue
       if (err.message?.includes('row-level security')) {
         logger.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:298',message:'RLS error - continuing',data:{userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        // IMPORTANT: Même en cas d'erreur RLS, on doit retourner un résultat valide
+        // L'utilisateur est créé, donc on considère que l'inscription est réussie
+        logger.critical('🎉 INSCRIPTION RÉUSSIE (malgré erreur RLS)', { email, role, userId: data.user.id })
+        const response = { success: true, redirectTo: '/auth/confirm' }
+        try {
+          revalidatePath('/', 'layout')
+        } catch (revalidateError: any) {
+          logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+        }
+        return response
       } else {
         // Essayer de supprimer l'utilisateur créé en cas d'erreur
         try {
           const adminClient = createAdminClient()
           await adminClient.auth.admin.deleteUser(data.user.id)
         } catch {}
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:305',message:'RETURN error from catch',data:{errorMessage:err?.message || 'Erreur inconnue'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         return { error: `Erreur lors de la création du profil: ${err.message || 'Erreur inconnue'}` }
       }
     }
@@ -327,8 +431,27 @@ export async function signUp(
 
     // Succès - retourner avec redirection
     logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
-    revalidatePath('/', 'layout')
-    return { success: true, redirectTo: '/auth/confirm' }
+    
+    // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
+    const response = { success: true, redirectTo: '/auth/confirm' }
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:332',message:'RETURN success - BEFORE revalidatePath',data:{email,role,userId:data.user.id,responseStringified:JSON.stringify(response)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    // Revalidate après avoir préparé la réponse
+    try {
+      revalidatePath('/', 'layout')
+    } catch (revalidateError: any) {
+      // Ne pas bloquer si revalidatePath échoue
+      logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+    }
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:342',message:'RETURN success - AFTER revalidatePath',data:{responseStringified:JSON.stringify(response)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
+    return response
 }
 
 export async function signIn(email: string, password: string) {
