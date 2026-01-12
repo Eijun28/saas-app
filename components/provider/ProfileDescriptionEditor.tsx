@@ -82,7 +82,8 @@ export function ProfileDescriptionEditor({
           bio: bio.trim() || null,
         })
         .eq('id', userId)
-        .select();
+        .select('description_courte, bio')
+        .single();
 
       if (error) {
         console.error('Supabase error:', error);
@@ -106,12 +107,23 @@ export function ProfileDescriptionEditor({
         throw new Error(errorMessage);
       }
 
-      // Mettre à jour les valeurs initiales avec les valeurs sauvegardées
-      const savedDescription = description.trim() || '';
-      const savedBio = bio.trim() || '';
-      
-      setInitialDescription(savedDescription);
-      setInitialBio(savedBio);
+      // Mettre à jour les valeurs initiales avec les données retournées de la DB
+      if (data) {
+        console.log('✅ Données sauvegardées avec succès:', data);
+        const savedDescription = data.description_courte || '';
+        const savedBio = data.bio || '';
+        
+        setDescription(savedDescription);
+        setBio(savedBio);
+        setInitialDescription(savedDescription);
+        setInitialBio(savedBio);
+      } else {
+        // Fallback : utiliser les valeurs locales
+        const savedDescription = description.trim() || '';
+        const savedBio = bio.trim() || '';
+        setInitialDescription(savedDescription);
+        setInitialBio(savedBio);
+      }
       
       // Marquer qu'on vient de sauvegarder
       justSavedRef.current = true;
@@ -120,9 +132,10 @@ export function ProfileDescriptionEditor({
         description: 'Description mise à jour',
       });
       
-      // Appeler onSave qui déclenchera loadAllData pour recharger depuis la DB
-      // Les valeurs locales restent affichées et seront mises à jour par le useEffect
-      onSave?.();
+      // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+      setTimeout(() => {
+        onSave?.();
+      }, 200);
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';

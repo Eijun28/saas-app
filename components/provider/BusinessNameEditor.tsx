@@ -52,7 +52,7 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       .from('profiles')
       .update({ nom_entreprise: name.trim() })
       .eq('id', userId)
-      .select()
+      .select('nom_entreprise')
       .single()
 
     if (error) {
@@ -81,12 +81,35 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       return
     }
 
-    setInitialName(name.trim())
-    toast.success('Succès', {
-      description: 'Nom d\'entreprise mis à jour',
-    })
+    // Vérifier que les données ont bien été sauvegardées
+    if (data && data.nom_entreprise) {
+      console.log('✅ Données sauvegardées avec succès:', data.nom_entreprise)
+      const savedName = data.nom_entreprise.trim()
+      setName(savedName)
+      setInitialName(savedName)
+      
+      toast.success('Succès', {
+        description: 'Nom d\'entreprise mis à jour',
+      })
+      
+      // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+      setTimeout(() => {
+        onSave?.()
+      }, 200)
+    } else {
+      console.warn('⚠️ Aucune donnée retournée après la mise à jour')
+      // Mettre à jour quand même l'état local
+      const savedName = name.trim()
+      setInitialName(savedName)
+      toast.success('Succès', {
+        description: 'Nom d\'entreprise mis à jour',
+      })
+      setTimeout(() => {
+        onSave?.()
+      }, 200)
+    }
+    
     setIsSaving(false)
-    onSave?.()
   }
 
   return (

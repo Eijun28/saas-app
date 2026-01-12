@@ -90,7 +90,7 @@ export function ProfessionalInfoEditor({
     setIsSaving(true)
     const supabase = createClient()
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .update({
         budget_min: minBudget,
@@ -99,6 +99,8 @@ export function ProfessionalInfoEditor({
         ville_principale: ville.trim() || null,
       })
       .eq('id', userId)
+      .select('budget_min, budget_max, annees_experience, ville_principale')
+      .single()
 
     if (error) {
       console.error('Update error:', error)
@@ -126,12 +128,34 @@ export function ProfessionalInfoEditor({
       return
     }
 
-    setInitialData({ budgetMin, budgetMax, experience, ville })
+    // Mettre à jour l'état local avec les données retournées
+    if (data) {
+      console.log('✅ Données sauvegardées avec succès:', data)
+      const savedData = {
+        budgetMin: data.budget_min?.toString() || '',
+        budgetMax: data.budget_max?.toString() || '',
+        experience: data.annees_experience?.toString() || '',
+        ville: data.ville_principale || '',
+      }
+      setBudgetMin(savedData.budgetMin)
+      setBudgetMax(savedData.budgetMax)
+      setExperience(savedData.experience)
+      setVille(savedData.ville)
+      setInitialData(savedData)
+    } else {
+      // Fallback : utiliser les valeurs locales
+      setInitialData({ budgetMin, budgetMax, experience, ville })
+    }
+    
     toast.success('Succès', {
       description: 'Informations mises à jour',
     })
     setIsSaving(false)
-    onSave?.()
+    
+    // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+    setTimeout(() => {
+      onSave?.()
+    }, 200)
   }
 
   return (

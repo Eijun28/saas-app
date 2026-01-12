@@ -112,7 +112,7 @@ export function SocialLinksEditor({ userId, currentLinks = {}, onSave }: SocialL
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
-      .select()
+      .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
       .single()
 
     if (error) {
@@ -141,12 +141,32 @@ export function SocialLinksEditor({ userId, currentLinks = {}, onSave }: SocialL
       return
     }
 
-    setInitialLinks(links)
+    // Mettre à jour l'état local avec les données retournées
+    if (data) {
+      console.log('✅ Données sauvegardées avec succès:', data)
+      const savedLinks = {
+        instagram_url: data.instagram_url || '',
+        facebook_url: data.facebook_url || '',
+        website_url: data.website_url || '',
+        linkedin_url: data.linkedin_url || '',
+        tiktok_url: data.tiktok_url || '',
+      }
+      setLinks(savedLinks)
+      setInitialLinks(savedLinks)
+    } else {
+      // Fallback : utiliser les valeurs locales
+      setInitialLinks(links)
+    }
+    
     toast.success('Succès', {
       description: 'Liens de réseaux sociaux mis à jour',
     })
     setIsSaving(false)
-    onSave?.()
+    
+    // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+    setTimeout(() => {
+      onSave?.()
+    }, 200)
   }
 
   const socialFields = [
