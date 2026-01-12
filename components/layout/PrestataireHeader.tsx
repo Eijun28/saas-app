@@ -261,12 +261,13 @@ export function PrestataireHeader() {
               console.log('🔥 setOpenMobile called with:', !openMobile)
             }}
             className={cn(
-              'md:hidden z-[60] h-11 w-11 rounded-xl flex items-center justify-center bg-transparent hover:bg-[#823F91]/10 active:bg-[#823F91]/20 active:scale-95 transition-all duration-200 border-0 cursor-pointer touch-manipulation',
+              'md:hidden z-[70] relative h-11 w-11 rounded-xl flex items-center justify-center bg-white border border-gray-200 hover:bg-[#823F91]/10 hover:border-[#823F91]/30 active:bg-[#823F91]/20 active:scale-95 transition-all duration-200 cursor-pointer touch-manipulation shadow-sm',
               openMobile 
-                ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20' 
+                ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20 border-[#823F91]/50' 
                 : ''
             )}
             aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
+            style={{ pointerEvents: 'auto' }}
           >
             <Menu className='h-6 w-6 text-gray-700 flex-shrink-0' strokeWidth={2} />
           </button>

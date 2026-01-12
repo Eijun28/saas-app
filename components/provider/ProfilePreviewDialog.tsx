@@ -187,16 +187,6 @@ export function ProfilePreviewDialog({
         <DialogContent 
           className="max-w-[95vw] sm:max-w-md max-h-[90vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col" 
           showCloseButton={false}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            maxHeight: '90vh',
-            width: '95vw',
-            maxWidth: '28rem',
-            margin: 0,
-          }}
         >
           <DialogTitle className="sr-only">
             Aperçu du profil public - {profile.nom_entreprise}

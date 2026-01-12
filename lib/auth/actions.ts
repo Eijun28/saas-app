@@ -296,18 +296,20 @@ export async function signUp(
           return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
         }
 
-        // Insérer dans la table profiles (prestataires)
-        logger.critical('📝 Tentative création profil prestataire', { userId, email })
+        // Insérer ou mettre à jour dans la table profiles (prestataires)
+        logger.critical('📝 Tentative création/mise à jour profil prestataire', { userId, email })
         
         const { error: profileError } = await adminClient
           .from('profiles')
-          .insert({
+          .upsert({
             id: userId,
             email: email,
             role: 'prestataire',
             prenom: profileData.prenom.trim().substring(0, 100),
             nom: profileData.nom.trim().substring(0, 100),
             nom_entreprise: profileData.nomEntreprise ? profileData.nomEntreprise.trim().substring(0, 200) : null,
+          }, {
+            onConflict: 'id'
           })
 
         if (profileError) {
