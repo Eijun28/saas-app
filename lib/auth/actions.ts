@@ -99,11 +99,16 @@ export async function signUp(
         
         const userId = data.user.id
 
+        // Attendre un peu pour s'assurer que l'utilisateur est disponible dans auth.users
+        // (nécessaire si la contrainte couples_user_id_fkey référence auth.users)
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Créer directement dans couples (pas de profil dans profiles pour les couples)
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
             id: userId,
-            user_id: userId, // ✅ Utiliser user_id, pas partner1_id
+            user_id: userId, // ✅ Utiliser user_id
             email: email,
             partner_1_name: profileData.prenom || null,
             partner_2_name: profileData.nom || null,
