@@ -1,4 +1,4 @@
 <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Lettre N stylisée en violet profond (#823F91) -->
-  <path d="M45 35V165H65V105L135 165H155V35H135V95L65 35H45Z" fill="#823F91" stroke="#823F91" stroke-width="2"/>
+  <!-- Lettre N stylisée en violet profond (#823F91) - design moderne et bold -->
+  <path d="M40 40V160H60V100L140 160H160V40H140V100L60 40H40Z" fill="#823F91"/>
 </svg>
