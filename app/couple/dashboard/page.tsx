@@ -128,9 +128,12 @@ export default function CoupleDashboardPage() {
             console.error('Erreur lors du traitement des messages:', messagesError)
           }
 
+          // Calculer le budget total de la même manière que dans la page budget
+          const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
+          
           setStats({
             prestatairesTrouves: favorisCount || 0,
-            budgetAlloue: coupleData.budget_max || coupleData.budget_min || 0,
+            budgetAlloue: budgetTotal,
             joursRestants,
             messagesNonLus,
           })
@@ -217,9 +220,12 @@ export default function CoupleDashboardPage() {
               messagesNonLus = count || 0
             }
             
+            // Calculer le budget total de la même manière que dans la page budget
+            const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
+            
             setStats({
               prestatairesTrouves: favorisCount || 0,
-              budgetAlloue: coupleData.budget_max || coupleData.budget_min || 0,
+              budgetAlloue: budgetTotal,
               joursRestants,
               messagesNonLus,
             })

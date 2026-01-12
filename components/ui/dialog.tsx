@@ -61,11 +61,8 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "bg-background fixed z-[101] grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-4 sm:p-6 shadow-lg sm:max-w-lg",
-          "data-[state=open]:animate-in data-[state=closed]:animate-out",
-          "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
-          "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",
-          "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+          "data-[state=open]:animate-[dialog-in_0.2s_ease-out] data-[state=closed]:animate-[dialog-out_0.15s_ease-in]",
           "max-h-[90vh] sm:max-h-[80vh] overflow-y-auto",
           className
         )}
