@@ -196,10 +196,10 @@ const SkeletonMatchingFullWidth = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: 0.3 }}
-      className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 relative overflow-hidden"
+      className="w-full h-full min-h-[600px] bg-white rounded-none sm:rounded-3xl shadow-xl border-x-0 sm:border-x border-t border-b border-gray-100 p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden"
     >
       <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
-      <div className="relative z-10 flex flex-col space-y-4">
+      <div className="relative z-10 flex flex-col h-full space-y-4">
         {/* Titre et description */}
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-md" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
@@ -214,7 +214,7 @@ const SkeletonMatchingFullWidth = () => {
         {/* Conversation - toujours visible */}
         <div 
           ref={messagesContainerRef}
-          className="flex flex-col space-y-6 pt-6 border-t border-gray-200 min-h-[250px] max-h-[500px] overflow-y-auto scroll-smooth px-1"
+          className="flex flex-col space-y-6 pt-6 border-t border-gray-200 flex-1 min-h-[300px] max-h-[600px] overflow-y-auto scroll-smooth px-1"
           style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(130, 63, 145, 0.3) transparent' }}
         >
           {displayedMessages.length === 0 ? (
@@ -386,110 +386,114 @@ export default function MatchingQuizSection() {
     <section
       id="trouver-un-prestataire"
       ref={sectionRef}
-      className="py-8 sm:py-12 md:py-20 px-3 sm:px-4 bg-background relative overflow-hidden scroll-mt-20"
+      className="min-h-screen flex flex-col py-8 sm:py-12 md:py-20 px-0 bg-background relative overflow-hidden scroll-mt-20"
     >
-      <div className="max-w-4xl mx-auto">
-        {/* Rectangle avec icône HeartHandshake */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={isVisible ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.5 }}
-          className="mb-6 sm:mb-8 flex items-center justify-center"
-        >
-          <motion.div 
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg flex items-center justify-center"
-            style={{ 
-              backgroundColor: '#823F91',
-              boxShadow: '0 0 30px rgba(130, 63, 145, 0.3), 0 0 60px rgba(130, 63, 145, 0.2), 0 0 90px rgba(130, 63, 145, 0.1)'
-            }}
-            animate={isVisible ? {
-              scale: [1, 1.05, 1],
-            } : {}}
-            transition={{
-              scale: {
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
-            }}
+      <div className="flex-1 flex flex-col justify-center w-full">
+        <div className="w-full mb-6 sm:mb-8 px-4 sm:px-6">
+          {/* Rectangle avec icône HeartHandshake */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={isVisible ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.5 }}
+            className="mb-6 sm:mb-8 flex items-center justify-center"
           >
             <motion.div 
-              className="text-white"
+              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg flex items-center justify-center"
+              style={{ 
+                backgroundColor: '#823F91',
+                boxShadow: '0 0 30px rgba(130, 63, 145, 0.3), 0 0 60px rgba(130, 63, 145, 0.2), 0 0 90px rgba(130, 63, 145, 0.1)'
+              }}
               animate={isVisible ? {
-                rotate: [0, 5, -5, 0],
+                scale: [1, 1.05, 1],
               } : {}}
               transition={{
-                rotate: {
-                  duration: 3,
+                scale: {
+                  duration: 2,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }
               }}
             >
-              <HeartHandshake 
-                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16"
-                strokeWidth={2.5}
-              />
+              <motion.div 
+                className="text-white"
+                animate={isVisible ? {
+                  rotate: [0, 5, -5, 0],
+                } : {}}
+                transition={{
+                  rotate: {
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
+              >
+                <HeartHandshake 
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16"
+                  strokeWidth={2.5}
+                />
+              </motion.div>
             </motion.div>
           </motion.div>
-        </motion.div>
 
-        {/* Titre principal (apparaît au scroll) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-6 sm:mb-8 md:mb-12"
-        >
-          <h2 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2"
-            style={{ color: '#823F91' }}
+          {/* Titre principal (apparaît au scroll) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-6 sm:mb-8 md:mb-12"
           >
-            Matchez vos prestataires en 2 minutes
-          </h2>
-        </motion.div>
-      </div>
-
-      {/* Section Matching intelligent */}
-      <div className="w-full px-3 sm:px-4">
-        <SkeletonMatchingFullWidth />
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        {/* Cartes explicatives */}
-        <div className="mb-8 sm:mb-12">
-          <MatchingExplainerCards />
+            <h2 
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2"
+              style={{ color: '#823F91' }}
+            >
+              Matchez vos prestataires en 2 minutes
+            </h2>
+          </motion.div>
         </div>
 
-        {/* Bouton CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="flex items-center justify-center w-full mb-8 sm:mb-10 px-4"
-        >
+        {/* Section Matching intelligent - Full screen latéralement */}
+        <div className="flex-1 flex items-center justify-center w-full">
+          <div className="w-full h-full">
+            <SkeletonMatchingFullWidth />
+          </div>
+        </div>
+
+        <div className="w-full mt-8 sm:mt-12 px-4 sm:px-6">
+          {/* Cartes explicatives */}
+          <div className="mb-8 sm:mb-12 max-w-6xl mx-auto">
+            <MatchingExplainerCards />
+          </div>
+
+          {/* Bouton CTA */}
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="flex items-center justify-center w-full mb-8 sm:mb-10"
           >
-            <button
-              onClick={() => router.push('/tarifs')}
-              type="button"
-              className="text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 shadow-lg hover:shadow-xl w-full sm:w-auto rounded-lg font-semibold text-white transition-all"
-              style={{
-                backgroundColor: '#c081e3',
-                color: 'white',
-              }}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <span className="flex items-center justify-center gap-2">
-                Tester le matching
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </span>
-            </button>
+              <button
+                onClick={() => router.push('/tarifs')}
+                type="button"
+                className="text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 shadow-lg hover:shadow-xl w-full sm:w-auto rounded-lg font-semibold text-white transition-all"
+                style={{
+                  backgroundColor: '#c081e3',
+                  color: 'white',
+                }}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  Tester le matching
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </button>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

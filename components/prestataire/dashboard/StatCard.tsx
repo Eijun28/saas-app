@@ -38,29 +38,29 @@ export function StatCard({
       className={cn(onClick && 'cursor-pointer')}
       onClick={onClick}
     >
-      <Card className="border-[#823F91]/20 bg-white hover:shadow-xl hover:shadow-[#823F91]/20 transition-all duration-300 min-h-[160px] hover:border-[#823F91]/30">
-        <CardContent className="p-6 h-full flex flex-col justify-between">
+      <Card className="border-[#823F91]/20 bg-white hover:shadow-xl hover:shadow-[#823F91]/20 transition-all duration-300 min-h-[120px] sm:min-h-[140px] md:min-h-[160px] hover:border-[#823F91]/30">
+        <CardContent className="p-3 sm:p-4 md:p-6 h-full flex flex-col justify-between">
           {/* Top section: Label + Icon */}
-          <div className="flex items-start justify-between mb-4">
-            <p className="text-sm font-medium text-[#823F91]/70">
+          <div className="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
+            <p className="text-xs sm:text-sm font-medium text-[#823F91]/70">
               {label}
             </p>
             <div className={cn(
-              'h-12 w-12 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#823F91]/20',
+              'h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#823F91]/20',
               colorClass
             )}>
-              <Icon className="h-6 w-6 text-[#823F91]" />
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#823F91]" />
             </div>
           </div>
           
           {/* Middle section: Value */}
-          <p className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+          <p className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 sm:mb-2">
             {value}
           </p>
 
           {/* Bottom section: Subtitle/Trend */}
           {(subtitle || trend) && (
-            <div className="flex items-center justify-between text-xs mt-auto">
+            <div className="flex items-center justify-between text-[10px] sm:text-xs mt-auto">
               {subtitle && (
                 <span className="text-muted-foreground">{subtitle}</span>
               )}

@@ -274,7 +274,7 @@ export default function DashboardPrestatairePage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-8">
+      <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
       {/* Affichage de la recherche active */}
       {searchQuery && (
         <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-lg backdrop-blur-sm">
@@ -296,7 +296,7 @@ export default function DashboardPrestatairePage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 w-full">
         {[
           {
             icon: Bell,

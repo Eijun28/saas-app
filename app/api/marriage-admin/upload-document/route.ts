@@ -210,9 +210,7 @@ export async function POST(req: NextRequest) {
 
     // Prépare le nom du fichier de manière sécurisée
     // SÉCURITÉ: Utiliser user.id directement et nettoyer le nom
-    const sanitizedFileName = sanitizeFileName(file.name)
-    const parts = sanitizedFileName.split('.')
-    const fileExt = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : 'bin'
+    // Réutiliser les variables déjà déclarées plus haut (parts et fileExt)
     const safeDocumentType = sanitizeFileName(documentType)
     const fileName = `${user.id}/${safeDocumentType}-${Date.now()}.${fileExt}`
 

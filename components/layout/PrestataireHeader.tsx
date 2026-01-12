@@ -243,18 +243,23 @@ export function PrestataireHeader() {
   }
 
   return (
-    <header className='h-16 bg-white sticky top-0 z-50 border-b border-[#E5E7EB] w-full shadow-sm flex items-center'>
+    <header className='h-16 bg-white sticky top-0 z-[55] border-b border-[#E5E7EB] w-full shadow-sm flex items-center'>
       <div className='w-full flex items-center justify-between gap-6 px-4 sm:px-6'>
         <div className='flex items-center gap-4'>
           {/* Mobile menu trigger */}
           <Button
             variant='ghost'
             size='icon'
-            className='md:hidden z-50 relative h-10 w-10 min-w-[2.5rem] touch-manipulation'
-            onClick={() => setOpenMobile(true)}
+            className='md:hidden z-[60] relative h-10 w-10 min-w-[2.5rem] touch-manipulation pointer-events-auto'
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setOpenMobile(true)
+            }}
             aria-label='Ouvrir le menu'
+            type='button'
           >
-            <Menu className='h-6 w-6' />
+            <Menu className='h-6 w-6 pointer-events-none' />
           </Button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>
