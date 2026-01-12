@@ -35,24 +35,25 @@ export function ProfileDescriptionEditor({
     const newDescription = currentDescription || '';
     const newBio = currentBio || '';
     
-    // Si on vient juste de sauvegarder, mettre à jour avec les données de la DB
-    if (justSavedRef.current) {
+    // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
+    if (newDescription !== description) {
       setDescription(newDescription);
+    }
+    if (newBio !== bio) {
       setBio(newBio);
-      setInitialDescription(newDescription);
-      setInitialBio(newBio);
-      justSavedRef.current = false;
-      return;
     }
     
-    // Mettre à jour si les valeurs initiales ont changé (données rechargées depuis la DB)
-    if (initialDescription !== newDescription || initialBio !== newBio) {
-      // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
-      setDescription(newDescription);
-      setBio(newBio);
-      // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
+    // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
+    if (newDescription !== initialDescription) {
       setInitialDescription(newDescription);
+    }
+    if (newBio !== initialBio) {
       setInitialBio(newBio);
+    }
+    
+    // Réinitialiser le flag après mise à jour
+    if (justSavedRef.current) {
+      justSavedRef.current = false;
     }
   }, [currentDescription, currentBio, isSaving]);
 

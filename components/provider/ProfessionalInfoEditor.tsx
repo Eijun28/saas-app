@@ -39,23 +39,23 @@ export function ProfessionalInfoEditor({
       ville: currentVille || '',
     }
     
-    // Vérifier si les données ont changé depuis la dernière fois
-    const dataChanged = 
-      initialData.budgetMin !== newData.budgetMin ||
-      initialData.budgetMax !== newData.budgetMax ||
-      initialData.experience !== newData.experience ||
-      initialData.ville !== newData.ville;
-    
-    if (dataChanged) {
-      // Toujours mettre à jour les valeurs pour refléter l'état de la DB
-      // Cela garantit que les données sauvegardées s'affichent correctement
+    // Toujours mettre à jour les valeurs pour refléter l'état de la DB
+    // Cela garantit que les données sauvegardées s'affichent correctement
+    if (newData.budgetMin !== budgetMin) {
       setBudgetMin(newData.budgetMin)
-      setBudgetMax(newData.budgetMax)
-      setExperience(newData.experience)
-      setVille(newData.ville)
-      // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
-      setInitialData(newData)
     }
+    if (newData.budgetMax !== budgetMax) {
+      setBudgetMax(newData.budgetMax)
+    }
+    if (newData.experience !== experience) {
+      setExperience(newData.experience)
+    }
+    if (newData.ville !== ville) {
+      setVille(newData.ville)
+    }
+    
+    // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
+    setInitialData(newData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBudgetMin, currentBudgetMax, currentExperience, currentVille])
 
