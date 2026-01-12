@@ -75,39 +75,47 @@ export default function ProfilPublicPage() {
   }, [])
 
   const reloadData = async () => {
+    if (!user) return
+    
     // Attendre un peu pour s'assurer que la transaction DB est terminée
-    await new Promise(resolve => setTimeout(resolve, 500))
-    if (user) {
-      // Forcer le rechargement en passant par une nouvelle requête
-      await loadAllData(user.id)
-    }
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Forcer le rechargement en passant par une nouvelle requête
+    await loadAllData(user.id)
+    
+    // Forcer un re-render en mettant à jour le state même si les données sont identiques
+    setProfile(prev => ({ ...prev } as typeof profile))
   }
 
   async function loadAllData(userId: string) {
     setIsLoading(true)
 
     try {
-      const { data: profileData, error: profileError } = await supabase
+      // Utiliser une nouvelle instance de supabase pour éviter les problèmes de cache
+      const freshSupabase = createClient()
+      
+      const { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
         .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, service_type')
         .eq('id', userId)
         .maybeSingle()
 
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
+        console.error('Erreur profil:', profileError)
         throw new Error(`Erreur profil: ${profileError.message}`)
       }
 
-      const { data: culturesData } = await supabase
+      const { data: culturesData } = await freshSupabase
         .from('provider_cultures')
         .select('culture_id')
         .eq('profile_id', userId)
 
-      const { data: zonesData } = await supabase
+      const { data: zonesData } = await freshSupabase
         .from('provider_zones')
         .select('zone_id')
         .eq('profile_id', userId)
 
-      const { data: portfolioData } = await supabase
+      const { data: portfolioData } = await freshSupabase
         .from('provider_portfolio')
         .select('id, image_url, title')
         .eq('profile_id', userId)
@@ -129,10 +137,11 @@ export default function ProfilPublicPage() {
         title: p.title || undefined,
       }))
 
-      setProfile({
+      // Créer un nouvel objet pour forcer React à détecter le changement
+      const newProfile = {
         nom_entreprise: profileData?.nom_entreprise || undefined,
         avatar_url: profileData?.avatar_url || null,
-        service_type: undefined,
+        service_type: profileData?.service_type || undefined,
         prenom: profileData?.prenom || undefined,
         nom: profileData?.nom || undefined,
         description_courte: profileData?.description_courte || undefined,
@@ -147,8 +156,11 @@ export default function ProfilPublicPage() {
         website_url: profileData?.website_url || null,
         linkedin_url: profileData?.linkedin_url || null,
         tiktok_url: profileData?.tiktok_url || null,
-      })
+      }
 
+      console.log('📥 Données chargées depuis Supabase:', newProfile)
+      
+      setProfile(newProfile)
       setCultures(mappedCultures)
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
