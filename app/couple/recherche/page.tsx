@@ -367,7 +367,7 @@ export default function RecherchePage() {
                   className="h-14 px-4 border-2 border-gray-200 hover:border-[#823F91] focus-visible:border-[#823F91] rounded-xl flex items-center gap-2 min-w-[200px]"
                 >
                   <Filter className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900">
                     {selectedCategory || selectedCulture || selectedCountry 
                       ? 'Filtres actifs'
                       : 'Filtres'}
@@ -382,25 +382,25 @@ export default function RecherchePage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
                       >
                         <span className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" />
+                          <Building2 className="h-4 w-4 text-gray-700" />
                           Métier
                             {selectedCategory && (
-                              <Badge variant="secondary" className="ml-2 text-xs">
+                              <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
                                 {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
                               </Badge>
                             )}
                         </span>
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto" side="right" align="start" sideOffset={5}>
                         <div className="space-y-1">
                           <Button
                             variant={selectedCategory === null ? "default" : "ghost"}
-                            className="w-full justify-start text-sm font-medium"
+                            className={`w-full justify-start text-sm font-medium ${selectedCategory === null ? "" : "text-gray-900"}`}
                             onClick={() => {
                               setSelectedCategory(null)
                               setOpenSubDropdown(null)
@@ -413,7 +413,7 @@ export default function RecherchePage() {
                             const CategoryIcon = category.icon
                             return (
                               <div key={category.id} className="space-y-1">
-                                <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase flex items-center gap-2">
+                                <div className="px-2 py-1.5 text-xs font-semibold text-gray-700 uppercase flex items-center gap-2">
                                   <CategoryIcon className="h-3.5 w-3.5 text-[#823F91]" />
                                   {category.label}
                                 </div>
@@ -423,7 +423,7 @@ export default function RecherchePage() {
                                     <Button
                                       key={service.value}
                                       variant={selectedCategory === service.value ? "default" : "ghost"}
-                                      className="w-full justify-start text-sm pl-6"
+                                      className={`w-full justify-start text-sm pl-6 ${selectedCategory === service.value ? "" : "text-gray-900"}`}
                                       onClick={() => {
                                         setSelectedCategory(service.value)
                                         setOpenSubDropdown(null)
@@ -446,25 +446,25 @@ export default function RecherchePage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
                       >
                         <span className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4" />
+                          <Sparkles className="h-4 w-4 text-gray-700" />
                           Culture
                           {selectedCulture && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
+                            <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
                               {CULTURES.find(c => c.id === selectedCulture)?.label}
                             </Badge>
                           )}
                         </span>
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
                       <div className="space-y-1">
                         <Button
                           variant={selectedCulture === null ? "default" : "ghost"}
-                          className="w-full justify-start text-sm"
+                          className={`w-full justify-start text-sm ${selectedCulture === null ? "" : "text-gray-900"}`}
                           onClick={() => {
                             setSelectedCulture(null)
                             setOpenSubDropdown(null)
@@ -476,7 +476,7 @@ export default function RecherchePage() {
                           <Button
                             key={culture.id}
                             variant={selectedCulture === culture.id ? "default" : "ghost"}
-                            className="w-full justify-start text-sm"
+                            className={`w-full justify-start text-sm ${selectedCulture === culture.id ? "" : "text-gray-900"}`}
                             onClick={() => {
                               setSelectedCulture(culture.id)
                               setOpenSubDropdown(null)
@@ -494,25 +494,25 @@ export default function RecherchePage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="w-full justify-between text-sm font-medium hover:bg-gray-100"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
                       >
                         <span className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="h-4 w-4 text-gray-700" />
                           Pays
                           {selectedCountry && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
+                            <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
                               {selectedCountry}
                             </Badge>
                           )}
                         </span>
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
                       <div className="space-y-1">
                         <Button
                           variant={selectedCountry === null ? "default" : "ghost"}
-                          className="w-full justify-start text-sm"
+                          className={`w-full justify-start text-sm ${selectedCountry === null ? "" : "text-gray-900"}`}
                           onClick={() => {
                             setSelectedCountry(null)
                             setOpenSubDropdown(null)
@@ -522,14 +522,14 @@ export default function RecherchePage() {
                         </Button>
                         {CONTINENTS.map((continent) => (
                           <div key={continent.id} className="space-y-1">
-                            <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                            <div className="px-2 py-1 text-xs font-semibold text-gray-700 uppercase">
                               {continent.label}
                             </div>
                             {COUNTRIES_BY_CONTINENT[continent.id]?.map((country) => (
                               <Button
                                 key={country}
                                 variant={selectedCountry === country ? "default" : "ghost"}
-                                className="w-full justify-start text-sm pl-4"
+                                className={`w-full justify-start text-sm pl-4 ${selectedCountry === country ? "" : "text-gray-900"}`}
                                 onClick={() => {
                                   setSelectedCountry(country)
                                   setOpenSubDropdown(null)
@@ -562,7 +562,7 @@ export default function RecherchePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-gray-600 hover:text-gray-900"
                   onClick={() => setSearchQuery('')}
                 >
                   <X className="h-4 w-4" />
@@ -577,7 +577,7 @@ export default function RecherchePage() {
               {selectedCategory && (
                 <Badge 
                   variant="secondary" 
-                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCategory(null)}
                 >
                   Métier: {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
@@ -587,7 +587,7 @@ export default function RecherchePage() {
               {selectedCulture && (
                 <Badge 
                   variant="secondary" 
-                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCulture(null)}
                 >
                   Culture: {CULTURES.find(c => c.id === selectedCulture)?.label}
@@ -597,7 +597,7 @@ export default function RecherchePage() {
               {selectedCountry && (
                 <Badge 
                   variant="secondary" 
-                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCountry(null)}
                 >
                   Pays: {selectedCountry}
@@ -607,7 +607,7 @@ export default function RecherchePage() {
               {searchQuery && (
                 <Badge 
                   variant="secondary" 
-                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200"
+                  className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSearchQuery('')}
                 >
                   "{searchQuery}"
