@@ -39,18 +39,29 @@ export function ProfessionalInfoEditor({
       ville: currentVille || '',
     }
     
+    console.log('🔄 ProfessionalInfoEditor useEffect - current props:', {
+      currentBudgetMin,
+      currentBudgetMax,
+      currentExperience,
+      currentVille
+    }, 'newData:', newData, 'current state:', { budgetMin, budgetMax, experience, ville });
+    
     // Toujours mettre à jour les valeurs pour refléter l'état de la DB
     // Cela garantit que les données sauvegardées s'affichent correctement
     if (newData.budgetMin !== budgetMin) {
+      console.log('✅ Mise à jour budgetMin:', budgetMin, '->', newData.budgetMin);
       setBudgetMin(newData.budgetMin)
     }
     if (newData.budgetMax !== budgetMax) {
+      console.log('✅ Mise à jour budgetMax:', budgetMax, '->', newData.budgetMax);
       setBudgetMax(newData.budgetMax)
     }
     if (newData.experience !== experience) {
+      console.log('✅ Mise à jour experience:', experience, '->', newData.experience);
       setExperience(newData.experience)
     }
     if (newData.ville !== ville) {
+      console.log('✅ Mise à jour ville:', ville, '->', newData.ville);
       setVille(newData.ville)
     }
     

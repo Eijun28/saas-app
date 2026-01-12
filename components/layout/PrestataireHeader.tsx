@@ -269,7 +269,7 @@ export function PrestataireHeader() {
             aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
             style={{ pointerEvents: 'auto' }}
           >
-            <Menu className='h-6 w-6 text-gray-700 flex-shrink-0' strokeWidth={2} />
+            <Menu className='h-6 w-6 text-black flex-shrink-0' strokeWidth={2.5} />
           </button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>

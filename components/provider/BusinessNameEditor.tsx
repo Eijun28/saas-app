@@ -20,15 +20,19 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
 
   useEffect(() => {
     const newName = currentName || '';
+    console.log('🔄 BusinessNameEditor useEffect - currentName:', currentName, 'newName:', newName, 'name:', name, 'initialName:', initialName);
+    
     // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
     if (newName !== name) {
+      console.log('✅ Mise à jour name:', name, '->', newName);
       setName(newName);
     }
     // Toujours mettre à jour la valeur initiale pour refléter l'état de la DB
     if (newName !== initialName) {
+      console.log('✅ Mise à jour initialName:', initialName, '->', newName);
       setInitialName(newName);
     }
-  }, [currentName])
+  }, [currentName, name, initialName])
 
   const hasChanges = name.trim() !== initialName.trim()
 
