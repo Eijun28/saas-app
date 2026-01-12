@@ -17,12 +17,18 @@ export const logger = {
     if (isDev) {
       console.error('[ERROR]', message, error)
     } else {
-      // En production : logger uniquement le message, pas l'objet complet
-      console.error('[ERROR]', message)
+      // En production : logger le message et les détails de l'erreur pour debugging
+      console.error('[ERROR]', message, error)
 
       // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
       // Exemple : Sentry.captureException(error)
     }
+  },
+
+  // Logger critique - toujours actif même en production
+  critical: (message: string, details?: any) => {
+    console.error('[CRITICAL]', message, details)
+    // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
   },
 
   debug: (...args: any[]) => {

@@ -19,6 +19,8 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
+  logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
+  
   // ✅ VALIDATION 1: Vérifier format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
@@ -103,30 +105,53 @@ export async function signUp(
         // (nécessaire pour la contrainte couples_user_id_fkey qui référence auth.users(id))
         let userExists = false
         let retries = 0
-        const maxRetries = 5
+        const maxRetries = 10 // Augmenté de 5 à 10 pour production mobile
+        const retryDelay = 200 // Augmenté de 100ms à 200ms pour latence réseau mobile
+        
+        logger.critical('🔍 Vérification existence utilisateur dans auth.users', { userId, email })
         
         while (!userExists && retries < maxRetries) {
           try {
             const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
             if (userData && userData.user && !userCheckError) {
               userExists = true
+              logger.critical('✅ Utilisateur trouvé dans auth.users', { userId, attemptNumber: retries + 1 })
             } else {
               retries++
-              await new Promise(resolve => setTimeout(resolve, 100))
+              logger.critical(`⏳ Tentative ${retries}/${maxRetries} - utilisateur non encore disponible`, {
+                userId,
+                error: userCheckError?.message
+              })
+              if (retries < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, retryDelay))
+              }
             }
-          } catch (err) {
+          } catch (err: any) {
             retries++
-            await new Promise(resolve => setTimeout(resolve, 100))
+            logger.critical(`❌ Erreur tentative ${retries}/${maxRetries}`, {
+              userId,
+              error: err?.message || String(err)
+            })
+            if (retries < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, retryDelay))
+            }
           }
         }
 
         if (!userExists) {
-          logger.error('Utilisateur non trouvé dans auth.users après plusieurs tentatives')
+          logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives', {
+            userId,
+            email,
+            maxRetries,
+            totalWaitTime: maxRetries * retryDelay
+          })
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: 'Erreur lors de la création du compte. Veuillez réessayer.' }
+          return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
         }
 
         // Créer directement dans couples (pas de profil dans profiles pour les couples)
+        logger.critical('📝 Tentative création enregistrement couple', { userId, email })
+        
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
@@ -139,10 +164,18 @@ export async function signUp(
 
         // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
+          logger.critical('🚨 ÉCHEC: Erreur création couple', {
+            userId,
+            email,
+            error: coupleError.message,
+            code: coupleError.code,
+            details: coupleError.details
+          })
           // Rollback : supprimer l'utilisateur si couple échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
           return { error: `Erreur création couple: ${coupleError.message}` }
         } else {
+          logger.critical('✅ Couple créé avec succès', { userId })
           // Créer les préférences vides pour le nouveau couple
           try {
             await adminClient
@@ -182,6 +215,8 @@ export async function signUp(
         const userId = data.user.id
 
         // Insérer dans la table profiles (prestataires)
+        logger.critical('📝 Tentative création profil prestataire', { userId, email })
+        
         const { error: profileError } = await adminClient
           .from('profiles')
           .insert({
@@ -194,9 +229,18 @@ export async function signUp(
           })
 
         if (profileError) {
+          logger.critical('🚨 ÉCHEC: Erreur création profil prestataire', {
+            userId,
+            email,
+            error: profileError.message,
+            code: profileError.code,
+            details: profileError.details
+          })
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
           return { error: `Erreur création profil: ${profileError.message}` }
+        } else {
+          logger.critical('✅ Profil prestataire créé avec succès', { userId })
         }
 
         // NOUVELLE LOGIQUE : Vérifier les places Early Adopter disponibles
@@ -282,6 +326,7 @@ export async function signUp(
     }
 
     // Succès - retourner avec redirection
+    logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
     revalidatePath('/', 'layout')
     return { success: true, redirectTo: '/auth/confirm' }
 }
