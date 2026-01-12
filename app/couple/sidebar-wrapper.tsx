@@ -79,7 +79,7 @@ export function CoupleSidebarWrapper() {
         {/* Toggle button */}
         <SidebarToggleButton />
       </SidebarHeader>
-      <SidebarContent className="px-6 py-4 group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3">
+      <SidebarContent className="px-5 md:px-6 py-5 md:py-4 group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2 group-data-[collapsible=icon]:space-y-3">
@@ -94,12 +94,13 @@ export function CoupleSidebarWrapper() {
                       isActive={isActive}
                       size="lg"
                       className={cn(
-                        "text-base font-medium rounded-lg transition-all duration-200",
+                        "text-base font-semibold rounded-xl transition-all duration-200 h-12",
                         "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:mx-auto",
                         "group-data-[collapsible=icon]:rounded-xl",
+                        "active:scale-[0.98]",
                         isActive 
-                          ? "bg-[#E8D4EF] text-[#823F91] font-semibold hover:bg-[#E8D4EF] group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-md" 
-                          : "hover:bg-gray-50 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
+                          ? "bg-[#E8D4EF] text-[#823F91] font-bold hover:bg-[#E8D4EF]/90 group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-md" 
+                          : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
                       <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full">

@@ -277,9 +277,13 @@ export default function DashboardPrestatairePage() {
       <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
       {/* Affichage de la recherche active */}
       {searchQuery && (
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-lg backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-xl backdrop-blur-sm shadow-md shadow-[#823F91]/5"
+        >
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[#823F91] font-medium">
+            <span className="text-sm sm:text-base text-[#823F91] font-semibold">
               Recherche : <strong className="text-[#6D3478]">{searchQuery}</strong>
             </span>
           </div>
@@ -288,15 +292,15 @@ export default function DashboardPrestatairePage() {
               setSearchQuery('')
               sessionStorage.removeItem('prestataire_search_query')
             }}
-            className="text-sm text-[#823F91] hover:text-[#6D3478] underline transition-colors"
+            className="text-sm font-semibold text-[#823F91] hover:text-[#6D3478] underline transition-colors active:scale-[0.98]"
           >
             Effacer
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 w-full">
         {[
           {
             icon: Bell,
@@ -369,13 +373,13 @@ export default function DashboardPrestatairePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        <Card className="border-[#823F91]/20 bg-background">
-          <CardHeader>
-            <CardTitle className="text-2xl bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
+        <Card className="border-[#823F91]/20 bg-white/95 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
               Activité récente
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <EmptyState
               title="Aucune activité récente"
               description="Les nouvelles demandes et messages apparaîtront ici"

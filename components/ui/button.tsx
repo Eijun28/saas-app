@@ -5,28 +5,28 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#823F91]/20 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "text-primary-foreground shadow-sm hover:from-primary/70 hover:to-primary/90 bg-linear-to-b from-primary/60 to-primary/100 border-t-primary",
+          "text-primary-foreground shadow-md hover:shadow-lg hover:-translate-y-[1px] bg-linear-to-b from-primary/60 to-primary/100 border-t-primary",
         destructive:
-          "bg-destructive/30 text-destructive-foreground shadow-xs hover:bg-destructive/90",
+          "bg-destructive/30 text-destructive-foreground shadow-md hover:shadow-lg hover:-translate-y-[1px] hover:bg-destructive/90",
         outline:
-          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
-        glow: "glass-4 hover:glass-5 shadow-md",
+          "border border-input bg-background shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:bg-accent hover:text-accent-foreground",
+        glow: "glass-4 hover:glass-5 shadow-md hover:shadow-lg hover:-translate-y-[1px] shadow-[#823F91]/10",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-secondary text-secondary-foreground shadow-md hover:shadow-lg hover:-translate-y-[1px] hover:bg-secondary/80",
+        ghost: "hover:bg-[#823F91]/10 hover:text-accent-foreground",
         link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        xs: "h-7 rounded-md px-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-5",
-        icon: "size-9",
+        default: "h-11 px-4 py-2",
+        xs: "h-8 rounded-xl px-2 text-xs",
+        sm: "h-10 rounded-xl px-3 text-xs",
+        lg: "h-12 rounded-xl px-5",
+        icon: "size-11",
       },
     },
     defaultVariants: {

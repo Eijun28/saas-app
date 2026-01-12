@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/lib/auth/actions'
+import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -242,25 +243,34 @@ export function PrestataireHeader() {
     }
   }
 
+  const [menuRotated, setMenuRotated] = useState(false)
+  const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
+
   return (
-    <header className='h-16 bg-white sticky top-0 z-[55] border-b border-[#E5E7EB] w-full shadow-sm flex items-center'>
-      <div className='w-full flex items-center justify-between gap-6 px-4 sm:px-6'>
+    <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[55] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center'>
+      <div className='w-full flex items-center justify-between gap-6 px-5 sm:px-6'>
         <div className='flex items-center gap-4'>
           {/* Mobile menu trigger */}
-          <Button
-            variant='ghost'
-            size='icon'
-            className='md:hidden z-[60] relative h-10 w-10 min-w-[2.5rem] touch-manipulation pointer-events-auto'
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setOpenMobile(true)
-            }}
-            aria-label='Ouvrir le menu'
-            type='button'
+          <motion.div
+            animate={{ rotate: menuRotated ? 90 : 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <Menu className='h-6 w-6 pointer-events-none' />
-          </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              className='md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl hover:bg-gradient-to-br hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all duration-200 active:scale-[0.98]'
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setMenuRotated(!menuRotated)
+                setOpenMobile(true)
+              }}
+              aria-label='Ouvrir le menu'
+              type='button'
+            >
+              <Menu className='h-6 w-6 pointer-events-none' />
+            </Button>
+          </motion.div>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>
               {breadcrumbs.map((crumb, index) => (
@@ -281,8 +291,26 @@ export function PrestataireHeader() {
               <div className='flex items-center gap-3'>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' size='icon'>
+                    <Button 
+                      variant='ghost' 
+                      size='icon'
+                      className='relative h-11 w-11 rounded-xl hover:bg-[#823F91]/10 transition-all duration-200 active:scale-[0.98]'
+                    >
                       <Bell className='size-5' />
+                      {unreadCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className='absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#823F91] text-white text-xs font-semibold flex items-center justify-center shadow-sm ring-2 ring-white'
+                        >
+                          <motion.span
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </motion.span>
+                        </motion.div>
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align='end' className='w-80'>
@@ -335,22 +363,28 @@ export function PrestataireHeader() {
                 <div className="flex flex-col items-end gap-1">
                   <ProfileDropdown
                     trigger={
-                      <Button variant='ghost' className='h-auto gap-2 px-2 py-1.5'>
-                        <Avatar className='h-9 w-9 rounded-md'>
-                          <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                          <AvatarFallback>
-                            {profile?.name
-                              ?.split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .toUpperCase()
-                              .slice(0, 2) || 'P'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className='hidden sm:block text-sm font-medium text-gray-700'>
-                          {profile?.name || 'Prestataire'}
-                        </span>
-                      </Button>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button variant='ghost' className='h-auto gap-2 px-2 py-1.5 rounded-xl hover:bg-[#823F91]/10 transition-all duration-200'>
+                          <Avatar className='h-9 w-9 rounded-xl ring-2 ring-[#823F91]/20 transition-all duration-200 hover:ring-[#823F91]/40'>
+                            <AvatarImage src={profile?.avatar} alt={profile?.name} />
+                            <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white font-semibold'>
+                              {profile?.name
+                                ?.split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2) || 'P'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className='hidden sm:block text-sm font-semibold text-gray-700'>
+                            {profile?.name || 'Prestataire'}
+                          </span>
+                        </Button>
+                      </motion.div>
                     }
                     user={profile || undefined}
                     onLogout={handleLogout}

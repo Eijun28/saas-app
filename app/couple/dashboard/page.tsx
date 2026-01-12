@@ -18,6 +18,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { fadeInUp, counterAnimation } from '@/lib/animations'
+import { cn } from '@/lib/utils'
 
 export default function CoupleDashboardPage() {
   const router = useRouter()
@@ -300,41 +301,103 @@ export default function CoupleDashboardPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4"
         >
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </div>
+          <motion.div 
+            className="flex items-center gap-3 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+            whileHover={{ scale: 1.02 }}
+          >
+            <motion.div 
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
+              animate={{ 
+                boxShadow: [
+                  "0 0 0 0 rgba(130, 63, 145, 0.4)",
+                  "0 0 0 8px rgba(130, 63, 145, 0)",
+                  "0 0 0 0 rgba(130, 63, 145, 0)"
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </motion.div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Prestataires trouvés</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">{stats.prestatairesTrouves}</p>
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Prestataires trouvés</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-gray-900">{stats.prestatairesTrouves}</p>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </div>
+          <motion.div 
+            className="flex items-center gap-3 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+            whileHover={{ scale: 1.02 }}
+          >
+            <motion.div 
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
+              animate={{ 
+                boxShadow: [
+                  "0 0 0 0 rgba(130, 63, 145, 0.4)",
+                  "0 0 0 8px rgba(130, 63, 145, 0)",
+                  "0 0 0 0 rgba(130, 63, 145, 0)"
+                ]
+              }}
+              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+            >
+              <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </motion.div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Budget alloué</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">
-                {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
-              </p>
+              <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Budget alloué</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
+                  {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
+                </p>
+                {stats.budgetAlloue > 0 && (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-[#823F91] text-sm"
+                  >
+                    ↗
+                  </motion.span>
+                )}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-gradient-to-br from-[#823F91]/5 to-[#9D5FA8]/5 border border-[#823F91]/10">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+          <motion.div 
+            className="flex flex-col gap-2 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center gap-3">
+              <motion.div 
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
+                animate={{ 
+                  boxShadow: [
+                    "0 0 0 0 rgba(130, 63, 145, 0.4)",
+                    "0 0 0 8px rgba(130, 63, 145, 0)",
+                    "0 0 0 0 rgba(130, 63, 145, 0)"
+                  ]
+                }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+              >
+                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Jours restants</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
+                  {stats.joursRestants !== null ? stats.joursRestants : '-'}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#6B7280] mb-0.5">Jours restants</p>
-              <p className="text-lg sm:text-xl font-bold text-[#0D0D0D]">
-                {stats.joursRestants !== null ? stats.joursRestants : '-'}
-              </p>
-            </div>
-          </div>
+            {stats.joursRestants !== null && stats.joursRestants > 0 && (
+              <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((stats.joursRestants / 365) * 100, 100)}%` }}
+                  transition={{ duration: 1, delay: 0.3 }}
+                  className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
+                />
+              </div>
+            )}
+          </motion.div>
         </motion.div>
 
         {/* Sections principales - design plus épuré */}
@@ -342,47 +405,59 @@ export default function CoupleDashboardPage() {
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
         >
           {sections.map((section, index) => {
             const Icon = section.icon
+            const isSearchSection = section.title === 'Rechercher des prestataires'
             return (
               <motion.div
                 key={section.title}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: index * 0.03,
-                  duration: 0.3,
+                  delay: index * 0.05,
+                  duration: 0.4,
                   ease: [0.16, 1, 0.3, 1] as const,
                 }}
+                whileHover={{ y: -2 }}
               >
                 <Link href={section.href} className="block">
-                  <div className="group relative p-3 sm:p-4 rounded-xl bg-white border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5 transition-all duration-200">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-[#823F91] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+                  <div className={cn(
+                    "group relative p-5 rounded-xl bg-white/95 backdrop-blur-sm border transition-all duration-200",
+                    isSearchSection 
+                      ? "border-2 border-[#823F91]/30 shadow-md shadow-[#823F91]/10 hover:shadow-lg hover:shadow-[#823F91]/15" 
+                      : "border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5"
+                  )}>
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:-rotate-[5deg] transition-all duration-200">
+                        <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="text-xs sm:text-sm font-semibold text-[#0D0D0D] leading-tight group-hover:text-[#823F91] transition-colors">
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors">
                             {section.title}
                           </h3>
                           {section.badge && (
-                            <Badge 
-                              variant="secondary" 
-                              className="bg-[#E8D4EF] text-[#823F91] border-0 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 h-4 sm:h-5 flex-shrink-0"
+                            <motion.div
+                              animate={{ scale: [1, 1.05, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
                             >
-                              {section.badge}
-                            </Badge>
+                              <Badge 
+                                variant="secondary" 
+                                className="bg-[#E8D4EF] text-[#823F91] border-0 text-xs px-2.5 py-1 h-5 flex-shrink-0 rounded-full shadow-sm font-semibold"
+                              >
+                                {section.badge}
+                              </Badge>
+                            </motion.div>
                           )}
                         </div>
-                        <p className="text-[10px] sm:text-xs text-[#6B7280] leading-relaxed line-clamp-2">
+                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
                           {section.description}
                         </p>
-                        <div className="mt-1.5 sm:mt-2 flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-[10px] sm:text-xs font-medium">Accéder</span>
-                          <ArrowRight className="ml-1 h-2.5 w-2.5 sm:h-3 sm:w-3 group-hover:translate-x-0.5 transition-transform" />
+                        <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-xs font-semibold">Accéder</span>
+                          <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </div>

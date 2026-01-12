@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react'
 
 interface StatCardProps {
   icon: LucideIcon
@@ -29,48 +30,104 @@ export function StatCard({
   delay = 0,
   onClick,
 }: StatCardProps) {
+  const [displayValue, setDisplayValue] = useState<number | string>(0)
+  
+  // Counter animation for numeric values
+  useEffect(() => {
+    if (typeof value === 'number') {
+      const duration = 1000
+      const startTime = Date.now()
+      const startValue = 0
+      const endValue = value
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+        const currentValue = Math.floor(startValue + (endValue - startValue) * easeOutQuart)
+        setDisplayValue(currentValue)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        }
+      }
+      
+      requestAnimationFrame(animate)
+    } else {
+      setDisplayValue(value)
+    }
+  }, [value])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -4, scale: 1.02 }}
+      transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -2, scale: 1.02 }}
       className={cn(onClick && 'cursor-pointer')}
       onClick={onClick}
     >
-      <Card className="border-[#823F91]/20 bg-white hover:shadow-xl hover:shadow-[#823F91]/20 transition-all duration-300 min-h-[120px] sm:min-h-[140px] md:min-h-[160px] hover:border-[#823F91]/30">
-        <CardContent className="p-3 sm:p-4 md:p-6 h-full flex flex-col justify-between">
+      <Card className="relative border-[#823F91]/20 bg-white/95 backdrop-blur-sm hover:shadow-lg hover:shadow-[#823F91]/10 transition-all duration-200 min-h-[140px] sm:min-h-[160px] hover:border-[#823F91]/30 overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(circle_at_1px_1px,#823F91_1px,transparent_0)] bg-[length:20px_20px]" />
+        
+        <CardContent className="relative p-4 sm:p-5 md:p-6 h-full flex flex-col justify-between">
           {/* Top section: Label + Icon */}
-          <div className="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
-            <p className="text-xs sm:text-sm font-medium text-[#823F91]/70">
+          <div className="flex items-start justify-between mb-3 sm:mb-4">
+            <p className="text-xs sm:text-sm font-semibold text-gray-600 tracking-wide">
               {label}
             </p>
-            <div className={cn(
-              'h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#823F91]/20',
-              colorClass
-            )}>
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[#823F91]" />
-            </div>
+            <motion.div 
+              className={cn(
+                'h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-md shadow-[#823F91]/20',
+                colorClass
+              )}
+              whileHover={{ scale: 1.1, rotate: -5 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </motion.div>
           </div>
           
           {/* Middle section: Value */}
-          <p className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 sm:mb-2">
-            {value}
-          </p>
+          <motion.p 
+            className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3, delay: delay + 0.2 }}
+          >
+            {displayValue}
+          </motion.p>
 
           {/* Bottom section: Subtitle/Trend */}
           {(subtitle || trend) && (
-            <div className="flex items-center justify-between text-[10px] sm:text-xs mt-auto">
+            <div className="flex items-center justify-between text-xs sm:text-sm mt-auto pt-2 border-t border-gray-100">
               {subtitle && (
-                <span className="text-muted-foreground">{subtitle}</span>
+                <span className="text-gray-600 font-medium">{subtitle}</span>
               )}
               {trend && (
-                <span className={cn(
-                  'font-medium',
-                  trend.positive ? 'text-green-600' : 'text-red-600'
-                )}>
-                  {trend.value}
-                </span>
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: delay + 0.3 }}
+                  className="flex items-center gap-1"
+                >
+                  {/* Mini sparkline */}
+                  <svg width="40" height="12" className="mr-1">
+                    <polyline
+                      points={trend.positive ? "0,10 10,6 20,4 30,2 40,0" : "0,2 10,4 20,6 30,8 40,10"}
+                      fill="none"
+                      stroke={trend.positive ? "#10b981" : "#ef4444"}
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  <span className={cn(
+                    'font-semibold text-xs',
+                    trend.positive ? 'text-green-600' : 'text-red-600'
+                  )}>
+                    {trend.value}
+                  </span>
+                </motion.div>
               )}
             </div>
           )}
