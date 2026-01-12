@@ -1,4 +1,6 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Lettre N stylisée en violet profond (#823F91) - design moderne et bold -->
-  <path d="M40 40V160H60V100L140 160H160V40H140V100L60 40H40Z" fill="#823F91"/>
+<svg width="200" height="200" viewBox="0 0 1177 1030" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fond noir -->
+  <rect width="1177" height="1030" fill="#000000"/>
+  <!-- Lettre N stylisée extraite du logo NUPLY original -->
+  <path d="M879.258 5.41385V648.518C879.258 792.301 751.16 797.529 711.946 685.117C672.732 572.705 497.579 5.41385 497.579 5.41385H146.403L0.000394252 1029.32L306.361 1029.32L361.638 507.348C361.638 507.348 379.902 562.142 427.761 685.117L492.35 847.2C506.986 877.501 544.942 1029.32 837.746 1029.32C1130.55 1029.32 1163.08 847.201 1163.08 847.201C1179.09 805.512 1177.28 742.132 1177.28 685.117V5.41385H879.258Z" fill="#823F91"/>
 </svg>
