@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSidebar } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -262,7 +263,6 @@ export function CoupleHeader() {
     }
   }
 
-  const [menuRotated, setMenuRotated] = useState(false)
   const unreadCount = notifications.filter(n => n.type === 'message').length
 
   return (
@@ -271,20 +271,24 @@ export function CoupleHeader() {
         <div className='flex items-center gap-4'>
           {/* Mobile menu trigger */}
           <motion.div
-            animate={{ rotate: menuRotated ? 90 : 0 }}
+            animate={{ rotate: openMobile ? 90 : 0 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             <Button
               variant='ghost'
               size='icon'
-              className='md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl hover:bg-gradient-to-br hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all duration-200 active:scale-[0.98]'
+              className={cn(
+                'md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl transition-all duration-200 active:scale-[0.98]',
+                openMobile 
+                  ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20' 
+                  : 'hover:bg-gradient-to-br hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10'
+              )}
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                setMenuRotated(!menuRotated)
-                setOpenMobile(true)
+                setOpenMobile(!openMobile)
               }}
-              aria-label='Ouvrir le menu'
+              aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
               type='button'
             >
               <Menu className='h-6 w-6 pointer-events-none' />
