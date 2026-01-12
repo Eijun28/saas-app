@@ -430,16 +430,16 @@ export default function CoupleDashboardPage() {
               >
                 <Link href={section.href} className="block">
                   <div className={cn(
-                    "group relative p-5 rounded-xl bg-white/95 backdrop-blur-sm border transition-all duration-200",
+                    "group relative p-5 rounded-xl bg-white/95 backdrop-blur-sm border transition-all duration-200 min-h-[140px] flex flex-col",
                     isSearchSection 
                       ? "border-2 border-[#823F91]/30 shadow-md shadow-[#823F91]/10 hover:shadow-lg hover:shadow-[#823F91]/15" 
                       : "border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5"
                   )}>
-                    <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1">
                       <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:-rotate-[5deg] transition-all duration-200">
                         <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 flex flex-col">
                         <div className="flex items-start justify-between gap-2 mb-1.5">
                           <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors">
                             {section.title}
@@ -458,10 +458,10 @@ export default function CoupleDashboardPage() {
                             </motion.div>
                           )}
                         </div>
-                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
+                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3 flex-1">
                           {section.description}
                         </p>
-                        <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity mt-auto">
                           <span className="text-xs font-semibold">Accéder</span>
                           <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                         </div>

@@ -397,7 +397,7 @@ export function CoupleHeader() {
                               .slice(0, 2) || 'C'}
                           </AvatarFallback>
                         </Avatar>
-                        <span className='hidden sm:block text-sm font-semibold text-[#823F91]'>
+                        <span className='hidden sm:block text-sm font-semibold text-[#6D3478]'>
                           {profile?.name || 'Couple'}
                         </span>
                       </Button>
