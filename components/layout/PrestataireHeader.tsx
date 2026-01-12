@@ -247,34 +247,29 @@ export function PrestataireHeader() {
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
 
   return (
-    <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[55] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center'>
+    <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[55] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center pointer-events-auto'>
       <div className='w-full flex items-center justify-between gap-6 px-5 sm:px-6'>
         <div className='flex items-center gap-4'>
           {/* Mobile menu trigger */}
-          <motion.div
-            animate={{ rotate: openMobile ? 90 : 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('🔥 Toggle clicked! openMobile before:', openMobile)
+              setOpenMobile(!openMobile)
+              console.log('🔥 setOpenMobile called with:', !openMobile)
+            }}
+            className={cn(
+              'md:hidden z-[60] h-11 w-11 rounded-xl flex items-center justify-center bg-transparent hover:bg-[#823F91]/10 active:bg-[#823F91]/20 active:scale-95 transition-all duration-200 border-0 cursor-pointer touch-manipulation',
+              openMobile 
+                ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20' 
+                : ''
+            )}
+            aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
-            <Button
-              variant='ghost'
-              size='icon'
-              className={cn(
-                'flex md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl transition-all duration-200 active:scale-[0.98] text-gray-700',
-                openMobile 
-                  ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20 text-[#823F91]' 
-                  : 'hover:bg-gradient-to-br hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10'
-              )}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setOpenMobile(!openMobile)
-              }}
-              aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
-              type='button'
-            >
-              <Menu className='h-6 w-6 pointer-events-none flex-shrink-0' />
-            </Button>
-          </motion.div>
+            <Menu className='h-6 w-6 text-gray-700 flex-shrink-0' strokeWidth={2} />
+          </button>
           <Breadcrumb className='hidden sm:block'>
             <BreadcrumbList>
               {breadcrumbs.map((crumb, index) => (
