@@ -161,7 +161,7 @@ const Sidebar = React.forwardRef<
           side="left"
           data-sidebar="sidebar"
           data-mobile="true"
-          className="w-[--sidebar-width] bg-white/95 backdrop-blur-md p-0 text-sidebar-foreground border-r border-[#E5E7EB]"
+          className="w-[--sidebar-width] bg-white/95 backdrop-blur-md p-0 text-sidebar-foreground border-r border-[#E5E7EB] z-[100]"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,

@@ -278,9 +278,9 @@ export function CoupleHeader() {
               variant='ghost'
               size='icon'
               className={cn(
-                'md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl transition-all duration-200 active:scale-[0.98]',
+                'flex md:hidden z-[60] relative h-11 w-11 min-w-[2.75rem] touch-manipulation pointer-events-auto rounded-xl transition-all duration-200 active:scale-[0.98] text-gray-700',
                 openMobile 
-                  ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20' 
+                  ? 'bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20 text-[#823F91]' 
                   : 'hover:bg-gradient-to-br hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10'
               )}
               onClick={(e) => {
@@ -291,7 +291,7 @@ export function CoupleHeader() {
               aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
               type='button'
             >
-              <Menu className='h-6 w-6 pointer-events-none' />
+              <Menu className='h-6 w-6 pointer-events-none flex-shrink-0' />
             </Button>
           </motion.div>
           <Breadcrumb className='hidden sm:block'>
