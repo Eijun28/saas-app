@@ -78,13 +78,10 @@ export default function ProfilPublicPage() {
     if (!user) return
     
     // Attendre un peu pour s'assurer que la transaction DB est terminée
-    await new Promise(resolve => setTimeout(resolve, 300))
+    await new Promise(resolve => setTimeout(resolve, 500))
     
     // Forcer le rechargement en passant par une nouvelle requête
     await loadAllData(user.id)
-    
-    // Forcer un re-render en mettant à jour le state même si les données sont identiques
-    setProfile(prev => ({ ...prev } as typeof profile))
   }
 
   async function loadAllData(userId: string) {

@@ -45,15 +45,11 @@ export function ProfileDescriptionEditor({
       return;
     }
     
-    // Mettre à jour seulement si les valeurs initiales ont changé (données rechargées depuis la DB)
-    // Cela évite d'écraser les modifications en cours de l'utilisateur
+    // Mettre à jour si les valeurs initiales ont changé (données rechargées depuis la DB)
     if (initialDescription !== newDescription || initialBio !== newBio) {
-      // Si l'utilisateur n'a pas fait de modifications locales, mettre à jour
-      const hasLocalChanges = description !== initialDescription || bio !== initialBio;
-      if (!hasLocalChanges) {
-        setDescription(newDescription);
-        setBio(newBio);
-      }
+      // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
+      setDescription(newDescription);
+      setBio(newBio);
       // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
       setInitialDescription(newDescription);
       setInitialBio(newBio);

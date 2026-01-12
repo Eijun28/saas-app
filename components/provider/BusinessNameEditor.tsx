@@ -21,16 +21,13 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
   useEffect(() => {
     const newName = currentName || '';
     // Mettre à jour seulement si la valeur initiale a changé (données rechargées depuis la DB)
-    // Cela évite d'écraser les modifications en cours de l'utilisateur
     if (initialName !== newName) {
-      // Si l'utilisateur n'a pas fait de modifications locales, mettre à jour
-      if (name === initialName) {
-        setName(newName);
-      }
+      // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
+      setName(newName);
       // Toujours mettre à jour la valeur initiale pour refléter l'état de la DB
       setInitialName(newName);
     }
-  }, [currentName])
+  }, [currentName, initialName])
 
   const hasChanges = name.trim() !== initialName.trim()
 

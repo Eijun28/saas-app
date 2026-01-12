@@ -47,19 +47,12 @@ export function ProfessionalInfoEditor({
       initialData.ville !== newData.ville;
     
     if (dataChanged) {
-      // Si l'utilisateur n'a pas fait de modifications locales, mettre à jour
-      const hasLocalChanges = 
-        budgetMin !== initialData.budgetMin ||
-        budgetMax !== initialData.budgetMax ||
-        experience !== initialData.experience ||
-        ville !== initialData.ville;
-      
-      if (!hasLocalChanges) {
-        setBudgetMin(newData.budgetMin)
-        setBudgetMax(newData.budgetMax)
-        setExperience(newData.experience)
-        setVille(newData.ville)
-      }
+      // Toujours mettre à jour les valeurs pour refléter l'état de la DB
+      // Cela garantit que les données sauvegardées s'affichent correctement
+      setBudgetMin(newData.budgetMin)
+      setBudgetMax(newData.budgetMax)
+      setExperience(newData.experience)
+      setVille(newData.ville)
       // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
       setInitialData(newData)
     }
