@@ -60,17 +60,14 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed z-[101] grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-6 shadow-lg sm:max-w-lg",
+          "bg-background fixed z-[101] grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-4 sm:p-6 shadow-lg sm:max-w-lg",
           "data-[state=open]:animate-[dialog-in_0.3s_ease-out] data-[state=closed]:animate-[dialog-out_0.2s_ease-in]",
+          "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+          "max-h-[90vh] sm:max-h-[80vh] overflow-y-auto",
           className
         )}
         style={{
           position: 'fixed',
-          top: '50%',
-          left: 'calc(50% + clamp(0px, var(--sidebar-width, 280px) / 2, 140px))',
-          transform: 'translate(-50%, -50%)',
-          maxHeight: '80vh',
-          overflowY: 'auto',
           ...props.style,
         }}
         {...props}
@@ -79,7 +76,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 sm:top-4 sm:right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
             <span className="sr-only">Close</span>

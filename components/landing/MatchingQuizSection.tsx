@@ -38,15 +38,16 @@ const SkeletonMatchingFullWidth = () => {
 
   // Scroll automatique vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
-    if (messagesContainerRef.current && displayedMessages.length > 0) {
+    if (messagesContainerRef.current) {
       // Utiliser requestAnimationFrame pour éviter les sauts
       requestAnimationFrame(() => {
         if (messagesContainerRef.current) {
+          // Scroll vers le bas pour voir les nouveaux messages (comme un vrai chat)
           messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         }
       });
     }
-  }, [displayedMessages.length]);
+  }, [displayedMessages.length, typedText]);
 
   useEffect(() => {
     if (!isInView) return;
@@ -165,8 +166,8 @@ const SkeletonMatchingFullWidth = () => {
       const delayBeforeMsg3 = 2000;
       // Délai avant message 4 : 1500ms
       const delayBeforeMsg4 = 1500;
-      // Temps d'affichage final avant de recommencer : 3000ms
-      const finalDisplayTime = 3000;
+      // Temps d'affichage final avant de recommencer : 2000ms (réduit de 3000ms)
+      const finalDisplayTime = 2000;
       
       return typingTime + sendTime + delayBeforeMsg2 + delayBeforeMsg3 + delayBeforeMsg4 + finalDisplayTime;
     };
@@ -193,34 +194,23 @@ const SkeletonMatchingFullWidth = () => {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: 0.3 }}
-      className="w-full h-full min-h-[600px] bg-white rounded-none sm:rounded-3xl shadow-xl border-x-0 sm:border-x border-t border-b border-gray-100 p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden"
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="w-full max-w-7xl mx-auto h-full min-h-[500px] sm:min-h-[600px] bg-white rounded-none sm:rounded-3xl shadow-xl border-x-0 sm:border-x border-t border-b border-gray-100 p-3 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden flex flex-col"
     >
       <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
-      <div className="relative z-10 flex flex-col h-full space-y-4">
-        {/* Titre et description */}
-        <div className="flex items-start gap-4 mb-6">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-md" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
-            <Sparkles className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Matching intelligent</h3>
-            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Matchez avec des prestataires qui vous ressemblent en 10 secondes</p>
-          </div>
-        </div>
-
-        {/* Conversation - toujours visible */}
+      <div className="relative z-10 flex flex-col flex-1 min-h-0">
+        {/* Conversation - messages qui apparaissent au-dessus du champ de saisie */}
         <div 
           ref={messagesContainerRef}
-          className="flex flex-col space-y-6 pt-6 border-t border-gray-200 flex-1 min-h-[300px] max-h-[600px] overflow-y-auto scroll-smooth px-1"
+          className="flex flex-col space-y-4 sm:space-y-6 pt-2 sm:pt-4 flex-1 min-h-0 overflow-y-auto scroll-smooth px-1"
           style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(130, 63, 145, 0.3) transparent' }}
         >
           {displayedMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[250px] text-gray-400">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gray-50" style={{ background: 'linear-gradient(to right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1))' }}>
-                <Sparkles className="w-8 h-8" style={{ color: '#c081e3' }} />
+            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-gray-50" style={{ background: 'linear-gradient(to right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1))' }}>
+                <Sparkles className="w-6 h-6" style={{ color: '#c081e3' }} />
               </div>
               <p className="text-sm font-medium mb-1">Commencez votre recherche</p>
               <p className="text-xs text-gray-500">Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...</p>
@@ -234,21 +224,21 @@ const SkeletonMatchingFullWidth = () => {
                 >
                   <div className={`flex items-start ${
                     msg.from === "ai" 
-                      ? "flex-row-reverse space-x-reverse max-w-[70%] sm:max-w-[65%] gap-4 sm:gap-5" 
-                      : "max-w-[85%] sm:max-w-[80%] space-x-4 sm:space-x-5"
+                      ? "flex-row-reverse space-x-reverse max-w-[75%] sm:max-w-[70%] md:max-w-[65%] gap-2 sm:gap-4 md:gap-5" 
+                      : "max-w-[90%] sm:max-w-[85%] md:max-w-[80%] space-x-2 sm:space-x-4 md:space-x-5"
                   }`}>
                     <div 
-                      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" 
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" 
                       style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
                     >
                       {msg.avatar === "couple" ? (
-                        <Users className="w-5 h-5 text-white" />
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       ) : (
-                        <Sparkles className="w-5 h-5 text-white" />
+                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       )}
                     </div>
                     <div 
-                      className={`rounded-2xl px-5 py-4 break-words shadow-sm ${
+                      className={`rounded-xl sm:rounded-2xl px-3 py-2.5 sm:px-5 sm:py-4 break-words shadow-sm ${
                         msg.from === "couple" 
                           ? "bg-gray-50 text-gray-900 border border-gray-100" 
                           : "text-white"
@@ -288,23 +278,19 @@ const SkeletonMatchingFullWidth = () => {
           )}
         </div>
 
-        {/* Zone de frappe - style ChatGPT/Cursor */}
-        <div className="pt-5">
+        {/* Zone de frappe - style ChatGPT/Cursor, collée en bas de la carte */}
+        <div className="flex-shrink-0 pt-3 sm:pt-4 border-t border-gray-200">
           <div 
-            className={`flex items-end gap-3 rounded-2xl border transition-all duration-200 ${
+            className={`flex items-end gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border transition-all duration-200 px-3 py-3 sm:px-[18px] sm:py-[14px] min-h-[56px] sm:min-h-[60px] ${
               isTyping || typedText 
                 ? "bg-white border-gray-300 shadow-lg ring-1 ring-gray-200" 
                 : isSending
                 ? "bg-gray-50 border-gray-200 opacity-60"
                 : "bg-gray-50 border-gray-200 hover:border-gray-300"
             }`}
-            style={{
-              padding: '14px 18px',
-              minHeight: '60px'
-            }}
           >
-            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
-              <Users className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="flex-1 relative min-h-[36px] flex items-center">
               <div className="w-full relative">
@@ -331,18 +317,18 @@ const SkeletonMatchingFullWidth = () => {
             </div>
             {showSendButton && (
               <button
-                className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 hover:shadow-md active:scale-95"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 hover:shadow-md active:scale-95"
                 style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
             {isSending && (
               <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
                 style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
               >
-                <Send className="w-5 h-5 text-white animate-spin" style={{ animationDuration: '1s' }} />
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" style={{ animationDuration: '1s' }} />
               </div>
             )}
           </div>
@@ -389,7 +375,7 @@ export default function MatchingQuizSection() {
       className="min-h-screen flex flex-col py-8 sm:py-12 md:py-20 px-0 bg-background relative overflow-hidden scroll-mt-20"
     >
       <div className="flex-1 flex flex-col justify-center w-full">
-        <div className="w-full mb-6 sm:mb-8 px-4 sm:px-6">
+        <div className="w-full mb-6 sm:mb-8 px-3 sm:px-6 max-w-7xl mx-auto">
           {/* Rectangle avec icône HeartHandshake */}
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
@@ -451,16 +437,16 @@ export default function MatchingQuizSection() {
           </motion.div>
         </div>
 
-        {/* Section Matching intelligent - Full screen latéralement */}
-        <div className="flex-1 flex items-center justify-center w-full">
-          <div className="w-full h-full">
+        {/* Section Matching intelligent - Même largeur que BentoGrid */}
+        <div className="flex-1 flex items-center justify-center w-full px-3 sm:px-6">
+          <div className="w-full max-w-7xl mx-auto h-full">
             <SkeletonMatchingFullWidth />
           </div>
         </div>
 
-        <div className="w-full mt-8 sm:mt-12 px-4 sm:px-6">
+        <div className="w-full mt-8 sm:mt-12 px-3 sm:px-6 max-w-7xl mx-auto">
           {/* Cartes explicatives */}
-          <div className="mb-8 sm:mb-12 max-w-6xl mx-auto">
+          <div className="mb-8 sm:mb-12">
             <MatchingExplainerCards />
           </div>
 

@@ -11,8 +11,10 @@ L'agent IA conversationnel est connecté à n8n via un webhook. Ce document expl
 Ajoutez dans votre `.env.local` :
 
 ```env
-NEXT_PUBLIC_N8N_WEBHOOK_URL=https://votre-instance-n8n.com/webhook/agent-profil
+N8N_WEBHOOK_CHATBOT_URL=https://votre-instance-n8n.com/webhook/chatbot
 ```
+
+> **Note** : Le chatbot passe par l'API `/api/chatbot` (variable serveur) pour des raisons de sécurité.
 
 ### 2. Workflow n8n suggéré
 
@@ -49,28 +51,16 @@ NEXT_PUBLIC_N8N_WEBHOOK_URL=https://votre-instance-n8n.com/webhook/agent-profil
 
 ## 📨 Format de la requête
 
-Le frontend envoie cette structure JSON au webhook :
+Le frontend envoie cette structure JSON au webhook via l'API `/api/chatbot` :
 
 ```json
 {
-  "message": "Comment améliorer ma description ?",
-  "context": {
-    "description": "Photographe depuis 10 ans...",
-    "services_count": 2,
-    "portfolio_count": 15
-  },
-  "conversation_history": [
-    {
-      "role": "user",
-      "content": "Bonjour"
-    },
-    {
-      "role": "assistant",
-      "content": "Bonjour ! Comment puis-je vous aider ?"
-    }
-  ]
+  "message": "Comment puis-je vous aider ?",
+  "sessionId": "unique-session-id"
 }
 ```
+
+> **Note** : Le message est automatiquement sanitisé et validé par l'API. L'historique de conversation est géré côté client et peut être récupéré depuis Supabase si nécessaire.
 
 ## 📤 Format de réponse attendu
 
@@ -78,44 +68,32 @@ n8n doit retourner cette structure :
 
 ```json
 {
-  "response": "Votre description actuelle est bonne, mais je recommande d'ajouter...",
-  "suggestion": {
-    "type": "description",
-    "action": "apply",
-    "data": {
-      "improved_text": "Photographe professionnel spécialisé dans les mariages multiculturels..."
-    }
-  }
+  "response": "Bonjour ! Je suis là pour vous aider avec NUPLY. Comment puis-je vous assister aujourd'hui ?"
 }
 ```
 
 ### Champs de réponse
 
 - **response** (string, requis) : La réponse textuelle de l'assistant
-- **suggestion** (object, optionnel) : Une suggestion actionnable
-  - **type** : `"description"` | `"service"` | `"general"`
-  - **action** : `"apply"` | `"review"`
-  - **data** : Données spécifiques selon le type
+
+> **Note** : L'API accepte aussi `output` ou `message` comme clé alternative pour la compatibilité.
 
 ## 🎯 Exemple de workflow n8n
 
 ### Node 1: Webhook
 
 - **Method**: POST
-- **Path**: `/webhook/agent-profil`
+- **Path**: `/webhook/chatbot`
 - **Response Mode**: Respond to Webhook
 
-### Node 2: Extract Context (Code)
+### Node 2: Extract Message (Code)
 
 ```javascript
 const body = $input.item.json;
 
 return {
   message: body.message,
-  description: body.context.description,
-  servicesCount: body.context.services_count,
-  portfolioCount: body.context.portfolio_count,
-  history: body.conversation_history
+  sessionId: body.sessionId
 };
 ```
 
@@ -123,47 +101,22 @@ return {
 
 **System Prompt**:
 ```
-Tu es un expert en marketing pour prestataires de mariage. 
-Tu aides les prestataires à optimiser leur profil pour attirer plus de clients.
+Tu es l'assistant NUPLY, une plateforme de mariage moderne.
+Tu aides les utilisateurs avec leurs questions sur le mariage, les prestataires, le budget, la planification, etc.
 
-Contexte du profil:
-- Description actuelle: {{$json.description}}
-- Nombre de services: {{$json.servicesCount}}
-- Nombre de photos portfolio: {{$json.portfolioCount}}
-
-Historique de conversation:
-{{$json.history}}
-
-Réponds de manière professionnelle et bienveillante. 
-Si tu proposes une amélioration, inclut-la dans le champ "suggestion".
+Réponds de manière professionnelle, bienveillante et concise.
 ```
 
 **User Message**: `{{$json.message}}`
 
-### Node 4: Parse & Format Response (Code)
+### Node 4: Format Response (Code)
 
 ```javascript
 const openAIResponse = $input.item.json;
 const assistantMessage = openAIResponse.choices[0].message.content;
 
-// Extraire une suggestion si présente dans la réponse
-let suggestion = null;
-if (assistantMessage.includes('SUGGESTION:')) {
-  const suggestionMatch = assistantMessage.match(/SUGGESTION:(.*)/s);
-  if (suggestionMatch) {
-    suggestion = {
-      type: "description",
-      action: "apply",
-      data: {
-        improved_text: suggestionMatch[1].trim()
-      }
-    };
-  }
-}
-
 return {
-  response: assistantMessage.replace(/SUGGESTION:.*/s, '').trim(),
-  suggestion: suggestion
+  response: assistantMessage.trim()
 };
 ```
 
@@ -176,16 +129,11 @@ Retourner directement le JSON formaté.
 Vous pouvez tester avec curl :
 
 ```bash
-curl -X POST https://votre-instance-n8n.com/webhook/agent-profil \
+curl -X POST https://votre-instance-n8n.com/webhook/chatbot \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "Comment améliorer ma description ?",
-    "context": {
-      "description": "Photographe depuis 10 ans",
-      "services_count": 2,
-      "portfolio_count": 15
-    },
-    "conversation_history": []
+    "message": "Bonjour, comment puis-je vous aider ?",
+    "sessionId": "test-session-123"
   }'
 ```
 
@@ -208,6 +156,6 @@ curl -X POST https://votre-instance-n8n.com/webhook/agent-profil \
 1. Créez le workflow dans n8n
 2. Activez le workflow
 3. Copiez l'URL du webhook
-4. Ajoutez-la dans `.env.local` comme `NEXT_PUBLIC_N8N_WEBHOOK_URL`
+4. Ajoutez-la dans `.env.local` comme `N8N_WEBHOOK_CHATBOT_URL`
 5. Redémarrez l'application Next.js
 

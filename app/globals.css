@@ -667,13 +667,55 @@ nav[class*="fixed"] {
   }
 }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Styles pour le chatbot - positionnement fixe en bas à droite */
-.nuply-chatbot-button,
+/* z-index: 9998 pour être en dessous de la navbar (99999) mais au-dessus des autres éléments */
+.nuply-chatbot-button {
+  position: fixed !important;
+  z-index: 9998 !important;
+}
+
 .nuply-chatbot-widget {
   position: fixed !important;
-  right: 24px !important;
-  bottom: 24px !important;
-  left: auto !important;
-  top: auto !important;
-  z-index: 9999 !important;
+  z-index: 9998 !important;
+}
+
+/* Sur mobile, le chatbot prend tout l'écran */
+@media (max-width: 767px) {
+  .nuply-chatbot-widget {
+    inset: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+  }
+  
+  .nuply-chatbot-button {
+    right: 16px !important;
+    bottom: 80px !important;
+  }
+}
+
+/* Sur desktop, positionnement en bas à droite */
+@media (min-width: 768px) {
+  .nuply-chatbot-widget {
+    right: 24px !important;
+    bottom: 24px !important;
+    left: auto !important;
+    top: auto !important;
+  }
+  
+  .nuply-chatbot-button {
+    right: 24px !important;
+    bottom: 24px !important;
+  }
 }

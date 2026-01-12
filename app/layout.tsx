@@ -4,7 +4,7 @@ import { GeistSans } from 'geist/font/sans';
 import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
-import Chatbot from "@/components/Chatbot";
+// import Chatbot from "@/components/Chatbot"; // Désactivé temporairement - à réactiver plus tard
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -43,8 +43,8 @@ export default function RootLayout({
         </main>
         <FooterWrapper />
         
-        {/* Chatbot visible sur TOUTES les pages */}
-        <Chatbot />
+        {/* Chatbot désactivé temporairement - à réactiver plus tard */}
+        {/* <Chatbot /> */}
         
         {/* Toaster pour les notifications */}
         <Toaster />

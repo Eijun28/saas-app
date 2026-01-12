@@ -43,15 +43,21 @@ export const BentoGridItem = ({
       <div className="flex-1 min-h-0 relative z-10">
         {header}
       </div>
-      <div className="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
-        {icon}
-        <div className="font-bold text-[#2D1B3D] mb-2 mt-2">
-          {title}
+      {(icon || title || description) && (
+        <div className="group-hover/bento:translate-x-2 transition duration-200 relative z-10">
+          {icon}
+          {title && (
+            <div className="font-bold text-[#2D1B3D] mb-2 mt-2">
+              {title}
+            </div>
+          )}
+          {description && (
+            <div className="text-[#5C4470] text-xs">
+              {description}
+            </div>
+          )}
         </div>
-        <div className="text-[#5C4470] text-xs">
-          {description}
-        </div>
-      </div>
+      )}
     </>
   );
 
