@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { requireEnv } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import type { User } from '@supabase/supabase-js';
+import { getEnvConfig } from '@/lib/config/env';
 
 export type UpdateSessionResult = {
   supabaseResponse: NextResponse;
@@ -30,10 +30,11 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
     }
 
     // En production, vérifier aussi le referer
+    const config = getEnvConfig()
     if (process.env.NODE_ENV === 'production') {
       const referer = request.headers.get('referer')
       const allowedDomains = [
-        process.env.NEXT_PUBLIC_SITE_URL,
+        config.NEXT_PUBLIC_SITE_URL,
         // Ajouter d'autres domaines autorisés si nécessaire
       ].filter(Boolean)
 
@@ -57,12 +58,12 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
     request,
   });
 
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL');
-  const supabaseAnonKey = requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  // Utiliser la configuration validée
+  const config = getEnvConfig()
 
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {

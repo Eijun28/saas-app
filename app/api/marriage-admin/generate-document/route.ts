@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { logger } from '@/lib/logger'
+import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -22,6 +23,16 @@ function sanitizeInput(input: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Vérifier la configuration Supabase
+    const configCheck = validateSupabaseConfig()
+    if (!configCheck.valid) {
+      logger.error('Configuration Supabase invalide')
+      return NextResponse.json(
+        { error: 'Configuration serveur invalide' },
+        { status: 500 }
+      )
+    }
+
     // Vérifier l'authentification
     const supabase = await createClient()
     const {
@@ -181,7 +192,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
     })
   } catch (error: any) {
     logger.error('❌ Erreur génération', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return handleApiError(error)
   }
 }
 

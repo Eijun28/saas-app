@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { uploadDocumentSchema } from '@/lib/validations/marriage-admin.schema'
 import { logger } from '@/lib/logger'
+import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
 
 // Constantes de validation des fichiers
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -108,6 +109,16 @@ function verifyFileSignature(buffer: Buffer, mimeType: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    // Vérifier la configuration Supabase
+    const configCheck = validateSupabaseConfig()
+    if (!configCheck.valid) {
+      logger.error('Configuration Supabase invalide')
+      return NextResponse.json(
+        { error: 'Configuration serveur invalide' },
+        { status: 500 }
+      )
+    }
+
     // Vérifier l'authentification avec le client server
     const supabase = await createClient()
     const {
@@ -269,10 +280,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error: any) {
     logger.error('❌ Erreur serveur', error)
-    return NextResponse.json(
-      { error: 'Une erreur s\'est produite lors du traitement de votre demande' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 

@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "tsx scripts/validate-env.ts && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
     "test:api": "node scripts/test-api.sh",
-    "test:compatibility": "tsx scripts/test-compatibility.ts"
+    "test:compatibility": "tsx scripts/test-compatibility.ts",
+    "validate:env": "tsx scripts/validate-env.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.77",

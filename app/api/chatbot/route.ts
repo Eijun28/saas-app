@@ -5,6 +5,7 @@ import {
   isValidSessionId, 
   sanitizeMessage} from '@/lib/security';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
+import { handleApiError } from '@/lib/api-error-handler';
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_CHATBOT_URL;
 
@@ -112,9 +113,6 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Une erreur inattendue s\'est produite.' },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

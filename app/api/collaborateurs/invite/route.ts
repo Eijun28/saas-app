@@ -7,9 +7,20 @@ import { NextResponse } from 'next/server'
 import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schema'
 import { Resend } from 'resend'
 import { logger } from '@/lib/logger'
+import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
 
 export async function POST(request: Request) {
   try {
+    // Vérifier la configuration Supabase
+    const configCheck = validateSupabaseConfig()
+    if (!configCheck.valid) {
+      logger.error('Configuration Supabase invalide')
+      return NextResponse.json(
+        { error: 'Configuration serveur invalide' },
+        { status: 500 }
+      )
+    }
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -174,10 +185,7 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     logger.error('Erreur serveur', error)
-    return NextResponse.json(
-      { error: 'Erreur serveur interne' },
-      { status: 500 }
-    )
+    return handleApiError(error)
   }
 }
 
