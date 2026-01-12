@@ -5,8 +5,8 @@ const path = require('path');
 const inputSvg = path.join(__dirname, '../public/images/nuply-icon.svg');
 const outputDir = path.join(__dirname, '../public');
 
-// Couleur de fond pour les favicons (blanc)
-const backgroundColor = { r: 255, g: 255, b: 255, alpha: 1 };
+// Couleur de fond pour les favicons (noir pour correspondre au logo)
+const backgroundColor = { r: 0, g: 0, b: 0, alpha: 1 };
 
 async function generateFavicons() {
   try {
