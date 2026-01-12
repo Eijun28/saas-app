@@ -92,23 +92,13 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError(null)
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:91',message:'onSubmit entry',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:96',message:'before signUp call',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
       const result = await signUp(data.email, data.password, data.role, {
         prenom: data.prenom,
         nom: data.nom,
         nomEntreprise: data.nomEntreprise,
       })
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:102',message:'after signUp call',data:{hasResult:!!result,hasError:!!result?.error,errorMessage:result?.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
-      
       // Vérifier si result est null ou undefined (réponse inattendue)
       if (!result) {
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
@@ -129,17 +119,17 @@ export default function SignUpPage() {
           setError(result.error)
         }
       } else if (result?.success) {
-        // Redirection vers onboarding ou confirmation
-        router.push('/onboarding')
+        // Redirection vers la page spécifiée ou onboarding par défaut
+        if (result.redirectTo) {
+          router.push(result.redirectTo)
+        } else {
+          router.push('/onboarding')
+        }
       } else {
         // Cas où result existe mais n'a ni error ni success
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:111',message:'catch block in onSubmit',data:{errorMessage:err?.message,errorStack:err?.stack?.substring(0,200),errorName:err?.name,hasMessage:!!err?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      
       // Gérer différents types d'erreurs
       const errorMessage = err?.message || ''
       
