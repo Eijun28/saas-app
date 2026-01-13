@@ -82,8 +82,8 @@ export default function ProfilPublicPage() {
 
     console.log('🔄 reloadData appelé - userId:', user.id)
 
-    // ✅ FIX: Augmenter délai à 2000ms pour être sûr que la transaction DB est commitée
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // ✅ FIX: Réduire délai à 500ms pour un affichage plus rapide (Supabase commit généralement en <500ms)
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     console.log('📥 Début loadAllData après délai')
     await loadAllData(user.id, false)
