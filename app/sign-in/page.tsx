@@ -118,7 +118,7 @@ export default function SignInPage() {
       </div>
 
       <div 
-        className="min-h-screen flex items-center justify-center px-6 py-24 bg-background relative z-10"
+        className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10"
       >
         {/* Subtle decorative gradient */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -129,7 +129,7 @@ export default function SignInPage() {
         variants={cardVariants}
         initial="hidden"
         animate="visible"
-        className="relative w-full max-w-md"
+        className="relative w-full max-w-full sm:max-w-md"
       >
         <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
           {/* Reflets violets */}
@@ -139,7 +139,7 @@ export default function SignInPage() {
             <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent tracking-tight">
               Retrouvez votre espace mariage
             </CardTitle>
-            <CardDescription className="text-[#6B7280] text-[15px] leading-relaxed">
+            <CardDescription className="text-[#6B7280] text-sm sm:text-[15px] leading-relaxed px-2">
               Vos préparatifs vous attendent, exactement là où vous les avez laissés.
             </CardDescription>
           </CardHeader>
@@ -164,7 +164,7 @@ export default function SignInPage() {
                     type="email"
                     placeholder="votre@email.com"
                     {...register('email')}
-                    className="h-12 pl-11 pr-4 border-[#E5E7EB] bg-[#FAFAFA] rounded-xl text-[15px] placeholder:text-[#9CA3AF] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-[#D1D5DB]"
+                    className="h-12 pl-11 pr-4 border-[#E5E7EB] bg-[#FAFAFA] rounded-xl text-base sm:text-[15px] placeholder:text-[#9CA3AF] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-[#D1D5DB]"
                     disabled={isLoading}
                   />
                 </div>
@@ -187,7 +187,7 @@ export default function SignInPage() {
                   </Label>
                   <Link
                     href="/forgot-password"
-                    className="text-[13px] text-[#823F91] hover:text-[#6D3478] transition-colors font-medium"
+                    className="text-xs sm:text-[13px] text-[#823F91] hover:text-[#6D3478] transition-colors font-medium min-h-[44px] flex items-center"
                   >
                     Mot de passe oublié ?
                   </Link>
@@ -240,7 +240,7 @@ export default function SignInPage() {
                   disabled={isLoading}
                   whileHover={{ scale: isLoading ? 1 : 1.02 }}
                   whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                  className="group relative w-full h-12 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group relative w-full h-12 sm:h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isLoading ? (

@@ -110,14 +110,14 @@ export default function DashboardPrestatairePage() {
           supabase
             .from('demandes')
             .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
+            .eq('prestataire_id', user.id)
             .eq('status', 'pending'),
           
           // Événements à venir (date >= today)
           supabase
             .from('evenements_prestataire')
             .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
+            .eq('prestataire_id', user.id)
             .gte('date', new Date().toISOString().split('T')[0]),
           
           // Messages non lus dans les conversations du prestataire
@@ -134,14 +134,14 @@ export default function DashboardPrestatairePage() {
           supabase
             .from('demandes')
             .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
+            .eq('prestataire_id', user.id)
             .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
           
           // Total demandes pour calculer le taux de réponse
           supabase
             .from('demandes')
             .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
+            .eq('prestataire_id', user.id)
         ])
 
         // Fonction pour vérifier si une erreur est ignorable

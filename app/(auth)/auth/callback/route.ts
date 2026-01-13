@@ -25,27 +25,33 @@ export async function GET(request: Request) {
     
     if (user) {
       // Vérifier d'abord dans couples
-      const { data: couple } = await supabase
+      const { data: couple, error: coupleError } = await supabase
         .from('couples')
         .select('id')
         .eq('user_id', user.id)
         .single()
 
-      if (couple) {
+      if (couple && !coupleError) {
         return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
       }
 
       // Sinon vérifier dans profiles (prestataires uniquement)
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .eq('role', 'prestataire')
         .single()
 
-      if (profile && profile.role === 'prestataire') {
+      if (profile && profile.role === 'prestataire' && !profileError) {
         return NextResponse.redirect(`${requestUrl.origin}/prestataire/dashboard`)
       }
+
+      // Si ni couple ni prestataire trouvé, rediriger vers sign-in avec message
+      // Cela peut arriver si l'inscription n'est pas complète ou si le profil n'a pas été créé
+      console.warn('Utilisateur trouvé mais aucun profil couple/prestataire:', user.id)
+      const errorMessage = encodeURIComponent('Votre compte a été créé mais votre profil n\'est pas encore complet. Veuillez vous connecter ou contacter le support.')
+      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${errorMessage}`)
     }
   }
 

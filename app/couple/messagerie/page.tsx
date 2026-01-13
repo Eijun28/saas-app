@@ -25,8 +25,8 @@ export default function MessageriePage() {
   interface Conversation {
     id: string
     couple_id: string
-    provider_id: string
-    prestataire_id?: string
+    prestataire_id: string
+    provider_id?: string // Alias pour compatibilité
     last_message_at: string | null
     created_at: string
   }
@@ -132,10 +132,23 @@ export default function MessageriePage() {
     const supabase = createClient()
     
     try {
+      // Récupérer le couple_id depuis couples (couple_id référence couples(id), pas auth.users(id))
+      const { data: couple } = await supabase
+        .from('couples')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!couple) {
+        setConversations([])
+        setLoading(false)
+        return
+      }
+
       const { data, error } = await supabase
         .from('conversations')
         .select('*')
-        .eq('couple_id', user.id)
+        .eq('couple_id', couple.id)
         .order('last_message_at', { ascending: false })
 
       if (error) {
@@ -148,7 +161,7 @@ export default function MessageriePage() {
         const providerIdsMap: Record<string, string> = {}
         
         if (data && data.length > 0) {
-          const prestataireIdsList = [...new Set(data.map((conv: Conversation) => conv.provider_id).filter(Boolean))]
+          const prestataireIdsList = [...new Set(data.map((conv: Conversation) => conv.prestataire_id || conv.provider_id).filter(Boolean))]
           
           if (prestataireIdsList.length > 0) {
             const { data: profiles, error: profilesError } = await supabase
@@ -161,7 +174,7 @@ export default function MessageriePage() {
             }
             
             data.forEach((conv: Conversation) => {
-              const providerId = conv.provider_id
+              const providerId = conv.prestataire_id || conv.provider_id
               if (providerId) {
                 providerIdsMap[conv.id] = providerId
               }

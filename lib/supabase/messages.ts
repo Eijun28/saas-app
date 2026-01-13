@@ -10,7 +10,7 @@ export async function getConversations(
 ): Promise<Conversation[]> {
   const supabase = createClient()
 
-  const column = userType === 'couple' ? 'couple_id' : 'provider_id'
+  const column = userType === 'couple' ? 'couple_id' : 'prestataire_id'
 
   // Récupérer les conversations
   const { data: conversations, error } = await supabase
@@ -27,28 +27,42 @@ export async function getConversations(
   // Enrichir avec les profils
   const enrichedConversations = await Promise.all(
     (conversations || []).map(async (conv) => {
-      const [coupleProfile, prestataireProfile] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, prenom, nom')
-          .eq('id', conv.couple_id)
-          .single(),
-        supabase
-          .from('profiles')
-          .select('id, prenom, nom')
-          .eq('id', conv.provider_id)
-          .single(),
-      ])
+      // Récupérer le couple depuis couples (couple_id référence couples(id))
+      const { data: couple } = await supabase
+        .from('couples')
+        .select('id, user_id, partner_1_name, partner_2_name')
+        .eq('id', conv.couple_id)
+        .single()
+
+      // Récupérer le profil du couple depuis profiles via user_id
+      const coupleProfile = couple ? await supabase
+        .from('profiles')
+        .select('id, prenom, nom')
+        .eq('id', couple.user_id)
+        .single() : { data: null }
+
+      // Récupérer le profil prestataire depuis profiles
+      const prestataireProfile = await supabase
+        .from('profiles')
+        .select('id, prenom, nom')
+        .eq('id', conv.prestataire_id)
+        .single()
 
       return {
         ...conv,
         couple: coupleProfile.data ? {
           id: coupleProfile.data.id,
           user_metadata: {
-            prenom: coupleProfile.data.prenom,
-            nom: coupleProfile.data.nom,
+            prenom: coupleProfile.data.prenom || couple?.partner_1_name,
+            nom: coupleProfile.data.nom || couple?.partner_2_name,
           },
-        } : undefined,
+        } : (couple ? {
+          id: couple.id,
+          user_metadata: {
+            prenom: couple.partner_1_name,
+            nom: couple.partner_2_name,
+          },
+        } : undefined),
         prestataire: prestataireProfile.data ? {
           id: prestataireProfile.data.id,
           user_metadata: {
@@ -115,7 +129,7 @@ export async function getMessages(
       // Déterminer le sender_type en vérifiant la conversation
       const { data: conversation } = await supabase
         .from('conversations')
-        .select('couple_id, provider_id')
+        .select('couple_id, prestataire_id')
         .eq('id', msg.conversation_id)
         .single()
 
@@ -260,7 +274,7 @@ export async function getUnreadConversationsCount(
     const { data: conversations, error: countError } = await supabase
       .from('conversations')
       .select('unread_count')
-      .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
+      .or(`couple_id.eq.${userId},prestataire_id.eq.${userId}`)
       .eq('status', 'active')
 
     if (countError) {
@@ -295,7 +309,7 @@ export async function getOrCreateConversation(
     .from('conversations')
     .select('id, demande_id')
     .eq('couple_id', coupleId)
-    .eq('provider_id', providerId)
+    .eq('prestataire_id', providerId)
     .eq('status', 'active')
     .single()
 
@@ -339,7 +353,7 @@ export async function getOrCreateConversation(
     .from('conversations')
     .insert({
       couple_id: coupleId,
-      provider_id: providerId,
+      prestataire_id: providerId,
       demande_id: demandeId || null,
       status: 'active',
     })
@@ -374,7 +388,7 @@ export async function archiveConversation(
       .from('conversations')
       .update({ status: 'archived' })
       .eq('id', conversationId)
-      .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
+      .or(`couple_id.eq.${userId},prestataire_id.eq.${userId}`)
 
     if (updateError) {
       throw updateError

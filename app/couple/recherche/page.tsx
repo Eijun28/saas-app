@@ -176,12 +176,13 @@ export default function RecherchePage() {
       if (error) {
         // Améliorer le logging pour comprendre l'erreur
         const errorInfo = {
+          // Ajouter toutes les propriétés disponibles d'abord
+          ...error,
+          // Puis ajouter les propriétés spécifiques si elles existent
           code: error.code,
           message: error.message,
           details: error.details,
           hint: error.hint,
-          // Ajouter toutes les propriétés disponibles
-          ...error
         }
         
         console.error('Erreur recherche:', errorInfo)

@@ -30,15 +30,15 @@ export default function ConfirmEmail() {
 
       <div className="flex min-h-screen items-center justify-center relative z-10">
 
-      <div className="text-center max-w-md px-6">
+      <div className="text-center max-w-md px-4 sm:px-6">
 
-        <h1 className="text-2xl font-bold mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4">
 
           Vérifiez votre email
 
         </h1>
 
-        <p className="text-gray-600 mb-4">
+        <p className="text-sm sm:text-base text-gray-600 mb-4">
 
           Nous vous avons envoyé un email de confirmation. 
 
@@ -54,7 +54,7 @@ export default function ConfirmEmail() {
 
         <Link href="/sign-in">
           <Button 
-            className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 px-8 py-6 text-base"
+            className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base min-h-[44px]"
           >
             Se connecter
           </Button>

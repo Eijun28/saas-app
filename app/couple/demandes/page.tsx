@@ -220,31 +220,24 @@ export default function DemandesPage() {
       demandesData.map(async (demande) => {
         const prestataireId = demande.provider_id || demande.prestataire_id
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar et le nom
+        // Charger le profil prestataire depuis profiles (les données sont maintenant dans profiles)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('avatar_url, prenom, nom')
+          .select('avatar_url, prenom, nom, nom_entreprise, service_type')
           .eq('id', prestataireId)
           .single()
 
         return {
           ...demande,
           provider_id: prestataireId, // Alias pour compatibilité
-          service_type: prestataireProfile?.type_prestation || demande.type_prestation, // Alias pour compatibilité
+          service_type: profile?.service_type || demande.service_type || demande.type_prestation, // Alias pour compatibilité
           wedding_date: demande.wedding_date || demande.date_mariage, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            prenom: profile?.prenom,
-            nom: profile?.nom
+          provider: profile ? {
+            nom_entreprise: profile.nom_entreprise || '',
+            service_type: profile.service_type || '',
+            avatar_url: profile.avatar_url,
+            prenom: profile.prenom,
+            nom: profile.nom
           } : undefined
         }
       })
@@ -260,10 +253,22 @@ export default function DemandesPage() {
     
     // Note: Si la table devis n'existe pas encore, cette requête échouera
     // On gère l'erreur gracieusement
+    // Récupérer le couple_id depuis couples (couple_id référence couples(id), pas auth.users(id))
+    const { data: couple } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!couple) {
+      setDevis([])
+      return
+    }
+
     const { data: devisData, error } = await supabase
       .from('devis')
       .select('*')
-      .eq('couple_id', user.id)
+      .eq('couple_id', couple.id)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -289,16 +294,10 @@ export default function DemandesPage() {
         const prestataireId = devis.prestataire_id || devis.provider_id
 
         // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar
+        // Charger le profil prestataire depuis profiles (les données sont maintenant dans profiles)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('avatar_url')
+          .select('avatar_url, nom_entreprise, service_type')
           .eq('id', prestataireId)
           .single()
 
@@ -315,10 +314,10 @@ export default function DemandesPage() {
 
         return {
           ...devis,
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url
+          provider: profile ? {
+            nom_entreprise: profile.nom_entreprise || '',
+            service_type: profile.service_type || '',
+            avatar_url: profile.avatar_url
           } : undefined,
           demande: demandeData ? {
             service_type: demandeData.service_type || '',
@@ -361,28 +360,22 @@ export default function DemandesPage() {
         const prestataireId = favori.prestataire_id
 
         // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation, ville_exercice')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar
+        // Charger le profil prestataire depuis profiles
         const { data: profile } = await supabase
           .from('profiles')
-          .select('avatar_url')
+          .select('avatar_url, nom_entreprise, service_type, ville_principale, description_courte')
           .eq('id', prestataireId)
           .single()
 
         return {
           ...favori,
           provider_id: prestataireId, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            ville_principale: prestataireProfile.ville_exercice,
-            description_courte: undefined
+          provider: profile ? {
+            nom_entreprise: profile.nom_entreprise || '',
+            service_type: profile.service_type || '',
+            avatar_url: profile.avatar_url,
+            ville_principale: profile.ville_principale,
+            description_courte: profile.description_courte
           } : undefined
         }
       })
@@ -530,60 +523,70 @@ export default function DemandesPage() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {demandes.map((demande) => (
-                  <Card key={demande.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                    <CardHeader>
+                {demandes.map((demande) => {
+                  const providerName = demande.provider?.nom_entreprise || 
+                    (demande.provider?.prenom && demande.provider?.nom 
+                      ? `${demande.provider.prenom} ${demande.provider.nom}` 
+                      : 'Prestataire')
+                  
+                  return (
+                  <Card key={demande.id} className="bg-purple-50/50 border-purple-100 hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 flex-1">
                           {demande.provider?.avatar_url ? (
                             <img
                               src={demande.provider.avatar_url}
-                              alt={demande.provider.nom_entreprise}
-                              className="h-12 w-12 rounded-full object-cover"
+                              alt={providerName}
+                              className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-sm"
                             />
                           ) : (
-                            <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center border-2 border-white shadow-sm">
                               <Users className="h-6 w-6 text-gray-400" />
                             </div>
                           )}
-                          <div>
-                            <CardTitle className="text-lg">
-                              {demande.provider?.nom_entreprise || 'Prestataire'}
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-base font-semibold text-gray-900 mb-0.5">
+                              {providerName}
                             </CardTitle>
-                            <CardDescription>
-                              {demande.service_type} • {new Date(demande.created_at).toLocaleDateString('fr-FR')}
+                            <CardDescription className="text-sm text-gray-500 flex items-center gap-1.5">
+                              <span>Prestataire</span>
+                              <span>•</span>
+                              <span>{new Date(demande.created_at).toLocaleDateString('fr-FR')}</span>
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge className={DEMANDE_STATUS_COLORS[demande.status]} style={getBadgeStyle(demande.status)}>
+                        <Badge className={`${DEMANDE_STATUS_COLORS[demande.status]} ml-2 flex-shrink-0`} style={getBadgeStyle(demande.status)}>
                           {DEMANDE_STATUS_LABELS[demande.status]}
                         </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
-                          <p className="text-sm text-gray-700">{demande.message}</p>
-                        </div>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2.5">
+                        {demande.message && (
+                          <div className="flex items-start gap-2">
+                            <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-gray-700 leading-relaxed">{demande.message}</p>
+                          </div>
+                        )}
                         
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
                           {(demande.wedding_date || demande.date_mariage) && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(demande.wedding_date || demande.date_mariage || '').toLocaleDateString('fr-FR')}
-                            </div>
-                          )}
-                          {demande.guest_count && (
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {demande.guest_count} invités
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-4 w-4 text-gray-500" />
+                              <span>{new Date(demande.wedding_date || demande.date_mariage || '').toLocaleDateString('fr-FR')}</span>
                             </div>
                           )}
                           {demande.budget_indicatif && (
-                            <div className="flex items-center gap-1">
-                              <Euro className="h-4 w-4" />
-                              Budget: {formatAmount(demande.budget_indicatif)}
+                            <div className="flex items-center gap-1.5">
+                              <Euro className="h-4 w-4 text-gray-500" />
+                              <span>Budget: {formatAmount(demande.budget_indicatif)}</span>
+                            </div>
+                          )}
+                          {demande.guest_count && (
+                            <div className="flex items-center gap-1.5">
+                              <Users className="h-4 w-4 text-gray-500" />
+                              <span>{demande.guest_count} invités</span>
                             </div>
                           )}
                         </div>
@@ -604,7 +607,8 @@ export default function DemandesPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                  )
+                })}
               </div>
             )}
           </TabsContent>

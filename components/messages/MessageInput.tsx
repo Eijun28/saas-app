@@ -142,6 +142,122 @@ export function MessageInput({
     const supabase = createClient()
 
     try {
+      // Vérifier d'abord que la conversation existe et que l'utilisateur y a accès
+      // Essayer d'abord avec une requête simple (ne pas inclure provider_id qui n'existe pas)
+      const { data: conversation, error: convError } = await supabase
+        .from('conversations')
+        .select('id, couple_id, prestataire_id, status')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      // Log détaillé pour diagnostiquer le problème
+      if (convError) {
+        console.error('Erreur lors de la récupération de la conversation:', {
+          conversationId,
+          senderId,
+          error: convError,
+          errorCode: convError.code,
+          errorMessage: convError.message,
+          errorDetails: convError.details,
+          errorHint: convError.hint,
+          // Essayer de sérialiser l'erreur complète
+          errorJSON: JSON.stringify(convError, Object.getOwnPropertyNames(convError)),
+        })
+      }
+
+      if (!conversation) {
+        // Si la conversation n'existe pas, vérifier si c'est un problème de RLS
+        // en essayant une requête différente
+        const { data: allConversations, error: listError } = await supabase
+          .from('conversations')
+          .select('id')
+          .limit(1)
+
+        console.error('Conversation introuvable:', {
+          conversationId,
+          senderId,
+          convError,
+          conversation,
+          canAccessConversationsTable: !listError,
+          listError: listError ? {
+            code: listError.code,
+            message: listError.message,
+          } : null,
+        })
+
+        // Message d'erreur plus informatif
+        if (convError?.code === 'PGRST301' || convError?.code === '42501') {
+          toast.error('Vous n\'avez pas la permission d\'accéder à cette conversation. Veuillez vous reconnecter.')
+        } else if (convError?.code === 'PGRST116') {
+          toast.error('La table conversations n\'existe pas encore. Veuillez contacter le support.')
+        } else {
+          toast.error('Conversation introuvable. Veuillez rafraîchir la page ou sélectionner une autre conversation.')
+        }
+        return
+      }
+
+      // Vérifier que la conversation est active
+      if (conversation.status && conversation.status !== 'active') {
+        console.warn('Conversation non active:', {
+          conversationId,
+          status: conversation.status,
+        })
+        toast.error('Cette conversation n\'est plus active.')
+        return
+      }
+
+      // Vérifier que l'utilisateur a accès à cette conversation
+      // Pour un couple, vérifier via couples.user_id
+      // Pour un prestataire, vérifier directement prestataire_id
+      let hasAccess = false
+      let accessCheckError = null
+      
+      if (conversation.couple_id) {
+        const { data: coupleData, error: coupleError } = await supabase
+          .from('couples')
+          .select('user_id')
+          .eq('id', conversation.couple_id)
+          .maybeSingle()
+        
+        if (coupleError) {
+          accessCheckError = coupleError
+          console.warn('Erreur lors de la vérification du couple:', {
+            conversationId,
+            couple_id: conversation.couple_id,
+            error: coupleError,
+          })
+        } else if (coupleData?.user_id === senderId) {
+          hasAccess = true
+        }
+      }
+      
+      // Vérifier si c'est un prestataire
+      if (!hasAccess && conversation.prestataire_id === senderId) {
+        hasAccess = true
+      }
+
+      if (!hasAccess) {
+        console.error('Accès refusé à la conversation:', {
+          conversationId,
+          senderId,
+          conversation,
+          accessCheckError,
+          couple_id: conversation.couple_id,
+          prestataire_id: conversation.prestataire_id,
+        })
+        
+        // Message d'erreur plus spécifique
+        if (accessCheckError) {
+          if (accessCheckError.code === 'PGRST301' || accessCheckError.code === '42501') {
+            toast.error('Erreur de permission. Veuillez vous reconnecter.')
+          } else {
+            toast.error('Impossible de vérifier votre accès à cette conversation.')
+          }
+        } else {
+          toast.error('Vous n\'avez pas accès à cette conversation.')
+        }
+        return
+      }
 
       // Construire le contenu du message
       let messageContent = message.trim()
@@ -167,6 +283,24 @@ export function MessageInput({
         .single()
 
       if (insertError) {
+        // Vérifier d'abord que la conversation existe et que l'utilisateur y a accès
+        const { data: convCheck, error: convError } = await supabase
+          .from('conversations')
+          .select('id, couple_id, prestataire_id')
+          .eq('id', conversationId)
+          .maybeSingle()
+        
+        // Vérifier aussi le couple_id depuis couples si c'est un couple
+        let coupleCheck = null
+        if (convCheck?.couple_id) {
+          const { data: coupleData } = await supabase
+            .from('couples')
+            .select('id, user_id')
+            .eq('id', convCheck.couple_id)
+            .maybeSingle()
+          coupleCheck = coupleData
+        }
+        
         console.error('Erreur insertion message:', {
           error: insertError,
           code: insertError.code,
@@ -176,27 +310,15 @@ export function MessageInput({
           conversationId,
           senderId,
           contentLength: messageContent.length,
+          conversationExists: !!convCheck,
+          conversationError: convError,
+          conversationData: convCheck,
+          coupleCheck,
+          userIsCouple: coupleCheck?.user_id === senderId,
+          userIsPrestataire: convCheck?.prestataire_id === senderId,
           // Log complet pour debug
-          fullError: JSON.stringify(insertError, null, 2),
+          fullError: JSON.stringify(insertError, Object.getOwnPropertyNames(insertError)),
         })
-        
-        // Si c'est une erreur 409, vérifier la conversation
-        if (insertError.code === '409' || insertError.code === '23505') {
-          // Vérifier que la conversation existe et que l'utilisateur y a accès
-          const { data: convCheck, error: convError } = await supabase
-            .from('conversations')
-            .select('id, couple_id, prestataire_id, provider_id')
-            .eq('id', conversationId)
-            .single()
-          
-          console.error('Vérification conversation:', {
-            convCheck,
-            convError,
-            senderId,
-            userIsCouple: convCheck?.couple_id === senderId,
-            userIsPrestataire: convCheck?.prestataire_id === senderId || convCheck?.provider_id === senderId,
-          })
-        }
         
         throw insertError
       }
@@ -222,7 +344,8 @@ export function MessageInput({
       onMessageSent()
       toast.success('Message envoyé')
     } catch (error: any) {
-      console.error('Erreur envoi message:', {
+      // Améliorer le logging pour capturer toutes les informations possibles
+      const errorInfo: any = {
         error,
         errorType: typeof error,
         errorString: String(error),
@@ -231,17 +354,36 @@ export function MessageInput({
         errorDetails: error?.details,
         errorHint: error?.hint,
         stack: error?.stack,
-      })
+        conversationId,
+        senderId,
+      }
+
+      // Essayer de sérialiser l'erreur complète
+      try {
+        errorInfo.errorJSON = JSON.stringify(error, Object.getOwnPropertyNames(error))
+      } catch (e) {
+        errorInfo.errorSerializationFailed = true
+      }
+
+      // Vérifier si l'erreur est vide (problème courant avec RLS)
+      const isEmptyError = error && typeof error === 'object' && Object.keys(error).length === 0
+      
+      console.error('Erreur envoi message:', errorInfo)
       
       let errorMessage = 'Erreur lors de l\'envoi du message'
       
       // Messages d'erreur spécifiques selon le code
-      if (error?.code === '409' || error?.code === '23505') {
+      if (isEmptyError) {
+        // Erreur vide (peut arriver avec RLS qui bloque silencieusement)
+        errorMessage = 'Erreur de permission. Vérifiez que vous avez accès à cette conversation et que vous êtes bien connecté. Si le problème persiste, rafraîchissez la page.'
+      } else if (error?.code === '409' || error?.code === '23505') {
         errorMessage = 'Conflit lors de l\'envoi. Vérifiez que vous avez accès à cette conversation.'
       } else if (error?.code === '42501' || error?.code === 'PGRST301') {
-        errorMessage = 'Vous n\'avez pas la permission d\'envoyer ce message.'
+        errorMessage = 'Vous n\'avez pas la permission d\'envoyer ce message. Vérifiez que vous êtes bien connecté et que vous avez accès à cette conversation.'
       } else if (error?.code === '23503') {
-        errorMessage = 'La conversation ou l\'utilisateur n\'existe pas.'
+        errorMessage = 'La conversation ou l\'utilisateur n\'existe pas. Veuillez rafraîchir la page.'
+      } else if (error?.code === 'PGRST116') {
+        errorMessage = 'La table messages n\'existe pas encore. Veuillez contacter le support.'
       } else if (error?.message) {
         errorMessage = error.message
       } else if (error?.code) {
@@ -250,6 +392,8 @@ export function MessageInput({
         errorMessage = error
       } else if (error?.details) {
         errorMessage = error.details
+      } else if (error?.hint) {
+        errorMessage = error.hint
       }
       
       toast.error(errorMessage)
@@ -266,7 +410,7 @@ export function MessageInput({
   }
 
   return (
-    <div className="border-t border-gray-200 bg-white p-4 space-y-3">
+    <div className="border-t border-purple-100 bg-gradient-to-br from-white to-purple-50/30 p-4 space-y-3 shadow-sm">
       {/* Aperçu des fichiers attachés */}
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 pb-2">
@@ -276,7 +420,7 @@ export function MessageInput({
             return (
               <div
                 key={index}
-                className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
+                className="relative group border-2 border-purple-200 rounded-lg overflow-hidden bg-gradient-to-br from-purple-50 to-white shadow-sm hover:shadow-md transition-all duration-200"
               >
                 {isImage ? (
                   <div className="relative w-20 h-20">
@@ -287,15 +431,18 @@ export function MessageInput({
                       className="object-cover"
                       sizes="80px"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 ) : (
-                  <div className="p-3 flex items-center gap-2 min-w-[120px]">
-                    <File className="h-5 w-5 text-[#823F91]" />
+                  <div className="p-3 flex items-center gap-2 min-w-[120px] bg-gradient-to-br from-purple-50/50 to-indigo-50/50">
+                    <div className="p-1.5 rounded-md bg-purple-100">
+                      <File className="h-4 w-4 text-purple-600" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 truncate">
+                      <p className="text-xs font-semibold text-gray-900 truncate">
                         {attachment.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-purple-600 font-medium">
                         {(attachment.size / 1024).toFixed(0)} KB
                       </p>
                     </div>
@@ -303,7 +450,7 @@ export function MessageInput({
                 )}
                 <button
                   onClick={() => removeAttachment(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-110"
                   aria-label="Retirer le fichier"
                 >
                   <X className="h-3 w-3" />
@@ -341,12 +488,13 @@ export function MessageInput({
             size="icon"
             onClick={handleImageClick}
             disabled={isUploading || isSending}
-            className="border-[#823F91]/20 hover:bg-[#823F91]/10 hover:border-[#823F91]"
+            className="border-purple-300 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 hover:border-purple-400 text-purple-600 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Ajouter une photo"
           >
             {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-[#823F91]" />
+              <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
             ) : (
-              <ImageIcon className="h-4 w-4 text-[#823F91]" />
+              <ImageIcon className="h-4 w-4 text-purple-600" />
             )}
           </Button>
           
@@ -356,12 +504,13 @@ export function MessageInput({
             size="icon"
             onClick={handleFileClick}
             disabled={isUploading || isSending}
-            className="border-[#823F91]/20 hover:bg-[#823F91]/10 hover:border-[#823F91]"
+            className="border-purple-300 bg-gradient-to-br from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 hover:border-purple-400 text-purple-600 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Joindre un fichier"
           >
             {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-[#823F91]" />
+              <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
             ) : (
-              <Paperclip className="h-4 w-4 text-[#823F91]" />
+              <Paperclip className="h-4 w-4 text-purple-600" />
             )}
           </Button>
         </div>
@@ -372,7 +521,7 @@ export function MessageInput({
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
-          className="flex-1 resize-none min-h-[44px] max-h-32 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20"
+          className="flex-1 resize-none min-h-[44px] max-h-32 border-purple-200 bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-200/50 placeholder:text-gray-400 text-gray-900 shadow-sm transition-all duration-200"
           rows={1}
           disabled={isSending}
         />

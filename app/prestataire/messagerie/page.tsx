@@ -48,7 +48,7 @@ export default function PrestataireMessageriePage() {
         const { data: conversationsData, error } = await supabase
           .from('conversations')
           .select('*')
-          .eq('provider_id', user.id)
+                          .eq('prestataire_id', user.id)
           .order('last_message_at', { ascending: false })
 
         if (error) {
@@ -533,7 +533,7 @@ export default function PrestataireMessageriePage() {
                         const { data: conversationsData } = await supabase
                           .from('conversations')
                           .select('*')
-                          .eq('provider_id', user.id)
+                          .eq('prestataire_id', user.id)
                           .order('last_message_at', { ascending: false })
 
                         if (conversationsData) {
