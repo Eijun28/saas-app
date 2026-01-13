@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { MessageSquare, Search, User } from 'lucide-react'
+import { MessageSquare, Search, User, ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
@@ -13,6 +13,7 @@ import { AttachmentPreview } from '@/components/messages/AttachmentPreview'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import type { Attachment } from '@/types/messages'
 
@@ -147,16 +148,20 @@ export default function MessageriePage() {
         const providerIdsMap: Record<string, string> = {}
         
         if (data && data.length > 0) {
-          const prestataireIdsList = [...new Set(data.map((conv: Conversation) => conv.provider_id || conv.prestataire_id).filter(Boolean))]
+          const prestataireIdsList = [...new Set(data.map((conv: Conversation) => conv.provider_id).filter(Boolean))]
           
           if (prestataireIdsList.length > 0) {
-            const { data: profiles } = await supabase
+            const { data: profiles, error: profilesError } = await supabase
               .from('profiles')
               .select('id, prenom, nom, nom_entreprise, avatar_url')
               .in('id', prestataireIdsList)
             
+            if (profilesError) {
+              console.error('Erreur chargement profils:', profilesError)
+            }
+            
             data.forEach((conv: Conversation) => {
-              const providerId = conv.provider_id || conv.prestataire_id
+              const providerId = conv.provider_id
               if (providerId) {
                 providerIdsMap[conv.id] = providerId
               }
@@ -167,15 +172,11 @@ export default function MessageriePage() {
                 if (profile.nom_entreprise) {
                   names[conv.id] = profile.nom_entreprise
                 } else if (profile.prenom || profile.nom) {
-                  names[conv.id] = `${profile.prenom || ''} ${profile.nom || ''}`.trim() || 'Prestataire'
-                } else {
-                  names[conv.id] = 'Prestataire'
+                  names[conv.id] = `${profile.prenom || ''} ${profile.nom || ''}`.trim()
                 }
                 if (profile.avatar_url) {
                   avatars[conv.id] = profile.avatar_url
                 }
-              } else {
-                names[conv.id] = 'Prestataire'
               }
             })
           }
@@ -255,51 +256,46 @@ export default function MessageriePage() {
 
   const handleProviderClick = async (conversationId: string) => {
     const providerId = prestataireIds[conversationId]
-    if (!providerId) return
+    if (!providerId) {
+      console.warn('Pas de providerId pour la conversation:', conversationId)
+      return
+    }
 
     const supabase = createClient()
     
     try {
       // Charger le profil complet
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', providerId)
         .single()
 
-      if (!profile) return
+      if (profileError || !profile) {
+        console.error('Erreur chargement profil:', profileError)
+        toast.error('Impossible de charger le profil')
+        return
+      }
 
-      // Charger les cultures
-      const { data: culturesData } = await supabase
-        .from('provider_cultures')
-        .select('culture_id')
-        .eq('profile_id', providerId)
-
-      // Charger les zones
-      const { data: zonesData } = await supabase
-        .from('provider_zones')
-        .select('zone_id')
-        .eq('profile_id', providerId)
-
-      // Charger le portfolio
-      const { data: portfolioData } = await supabase
-        .from('provider_portfolio')
-        .select('id, image_url, title')
-        .eq('profile_id', providerId)
-        .order('display_order', { ascending: true })
+      // Charger les cultures, zones et portfolio en parallèle
+      const [culturesResult, zonesResult, portfolioResult] = await Promise.all([
+        supabase.from('provider_cultures').select('culture_id').eq('profile_id', providerId),
+        supabase.from('provider_zones').select('zone_id').eq('profile_id', providerId),
+        supabase.from('provider_portfolio').select('id, image_url, title').eq('profile_id', providerId).order('display_order', { ascending: true })
+      ])
 
       // Mapper les cultures et zones
-      const cultures = (culturesData || []).map(c => {
+      const cultures = (culturesResult.data || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         return culture ? { id: c.culture_id, label: culture.label } : null
       }).filter(Boolean) as Array<{ id: string; label: string }>
 
-      const zones = (zonesData || []).map(z => {
+      const zones = (zonesResult.data || []).map(z => {
         const zone = DEPARTEMENTS.find(dept => dept.id === z.zone_id)
         return zone ? { id: z.zone_id, label: zone.label } : null
       }).filter(Boolean) as Array<{ id: string; label: string }>
 
-      const portfolio = (portfolioData || []).map(p => ({
+      const portfolio = (portfolioResult.data || []).map(p => ({
         id: p.id,
         image_url: p.image_url,
         title: p.title || undefined,
@@ -312,6 +308,7 @@ export default function MessageriePage() {
       setSelectedProviderId(providerId)
     } catch (error) {
       console.error('Erreur chargement profil:', error)
+      toast.error('Erreur lors du chargement du profil')
     }
   }
 
@@ -342,7 +339,7 @@ export default function MessageriePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-[calc(100vh-200px)]">
           {/* Liste des conversations */}
-          <Card className="lg:col-span-1 border-gray-200 shadow-lg flex flex-col overflow-hidden">
+          <Card className={`lg:col-span-1 border-gray-200 shadow-lg flex flex-col overflow-hidden ${selectedConversation ? 'hidden lg:flex' : 'flex'}`}>
             <CardHeader className="border-b border-gray-200 bg-white">
               <CardTitle className="text-[#0D0D0D] flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-[#823F91]" />
@@ -395,10 +392,12 @@ export default function MessageriePage() {
                           >
                             <div className="flex items-center gap-3 p-4">
                               {/* Avatar cliquable */}
-                              <button
+                              <div
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  handleProviderClick(conv.id)
+                                  if (prestataireIds[conv.id]) {
+                                    handleProviderClick(conv.id)
+                                  }
                                 }}
                                 className="relative h-12 w-12 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center hover:ring-2 hover:ring-[#823F91] transition-all cursor-pointer"
                               >
@@ -415,7 +414,7 @@ export default function MessageriePage() {
                                     {getInitials(name)}
                                   </span>
                                 )}
-                              </button>
+                              </div>
 
                               {/* Contenu cliquable pour sélectionner la conversation */}
                               <button
@@ -454,10 +453,19 @@ export default function MessageriePage() {
               <>
                 <CardHeader className="border-b border-gray-200 bg-white">
                   <div className="flex items-center gap-3">
+                    {/* Bouton retour sur mobile */}
+                    <button
+                      onClick={() => setSelectedConversation(null)}
+                      className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      aria-label="Retour à la liste"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-[#823F91]" />
+                    </button>
+                    
                     {prestataireAvatars[selectedConversation] && (
                       <button
                         onClick={() => handleProviderClick(selectedConversation)}
-                        className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#823F91] to-[#9D5FA8] hover:ring-2 hover:ring-[#823F91] transition-all cursor-pointer"
+                        className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#823F91] to-[#9D5FA8] hover:ring-2 hover:ring-[#823F91] transition-all cursor-pointer flex-shrink-0"
                       >
                         <Image
                           src={prestataireAvatars[selectedConversation]}
@@ -470,9 +478,9 @@ export default function MessageriePage() {
                     )}
                     <button
                       onClick={() => handleProviderClick(selectedConversation)}
-                      className="text-left"
+                      className="text-left flex-1 min-w-0"
                     >
-                      <CardTitle className="text-[#0D0D0D] hover:text-[#823F91] transition-colors cursor-pointer">
+                      <CardTitle className="text-[#0D0D0D] hover:text-[#823F91] transition-colors cursor-pointer truncate">
                         {prestataireNames[selectedConversation] || 'Messages'}
                       </CardTitle>
                     </button>

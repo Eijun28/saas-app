@@ -142,44 +142,6 @@ export function MessageInput({
     const supabase = createClient()
 
     try {
-      // Vérifier l'utilisateur connecté
-      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
-      
-      if (userError || !currentUser) {
-        throw new Error('Vous devez être connecté pour envoyer un message')
-      }
-
-      if (currentUser.id !== senderId) {
-        throw new Error('L\'ID de l\'expéditeur ne correspond pas à l\'utilisateur connecté')
-      }
-
-      // Vérifier que la conversation existe et que l'utilisateur y a accès
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .select('id, couple_id, provider_id, prestataire_id')
-        .eq('id', conversationId)
-        .single()
-
-      if (convError) {
-        console.error('Erreur vérification conversation:', {
-          error: convError,
-          code: convError.code,
-          message: convError.message,
-          details: convError.details,
-          hint: convError.hint,
-        })
-        throw new Error(`Erreur lors de la vérification de la conversation: ${convError.message || 'Erreur inconnue'}`)
-      }
-
-      if (!conversation) {
-        throw new Error('Conversation introuvable')
-      }
-
-      // Vérifier que l'utilisateur fait partie de cette conversation
-      const providerId = conversation.provider_id || conversation.prestataire_id
-      if (conversation.couple_id !== senderId && providerId !== senderId) {
-        throw new Error('Vous n\'avez pas accès à cette conversation')
-      }
 
       // Construire le contenu du message
       let messageContent = message.trim()
@@ -214,7 +176,28 @@ export function MessageInput({
           conversationId,
           senderId,
           contentLength: messageContent.length,
+          // Log complet pour debug
+          fullError: JSON.stringify(insertError, null, 2),
         })
+        
+        // Si c'est une erreur 409, vérifier la conversation
+        if (insertError.code === '409' || insertError.code === '23505') {
+          // Vérifier que la conversation existe et que l'utilisateur y a accès
+          const { data: convCheck, error: convError } = await supabase
+            .from('conversations')
+            .select('id, couple_id, prestataire_id, provider_id')
+            .eq('id', conversationId)
+            .single()
+          
+          console.error('Vérification conversation:', {
+            convCheck,
+            convError,
+            senderId,
+            userIsCouple: convCheck?.couple_id === senderId,
+            userIsPrestataire: convCheck?.prestataire_id === senderId || convCheck?.provider_id === senderId,
+          })
+        }
+        
         throw insertError
       }
 
@@ -252,7 +235,14 @@ export function MessageInput({
       
       let errorMessage = 'Erreur lors de l\'envoi du message'
       
-      if (error?.message) {
+      // Messages d'erreur spécifiques selon le code
+      if (error?.code === '409' || error?.code === '23505') {
+        errorMessage = 'Conflit lors de l\'envoi. Vérifiez que vous avez accès à cette conversation.'
+      } else if (error?.code === '42501' || error?.code === 'PGRST301') {
+        errorMessage = 'Vous n\'avez pas la permission d\'envoyer ce message.'
+      } else if (error?.code === '23503') {
+        errorMessage = 'La conversation ou l\'utilisateur n\'existe pas.'
+      } else if (error?.message) {
         errorMessage = error.message
       } else if (error?.code) {
         errorMessage = `Erreur ${error.code}: ${error.message || 'Erreur inconnue'}`
