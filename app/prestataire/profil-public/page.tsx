@@ -443,7 +443,7 @@ export default function ProfilPublicPage() {
                     <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Zones d&apos;intervention</h3>
+                    <h3 className="font-semibold text-[#823F91]">Zones d'intervention</h3>
                     <p className="text-sm text-[#823F91]">
                       {zones.length > 0
                         ? `${zones.length} département${zones.length > 1 ? 's' : ''}`
