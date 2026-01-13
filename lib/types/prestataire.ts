@@ -1,3 +1,5 @@
+import type { Attachment } from '@/types/messages'
+
 // Types de base
 export interface Prestataire {
   id: string
@@ -52,8 +54,6 @@ export interface Conversation {
   non_lu: boolean
   avatar_url?: string
 }
-
-import type { Attachment } from '@/types/messages'
 
 export interface Message {
   id: string
