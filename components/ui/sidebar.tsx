@@ -179,20 +179,6 @@ const Sidebar = React.forwardRef<
             style={{ zIndex: 99999 }}
           >
             <div className="flex h-full w-full flex-col p-4">
-              {/* ✅ Bouton de fermeture amélioré */}
-              <button 
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setOpenMobile(false)
-                }}
-                className="mb-4 self-end h-8 w-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
-                aria-label="Fermer le menu"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
               {children}
             </div>
           </div>
