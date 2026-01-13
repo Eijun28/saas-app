@@ -693,16 +693,16 @@ export default function RecherchePage() {
                   onClick={() => handleProviderClick(provider)}
                 >
                   {/* Avatar et image de fond optionnelle */}
-                  <div className="relative h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                  <div className="relative h-20 sm:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
                     {provider.avatar_url ? (
                       <img
                         src={provider.avatar_url}
                         alt={provider.nom_entreprise}
-                        className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-md"
+                        className="h-14 w-14 sm:h-20 sm:w-20 rounded-full object-cover border-2 sm:border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-4 border-white shadow-md">
-                        <span className="text-2xl font-semibold text-white">
+                      <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-4 border-white shadow-md">
+                        <span className="text-lg sm:text-2xl font-semibold text-white">
                           {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>
                       </div>
