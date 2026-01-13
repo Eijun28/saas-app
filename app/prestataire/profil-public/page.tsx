@@ -104,13 +104,57 @@ export default function ProfilPublicPage() {
       
       console.log('🔄 Chargement des données pour userId:', userId)
       
-      const { data: profileData, error: profileError } = await freshSupabase
+      // Essayer d'abord avec toutes les colonnes (y compris réseaux sociaux)
+      let { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, service_type')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
         .eq('id', userId)
         .maybeSingle()
 
+      // Si erreur 42703 (colonne n'existe pas), réessayer sans les colonnes problématiques
+      if (profileError && profileError.code === '42703') {
+        console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans réseaux sociaux')
+        const { data, error } = await freshSupabase
+          .from('profiles')
+          .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
+          .eq('id', userId)
+          .maybeSingle()
+        profileData = data
+        profileError = error
+      }
+
+      // Essayer de charger les réseaux sociaux séparément si la colonne existe
+      let socialLinks = {
+        instagram_url: null as string | null,
+        facebook_url: null as string | null,
+        website_url: null as string | null,
+        linkedin_url: null as string | null,
+        tiktok_url: null as string | null,
+      }
+      
+      try {
+        const { data: socialData } = await freshSupabase
+          .from('profiles')
+          .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
+          .eq('id', userId)
+          .maybeSingle()
+        
+        if (socialData) {
+          socialLinks = {
+            instagram_url: socialData.instagram_url || null,
+            facebook_url: socialData.facebook_url || null,
+            website_url: socialData.website_url || null,
+            linkedin_url: socialData.linkedin_url || null,
+            tiktok_url: socialData.tiktok_url || null,
+          }
+        }
+      } catch (socialError: any) {
+        // Si les colonnes n'existent pas, on continue sans elles
+        console.warn('⚠️ Colonnes réseaux sociaux non disponibles:', socialError?.message)
+      }
+
       console.log('📥 Données reçues de Supabase:', profileData)
+      console.log('📥 Réseaux sociaux:', socialLinks)
       console.log('❌ Erreur (si présente):', profileError)
 
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
@@ -166,11 +210,11 @@ export default function ProfilPublicPage() {
         ville_principale: profileData?.ville_principale || undefined,
         annees_experience: profileData?.annees_experience ?? undefined,
         is_early_adopter: profileData?.is_early_adopter || false,
-        instagram_url: profileData?.instagram_url || null,
-        facebook_url: profileData?.facebook_url || null,
-        website_url: profileData?.website_url || null,
-        linkedin_url: profileData?.linkedin_url || null,
-        tiktok_url: profileData?.tiktok_url || null,
+        instagram_url: socialLinks.instagram_url,
+        facebook_url: socialLinks.facebook_url,
+        website_url: socialLinks.website_url,
+        linkedin_url: socialLinks.linkedin_url,
+        tiktok_url: socialLinks.tiktok_url,
         _timestamp: timestamp, // ✅ Force React à détecter le changement
       }
       
