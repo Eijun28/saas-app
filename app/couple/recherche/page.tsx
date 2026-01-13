@@ -262,9 +262,9 @@ export default function RecherchePage() {
         })
       )
 
-      // Filtrer par complétion minimale de 70%
+      // Filtrer par complétion minimale de 60%
       let filteredProviders = enrichedProviders.filter(p => 
-        p.completionPercentage >= 70
+        p.completionPercentage >= 60
       )
 
       // Filtrer par cultures/zones si recherche
