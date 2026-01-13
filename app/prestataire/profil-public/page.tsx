@@ -203,7 +203,7 @@ export default function ProfilPublicPage() {
 
   const completionChecks = [
     { complete: !!profile?.avatar_url, label: 'Photo de profil' },
-    { complete: !!profile?.nom_entreprise, label: 'Nom d&apos;entreprise' },
+    { complete: !!profile?.nom_entreprise, label: "Nom d'entreprise" },
     { complete: !!profile?.description_courte, label: 'Description' },
     { complete: cultures.length > 0, label: 'Cultures' },
     { complete: zones.length > 0, label: 'Zones' },
