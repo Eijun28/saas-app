@@ -573,7 +573,22 @@ export default function AgendaPage() {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
+
+      {/* Calendrier */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="mb-8"
+      >
+        <CalendarDashboard
+          events={calendarEvents}
+          onEventCreate={handleCalendarEventCreate}
+          showTime={true}
+          loading={loading}
+        />
+      </motion.div>
 
       {/* Liste des événements */}
       <motion.div
