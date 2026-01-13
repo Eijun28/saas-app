@@ -36,7 +36,7 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       setName(newName);
       setInitialName(newName);
     }
-  }, [currentName, isSaving]) // Retirer name et initialName des dépendances
+  }, [currentName, isSaving, initialName]) // Ajouter initialName pour détecter les changements
 
   const hasChanges = name.trim() !== initialName.trim()
 
@@ -92,6 +92,7 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       const savedName = data.nom_entreprise.trim()
       setName(savedName)
       setInitialName(savedName)
+      // Réinitialiser immédiatement pour permettre les mises à jour depuis props
       isEditingRef.current = false
       
       toast.success('Succès', {
@@ -105,7 +106,9 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
     } else {
       // Mettre à jour quand même l'état local
       const savedName = name.trim()
+      setName(savedName)
       setInitialName(savedName)
+      // Réinitialiser immédiatement pour permettre les mises à jour depuis props
       isEditingRef.current = false
       toast.success('Succès', {
         description: 'Nom d\'entreprise mis à jour',

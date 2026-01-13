@@ -526,8 +526,8 @@ export default function CoupleProfilPage() {
 
       toast.success('Profil mis à jour avec succès')
 
-      // Attendre un peu pour s'assurer que la transaction DB est commitée
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Attendre suffisamment longtemps pour s'assurer que la transaction DB est commitée
+      await new Promise(resolve => setTimeout(resolve, 600))
       
       // Recharger le profil depuis la DB
       loadProfile()
