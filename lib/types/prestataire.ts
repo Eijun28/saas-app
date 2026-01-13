@@ -53,6 +53,8 @@ export interface Conversation {
   avatar_url?: string
 }
 
+import type { Attachment } from '@/types/messages'
+
 export interface Message {
   id: string
   conversation_id: string
@@ -61,6 +63,7 @@ export interface Message {
   contenu: string
   created_at: string
   lu: boolean
+  attachments?: Attachment[]
 }
 
 export interface Stats {
