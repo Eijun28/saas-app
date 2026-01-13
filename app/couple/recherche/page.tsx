@@ -22,9 +22,17 @@ interface Provider {
   avatar_url?: string | null
   ville_principale?: string | null
   description_courte?: string | null
+  bio?: string | null
   budget_min?: number | null
   budget_max?: number | null
   service_type?: string | null
+  annees_experience?: number | null
+  is_early_adopter?: boolean
+  instagram_url?: string | null
+  facebook_url?: string | null
+  website_url?: string | null
+  linkedin_url?: string | null
+  tiktok_url?: string | null
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
   completionPercentage?: number
@@ -331,24 +339,15 @@ export default function RecherchePage() {
       if (fullProfileData && !profileError) {
         setSelectedProvider({
           ...provider,
-          bio: fullProfileData.bio,
-          annees_experience: fullProfileData.annees_experience,
-          is_early_adopter: fullProfileData.is_early_adopter,
-          instagram_url: fullProfileData.instagram_url,
-          facebook_url: fullProfileData.facebook_url,
-          website_url: fullProfileData.website_url,
-          linkedin_url: fullProfileData.linkedin_url,
-          tiktok_url: fullProfileData.tiktok_url,
-        } as Provider & {
-          bio?: string
-          annees_experience?: number
-          is_early_adopter?: boolean
-          instagram_url?: string | null
-          facebook_url?: string | null
-          website_url?: string | null
-          linkedin_url?: string | null
-          tiktok_url?: string | null
-        })
+          bio: fullProfileData.bio || null,
+          annees_experience: fullProfileData.annees_experience || null,
+          is_early_adopter: fullProfileData.is_early_adopter || false,
+          instagram_url: fullProfileData.instagram_url || null,
+          facebook_url: fullProfileData.facebook_url || null,
+          website_url: fullProfileData.website_url || null,
+          linkedin_url: fullProfileData.linkedin_url || null,
+          tiktok_url: fullProfileData.tiktok_url || null,
+        } as Provider)
       }
     } catch (error) {
       console.error('Erreur chargement données complètes:', error)
