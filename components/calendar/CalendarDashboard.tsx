@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -232,42 +233,69 @@ export function CalendarDashboard({
 
       {/* Dialog d'ajout d'événement */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent size="sm" className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Créer un événement</DialogTitle>
             <DialogDescription>
-              Ajoutez un événement à votre timeline de mariage
+              {selectedDate && (
+                <span className="font-medium text-[#823F91]">
+                  {new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {/* Afficher les événements existants */}
+          <motion.div
+            className="space-y-4 py-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            {/* Événements existants - Seulement si > 0 */}
             {selectedDate && getEventsForDate(formatDateKey(selectedDate)).length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold mb-2 text-sm text-gray-600">Événements existants :</h4>
+              <motion.div
+                className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                transition={{ duration: 0.3 }}
+              >
+                <h4 className="font-semibold mb-2 text-sm text-gray-600">
+                  Événements ce jour :
+                </h4>
                 <div className="space-y-2">
                   {getEventsForDate(formatDateKey(selectedDate)).map((event) => (
-                    <div key={event.id} className={`${getEventColor(event)} text-white px-3 py-2 rounded flex items-center gap-2`}>
+                    <motion.div
+                      key={event.id}
+                      className={`${getEventColor(event)} text-white px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm`}
+                      whileHover={{ scale: 1.02 }}
+                    >
                       {showTime && event.time && (
                         <>
                           <Clock className="w-4 h-4" />
-                          <span>{event.time} - </span>
+                          <span className="font-medium">{event.time}</span>
+                          <span className="text-white/70">-</span>
                         </>
                       )}
-                      <span>{event.title}</span>
-                    </div>
+                      <span className="flex-1">{event.title}</span>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="title">Titre de l'événement</Label>
+              <Label htmlFor="title">Titre de l'événement *</Label>
               <Input
                 id="title"
                 placeholder="Ex: Essayage robe, Dégustation menu..."
                 value={newEvent.title}
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                autoFocus
               />
             </div>
 
@@ -290,10 +318,11 @@ export function CalendarDashboard({
                 placeholder="Ajoutez des détails sur cet événement..."
                 value={newEvent.description}
                 onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                className="min-h-[100px] resize-none"
+                className="min-h-[80px] resize-none"
+                rows={3}
               />
             </div>
-          </div>
+          </motion.div>
 
           <DialogFooter>
             <Button

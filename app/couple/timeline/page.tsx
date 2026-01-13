@@ -398,7 +398,7 @@ export default function TimelinePage() {
 
         {/* Dialog de création d'événement */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent size="sm" className="sm:max-w-[450px]">
             <DialogHeader>
               <DialogTitle>{editingEvent ? 'Modifier l\'événement' : 'Créer un événement'}</DialogTitle>
               <DialogDescription>
@@ -406,19 +406,25 @@ export default function TimelinePage() {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <motion.div
+              className="space-y-4 py-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
               <div className="space-y-2">
-                <Label htmlFor="event-title">Titre de l'événement</Label>
+                <Label htmlFor="event-title">Titre de l'événement *</Label>
                 <Input
                   id="event-title"
                   value={eventForm.title}
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                   placeholder="Ex: Essayage robe, Dégustation menu..."
+                  autoFocus
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="event-date">Date</Label>
+                <Label htmlFor="event-date">Date *</Label>
                 <DatePicker
                   value={eventForm.event_date || undefined}
                   onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
@@ -433,10 +439,11 @@ export default function TimelinePage() {
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   placeholder="Ajoutez des détails sur cet événement..."
-                  className="min-h-[100px] resize-none"
+                  className="min-h-[80px] resize-none"
+                  rows={3}
                 />
               </div>
-            </div>
+            </motion.div>
 
             <DialogFooter>
               <Button

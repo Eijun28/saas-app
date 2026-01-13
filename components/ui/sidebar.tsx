@@ -79,11 +79,16 @@ const SidebarProvider = React.forwardRef<
         event.preventDefault()
         toggleSidebar()
       }
+      // ✅ Fermer la sidebar mobile avec Escape
+      if (event.key === 'Escape' && isMobile && openMobile) {
+        event.preventDefault()
+        setOpenMobile(false)
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [toggleSidebar])
+  }, [toggleSidebar, isMobile, openMobile, setOpenMobile])
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
@@ -162,20 +167,31 @@ const Sidebar = React.forwardRef<
       {/* Mobile Sheet - always rendered, hidden on desktop */}
       {isMobile && openMobile && (
         <div className="fixed inset-0 z-[99998] md:hidden">
+          {/* Overlay avec animation */}
           <div 
-            className="fixed inset-0 bg-black/50 z-[99998]"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[99998] transition-opacity duration-200"
             onClick={() => setOpenMobile(false)}
+            aria-hidden="true"
           />
+          {/* Sidebar avec animation slide */}
           <div 
-            className="fixed inset-y-0 left-0 w-[85%] bg-white z-[99999] shadow-lg overflow-y-auto"
+            className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
             style={{ zIndex: 99999 }}
           >
             <div className="flex h-full w-full flex-col p-4">
+              {/* ✅ Bouton de fermeture amélioré */}
               <button 
-                onClick={() => setOpenMobile(false)}
-                className="mb-4 self-end"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setOpenMobile(false)
+                }}
+                className="mb-4 self-end h-8 w-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900"
+                aria-label="Fermer le menu"
               >
-                ✕
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
               {children}
             </div>

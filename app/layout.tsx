@@ -37,7 +37,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${GeistSans.className} antialiased bg-background`} suppressHydrationWarning>
         <NuplyNavbarMenu />
-        <div id="dialog-container" />
+        <div id="dialog-container" style={{ position: 'relative', zIndex: 99999 }} />
         <main>
           <MainWrapper>
             {children}

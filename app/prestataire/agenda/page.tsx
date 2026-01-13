@@ -439,12 +439,18 @@ export default function AgendaPage() {
               Ajouter un événement
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent size="sm" className="sm:max-w-[450px]">
             <DialogHeader>
               <DialogTitle>Créer un événement</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleCreateEvent)} className="space-y-4 py-4">
+              <motion.form
+                onSubmit={form.handleSubmit(handleCreateEvent)}
+                className="space-y-4 py-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+              >
                 <FormField
                   control={form.control}
                   name="titre"
@@ -572,7 +578,7 @@ export default function AgendaPage() {
                     )}
                   </Button>
                 </DialogFooter>
-              </form>
+              </motion.form>
             </Form>
           </DialogContent>
         </Dialog>
@@ -684,12 +690,18 @@ export default function AgendaPage() {
 
       {/* Dialog Modifier */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent size="sm" className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Modifier l'événement</DialogTitle>
           </DialogHeader>
           <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(handleUpdateEvent)} className="space-y-4 py-4">
+            <motion.form
+              onSubmit={editForm.handleSubmit(handleUpdateEvent)}
+              className="space-y-4 py-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
               <FormField
                 control={editForm.control}
                 name="titre"
@@ -818,7 +830,7 @@ export default function AgendaPage() {
                   )}
                 </Button>
               </DialogFooter>
-            </form>
+            </motion.form>
           </Form>
         </DialogContent>
       </Dialog>

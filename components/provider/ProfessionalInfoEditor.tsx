@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,8 +30,14 @@ export function ProfessionalInfoEditor({
   const [ville, setVille] = useState(currentVille || '')
   const [initialData, setInitialData] = useState({ budgetMin: '', budgetMax: '', experience: '', ville: '' })
   const [isSaving, setIsSaving] = useState(false)
+  const isEditingRef = useRef(false)
 
   useEffect(() => {
+    // Ne pas mettre à jour si l'utilisateur est en train de taper
+    if (isEditingRef.current || isSaving) {
+      return
+    }
+    
     const newData = {
       budgetMin: currentBudgetMin?.toString() || '',
       budgetMax: currentBudgetMax?.toString() || '',
@@ -39,36 +45,35 @@ export function ProfessionalInfoEditor({
       ville: currentVille || '',
     }
     
-    console.log('🔄 ProfessionalInfoEditor useEffect - current props:', {
-      currentBudgetMin,
-      currentBudgetMax,
-      currentExperience,
-      currentVille
-    }, 'newData:', newData, 'current state:', { budgetMin, budgetMax, experience, ville });
-    
-    // Toujours mettre à jour les valeurs pour refléter l'état de la DB
-    // Cela garantit que les données sauvegardées s'affichent correctement
-    if (newData.budgetMin !== budgetMin) {
-      console.log('✅ Mise à jour budgetMin:', budgetMin, '->', newData.budgetMin);
-      setBudgetMin(newData.budgetMin)
-    }
-    if (newData.budgetMax !== budgetMax) {
-      console.log('✅ Mise à jour budgetMax:', budgetMax, '->', newData.budgetMax);
-      setBudgetMax(newData.budgetMax)
-    }
-    if (newData.experience !== experience) {
-      console.log('✅ Mise à jour experience:', experience, '->', newData.experience);
-      setExperience(newData.experience)
-    }
-    if (newData.ville !== ville) {
-      console.log('✅ Mise à jour ville:', ville, '->', newData.ville);
-      setVille(newData.ville)
-    }
-    
-    // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
-    setInitialData(newData)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentBudgetMin, currentBudgetMax, currentExperience, currentVille])
+    // Utiliser une fonction de mise à jour pour éviter les dépendances circulaires
+    setInitialData(prev => {
+      // Si les données n'ont pas changé, retourner l'état précédent pour éviter le re-render
+      if (
+        prev.budgetMin === newData.budgetMin &&
+        prev.budgetMax === newData.budgetMax &&
+        prev.experience === newData.experience &&
+        prev.ville === newData.ville
+      ) {
+        return prev
+      }
+      
+      // Sinon, mettre à jour les valeurs d'état seulement si elles ont changé
+      if (newData.budgetMin !== prev.budgetMin) {
+        setBudgetMin(newData.budgetMin)
+      }
+      if (newData.budgetMax !== prev.budgetMax) {
+        setBudgetMax(newData.budgetMax)
+      }
+      if (newData.experience !== prev.experience) {
+        setExperience(newData.experience)
+      }
+      if (newData.ville !== prev.ville) {
+        setVille(newData.ville)
+      }
+      
+      return newData
+    })
+  }, [currentBudgetMin, currentBudgetMax, currentExperience, currentVille, isSaving])
 
   const hasChanges =
     budgetMin !== initialData.budgetMin ||
@@ -134,7 +139,6 @@ export function ProfessionalInfoEditor({
 
     // Mettre à jour l'état local avec les données retournées
     if (data) {
-      console.log('✅ Données sauvegardées avec succès:', data)
       const savedData = {
         budgetMin: data.budget_min?.toString() || '',
         budgetMax: data.budget_max?.toString() || '',
@@ -151,6 +155,8 @@ export function ProfessionalInfoEditor({
       setInitialData({ budgetMin, budgetMax, experience, ville })
     }
     
+    isEditingRef.current = false
+    
     toast.success('Succès', {
       description: 'Informations mises à jour',
     })
@@ -159,7 +165,7 @@ export function ProfessionalInfoEditor({
     // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
     setTimeout(() => {
       onSave?.()
-    }, 200)
+    }, 500)
   }
 
   return (
@@ -171,7 +177,18 @@ export function ProfessionalInfoEditor({
           id="ville"
           placeholder="Ex: Paris, Lyon, Marseille"
           value={ville}
-          onChange={(e) => setVille(e.target.value)}
+          onChange={(e) => {
+            isEditingRef.current = true
+            setVille(e.target.value)
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
+          }}
+          onFocus={() => {
+            isEditingRef.current = true
+          }}
         />
       </div>
 
@@ -188,7 +205,18 @@ export function ProfessionalInfoEditor({
               type="number"
               placeholder="3000"
               value={budgetMin}
-              onChange={(e) => setBudgetMin(e.target.value)}
+              onChange={(e) => {
+                isEditingRef.current = true
+                setBudgetMin(e.target.value)
+              }}
+              onBlur={() => {
+                setTimeout(() => {
+                  isEditingRef.current = false
+                }, 100)
+              }}
+              onFocus={() => {
+                isEditingRef.current = true
+              }}
               min="0"
             />
           </div>
@@ -201,7 +229,18 @@ export function ProfessionalInfoEditor({
               type="number"
               placeholder="8000"
               value={budgetMax}
-              onChange={(e) => setBudgetMax(e.target.value)}
+              onChange={(e) => {
+                isEditingRef.current = true
+                setBudgetMax(e.target.value)
+              }}
+              onBlur={() => {
+                setTimeout(() => {
+                  isEditingRef.current = false
+                }, 100)
+              }}
+              onFocus={() => {
+                isEditingRef.current = true
+              }}
               min="0"
             />
           </div>
@@ -216,7 +255,18 @@ export function ProfessionalInfoEditor({
           type="number"
           placeholder="10"
           value={experience}
-          onChange={(e) => setExperience(e.target.value)}
+          onChange={(e) => {
+            isEditingRef.current = true
+            setExperience(e.target.value)
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
+          }}
+          onFocus={() => {
+            isEditingRef.current = true
+          }}
           min="0"
           max="50"
         />

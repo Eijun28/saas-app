@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { motion, AnimatePresence } from "framer-motion"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -21,9 +22,9 @@ function DialogTrigger({
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  // Utiliser le conteneur spécifique pour garantir l'ordre DOM correct
-  const container = typeof document !== 'undefined' ? document.getElementById('dialog-container') : null
-  return <DialogPrimitive.Portal data-slot="dialog-portal" container={container || undefined} {...props} />
+  // Ne pas utiliser de conteneur spécifique pour éviter les problèmes de z-index
+  // Le Portal sera rendu directement dans le body
+  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
 function DialogClose({
@@ -40,9 +41,13 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[100] bg-black/50",
+        "fixed inset-0 bg-black/50",
         className
       )}
+      style={{
+        zIndex: 99998,
+        ...props.style,
+      }}
       {...props}
     />
   )
@@ -52,38 +57,72 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size = "default",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  size?: "sm" | "default" | "lg"
 }) {
+  const sizeClasses = {
+    sm: "sm:max-w-[420px]",
+    default: "sm:max-w-[500px]",
+    lg: "sm:max-w-[600px]",
+  }
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed z-[101] grid w-full max-w-[calc(100%-2rem)] gap-4 rounded-lg border p-4 sm:p-6 shadow-lg sm:max-w-lg",
+          "bg-background fixed grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl border p-4 sm:p-6 shadow-2xl shadow-black/20",
           "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "data-[state=open]:animate-[dialog-in_0.2s_ease-out] data-[state=closed]:animate-[dialog-out_0.15s_ease-in]",
-          "max-h-[90vh] sm:max-h-[80vh] overflow-y-auto",
+          "max-h-[85vh] sm:max-h-[75vh] overflow-y-auto",
+          "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",
+          sizeClasses[size],
           className
         )}
         style={{
           position: 'fixed',
+          zIndex: 99999,
           ...props.style,
-        }}
+        } as React.CSSProperties}
         {...props}
+        asChild
       >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-3 right-3 sm:top-4 sm:right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-          >
-            <XIcon />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.95,
+            y: 20
+          }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            y: 0
+          }}
+          exit={{
+            opacity: 0,
+            scale: 0.95,
+            y: 20
+          }}
+          transition={{
+            duration: 0.25,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          className="w-full"
+        >
+          {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              className="ring-offset-background focus:ring-ring absolute top-3 right-3 sm:top-4 sm:right-4 rounded-lg opacity-70 transition-all hover:opacity-100 hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none p-1.5"
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          )}
+        </motion.div>
       </DialogPrimitive.Content>
     </DialogPortal>
   )

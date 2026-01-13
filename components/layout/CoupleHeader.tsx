@@ -1,15 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/lib/auth/actions'
 
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import ProfileDropdown from '@/components/shadcn-studio/blocks/dropdown-profile'
+import { useSidebar } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { User, LogOut, PanelLeft, PanelLeftClose } from 'lucide-react'
 
 export function CoupleHeader() {
   const { user } = useUser()
+  const { openMobile, setOpenMobile, isMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -63,11 +74,41 @@ export function CoupleHeader() {
 
   return (
     <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center'>
-      <div className='w-full flex items-center justify-end gap-6 px-5 sm:px-6 relative z-[101]'>
-        <div className="relative z-[103]">
-          <ProfileDropdown
-            trigger={
-              <button className='h-auto gap-2 px-2 py-1.5 flex items-center cursor-pointer'>
+      <div className='w-full flex items-center justify-between gap-6 px-5 sm:px-6 relative z-[101]'>
+        {/* ✅ Sidebar toggle button - MOBILE uniquement */}
+        <div className='md:hidden'>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (process.env.NODE_ENV === 'development') {
+                console.log('🔵 Toggle mobile couple - openMobile:', openMobile)
+              }
+              setOpenMobile(!openMobile)
+            }}
+            className={cn(
+              'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
+              'hover:bg-gray-100',
+              'focus-visible:ring-2 focus-visible:ring-[#823F91] focus-visible:ring-offset-2'
+            )}
+            style={{ pointerEvents: 'auto' }}
+            aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
+          >
+            {openMobile ? (
+              <PanelLeftClose className='h-6 w-6 text-black' strokeWidth={2.5} />
+            ) : (
+              <PanelLeft className='h-6 w-6 text-black' strokeWidth={2.5} />
+            )}
+          </Button>
+        </div>
+
+        {/* Avatar - aligné à droite */}
+        <div className="relative z-[103] ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className='h-auto gap-2 px-2 py-1.5 flex items-center cursor-pointer hover:opacity-80 transition-opacity'>
                 <Avatar className='h-9 w-9 rounded-xl'>
                   <AvatarImage src={profile?.avatar} alt={profile?.name} />
                   <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white font-semibold'>
@@ -80,10 +121,20 @@ export function CoupleHeader() {
                   </AvatarFallback>
                 </Avatar>
               </button>
-            }
-            user={profile || undefined}
-            onLogout={handleLogout}
-          />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/couple/profil" className="flex items-center gap-2 cursor-pointer">
+                  <User className="h-4 w-4" />
+                  <span>Profil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                <LogOut className="h-4 w-4" />
+                <span>Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

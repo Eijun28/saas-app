@@ -26,36 +26,25 @@ export function ProfileDescriptionEditor({
   const [initialDescription, setInitialDescription] = useState(currentDescription);
   const [initialBio, setInitialBio] = useState(currentBio);
   const [isSaving, setIsSaving] = useState(false);
-  const justSavedRef = useRef(false);
+  const isEditingRef = useRef(false);
 
   useEffect(() => {
-    // Ignorer les mises à jour pendant la sauvegarde pour éviter les conflits
-    if (isSaving) return;
+    // Ignorer les mises à jour pendant la sauvegarde ou l'édition pour éviter les conflits
+    if (isSaving || isEditingRef.current) return;
     
     const newDescription = currentDescription || '';
     const newBio = currentBio || '';
     
-    // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
-    if (newDescription !== description) {
-      setDescription(newDescription);
-    }
-    if (newBio !== bio) {
-      setBio(newBio);
-    }
-    
-    // Toujours mettre à jour les valeurs initiales pour refléter l'état de la DB
+    // Mettre à jour uniquement si les valeurs ont vraiment changé depuis la DB
     if (newDescription !== initialDescription) {
+      setDescription(newDescription);
       setInitialDescription(newDescription);
     }
     if (newBio !== initialBio) {
+      setBio(newBio);
       setInitialBio(newBio);
     }
-    
-    // Réinitialiser le flag après mise à jour
-    if (justSavedRef.current) {
-      justSavedRef.current = false;
-    }
-  }, [currentDescription, currentBio, isSaving]);
+  }, [currentDescription, currentBio, isSaving, initialDescription, initialBio]);
 
   const hasChanges =
     description !== initialDescription || bio !== initialBio;
@@ -106,7 +95,6 @@ export function ProfileDescriptionEditor({
 
       // Mettre à jour les valeurs initiales avec les données retournées de la DB
       if (data) {
-        console.log('✅ Données sauvegardées avec succès:', data);
         const savedDescription = data.description_courte || '';
         const savedBio = data.bio || '';
         
@@ -122,8 +110,7 @@ export function ProfileDescriptionEditor({
         setInitialBio(savedBio);
       }
       
-      // Marquer qu'on vient de sauvegarder
-      justSavedRef.current = true;
+      isEditingRef.current = false;
       
       toast.success('Succès', {
         description: 'Description mise à jour',
@@ -132,7 +119,7 @@ export function ProfileDescriptionEditor({
       // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
       setTimeout(() => {
         onSave?.();
-      }, 200);
+      }, 500);
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';
@@ -186,7 +173,18 @@ export function ProfileDescriptionEditor({
           id="description"
           placeholder="Ex: Photographe spécialisé dans les mariages multiculturels"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            isEditingRef.current = true
+            setDescription(e.target.value)
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
+          }}
+          onFocus={() => {
+            isEditingRef.current = true
+          }}
           className="resize-none"
           rows={2}
         />
@@ -214,7 +212,18 @@ export function ProfileDescriptionEditor({
           id="bio"
           placeholder="Parlez de vous, de votre parcours, de ce qui vous différencie..."
           value={bio}
-          onChange={(e) => setBio(e.target.value)}
+          onChange={(e) => {
+            isEditingRef.current = true
+            setBio(e.target.value)
+          }}
+          onBlur={() => {
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
+          }}
+          onFocus={() => {
+            isEditingRef.current = true
+          }}
           className="resize-none"
           rows={6}
         />

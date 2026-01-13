@@ -51,6 +51,7 @@ export default function ProfilPublicPage() {
   const [zones, setZones] = useState<Array<{ id: string; label: string }>>([])
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const [openSections, setOpenSections] = useState({
     infos: true,
@@ -77,39 +78,35 @@ export default function ProfilPublicPage() {
   const reloadData = async () => {
     if (!user) return
     
-    console.log('🔄 reloadData appelé - userId:', user.id)
-    
     // Attendre un peu pour s'assurer que la transaction DB est terminée
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 100))
     
-    console.log('📥 Début loadAllData après délai')
+    // Recharger toutes les données depuis Supabase sans afficher le loader
+    await loadAllData(user.id, false)
     
-    // Forcer le rechargement en passant par une nouvelle requête
-    await loadAllData(user.id)
-    
-    console.log('✅ loadAllData terminé')
-    
-    // Forcer un re-render en créant un nouvel objet avec une clé unique
-    setProfile(prev => {
-      if (!prev) return null
-      const newProfile = { ...prev, _refresh: Date.now() }
-      console.log('🔄 Nouveau profile créé:', newProfile)
-      return newProfile
-    })
+    // Forcer le re-render en incrémentant refreshKey
+    setRefreshKey(prev => prev + 1)
   }
 
-  async function loadAllData(userId: string) {
-    setIsLoading(true)
+  async function loadAllData(userId: string, showLoading = true) {
+    if (showLoading) {
+      setIsLoading(true)
+    }
 
     try {
       // Utiliser une nouvelle instance de supabase pour éviter les problèmes de cache
       const freshSupabase = createClient()
+      
+      console.log('🔄 Chargement des données pour userId:', userId)
       
       const { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
         .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, service_type')
         .eq('id', userId)
         .maybeSingle()
+
+      console.log('📥 Données reçues de Supabase:', profileData)
+      console.log('❌ Erreur (si présente):', profileError)
 
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
         console.error('Erreur profil:', profileError)
@@ -149,6 +146,8 @@ export default function ProfilPublicPage() {
       }))
 
       // Créer un nouvel objet pour forcer React à détecter le changement
+      // ✅ AJOUT : Ajouter un timestamp pour forcer React à détecter le changement
+      const timestamp = Date.now()
       const newProfile = {
         nom_entreprise: profileData?.nom_entreprise || undefined,
         avatar_url: profileData?.avatar_url || null,
@@ -167,18 +166,32 @@ export default function ProfilPublicPage() {
         website_url: profileData?.website_url || null,
         linkedin_url: profileData?.linkedin_url || null,
         tiktok_url: profileData?.tiktok_url || null,
+        _timestamp: timestamp, // ✅ Force React à détecter le changement
       }
-
-      console.log('📥 Données chargées depuis Supabase:', newProfile)
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Nouveau profil créé:', newProfile)
+        console.log('✅ Cultures:', mappedCultures)
+        console.log('✅ Zones:', mappedZones)
+        console.log('✅ Portfolio:', mappedPortfolio)
+      }
+      
+      // Mettre à jour tous les états en une seule fois pour forcer le re-render
       setProfile(newProfile)
       setCultures(mappedCultures)
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
+      setRefreshKey(prev => prev + 1) // Forcer le re-render des composants enfants
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ États mis à jour, refreshKey:', refreshKey + 1)
+      }
     } catch (error) {
       console.error('Error loading profile:', error)
     } finally {
-      setIsLoading(false)
+      if (showLoading) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -343,17 +356,20 @@ export default function ProfilPublicPage() {
                     }}
                   />
                   <BusinessNameEditor
+                    key={`business-${refreshKey}`}
                     userId={user.id}
                     currentName={profile?.nom_entreprise}
                     onSave={reloadData}
                   />
                   <ProfileDescriptionEditor
+                    key={`description-${refreshKey}`}
                     userId={user.id}
                     currentDescription={profile?.description_courte}
                     currentBio={profile?.bio}
                     onSave={reloadData}
                   />
                   <ProfessionalInfoEditor
+                    key={`professional-${refreshKey}`}
                     userId={user.id}
                     currentBudgetMin={profile?.budget_min}
                     currentBudgetMax={profile?.budget_max}
