@@ -106,10 +106,13 @@ export function ProfileDescriptionEditor({
         // Fallback : utiliser les valeurs locales
         const savedDescription = description.trim() || '';
         const savedBio = bio.trim() || '';
+        setDescription(savedDescription);
+        setBio(savedBio);
         setInitialDescription(savedDescription);
         setInitialBio(savedBio);
       }
       
+      // Réinitialiser immédiatement pour permettre les mises à jour depuis props
       isEditingRef.current = false;
       
       toast.success('Succès', {

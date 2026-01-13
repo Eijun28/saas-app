@@ -73,13 +73,15 @@ export default function ProfilPublicPage() {
       }
     }
     getUser()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const reloadData = async () => {
     if (!user) return
     
-    // Attendre un peu pour s'assurer que la transaction DB est terminée
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Attendre suffisamment longtemps pour s'assurer que la transaction DB est commitée
+    // Les composants éditeurs appellent onSave après 500ms, donc on attend 600ms pour être sûr
+    await new Promise(resolve => setTimeout(resolve, 600))
     
     // Recharger toutes les données depuis Supabase sans afficher le loader
     await loadAllData(user.id, false)
@@ -201,7 +203,7 @@ export default function ProfilPublicPage() {
 
   const completionChecks = [
     { complete: !!profile?.avatar_url, label: 'Photo de profil' },
-    { complete: !!profile?.nom_entreprise, label: 'Nom d\'entreprise' },
+    { complete: !!profile?.nom_entreprise, label: 'Nom d&apos;entreprise' },
     { complete: !!profile?.description_courte, label: 'Description' },
     { complete: cultures.length > 0, label: 'Cultures' },
     { complete: zones.length > 0, label: 'Zones' },
@@ -356,20 +358,20 @@ export default function ProfilPublicPage() {
                     }}
                   />
                   <BusinessNameEditor
-                    key={`business-${refreshKey}`}
+                    key={`business-${refreshKey}-${profile?.nom_entreprise || ''}-${Date.now()}`}
                     userId={user.id}
                     currentName={profile?.nom_entreprise}
                     onSave={reloadData}
                   />
                   <ProfileDescriptionEditor
-                    key={`description-${refreshKey}`}
+                    key={`description-${refreshKey}-${profile?.description_courte || ''}-${Date.now()}`}
                     userId={user.id}
                     currentDescription={profile?.description_courte}
                     currentBio={profile?.bio}
                     onSave={reloadData}
                   />
                   <ProfessionalInfoEditor
-                    key={`professional-${refreshKey}`}
+                    key={`professional-${refreshKey}-${profile?.budget_min || ''}-${profile?.budget_max || ''}-${Date.now()}`}
                     userId={user.id}
                     currentBudgetMin={profile?.budget_min}
                     currentBudgetMax={profile?.budget_max}
@@ -441,7 +443,7 @@ export default function ProfilPublicPage() {
                     <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
                   )}
                   <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Zones d'intervention</h3>
+                    <h3 className="font-semibold text-[#823F91]">Zones d&apos;intervention</h3>
                     <p className="text-sm text-[#823F91]">
                       {zones.length > 0
                         ? `${zones.length} département${zones.length > 1 ? 's' : ''}`

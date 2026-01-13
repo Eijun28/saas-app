@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -42,12 +42,23 @@ export function CalendarDashboard({
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<number | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [newEvent, setNewEvent] = useState({
     title: '',
     time: '',
     description: '',
     date: null as Date | null,
   })
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640) // Tailwind 'sm' breakpoint
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const daysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
@@ -141,7 +152,7 @@ export function CalendarDashboard({
 
     // Cellules vides pour les jours avant le début du mois
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-2 h-32"></div>)
+      days.push(<div key={`empty-${i}`} className="p-1.5 sm:p-2 h-24 sm:h-28 md:h-32"></div>)
     }
 
     // Jours réels
@@ -153,19 +164,19 @@ export function CalendarDashboard({
       days.push(
         <div
           key={day}
-          className={`p-2 h-32 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden ${
+          className={`p-1.5 sm:p-2 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden h-24 sm:h-28 md:h-32 ${
             isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
           }`}
           onClick={() => handleDateClick(day)}
         >
-          <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
+          <div className={`text-xs sm:text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
             {day}
           </div>
-          <div className="space-y-1">
-            {dayEvents.slice(0, 3).map((event) => (
+          <div className="space-y-0.5 sm:space-y-1">
+            {dayEvents.slice(0, isMobile ? 2 : 3).map((event) => (
               <div
                 key={event.id}
-                className={`${getEventColor(event)} text-white text-xs px-2 py-1 rounded truncate`}
+                className={`${getEventColor(event)} text-white text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded truncate leading-tight`}
                 title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
               >
                 {showTime && event.time && (
@@ -177,9 +188,9 @@ export function CalendarDashboard({
                 <div className="truncate">{event.title}</div>
               </div>
             ))}
-            {dayEvents.length > 3 && (
-              <div className="text-xs text-gray-500 px-2">
-                +{dayEvents.length - 3} autres
+            {dayEvents.length > (isMobile ? 2 : 3) && (
+              <div className="text-[10px] sm:text-xs text-gray-500 px-1 sm:px-2">
+                +{dayEvents.length - (isMobile ? 2 : 3)} autres
               </div>
             )}
           </div>
@@ -212,8 +223,10 @@ export function CalendarDashboard({
           {/* En-tête des jours */}
           <div className="grid grid-cols-7 gap-0 mb-2">
             {dayNames.map((day) => (
-              <div key={day} className="p-2 text-center font-semibold text-gray-600 text-sm">
-                {day}
+              <div key={day} className="p-1 sm:p-2 text-center font-semibold text-gray-600 text-[10px] sm:text-sm">
+                {/* Mobile: première lettre seulement */}
+                <span className="sm:hidden">{day[0]}</span>
+                <span className="hidden sm:inline">{day}</span>
               </div>
             ))}
           </div>

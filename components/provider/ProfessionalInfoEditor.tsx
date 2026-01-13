@@ -152,9 +152,15 @@ export function ProfessionalInfoEditor({
       setInitialData(savedData)
     } else {
       // Fallback : utiliser les valeurs locales
-      setInitialData({ budgetMin, budgetMax, experience, ville })
+      const fallbackData = { budgetMin, budgetMax, experience, ville }
+      setBudgetMin(fallbackData.budgetMin)
+      setBudgetMax(fallbackData.budgetMax)
+      setExperience(fallbackData.experience)
+      setVille(fallbackData.ville)
+      setInitialData(fallbackData)
     }
     
+    // Réinitialiser immédiatement pour permettre les mises à jour depuis props
     isEditingRef.current = false
     
     toast.success('Succès', {
