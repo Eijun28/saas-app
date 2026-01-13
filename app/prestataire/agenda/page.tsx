@@ -407,27 +407,17 @@ export default function AgendaPage() {
         </motion.div>
       </div>
 
-      {/* Calendrier */}
+      {/* Bouton Ajouter - Au-dessus du calendrier */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="mb-8"
+        className="flex justify-end mb-4 sm:mb-6"
       >
-        <CalendarDashboard
-          events={calendarEvents}
-          onEventCreate={handleCalendarEventCreate}
-          showTime={true}
-          loading={loading}
-        />
-      </motion.div>
-
-      {/* Bouton Ajouter */}
-      <div className="flex justify-end mb-8">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300"
+              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300 w-full sm:w-auto"
               onClick={() => {
                 form.reset()
                 if (selectedDate) {
@@ -436,7 +426,8 @@ export default function AgendaPage() {
               }}
             >
               <Plus className="h-4 w-4" />
-              Ajouter un événement
+              <span className="hidden sm:inline">Ajouter un événement</span>
+              <span className="sm:hidden">Ajouter</span>
             </Button>
           </DialogTrigger>
           <DialogContent size="sm" className="sm:max-w-[450px]">

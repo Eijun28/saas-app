@@ -269,13 +269,13 @@ export default function TimelinePage() {
             <p className="text-[#4A4A4A] mb-4 text-center">
               Planifiez votre mariage étape par étape
             </p>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full">
               {/* Date du mariage - Version compacte */}
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 flex-1 sm:flex-shrink-0">
                 <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
                 {dateMarriage ? (
-                  <div>
-                    <p className="text-sm font-medium text-[#0D0D0D] whitespace-nowrap">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-[#0D0D0D] truncate">
                       {(() => {
                         const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
                           weekday: 'long',
@@ -286,7 +286,7 @@ export default function TimelinePage() {
                         return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
                       })()}
                     </p>
-                    <p className="text-xs text-[#6B7280] mt-1 whitespace-nowrap">
+                    <p className="text-xs text-[#6B7280] mt-1">
                       {(() => {
                         const date = new Date(dateMarriage)
                         const today = new Date()
@@ -303,8 +303,8 @@ export default function TimelinePage() {
                     </p>
                   </div>
                 ) : (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] whitespace-nowrap">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm text-[#4A4A4A]">
                       Aucune date de mariage renseignée.{' '}
                       <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
                         Définir dans le profil
@@ -315,10 +315,11 @@ export default function TimelinePage() {
               </div>
               <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 flex-shrink-0"
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto flex-shrink-0"
               >
                 <Plus className="h-4 w-4" />
-                Créer un événement
+                <span className="hidden sm:inline">Créer un événement</span>
+                <span className="sm:hidden">Ajouter</span>
               </Button>
             </div>
           </div>
