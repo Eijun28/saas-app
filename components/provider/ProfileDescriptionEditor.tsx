@@ -120,9 +120,10 @@ export function ProfileDescriptionEditor({
       });
       
       // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+      // Augmenter à 1000ms pour laisser plus de temps à Supabase
       setTimeout(() => {
         onSave?.();
-      }, 500);
+      }, 1000);
     } catch (error: any) {
       console.error('Save error:', error);
       const errorMessage = error?.message || error?.code || error?.details || 'Erreur lors de la sauvegarde';

@@ -232,6 +232,8 @@ interface CoupleProfile {
 
   profile_completion?: number
 
+  _timestamp?: number
+
 }
 
 export default function CoupleProfilPage() {
@@ -375,6 +377,8 @@ export default function CoupleProfilPage() {
           planning_stage: data.planning_stage || '',
 
           profile_completion: data.profile_completion || 0,
+
+          _timestamp: Date.now(), // ✅ AJOUTER cette ligne
 
         })
 
@@ -526,8 +530,8 @@ export default function CoupleProfilPage() {
 
       toast.success('Profil mis à jour avec succès')
 
-      // Attendre suffisamment longtemps pour s'assurer que la transaction DB est commitée
-      await new Promise(resolve => setTimeout(resolve, 600))
+      // ✅ FIX: Augmenter délai à 1500ms au lieu de 600ms
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
       // Recharger le profil depuis la DB
       loadProfile()
@@ -800,8 +804,7 @@ export default function CoupleProfilPage() {
 
                       onAvatarUpdate={(url) => {
 
-                        setPhotoUrl(url)
-
+                        // ✅ Juste recharger depuis la DB
                         loadProfile()
 
                       }}

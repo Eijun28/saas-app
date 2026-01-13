@@ -46,6 +46,7 @@ export default function ProfilPublicPage() {
     website_url?: string | null
     linkedin_url?: string | null
     tiktok_url?: string | null
+    _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
   const [zones, setZones] = useState<Array<{ id: string; label: string }>>([])
@@ -78,16 +79,18 @@ export default function ProfilPublicPage() {
 
   const reloadData = async () => {
     if (!user) return
-    
-    // Attendre suffisamment longtemps pour s'assurer que la transaction DB est commitée
-    // Les composants éditeurs appellent onSave après 500ms, donc on attend 600ms pour être sûr
-    await new Promise(resolve => setTimeout(resolve, 600))
-    
-    // Recharger toutes les données depuis Supabase sans afficher le loader
+
+    console.log('🔄 reloadData appelé - userId:', user.id)
+
+    // ✅ FIX: Augmenter délai à 2000ms pour être sûr que la transaction DB est commitée
+    await new Promise(resolve => setTimeout(resolve, 2000))
+
+    console.log('📥 Début loadAllData après délai')
     await loadAllData(user.id, false)
     
-    // Forcer le re-render en incrémentant refreshKey
+    // Forcer le re-render en incrémentant refreshKey après le chargement
     setRefreshKey(prev => prev + 1)
+    console.log('✅ loadAllData terminé, refreshKey incrémenté')
   }
 
   async function loadAllData(userId: string, showLoading = true) {
@@ -353,25 +356,25 @@ export default function ProfilPublicPage() {
                     editable={true}
                     showEnlarge={false}
                     onAvatarUpdate={(url) => {
-                      setProfile(prev => prev ? { ...prev, avatar_url: url } : null)
-                      if (user) loadAllData(user.id)
+                      // ✅ Juste recharger depuis la DB
+                      if (user) reloadData()
                     }}
                   />
                   <BusinessNameEditor
-                    key={`business-${refreshKey}-${profile?.nom_entreprise || ''}-${Date.now()}`}
+                    key={`business-name-${profile?._timestamp || 0}`}
                     userId={user.id}
                     currentName={profile?.nom_entreprise}
                     onSave={reloadData}
                   />
                   <ProfileDescriptionEditor
-                    key={`description-${refreshKey}-${profile?.description_courte || ''}-${Date.now()}`}
+                    key={`profile-desc-${profile?._timestamp || 0}`}
                     userId={user.id}
                     currentDescription={profile?.description_courte}
                     currentBio={profile?.bio}
                     onSave={reloadData}
                   />
                   <ProfessionalInfoEditor
-                    key={`professional-${refreshKey}-${profile?.budget_min || ''}-${profile?.budget_max || ''}-${Date.now()}`}
+                    key={`professional-${profile?._timestamp || 0}`}
                     userId={user.id}
                     currentBudgetMin={profile?.budget_min}
                     currentBudgetMax={profile?.budget_max}
@@ -380,6 +383,7 @@ export default function ProfilPublicPage() {
                     onSave={reloadData}
                   />
                   <SocialLinksEditor
+                    key={`social-${profile?._timestamp || 0}`}
                     userId={user.id}
                     currentLinks={{
                       instagram_url: profile?.instagram_url,

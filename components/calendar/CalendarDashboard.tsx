@@ -201,7 +201,7 @@ export function CalendarDashboard({
   return (
     <div className="w-full">
       <Card className="shadow-none border-0">
-        <CardHeader className="border-b bg-white pb-2 sm:pb-4 px-2 sm:px-6" style={{ borderBottomColor: 'rgba(255, 252, 250, 1)', boxShadow: '0px 4px 12px 0px rgba(0, 0, 0, 0.15)' }}>
+        <CardHeader className="border-b bg-[rgba(252,249,253,1)] pb-2 sm:pb-4 px-2 sm:px-6" style={{ borderBottomColor: 'rgba(255, 252, 250, 1)', boxShadow: '0px 4px 12px 0px rgba(0, 0, 0, 0.15)', backgroundColor: 'rgba(252, 249, 253, 1)' }}>
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-2 sm:gap-4">
               <Button 

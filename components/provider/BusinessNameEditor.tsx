@@ -100,9 +100,10 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       })
       
       // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+      // Augmenter à 1000ms pour laisser plus de temps à Supabase
       setTimeout(() => {
         onSave?.()
-      }, 500)
+      }, 1000)
     } else {
       // Mettre à jour quand même l'état local
       const savedName = name.trim()
