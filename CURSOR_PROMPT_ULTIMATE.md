@@ -1,7 +1,13 @@
 # 🚀 PROMPT ULTIME CURSOR - FIXES CRITIQUES POUR LE LANCEMENT
 
 ## 🎯 OBJECTIF
-Résoudre 3 problèmes critiques bloquants pour le lancement de demain de manière définitive et robuste. Chaque problème doit être traité en profondeur avec une analyse complète du code existant.
+Résoudre **4 problèmes critiques** bloquants pour le lancement de demain de manière définitive et robuste. Chaque problème doit être traité en profondeur avec une analyse complète du code existant.
+
+### Problèmes Couverts
+1. **🔴 CRITIQUE** : Persistance des données profil (couple + prestataire)
+2. **🔴 CRITIQUE** : Toggle sidebar mobile non fonctionnel
+3. **🟡 UX** : Taille des blocs dashboard prestataire
+4. **🟡 UX** : Dialogs création d'événements (taille + animations)
 
 ---
 
@@ -864,6 +870,451 @@ Modifier `/app/prestataire/dashboard/page.tsx` :
 
 ---
 
+## 🔥 PROBLÈME 4 : DIALOG CRÉATION D'ÉVÉNEMENT (UX)
+
+### 🎯 Symptôme
+**UX Non Optimal** : Les dialogs de création d'événements (timeline couple & agenda prestataire) ont plusieurs problèmes:
+1. **Trop grands sur mobile** : Prennent presque toute la hauteur de l'écran
+2. **Mauvais positionnement desktop** : Apparaissent en bas avec des sauts visuels
+3. **Pas d'animations smooth** : Entrée/sortie abrupte, pas de Framer Motion
+4. **Expérience jarring** : L'utilisateur voit des sauts/glitches lors de l'ouverture
+
+### 📊 Diagnostic Technique
+
+#### Fichiers Concernés
+
+1. **Composant Dialog de base** : `/components/ui/dialog.tsx`
+   - `DialogContent` ligne 51-90 : Utilise `sm:max-w-lg` (512px) peut-être trop large
+   - Positionnement : `left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`
+   - Animation CSS basique : `data-[state=open]:animate-[dialog-in_0.2s_ease-out]`
+   - Max height : `max-h-[90vh] sm:max-h-[80vh]` problématique sur mobile
+
+2. **CalendarDashboard** : `/components/calendar/CalendarDashboard.tsx`
+   - Dialog ligne 234-318 : `<DialogContent className="sm:max-w-[500px]">`
+   - Pas d'animations Framer Motion
+   - Liste des événements existants affichée dans le dialog (lignes 244-262)
+
+3. **Timeline Couple** : `/app/couple/timeline/page.tsx`
+   - Dialog ligne 400-460 : Même problème
+
+4. **Agenda Prestataire** : `/app/prestataire/agenda/page.tsx`
+   - 2 dialogs (création + édition) lignes 427-578 et 686-823
+
+#### Problèmes Identifiés
+
+1. **Taille Excessive sur Mobile**
+   ```typescript
+   // ❌ PROBLÈME : max-h-[90vh] sur mobile = presque tout l'écran
+   className="max-h-[90vh] sm:max-h-[80vh] overflow-y-auto"
+   // Avec le formulaire complet, ça scroll et c'est awkward
+   ```
+
+2. **Positionnement Non Optimal**
+   ```typescript
+   // ❌ PROBLÈME : translate-x/y avec calculs CSS peut causer des sauts
+   // Si le contenu change de hauteur, le dialog "saute"
+   className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+   ```
+
+3. **Animations CSS Basiques**
+   ```typescript
+   // ❌ PROBLÈME : Animations CSS génériques, pas de spring/easing sophistiqué
+   data-[state=open]:animate-[dialog-in_0.2s_ease-out]
+   // Pas de Framer Motion pour des animations buttery smooth
+   ```
+
+4. **Pas de Variants Framer Motion**
+   - Pas de scale in/out
+   - Pas de slide up smooth
+   - Pas de blur backdrop animé
+
+### ✅ SOLUTION COMPLÈTE
+
+#### Solution 1 : Améliorer le DialogContent avec Framer Motion
+
+Modifier `/components/ui/dialog.tsx` :
+
+```typescript
+"use client"
+
+import * as React from "react"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { motion, AnimatePresence } from "framer-motion"
+import { XIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+// ... Dialog, DialogTrigger, DialogPortal, DialogClose inchangés ...
+
+function DialogOverlay({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+      exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <DialogPrimitive.Overlay
+        data-slot="dialog-overlay"
+        className={cn(
+          "fixed inset-0 z-[100] bg-black/50",
+          className
+        )}
+        {...props}
+      />
+    </motion.div>
+  )
+}
+
+function DialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  size = "default", // "default" | "sm" | "lg"
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  showCloseButton?: boolean
+  size?: "sm" | "default" | "lg"
+}) {
+  // ✅ Tailles optimisées
+  const sizeClasses = {
+    sm: "sm:max-w-[420px]",
+    default: "sm:max-w-[500px]",
+    lg: "sm:max-w-[600px]",
+  }
+
+  return (
+    <DialogPortal data-slot="dialog-portal">
+      <DialogOverlay />
+      <motion.div
+        initial={{
+          opacity: 0,
+          scale: 0.95,
+          y: 20
+        }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          y: 0
+        }}
+        exit={{
+          opacity: 0,
+          scale: 0.95,
+          y: 20
+        }}
+        transition={{
+          duration: 0.25,
+          ease: [0.16, 1, 0.3, 1]
+        }}
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101]"
+      >
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
+          className={cn(
+            "bg-background grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl border p-4 sm:p-6 shadow-2xl shadow-black/20",
+            // ✅ Hauteur max réduite pour mobile
+            "max-h-[85vh] sm:max-h-[75vh] overflow-y-auto",
+            // ✅ Scrollbar personnalisée
+            "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",
+            sizeClasses[size],
+            className
+          )}
+          {...props}
+        >
+          {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              className="ring-offset-background focus:ring-ring absolute top-3 right-3 sm:top-4 sm:right-4 rounded-lg opacity-70 transition-all hover:opacity-100 hover:bg-gray-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none p-1.5"
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          )}
+        </DialogPrimitive.Content>
+      </motion.div>
+    </DialogPortal>
+  )
+}
+
+// ... DialogHeader, DialogFooter, DialogTitle, DialogDescription inchangés ...
+
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+}
+```
+
+#### Solution 2 : Optimiser le Dialog CalendarDashboard
+
+Modifier `/components/calendar/CalendarDashboard.tsx` :
+
+```typescript
+// Ligne 234 : Remplacer le Dialog par une version optimisée
+
+{/* Dialog d'ajout d'événement */}
+<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+  <DialogContent
+    className="sm:max-w-[450px]"
+    size="sm"
+  >
+    <DialogHeader>
+      <DialogTitle>Créer un événement</DialogTitle>
+      <DialogDescription>
+        {selectedDate && (
+          <span className="font-medium text-[#823F91]">
+            {new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate).toLocaleDateString('fr-FR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </span>
+        )}
+      </DialogDescription>
+    </DialogHeader>
+
+    <motion.div
+      className="space-y-4 py-4"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1, duration: 0.3 }}
+    >
+      {/* ✅ Événements existants - Seulement si > 0 */}
+      {selectedDate && getEventsForDate(formatDateKey(selectedDate)).length > 0 && (
+        <motion.div
+          className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.3 }}
+        >
+          <h4 className="font-semibold mb-2 text-sm text-gray-600">
+            Événements ce jour :
+          </h4>
+          <div className="space-y-2">
+            {getEventsForDate(formatDateKey(selectedDate)).map((event) => (
+              <motion.div
+                key={event.id}
+                className={`${getEventColor(event)} text-white px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm`}
+                whileHover={{ scale: 1.02 }}
+              >
+                {showTime && event.time && (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium">{event.time}</span>
+                    <span className="text-white/70">-</span>
+                  </>
+                )}
+                <span className="flex-1">{event.title}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Formulaire */}
+      <div className="space-y-2">
+        <Label htmlFor="title">Titre de l'événement *</Label>
+        <Input
+          id="title"
+          placeholder="Ex: Essayage robe, Dégustation menu..."
+          value={newEvent.title}
+          onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+          autoFocus
+        />
+      </div>
+
+      {showTime && (
+        <div className="space-y-2">
+          <Label htmlFor="time">Heure</Label>
+          <Input
+            id="time"
+            type="time"
+            value={newEvent.time}
+            onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+          />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description (optionnel)</Label>
+        <Textarea
+          id="description"
+          placeholder="Ajoutez des détails sur cet événement..."
+          value={newEvent.description}
+          onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+          className="min-h-[80px] resize-none"
+          rows={3}
+        />
+      </div>
+    </motion.div>
+
+    <DialogFooter>
+      <Button
+        variant="outline"
+        onClick={() => {
+          setIsDialogOpen(false)
+          setNewEvent({ title: '', time: '', description: '', date: null })
+          setSelectedDate(null)
+        }}
+      >
+        Annuler
+      </Button>
+      <Button
+        onClick={handleAddEvent}
+        className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+        disabled={!newEvent.title || !newEvent.date}
+      >
+        Créer l'événement
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+#### Solution 3 : Ajouter un Wrapper AnimatePresence
+
+Pour les pages qui utilisent le Dialog, wrapper avec AnimatePresence :
+
+```typescript
+import { AnimatePresence } from 'framer-motion'
+
+// Dans le render :
+<AnimatePresence mode="wait">
+  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    {/* ... */}
+  </Dialog>
+</AnimatePresence>
+```
+
+#### Solution 4 : CSS Personnalisé pour Scrollbar (tailwind.config.ts)
+
+Ajouter dans `tailwind.config.ts` :
+
+```typescript
+module.exports = {
+  theme: {
+    extend: {
+      // ... autres configs ...
+    },
+  },
+  plugins: [
+    require('tailwind-scrollbar')({ nocompatible: true }),
+    // ... autres plugins ...
+  ],
+}
+```
+
+Installer le plugin :
+```bash
+npm install -D tailwind-scrollbar
+```
+
+### 🧪 Tests à Effectuer
+
+1. **Test Mobile - Dialog Compact**
+   ```
+   1. Ouvrir /couple/timeline sur mobile (375px)
+   2. Cliquer sur une date du calendrier
+   3. Vérifier que le dialog :
+      - Ne prend pas tout l'écran (max 85vh)
+      - S'ouvre avec animation scale + fade smooth
+      - Le backdrop a un blur qui s'anime
+   4. Fermer avec X ou overlay
+   5. Vérifier animation de sortie smooth
+   ```
+
+2. **Test Desktop - Positionnement Centré**
+   ```
+   1. Ouvrir /prestataire/agenda sur desktop (1920px)
+   2. Cliquer sur "Ajouter un événement"
+   3. Vérifier que le dialog :
+      - Est bien centré verticalement et horizontalement
+      - Ne saute pas lors de l'ouverture
+      - Animation d'entrée = scale from 95% + fade + slight y translate
+   4. Remplir le formulaire (contenu qui grandit)
+   5. Vérifier que le dialog ne saute pas en hauteur
+   ```
+
+3. **Test Animations Framer Motion**
+   ```
+   1. Ouvrir/fermer le dialog plusieurs fois rapidement
+   2. Vérifier qu'il n'y a pas de glitches
+   3. Vérifier que l'overlay backdrop blur s'anime en sync
+   4. Vérifier que la transition est à 60fps (pas de lag)
+   ```
+
+4. **Test Scrolling**
+   ```
+   1. Créer un événement avec une description longue
+   2. Vérifier que le scroll fonctionne dans le dialog
+   3. Vérifier que la scrollbar est stylisée (fine, grise)
+   4. Vérifier que l'en-tête reste fixe pendant le scroll
+   ```
+
+### ⚡ Optimisations Bonus
+
+#### 1. Lazy Load Framer Motion
+
+```typescript
+import dynamic from 'next/dynamic'
+
+const MotionDiv = dynamic(
+  () => import('framer-motion').then((mod) => mod.motion.div),
+  { ssr: false }
+)
+```
+
+#### 2. Reducer Dialog Height on Keyboard Open (Mobile)
+
+```typescript
+useEffect(() => {
+  const handleResize = () => {
+    // Détecter keyboard ouvert sur mobile
+    if (window.innerHeight < 600 && window.innerWidth < 768) {
+      document.documentElement.style.setProperty('--dialog-max-height', '70vh')
+    } else {
+      document.documentElement.style.setProperty('--dialog-max-height', '85vh')
+    }
+  }
+
+  window.addEventListener('resize', handleResize)
+  handleResize()
+
+  return () => window.removeEventListener('resize', handleResize)
+}, [])
+```
+
+#### 3. Focus Trap Amélioré
+
+```typescript
+// Dans DialogContent
+useEffect(() => {
+  if (!open) return
+
+  const focusableElements = contentRef.current?.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  )
+
+  if (focusableElements && focusableElements.length > 0) {
+    ;(focusableElements[0] as HTMLElement).focus()
+  }
+}, [open])
+```
+
+---
+
 ## 🔒 CHECKLIST FINALE PRÉ-LANCEMENT
 
 ### Build & Déploiement
@@ -980,15 +1431,23 @@ Une fois tous les fixes appliqués, valider avec cette checklist :
 2. ✅ Je peux modifier mon profil couple et les données restent affichées
 3. ✅ Sur mobile, je peux ouvrir/fermer la sidebar avec le toggle
 4. ✅ Les cartes du dashboard prestataire ont la même taille que celles du dashboard couple
-5. ✅ Aucune erreur dans la console
-6. ✅ Le build passe sans erreurs
-7. ✅ Les animations sont fluides
-8. ✅ L'expérience utilisateur est smooth et professionnelle
+5. ✅ Les dialogs de création d'événements sont compacts, centrés et animés smoothly
+6. ✅ Aucune erreur dans la console
+7. ✅ Le build passe sans erreurs
+8. ✅ Les animations sont fluides (60fps)
+9. ✅ L'expérience utilisateur est smooth et professionnelle
 
 ---
 
 ## 🎯 OBJECTIF : 100% OPÉRATIONNEL POUR DEMAIN
 
-Ce prompt couvre tous les cas edge, toutes les erreurs potentielles, et fournit des solutions robustes et testées. En suivant méthodiquement ces instructions, le site sera prêt pour le lancement.
+Ce prompt couvre **4 problèmes critiques** avec:
+- Analyses techniques approfondies (architecture, causes racines, fichiers concernés)
+- Solutions complètes avec code prêt à l'emploi
+- Tests détaillés pour chaque fix
+- Checklist de validation exhaustive (30+ points)
+- Guide de dépannage en cas de problème
+
+En suivant méthodiquement ces instructions, le site sera prêt pour le lancement.
 
 **Bonne chance ! 🚀**
