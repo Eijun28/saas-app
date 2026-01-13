@@ -152,7 +152,7 @@ export function CalendarDashboard({
 
     // Cellules vides pour les jours avant le début du mois
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-1 sm:p-1.5 md:p-2 aspect-square bg-gray-50/30"></div>)
+      days.push(<div key={`empty-${i}`} className="p-1 sm:p-1.5 md:p-2 aspect-square"></div>)
     }
 
     // Jours réels
@@ -164,8 +164,8 @@ export function CalendarDashboard({
       days.push(
         <div
           key={day}
-          className={`p-1 sm:p-1.5 md:p-2 hover:bg-gray-50 transition-all cursor-pointer overflow-hidden aspect-square flex flex-col shadow-sm hover:shadow-md ${
-            isToday ? 'bg-blue-50 shadow-md' : 'bg-white'
+          className={`p-1 sm:p-1.5 md:p-2 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden aspect-square flex flex-col ${
+            isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
           }`}
           onClick={() => handleDateClick(day)}
         >
@@ -204,13 +204,23 @@ export function CalendarDashboard({
         <CardHeader className="border-b bg-white pb-2 sm:pb-4 px-2 sm:px-6">
           <div className="flex items-center justify-center">
             <div className="flex items-center gap-2 sm:gap-4">
-              <Button variant="outline" size="sm" onClick={previousMonth} className="h-8 w-8 sm:h-9 sm:w-9">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={previousMonth} 
+                className="h-8 w-8 sm:h-9 sm:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50"
+              >
                 <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
               <span className="text-sm sm:text-base md:text-lg font-semibold min-w-[140px] sm:min-w-[200px] text-center">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </span>
-              <Button variant="outline" size="sm" onClick={nextMonth} className="h-8 w-8 sm:h-9 sm:w-9">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={nextMonth} 
+                className="h-8 w-8 sm:h-9 sm:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50"
+              >
                 <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
@@ -229,7 +239,7 @@ export function CalendarDashboard({
           </div>
           
           {/* Grille du calendrier */}
-          <div className="grid grid-cols-7 gap-2 sm:gap-3 md:gap-4 rounded-lg">
+          <div className="grid grid-cols-7 gap-0 border border-gray-200 rounded-lg overflow-hidden">
             {loading ? (
               <div className="col-span-7 p-8 text-center text-gray-500">
                 Chargement...
