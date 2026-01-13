@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { translateAuthError } from '@/lib/auth/error-translations'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -13,7 +14,10 @@ export async function GET(request: Request) {
     
     if (error) {
       console.error('Erreur callback:', error)
-      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=callback_error`)
+      const translatedError = translateAuthError(error.message || 'callback_error')
+      // Encoder l'erreur pour l'URL
+      const encodedError = encodeURIComponent(translatedError)
+      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodedError}`)
     }
 
     // Récupérer l'utilisateur

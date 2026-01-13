@@ -27,27 +27,40 @@ const prestataireNavItems = [
 ]
 
 function SidebarToggleButton() {
-  const { state, toggleSidebar } = useSidebar()
+  const { state, toggleSidebar, isMobile, openMobile, setOpenMobile } = useSidebar()
   const isCollapsed = state === 'collapsed'
+
+  const handleToggle = () => {
+    if (isMobile) {
+      setOpenMobile(!openMobile)
+    } else {
+      toggleSidebar()
+    }
+  }
 
   return (
     <Button
       variant='ghost'
       size='icon'
-      onClick={toggleSidebar}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        handleToggle()
+      }}
       className={cn(
         'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-        'hover:bg-gray-100 text-gray-700',
+        'hover:bg-gray-100',
         'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
-        'hidden md:flex', // Masqué sur mobile
+        'flex relative z-[100]', // Visible sur tous les écrans avec z-index élevé
         isCollapsed && 'bg-gray-100'
       )}
+      style={{ pointerEvents: 'auto' }}
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <PanelLeft className='h-5 w-5' />
+        <PanelLeft className='h-5 w-5 text-black' />
       ) : (
-        <PanelLeftClose className='h-5 w-5' />
+        <PanelLeftClose className='h-5 w-5 text-black' />
       )}
     </Button>
   )

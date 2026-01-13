@@ -169,12 +169,12 @@ export function ProfileDescriptionEditor({
         </p>
         
         {/* Conseil pour une bonne description */}
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <div className="bg-[rgba(255,240,255,1)] border-[rgba(240,168,245,1)] text-[rgba(255,252,250,1)] rounded-lg p-4 mb-6">
           <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
             <Lightbulb className="w-5 h-5" />
             Conseil pour une bonne description
           </h3>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-sm text-[rgba(0,0,0,1)] space-y-1">
             <li>• Mentionnez votre spécialité principale</li>
             <li>• Indiquez votre expérience si pertinent</li>
             <li>• Restez concis et impactant</li>

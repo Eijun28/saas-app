@@ -6,6 +6,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
+import { translateAuthError } from '@/lib/auth/error-translations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,20 +48,10 @@ export function SignUpForm() {
       if (!error) {
         router.push('/auth/confirm')
       } else {
-        // Améliorer les messages d'erreur pour les clés API invalides
-        if (error.message?.includes('Invalid API key') || error.message?.includes('invalid')) {
-          setError('Erreur de configuration. Veuillez contacter le support.')
-        } else {
-          setError(error.message)
-        }
+        setError(translateAuthError(error.message))
       }
     } catch (err: any) {
-      // Gérer les erreurs de configuration Supabase
-      if (err.message?.includes('Variables d\'environnement') || err.message?.includes('Invalid API key') || err.message?.includes('invalid')) {
-        setError('Erreur de configuration. Veuillez contacter le support.')
-      } else {
-        setError(err.message || 'Une erreur est survenue')
-      }
+      setError(translateAuthError(err.message))
     } finally {
       setIsLoading(false)
     }

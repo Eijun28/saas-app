@@ -108,9 +108,13 @@ export function getServerEnvConfig(): ServerEnvConfig {
       return `${path}: ${issue.message}`
     }).join('\n')
 
+    const isVercel = process.env.VERCEL === '1'
+    const platformHint = isVercel 
+      ? '\n\n💡 Sur Vercel, configurez ces variables dans : Settings > Environment Variables'
+      : '\n\n💡 Vérifiez votre fichier .env.local ou les variables d\'environnement de votre plateforme de déploiement.'
+    
     throw new Error(
-      `❌ Configuration invalide - Variables d'environnement manquantes ou invalides (serveur):\n${errors}\n\n` +
-      `Vérifiez votre fichier .env.local ou les variables d'environnement de votre plateforme de déploiement.`
+      `❌ Configuration invalide - Variables d'environnement manquantes ou invalides (serveur):\n${errors}${platformHint}`
     )
   }
 

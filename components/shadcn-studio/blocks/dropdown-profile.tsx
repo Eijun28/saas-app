@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useState } from 'react'
+import * as React from 'react'
 
 import {
   UserIcon,
@@ -39,8 +40,20 @@ type Props = {
 }
 
 const ProfileDropdown = ({ trigger, defaultOpen, align = 'end', user, onLogout }: Props) => {
-  const isMobile = useIsMobile()
+  const [isMobile, setIsMobile] = useState(false)
   const [open, setOpen] = useState(defaultOpen || false)
+  const [mounted, setMounted] = useState(false)
+  
+  // Détecter mobile uniquement côté client après montage
+  React.useEffect(() => {
+    setMounted(true)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   const displayName = user?.name || 'Utilisateur'
   const displayEmail = user?.email || ''
@@ -62,7 +75,7 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = 'end', user, onLogout }
 
   const ProfileContent = () => (
     <>
-      <div className='flex items-center gap-4 px-4 py-2.5 font-normal'>
+      <div className='flex items-center gap-4 px-3 py-2 font-normal'>
         <div className='relative'>
           <Avatar className='size-10'>
             <AvatarImage src={user?.avatar} alt={displayName} />
@@ -105,36 +118,39 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = 'end', user, onLogout }
     </>
   )
 
-  // Mobile : Dialog centré
-  if (isMobile) {
+  // Pendant le SSR et avant le montage, toujours utiliser DropdownMenu pour éviter l'hydratation mismatch
+  if (!mounted || !isMobile) {
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>{trigger}</DialogTrigger>
-        <DialogContent className='sm:max-w-md'>
-          <DialogHeader>
-            <DialogTitle>Mon profil</DialogTitle>
-          </DialogHeader>
-          <ProfileContent />
-        </DialogContent>
-      </Dialog>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+        <DropdownMenuContent 
+          className='w-80 z-[200] animate-in fade-in-0 zoom-in-95 slide-in-from-top-2' 
+          align={align || 'end'}
+          side='bottom'
+          sideOffset={4}
+          alignOffset={0}
+          collisionPadding={24}
+          avoidCollisions={true}
+        >
+          <DropdownMenuLabel className='p-0'>
+            <ProfileContent />
+          </DropdownMenuLabel>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
   }
 
-  // Desktop : DropdownMenu
+  // Mobile : Dialog centré (uniquement après montage et détection mobile)
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent 
-        className='w-80' 
-        align={align || 'end'}
-        sideOffset={8}
-        alignOffset={-8}
-      >
-        <DropdownMenuLabel className='p-0'>
-          <ProfileContent />
-        </DropdownMenuLabel>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className='sm:max-w-md'>
+        <DialogHeader>
+          <DialogTitle>Mon profil</DialogTitle>
+        </DialogHeader>
+        <ProfileContent />
+      </DialogContent>
+    </Dialog>
   )
 }
 

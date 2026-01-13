@@ -17,7 +17,7 @@ export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
   const getStatusColor = (statut: Demande['statut']) => {
     switch (statut) {
       case 'nouvelle':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'text-amber-50 border-transparent'
       case 'en_cours':
         return 'bg-blue-100 text-blue-800'
       case 'terminee':
@@ -27,6 +27,13 @@ export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+  
+  const getStatusStyle = (statut: Demande['statut']) => {
+    if (statut === 'nouvelle') {
+      return { backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }
+    }
+    return {}
   }
 
   const getStatusLabel = (statut: Demande['statut']) => {
@@ -55,7 +62,7 @@ export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
           <div className="flex items-start justify-between">
             <div>
               <CardTitle className="text-lg mb-1">{demande.couple_nom}</CardTitle>
-              <Badge className={getStatusColor(demande.statut)}>
+              <Badge className={getStatusColor(demande.statut)} style={getStatusStyle(demande.statut)}>
                 {getStatusLabel(demande.statut)}
               </Badge>
             </div>

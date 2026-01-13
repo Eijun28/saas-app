@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@/lib/validations/auth.schema'
 import { signIn } from '@/lib/auth/actions'
+import { translateAuthError } from '@/lib/auth/error-translations'
 import { Button } from '@/components/ui/button'
 import { RippleButton } from '@/components/ui/ripple-button'
 import { Input } from '@/components/ui/input'
@@ -36,14 +37,14 @@ export function SignInForm() {
     try {
       const result = await signIn(data.email, data.password)
       if (result?.error) {
-        setError(result.error)
+        setError(translateAuthError(result.error))
         setIsLoading(false)
       } else if (result?.success && result?.redirectTo) {
         // Rediriger côté client après connexion réussie
         router.push(result.redirectTo)
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue')
+      setError(translateAuthError(err.message))
       setIsLoading(false)
     }
   }

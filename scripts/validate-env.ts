@@ -6,17 +6,23 @@
 
 import { config } from 'dotenv'
 import { resolve } from 'path'
-
-// Charger les variables d'environnement depuis .env.local
-// Next.js charge automatiquement .env.local, mais dans un script standalone il faut le faire manuellement
-const envPath = resolve(process.cwd(), '.env.local')
-config({ path: envPath })
-
-// Vérifier si le fichier existe
 import { existsSync } from 'fs'
-if (!existsSync(envPath)) {
-  console.warn(`⚠️  Fichier .env.local non trouvé à: ${envPath}`)
-  console.warn('   Les variables d\'environnement du système seront utilisées.\n')
+
+// Charger les variables d'environnement depuis .env.local seulement s'il existe
+// Sur Vercel/CI, les variables sont déjà dans process.env, pas besoin de .env.local
+const envPath = resolve(process.cwd(), '.env.local')
+if (existsSync(envPath)) {
+  config({ path: envPath })
+} else {
+  // Sur Vercel/CI, c'est normal que .env.local n'existe pas
+  // Les variables sont définies dans les settings de la plateforme
+  if (process.env.VERCEL || process.env.CI) {
+    // En production/CI, ne pas afficher de warning
+  } else {
+    // En développement local, avertir si le fichier manque
+    console.warn(`⚠️  Fichier .env.local non trouvé à: ${envPath}`)
+    console.warn('   Les variables d\'environnement du système seront utilisées.\n')
+  }
 }
 
 import { getEnvConfig, isFeatureEnabled } from '../lib/config/env'

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ConversationList } from '@/components/messages/ConversationList'
@@ -15,7 +15,6 @@ export const dynamic = 'force-dynamic'
 
 function MessagesContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { user, loading: userLoading } = useUser()
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [userType, setUserType] = useState<UserType | null>(null)
@@ -64,14 +63,17 @@ function MessagesContent() {
 
   // Récupérer la conversation depuis l'URL
   useEffect(() => {
-    const conversationId = searchParams.get('conversation')
+    if (typeof window === 'undefined') return
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const conversationId = urlParams.get('conversation')
     if (conversationId) {
       setSelectedConversationId(conversationId)
       if (isMobile) {
         setShowConversation(true)
       }
     }
-  }, [searchParams, isMobile])
+  }, [isMobile])
 
   // Redirection si non connecté
   useEffect(() => {

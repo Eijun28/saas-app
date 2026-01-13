@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
@@ -154,69 +154,76 @@ const Sidebar = React.forwardRef<
     )
   }
 
-  if (isMobile) {
-    return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-        <SheetContent
-          side="left"
-          data-sidebar="sidebar"
-          data-mobile="true"
-          className="w-[--sidebar-width] bg-white/95 backdrop-blur-md p-0 text-sidebar-foreground border-r border-[#E5E7EB] z-[100]"
-          style={
-            {
-              "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
-        >
-          <div className="flex h-full w-full flex-col bg-white/95 backdrop-blur-md">{children}</div>
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
+  // Always render Sheet for mobile - it will be hidden on desktop via CSS
   const sidebarWidth = state === "collapsed" && collapsible === "icon" ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH
 
   return (
-    <div
-      ref={ref}
-      className="group peer hidden md:block text-sidebar-foreground"
-      data-state={state}
-      data-collapsible={state === "collapsed" ? collapsible : ""}
-      data-variant={variant}
-      data-side={side}
-      {...props}
-    >
-      {/* This is what handles the sidebar gap on desktop */}
+    <>
+      {/* Mobile Sheet - always rendered, hidden on desktop */}
+      {isMobile && openMobile && (
+        <div className="fixed inset-0 z-[99998] md:hidden">
+          <div 
+            className="fixed inset-0 bg-black/50 z-[99998]"
+            onClick={() => setOpenMobile(false)}
+          />
+          <div 
+            className="fixed inset-y-0 left-0 w-[85%] bg-white z-[99999] shadow-lg overflow-y-auto"
+            style={{ zIndex: 99999 }}
+          >
+            <div className="flex h-full w-full flex-col p-4">
+              <button 
+                onClick={() => setOpenMobile(false)}
+                className="mb-4 self-end"
+              >
+                ✕
+              </button>
+              {children}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Desktop Sidebar */}
       <div
-        className={cn(
-          "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
-          "border-sidebar-border group-data-[side=left]:border-r group-data-[side=right]:border-l"
-        )}
-        style={{
-          width: sidebarWidth,
-        } as React.CSSProperties}
+        ref={ref}
+        className="group peer hidden md:block text-sidebar-foreground"
+        data-state={state}
+        data-collapsible={state === "collapsed" ? collapsible : ""}
+        data-variant={variant}
+        data-side={side}
+        {...props}
       >
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear md:flex",
-            side === "left" ? "left-0" : "right-0",
-            "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
-            "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
-            className
+            "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
+            "border-sidebar-border group-data-[side=left]:border-r group-data-[side=right]:border-l"
           )}
           style={{
             width: sidebarWidth,
           } as React.CSSProperties}
         >
           <div
-            data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-white border-r-2 border-[#E5E7EB] shadow-sm group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border-r group-data-[variant=floating]:bg-sidebar group-data-[variant=inset]:border-sidebar-border group-data-[variant=inset]:border-r"
+            className={cn(
+              "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear md:flex",
+              side === "left" ? "left-0" : "right-0",
+              "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
+              "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
+              className
+            )}
+            style={{
+              width: sidebarWidth,
+            } as React.CSSProperties}
           >
-            {children}
+            <div
+              data-sidebar="sidebar"
+              className="flex h-full w-full flex-col bg-white border-r-2 border-[#E5E7EB] shadow-sm group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border-r group-data-[variant=floating]:bg-sidebar group-data-[variant=inset]:border-sidebar-border group-data-[variant=inset]:border-r"
+            >
+              {children}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 })
 Sidebar.displayName = "Sidebar"

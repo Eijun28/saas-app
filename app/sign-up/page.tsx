@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
 import { signUp } from '@/lib/auth/actions'
+import { translateAuthError } from '@/lib/auth/error-translations'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LabelInputContainer } from '@/components/ui/label-input-container'
@@ -123,18 +124,7 @@ export default function SignUpPage() {
       }
 
       if (result && 'error' in result && result.error) {
-        // Gérer les erreurs spécifiques
-        if (result.error.includes('Invalid API key') || result.error.includes('invalid') || result.error.includes('Variables d\'environnement')) {
-          setError('Erreur de configuration. Veuillez contacter le support.')
-        } else if (result.error.includes('User already registered') || result.error.includes('already registered')) {
-          setError('Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.')
-        } else if (result.error.includes('Password')) {
-          setError('Le mot de passe ne respecte pas les critères requis.')
-        } else if (result.error.includes('Email')) {
-          setError('L\'adresse email n\'est pas valide.')
-        } else {
-          setError(result.error)
-        }
+        setError(translateAuthError(result.error))
       } else if (result && 'success' in result && result.success) {
         // Redirection vers la page spécifiée ou onboarding par défaut
         if ('redirectTo' in result && result.redirectTo) {
@@ -150,22 +140,7 @@ export default function SignUpPage() {
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {
-      // Gérer différents types d'erreurs
-      const errorMessage = err?.message || ''
-      
-      if (errorMessage.includes('Variables d\'environnement') || errorMessage.includes('Invalid API key') || errorMessage.includes('invalid')) {
-        setError('Erreur de configuration. Veuillez contacter le support.')
-      } else if (errorMessage.includes('fetch') || errorMessage.includes('network') || errorMessage.includes('NetworkError')) {
-        setError('Erreur de connexion au serveur. Vérifiez votre connexion internet et réessayez.')
-      } else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
-        setError('La requête a pris trop de temps. Veuillez réessayer.')
-      } else if (errorMessage.includes('Unexpected') || errorMessage.includes('unexpected response')) {
-        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
-      } else if (errorMessage) {
-        setError(errorMessage)
-      } else {
-        setError('Une erreur est survenue lors de l\'inscription. Veuillez réessayer.')
-      }
+      setError(translateAuthError(err?.message))
     } finally {
       setIsLoading(false)
     }
@@ -466,7 +441,7 @@ export default function SignUpPage() {
                   animate={{ opacity: 1, y: 0 }}
                   className="p-4 bg-rose-50/80 border border-red-200/60 rounded-xl text-center"
                 >
-                  <p className="text-sm text-blue-900 font-medium">{error}</p>
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
                 </motion.div>
               )}
 

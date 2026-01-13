@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email/resend'
 import { logger } from '@/lib/logger'
+import { translateAuthError } from '@/lib/auth/error-translations'
 
 import { revalidatePath } from 'next/cache'
 
@@ -94,7 +95,7 @@ export async function signUp(
       // #region agent log
       fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:75',message:'RETURN error from signUp',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
       // #endregion
-      return { error: error.message }
+      return { error: translateAuthError(error.message) }
     }
   }
 
@@ -204,7 +205,7 @@ export async function signUp(
           })
           // Rollback : supprimer l'utilisateur si couple échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: `Erreur création couple: ${coupleError.message}` }
+          return { error: translateAuthError(`Erreur création couple: ${coupleError.message}`) }
         } else {
           logger.critical('✅ Couple créé avec succès', { userId })
           // Créer les préférences vides pour le nouveau couple
@@ -325,7 +326,7 @@ export async function signUp(
           })
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: `Erreur création profil: ${profileError.message}` }
+          return { error: translateAuthError(`Erreur création profil: ${profileError.message}`) }
         } else {
           logger.critical('✅ Profil prestataire créé avec succès', { userId })
         }
@@ -408,7 +409,7 @@ export async function signUp(
         // #region agent log
         fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:305',message:'RETURN error from catch',data:{errorMessage:err?.message || 'Erreur inconnue'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
         // #endregion
-        return { error: `Erreur lors de la création du profil: ${err.message || 'Erreur inconnue'}` }
+        return { error: translateAuthError(err.message || 'Erreur inconnue') }
       }
     }
 
@@ -465,7 +466,7 @@ export async function signIn(email: string, password: string) {
   })
 
   if (error) {
-    return { error: error.message }
+    return { error: translateAuthError(error.message) }
   }
 
   if (data.user) {

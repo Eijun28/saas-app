@@ -21,7 +21,9 @@ function DialogTrigger({
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+  // Utiliser le conteneur spécifique pour garantir l'ordre DOM correct
+  const container = typeof document !== 'undefined' ? document.getElementById('dialog-container') : null
+  return <DialogPrimitive.Portal data-slot="dialog-portal" container={container || undefined} {...props} />
 }
 
 function DialogClose({

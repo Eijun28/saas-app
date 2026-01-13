@@ -112,7 +112,7 @@ const DEMANDE_STATUS_LABELS: Record<string, string> = {
 }
 
 const DEMANDE_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending: 'text-amber-50 border-transparent',
   viewed: 'bg-blue-100 text-blue-800',
   responded: 'bg-purple-100 text-purple-800',
   accepted: 'bg-green-100 text-green-800',
@@ -128,11 +128,18 @@ const DEVIS_STATUS_LABELS: Record<string, string> = {
 }
 
 const DEVIS_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending: 'text-amber-50 border-transparent',
   accepted: 'bg-green-100 text-green-800',
   rejected: 'bg-red-100 text-red-800',
   negotiating: 'bg-blue-100 text-blue-800',
   expired: 'bg-gray-100 text-gray-800',
+}
+
+const getBadgeStyle = (status: string) => {
+  if (status === 'pending') {
+    return { backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }
+  }
+  return {}
 }
 
 const formatAmount = (amount: number, currency: string = 'EUR'): string => {
@@ -482,7 +489,7 @@ export default function DemandesPage() {
               <Send className="h-4 w-4" />
               <span>Demandes</span>
               {demandesPending > 0 && (
-                <Badge variant="secondary" className="ml-1 bg-yellow-100 text-yellow-800">
+                <Badge variant="secondary" className="ml-1 text-amber-50 border-transparent" style={{ backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }}>
                   {demandesPending}
                 </Badge>
               )}
@@ -548,7 +555,7 @@ export default function DemandesPage() {
                             </CardDescription>
                           </div>
                         </div>
-                        <Badge className={DEMANDE_STATUS_COLORS[demande.status]}>
+                        <Badge className={DEMANDE_STATUS_COLORS[demande.status]} style={getBadgeStyle(demande.status)}>
                           {DEMANDE_STATUS_LABELS[demande.status]}
                         </Badge>
                       </div>
@@ -646,7 +653,7 @@ export default function DemandesPage() {
                             </div>
                           </div>
                           <div className="text-right space-y-2">
-                            <Badge className={DEVIS_STATUS_COLORS[devisItem.status]}>
+                            <Badge className={DEVIS_STATUS_COLORS[devisItem.status]} style={getBadgeStyle(devisItem.status)}>
                               {DEVIS_STATUS_LABELS[devisItem.status]}
                             </Badge>
                             <div className="text-2xl font-bold text-[#823F91]">

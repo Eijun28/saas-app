@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ShieldCheck } from 'lucide-react'
@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, type SignInInput } from '@/lib/validations/auth.schema'
 import { signIn } from '@/lib/auth/actions'
+import { translateAuthError } from '@/lib/auth/error-translations'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -65,6 +66,19 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
   })
 
+  // Vérifier les paramètres d'erreur dans l'URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const errorParam = urlParams.get('error')
+    if (errorParam) {
+      // Décoder l'erreur si elle vient de l'URL
+      const decodedError = decodeURIComponent(errorParam)
+      setError(decodedError)
+    }
+  }, [])
+
   const onSubmit = async (data: SignInInput) => {
     setIsLoading(true)
     setError(null)
@@ -72,13 +86,13 @@ export default function SignInPage() {
     try {
       const result = await signIn(data.email, data.password)
       if (result?.error) {
-        setError(result.error)
+        setError(translateAuthError(result.error))
         setIsLoading(false)
       } else if (result?.success && result?.redirectTo) {
         router.push(result.redirectTo)
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue')
+      setError(translateAuthError(err.message))
       setIsLoading(false)
     }
   }

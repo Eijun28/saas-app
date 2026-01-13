@@ -11,11 +11,8 @@ import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { useSearchParams } from 'next/navigation'
-
 export default function DashboardPrestatairePage() {
   const { user } = useUser()
-  const searchParams = useSearchParams()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -36,15 +33,18 @@ export default function DashboardPrestatairePage() {
 
   // Vérifier le succès du paiement Stripe
   useEffect(() => {
-    const success = searchParams.get('success')
-    const sessionId = searchParams.get('session_id')
+    if (typeof window === 'undefined') return
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const success = urlParams.get('success')
+    const sessionId = urlParams.get('session_id')
     
     if (success === 'true' && sessionId) {
       toast.success('Abonnement activé avec succès ! Bienvenue dans votre nouveau plan.')
       // Nettoyer l'URL
       window.history.replaceState({}, '', '/prestataire/dashboard')
     }
-  }, [searchParams])
+  }, [])
 
   // Écouter les événements de recherche depuis TopBar
   useEffect(() => {
