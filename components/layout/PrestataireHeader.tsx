@@ -16,7 +16,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import ProfileDropdown from '@/components/shadcn-studio/blocks/dropdown-profile'
+import { User, LogOut } from 'lucide-react'
+import Link from 'next/link'
 
 export function PrestataireHeader() {
   const { user } = useUser()
@@ -233,59 +234,39 @@ export function PrestataireHeader() {
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='w-80' sideOffset={8} alignOffset={-8}>
-              <div className='p-2'>
-                <div className='px-2 py-1.5 text-sm font-semibold'>Notifications</div>
-                <div className='max-h-96 overflow-y-auto'>
-                  {notifications.length === 0 ? (
-                    <div className='px-2 py-8 text-center text-sm text-muted-foreground'>
-                      Aucune notification
-                    </div>
-                  ) : (
-                    notifications.map((notification) => {
-                      const Icon = notification.type === 'demande' ? Inbox :
-                                   notification.type === 'evenement' ? Calendar : MessageSquare
-                      return (
-                        <DropdownMenuItem
-                          key={notification.id}
-                          className='flex items-start gap-3 p-3 cursor-pointer'
-                          onClick={() => {
-                            if (notification.link) {
-                              window.location.href = notification.link
-                            }
-                          }}
-                        >
-                          <div className='mt-0.5'>
-                            <Icon className='h-4 w-4 text-[#823F91]' />
-                          </div>
-                          <div className='flex-1 min-w-0'>
-                            <div className='text-sm font-medium'>{notification.title}</div>
-                            <div className='text-xs text-muted-foreground truncate'>
-                              {notification.message}
-                            </div>
-                            <div className='text-xs text-muted-foreground mt-1'>
-                              {new Date(notification.date).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                          </div>
-                        </DropdownMenuItem>
-                      )
-                    })
-                  )}
+            <DropdownMenuContent align='end' className='w-64'>
+              {notifications.length === 0 ? (
+                <div className='px-4 py-6 text-center text-sm text-muted-foreground'>
+                  Aucune notification
                 </div>
-              </div>
+              ) : (
+                notifications.slice(0, 5).map((notification) => {
+                  const Icon = notification.type === 'demande' ? Inbox :
+                               notification.type === 'evenement' ? Calendar : MessageSquare
+                  return (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className='flex items-center gap-2 cursor-pointer'
+                      onClick={() => {
+                        if (notification.link) {
+                          window.location.href = notification.link
+                        }
+                      }}
+                    >
+                      <Icon className='h-4 w-4 text-[#823F91]' />
+                      <span className='text-sm'>{notification.title}</span>
+                    </DropdownMenuItem>
+                  )
+                })
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
           {/* Avatar */}
           <div className="relative z-[103]">
-            <ProfileDropdown
-              trigger={
-                <button className='h-auto gap-2 px-2 py-1.5 flex items-center cursor-pointer'>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className='h-auto gap-2 px-2 py-1.5 flex items-center cursor-pointer hover:opacity-80 transition-opacity'>
                   <Avatar className='h-9 w-9 rounded-xl'>
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
                     <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white font-semibold'>
@@ -298,10 +279,20 @@ export function PrestataireHeader() {
                     </AvatarFallback>
                   </Avatar>
                 </button>
-              }
-              user={profile || undefined}
-              onLogout={handleLogout}
-            />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/prestataire/profil-public" className="flex items-center gap-2 cursor-pointer">
+                    <User className="h-4 w-4" />
+                    <span>Profil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                  <LogOut className="h-4 w-4" />
+                  <span>Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

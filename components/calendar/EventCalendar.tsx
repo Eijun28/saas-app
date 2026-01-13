@@ -180,7 +180,7 @@ export function EventCalendar({
         onSelect={handleDateSelect}
         month={currentMonth}
         onMonthChange={handleMonthChange}
-        className="rounded-lg border-0 w-full [--cell-size:--spacing(12)] md:[--cell-size:--spacing(14)]"
+        className="rounded-lg border-0 w-full [--cell-size:2.5rem] sm:[--cell-size:--spacing(12)] md:[--cell-size:--spacing(14)]"
         locale={fr}
         modifiers={{
           hasEvents: monthEvents

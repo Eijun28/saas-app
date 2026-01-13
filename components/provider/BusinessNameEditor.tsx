@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,22 +17,26 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
   const [name, setName] = useState(currentName)
   const [initialName, setInitialName] = useState(currentName)
   const [isSaving, setIsSaving] = useState(false)
+  const isEditingRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const newName = currentName || '';
-    console.log('🔄 BusinessNameEditor useEffect - currentName:', currentName, 'newName:', newName, 'name:', name, 'initialName:', initialName);
-    
-    // Toujours mettre à jour pour refléter l'état de la DB après sauvegarde
-    if (newName !== name) {
-      console.log('✅ Mise à jour name:', name, '->', newName);
-      setName(newName);
+    // Ne pas mettre à jour si l'utilisateur est en train de taper
+    if (isEditingRef.current || isSaving) {
+      return
     }
-    // Toujours mettre à jour la valeur initiale pour refléter l'état de la DB
+    
+    const newName = currentName || '';
+    
+    console.log('🔄 BusinessNameEditor useEffect - currentName:', currentName, 'newName:', newName, 'initialName:', initialName, 'name:', name)
+    
+    // Mettre à jour uniquement si la valeur a vraiment changé depuis la DB
     if (newName !== initialName) {
-      console.log('✅ Mise à jour initialName:', initialName, '->', newName);
+      console.log('✅ Mise à jour BusinessNameEditor:', initialName, '->', newName)
+      setName(newName);
       setInitialName(newName);
     }
-  }, [currentName, name, initialName])
+  }, [currentName, isSaving]) // Retirer name et initialName des dépendances
 
   const hasChanges = name.trim() !== initialName.trim()
 
@@ -85,10 +89,10 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
 
     // Vérifier que les données ont bien été sauvegardées
     if (data && data.nom_entreprise) {
-      console.log('✅ Données sauvegardées avec succès:', data.nom_entreprise)
       const savedName = data.nom_entreprise.trim()
       setName(savedName)
       setInitialName(savedName)
+      isEditingRef.current = false
       
       toast.success('Succès', {
         description: 'Nom d\'entreprise mis à jour',
@@ -97,18 +101,18 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
       setTimeout(() => {
         onSave?.()
-      }, 200)
+      }, 500)
     } else {
-      console.warn('⚠️ Aucune donnée retournée après la mise à jour')
       // Mettre à jour quand même l'état local
       const savedName = name.trim()
       setInitialName(savedName)
+      isEditingRef.current = false
       toast.success('Succès', {
         description: 'Nom d\'entreprise mis à jour',
       })
       setTimeout(() => {
         onSave?.()
-      }, 200)
+      }, 500)
     }
     
     setIsSaving(false)
@@ -124,10 +128,23 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
           Le nom qui apparaîtra sur votre profil public
         </p>
         <Input
+          ref={inputRef}
           id="nom_entreprise"
           placeholder="Ex: Studio Photo Mariage"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            isEditingRef.current = true
+            setName(e.target.value)
+          }}
+          onBlur={() => {
+            // Attendre un peu avant de permettre les mises à jour depuis les props
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
+          }}
+          onFocus={() => {
+            isEditingRef.current = true
+          }}
         />
       </div>
 

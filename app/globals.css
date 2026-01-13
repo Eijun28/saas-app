@@ -251,6 +251,13 @@ button, .button, .btn {
   background: linear-gradient(to bottom right, rgb(243 232 255), rgb(250 245 255), rgb(255 255 255)) !important;
   backdrop-filter: none !important;
   color: hsl(var(--foreground)) !important;
+  position: fixed !important;
+  z-index: 99999 !important;
+}
+
+[data-slot="dialog-overlay"] {
+  position: fixed !important;
+  z-index: 99998 !important;
 }
 
 /* Texte sombre dans les modals Dialog pour être lisible sur fond clair */
