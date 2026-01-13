@@ -59,9 +59,19 @@ export default function DemandesRecuesPage() {
     const terminees: Demande[] = []
 
     data.forEach((demande) => {
-      const coupleNom = demande.couple 
-        ? `${demande.couple.partner_1_name || ''} & ${demande.couple.partner_2_name || ''}`.trim() || 'Couple'
-        : 'Couple'
+      let coupleNom = 'Couple'
+      
+      if (demande.couple) {
+        const name1 = demande.couple.partner_1_name?.trim() || ''
+        const name2 = demande.couple.partner_2_name?.trim() || ''
+        if (name1 && name2) {
+          coupleNom = `${name1} & ${name2}`
+        } else if (name1) {
+          coupleNom = name1
+        } else if (name2) {
+          coupleNom = name2
+        }
+      }
 
       const demandeFormatted: Demande = {
         id: demande.id,

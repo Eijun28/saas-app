@@ -156,9 +156,10 @@ export default function RecherchePage() {
 
       // Si recherche, filtrer par mots-clés
       if (searchQuery.trim()) {
-        const searchTerm = `%${searchQuery.trim().toLowerCase()}%`
-        // Syntaxe correcte pour Supabase: colonne.operateur.valeur,colonne.operateur.valeur (sans espaces)
-        query = query.or(`nom_entreprise.ilike.${searchTerm},ville_principale.ilike.${searchTerm},service_type.ilike.${searchTerm},description_courte.ilike.${searchTerm}`)
+        const searchTerm = searchQuery.trim().toLowerCase()
+        // Syntaxe correcte pour Supabase: colonne.operateur.valeur,colonne.operateur.valeur
+        // Les % doivent être dans la chaîne de la requête
+        query = query.or(`nom_entreprise.ilike.%${searchTerm}%,ville_principale.ilike.%${searchTerm}%,service_type.ilike.%${searchTerm}%,description_courte.ilike.%${searchTerm}%`)
       }
 
       const { data: profilesData, error } = await query.limit(50)
@@ -262,9 +263,9 @@ export default function RecherchePage() {
         })
       )
 
-      // Filtrer par complétion minimale de 60%
+      // Filtrer par complétion minimale de 30% (réduit pour avoir plus de résultats)
       let filteredProviders = enrichedProviders.filter(p => 
-        p.completionPercentage >= 60
+        p.completionPercentage >= 30
       )
 
       // Filtrer par cultures/zones si recherche
@@ -426,11 +427,16 @@ export default function RecherchePage() {
                         <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                    <PopoverContent 
+                      className="w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999]" 
+                      side="left" 
+                      align="start" 
+                      sideOffset={8}
+                    >
                         <div className="space-y-1">
                           <Button
                             variant={selectedCategory === null ? "default" : "ghost"}
-                            className={`w-full justify-start text-sm font-medium ${selectedCategory === null ? "" : "text-gray-900"}`}
+                            className={`w-full justify-start text-sm font-medium ${selectedCategory === null ? "text-white" : "text-gray-900"}`}
                             onClick={() => {
                               setSelectedCategory(null)
                               setOpenSubDropdown(null)
@@ -453,13 +459,13 @@ export default function RecherchePage() {
                                     <Button
                                       key={service.value}
                                       variant={selectedCategory === service.value ? "default" : "ghost"}
-                                      className={`w-full justify-start text-sm pl-6 ${selectedCategory === service.value ? "" : "text-gray-900"}`}
+                                      className={`w-full justify-start text-sm pl-6 ${selectedCategory === service.value ? "text-white" : "text-gray-900"}`}
                                       onClick={() => {
                                         setSelectedCategory(service.value)
                                         setOpenSubDropdown(null)
                                       }}
                                     >
-                                      <ServiceIcon className="mr-2 h-4 w-4 text-[#823F91]" />
+                                      <ServiceIcon className={`mr-2 h-4 w-4 ${selectedCategory === service.value ? "text-white" : "text-[#823F91]"}`} />
                                       {service.label}
                                     </Button>
                                   )
@@ -490,11 +496,16 @@ export default function RecherchePage() {
                         <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                    <PopoverContent 
+                      className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
+                      side="left" 
+                      align="start" 
+                      sideOffset={8}
+                    >
                       <div className="space-y-1">
                         <Button
                           variant={selectedCulture === null ? "default" : "ghost"}
-                          className={`w-full justify-start text-sm ${selectedCulture === null ? "" : "text-gray-900"}`}
+                          className={`w-full justify-start text-sm ${selectedCulture === null ? "text-white" : "text-gray-900"}`}
                           onClick={() => {
                             setSelectedCulture(null)
                             setOpenSubDropdown(null)
@@ -506,7 +517,7 @@ export default function RecherchePage() {
                           <Button
                             key={culture.id}
                             variant={selectedCulture === culture.id ? "default" : "ghost"}
-                            className={`w-full justify-start text-sm ${selectedCulture === culture.id ? "" : "text-gray-900"}`}
+                            className={`w-full justify-start text-sm ${selectedCulture === culture.id ? "text-white" : "text-gray-900"}`}
                             onClick={() => {
                               setSelectedCulture(culture.id)
                               setOpenSubDropdown(null)
@@ -538,11 +549,16 @@ export default function RecherchePage() {
                         <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto" side="right" align="start" sideOffset={5}>
+                    <PopoverContent 
+                      className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
+                      side="left" 
+                      align="start" 
+                      sideOffset={8}
+                    >
                       <div className="space-y-1">
                         <Button
                           variant={selectedCountry === null ? "default" : "ghost"}
-                          className={`w-full justify-start text-sm ${selectedCountry === null ? "" : "text-gray-900"}`}
+                          className={`w-full justify-start text-sm ${selectedCountry === null ? "text-white" : "text-gray-900"}`}
                           onClick={() => {
                             setSelectedCountry(null)
                             setOpenSubDropdown(null)
@@ -559,7 +575,7 @@ export default function RecherchePage() {
                               <Button
                                 key={country}
                                 variant={selectedCountry === country ? "default" : "ghost"}
-                                className={`w-full justify-start text-sm pl-4 ${selectedCountry === country ? "" : "text-gray-900"}`}
+                                className={`w-full justify-start text-sm pl-4 ${selectedCountry === country ? "text-white" : "text-gray-900"}`}
                                 onClick={() => {
                                   setSelectedCountry(country)
                                   setOpenSubDropdown(null)

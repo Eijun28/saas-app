@@ -133,10 +133,54 @@ export function MessageInput({
   const handleSend = async () => {
     if ((!message.trim() && attachments.length === 0) || isSending) return
 
+    if (!conversationId || !senderId) {
+      toast.error('Informations de conversation manquantes')
+      return
+    }
+
     setIsSending(true)
     const supabase = createClient()
 
     try {
+      // Vérifier l'utilisateur connecté
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError || !currentUser) {
+        throw new Error('Vous devez être connecté pour envoyer un message')
+      }
+
+      if (currentUser.id !== senderId) {
+        throw new Error('L\'ID de l\'expéditeur ne correspond pas à l\'utilisateur connecté')
+      }
+
+      // Vérifier que la conversation existe et que l'utilisateur y a accès
+      const { data: conversation, error: convError } = await supabase
+        .from('conversations')
+        .select('id, couple_id, provider_id, prestataire_id')
+        .eq('id', conversationId)
+        .single()
+
+      if (convError) {
+        console.error('Erreur vérification conversation:', {
+          error: convError,
+          code: convError.code,
+          message: convError.message,
+          details: convError.details,
+          hint: convError.hint,
+        })
+        throw new Error(`Erreur lors de la vérification de la conversation: ${convError.message || 'Erreur inconnue'}`)
+      }
+
+      if (!conversation) {
+        throw new Error('Conversation introuvable')
+      }
+
+      // Vérifier que l'utilisateur fait partie de cette conversation
+      const providerId = conversation.provider_id || conversation.prestataire_id
+      if (conversation.couple_id !== senderId && providerId !== senderId) {
+        throw new Error('Vous n\'avez pas accès à cette conversation')
+      }
+
       // Construire le contenu du message
       let messageContent = message.trim()
       
@@ -150,27 +194,75 @@ export function MessageInput({
       }
 
       // Insérer le message
-      const { error } = await supabase.from('messages').insert({
-        conversation_id: conversationId,
-        sender_id: senderId,
-        content: messageContent,
-      })
+      const { data: insertedMessage, error: insertError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: senderId,
+          content: messageContent,
+        })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (insertError) {
+        console.error('Erreur insertion message:', {
+          error: insertError,
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+          conversationId,
+          senderId,
+          contentLength: messageContent.length,
+        })
+        throw insertError
+      }
+
+      if (!insertedMessage) {
+        throw new Error('Le message n\'a pas été créé')
+      }
 
       // Mettre à jour last_message_at
-      await supabase
+      const { error: updateError } = await supabase
         .from('conversations')
         .update({ last_message_at: new Date().toISOString() })
         .eq('id', conversationId)
+
+      if (updateError) {
+        console.warn('Erreur mise à jour conversation:', updateError)
+        // Ne pas bloquer si cette mise à jour échoue
+      }
 
       // Réinitialiser
       setMessage('')
       setAttachments([])
       onMessageSent()
+      toast.success('Message envoyé')
     } catch (error: any) {
-      console.error('Erreur envoi message:', error)
-      toast.error('Erreur lors de l\'envoi du message')
+      console.error('Erreur envoi message:', {
+        error,
+        errorType: typeof error,
+        errorString: String(error),
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        errorDetails: error?.details,
+        errorHint: error?.hint,
+        stack: error?.stack,
+      })
+      
+      let errorMessage = 'Erreur lors de l\'envoi du message'
+      
+      if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.code) {
+        errorMessage = `Erreur ${error.code}: ${error.message || 'Erreur inconnue'}`
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else if (error?.details) {
+        errorMessage = error.details
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setIsSending(false)
     }

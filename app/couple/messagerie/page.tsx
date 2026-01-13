@@ -10,6 +10,9 @@ import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
 import { MessageInput } from '@/components/messages/MessageInput'
 import { AttachmentPreview } from '@/components/messages/AttachmentPreview'
+import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
+import { CULTURES } from '@/lib/constants/cultures'
+import { DEPARTEMENTS } from '@/lib/constants/zones'
 import Image from 'next/image'
 import type { Attachment } from '@/types/messages'
 
@@ -44,6 +47,12 @@ export default function MessageriePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [prestataireNames, setPrestataireNames] = useState<Record<string, string>>({})
   const [prestataireAvatars, setPrestataireAvatars] = useState<Record<string, string>>({})
+  const [prestataireIds, setPrestataireIds] = useState<Record<string, string>>({}) // conversationId -> providerId
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null)
+  const [selectedProviderProfile, setSelectedProviderProfile] = useState<any>(null)
+  const [selectedProviderCultures, setSelectedProviderCultures] = useState<Array<{ id: string; label: string }>>([])
+  const [selectedProviderZones, setSelectedProviderZones] = useState<Array<{ id: string; label: string }>>([])
+  const [selectedProviderPortfolio, setSelectedProviderPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -63,37 +72,55 @@ export default function MessageriePage() {
   // Real-time: écouter les nouveaux messages
   useEffect(() => {
     if (!selectedConversation || !user) return
+    // Vérifier que nous sommes côté client et que WebSocket est disponible
+    if (typeof window === 'undefined') return
 
     const supabase = createClient()
-    const channel = supabase
-      .channel(`messages:${selectedConversation}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${selectedConversation}`
-        },
-        (payload) => {
-          const newMessage = payload.new as Message
-          // Parser le contenu si c'est du JSON avec attachments
-          try {
-            const parsed = JSON.parse(newMessage.content)
-            if (parsed.attachments) {
-              newMessage.content = parsed.text || ''
-              newMessage.attachments = parsed.attachments
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
+    try {
+      channel = supabase
+        .channel(`messages:${selectedConversation}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${selectedConversation}`
+          },
+          (payload) => {
+            const newMessage = payload.new as Message
+            // Parser le contenu si c'est du JSON avec attachments
+            try {
+              const parsed = JSON.parse(newMessage.content)
+              if (parsed.attachments) {
+                newMessage.content = parsed.text || ''
+                newMessage.attachments = parsed.attachments
+              }
+            } catch {
+              // C'est du texte normal
             }
-          } catch {
-            // C'est du texte normal
+            setMessages(prev => [...prev, newMessage])
           }
-          setMessages(prev => [...prev, newMessage])
-        }
-      )
-      .subscribe()
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            // Subscription réussie
+          } else if (status === 'CHANNEL_ERROR') {
+            console.warn('Erreur de subscription Realtime, utilisation du polling')
+            // En cas d'erreur, on peut recharger périodiquement les messages
+          }
+        })
+    } catch (error) {
+      console.warn('Erreur lors de la configuration Realtime:', error)
+      // En cas d'erreur WebSocket, on continue sans real-time
+    }
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [selectedConversation, user])
 
@@ -117,18 +144,23 @@ export default function MessageriePage() {
         
         const names: Record<string, string> = {}
         const avatars: Record<string, string> = {}
+        const providerIdsMap: Record<string, string> = {}
         
         if (data && data.length > 0) {
-          const prestataireIds = [...new Set(data.map((conv: Conversation) => conv.provider_id || conv.prestataire_id).filter(Boolean))]
+          const prestataireIdsList = [...new Set(data.map((conv: Conversation) => conv.provider_id || conv.prestataire_id).filter(Boolean))]
           
-          if (prestataireIds.length > 0) {
+          if (prestataireIdsList.length > 0) {
             const { data: profiles } = await supabase
               .from('profiles')
               .select('id, prenom, nom, nom_entreprise, avatar_url')
-              .in('id', prestataireIds)
+              .in('id', prestataireIdsList)
             
             data.forEach((conv: Conversation) => {
               const providerId = conv.provider_id || conv.prestataire_id
+              if (providerId) {
+                providerIdsMap[conv.id] = providerId
+              }
+              
               const profile = profiles?.find(p => p.id === providerId)
               
               if (profile) {
@@ -151,6 +183,7 @@ export default function MessageriePage() {
         
         setPrestataireNames(names)
         setPrestataireAvatars(avatars)
+        setPrestataireIds(providerIdsMap)
       }
     } catch (err) {
       setConversations([])
@@ -218,6 +251,68 @@ export default function MessageriePage() {
       .join('')
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  const handleProviderClick = async (conversationId: string) => {
+    const providerId = prestataireIds[conversationId]
+    if (!providerId) return
+
+    const supabase = createClient()
+    
+    try {
+      // Charger le profil complet
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', providerId)
+        .single()
+
+      if (!profile) return
+
+      // Charger les cultures
+      const { data: culturesData } = await supabase
+        .from('provider_cultures')
+        .select('culture_id')
+        .eq('profile_id', providerId)
+
+      // Charger les zones
+      const { data: zonesData } = await supabase
+        .from('provider_zones')
+        .select('zone_id')
+        .eq('profile_id', providerId)
+
+      // Charger le portfolio
+      const { data: portfolioData } = await supabase
+        .from('provider_portfolio')
+        .select('id, image_url, title')
+        .eq('profile_id', providerId)
+        .order('display_order', { ascending: true })
+
+      // Mapper les cultures et zones
+      const cultures = (culturesData || []).map(c => {
+        const culture = CULTURES.find(cult => cult.id === c.culture_id)
+        return culture ? { id: c.culture_id, label: culture.label } : null
+      }).filter(Boolean) as Array<{ id: string; label: string }>
+
+      const zones = (zonesData || []).map(z => {
+        const zone = DEPARTEMENTS.find(dept => dept.id === z.zone_id)
+        return zone ? { id: z.zone_id, label: zone.label } : null
+      }).filter(Boolean) as Array<{ id: string; label: string }>
+
+      const portfolio = (portfolioData || []).map(p => ({
+        id: p.id,
+        image_url: p.image_url,
+        title: p.title || undefined,
+      }))
+
+      setSelectedProviderProfile(profile)
+      setSelectedProviderCultures(cultures)
+      setSelectedProviderZones(zones)
+      setSelectedProviderPortfolio(portfolio)
+      setSelectedProviderId(providerId)
+    } catch (error) {
+      console.error('Erreur chargement profil:', error)
+    }
   }
 
   if (userLoading || loading) {
@@ -290,18 +385,23 @@ export default function MessageriePage() {
                         const name = prestataireNames[conv.id] || 'Prestataire'
                         
                         return (
-                          <button
+                          <div
                             key={conv.id}
-                            onClick={() => handleSelectConversation(conv.id)}
-                            className={`w-full text-left p-4 transition-all ${
+                            className={`w-full transition-all ${
                               selectedConversation === conv.id
                                 ? 'bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border-l-4 border-[#823F91]'
                                 : 'hover:bg-gray-50'
                             }`}
                           >
-                            <div className="flex items-center gap-3">
-                              {/* Avatar */}
-                              <div className="relative h-12 w-12 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center">
+                            <div className="flex items-center gap-3 p-4">
+                              {/* Avatar cliquable */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleProviderClick(conv.id)
+                                }}
+                                className="relative h-12 w-12 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center hover:ring-2 hover:ring-[#823F91] transition-all cursor-pointer"
+                              >
                                 {avatar ? (
                                   <Image
                                     src={avatar}
@@ -315,12 +415,15 @@ export default function MessageriePage() {
                                     {getInitials(name)}
                                   </span>
                                 )}
-                              </div>
+                              </button>
 
-                              {/* Contenu */}
-                              <div className="flex-1 min-w-0">
+                              {/* Contenu cliquable pour sélectionner la conversation */}
+                              <button
+                                onClick={() => handleSelectConversation(conv.id)}
+                                className="flex-1 min-w-0 text-left"
+                              >
                                 <div className="flex items-center justify-between mb-1">
-                                  <h3 className={`font-semibold truncate ${
+                                  <h3 className={`font-semibold truncate hover:text-[#823F91] transition-colors ${
                                     selectedConversation === conv.id ? 'text-[#823F91]' : 'text-[#1F2937]'
                                   }`}>
                                     {name}
@@ -334,9 +437,9 @@ export default function MessageriePage() {
                                 {lastMsg && (
                                   <p className="text-sm text-[#374151] truncate">{lastMsg.content}</p>
                                 )}
-                              </div>
+                              </button>
                             </div>
-                          </button>
+                          </div>
                         )
                       })}
                   </div>
@@ -352,7 +455,10 @@ export default function MessageriePage() {
                 <CardHeader className="border-b border-gray-200 bg-white">
                   <div className="flex items-center gap-3">
                     {prestataireAvatars[selectedConversation] && (
-                      <div className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#823F91] to-[#9D5FA8]">
+                      <button
+                        onClick={() => handleProviderClick(selectedConversation)}
+                        className="relative h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#823F91] to-[#9D5FA8] hover:ring-2 hover:ring-[#823F91] transition-all cursor-pointer"
+                      >
                         <Image
                           src={prestataireAvatars[selectedConversation]}
                           alt={prestataireNames[selectedConversation] || 'Prestataire'}
@@ -360,11 +466,16 @@ export default function MessageriePage() {
                           className="object-cover"
                           sizes="40px"
                         />
-                      </div>
+                      </button>
                     )}
-                    <CardTitle className="text-[#0D0D0D]">
-                      {prestataireNames[selectedConversation] || 'Messages'}
-                    </CardTitle>
+                    <button
+                      onClick={() => handleProviderClick(selectedConversation)}
+                      className="text-left"
+                    >
+                      <CardTitle className="text-[#0D0D0D] hover:text-[#823F91] transition-colors cursor-pointer">
+                        {prestataireNames[selectedConversation] || 'Messages'}
+                      </CardTitle>
+                    </button>
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
@@ -460,6 +571,47 @@ export default function MessageriePage() {
           </Card>
         </div>
       </div>
+
+      {/* Dialog profil prestataire */}
+      {selectedProviderId && selectedProviderProfile && user && (
+        <ProfilePreviewDialog
+          userId={selectedProviderId}
+          profile={{
+            nom_entreprise: selectedProviderProfile.nom_entreprise || '',
+            service_type: selectedProviderProfile.service_type || '',
+            avatar_url: selectedProviderProfile.avatar_url || undefined,
+            prenom: selectedProviderProfile.prenom,
+            nom: selectedProviderProfile.nom,
+            description_courte: selectedProviderProfile.description_courte || undefined,
+            bio: selectedProviderProfile.bio || undefined,
+            budget_min: selectedProviderProfile.budget_min || undefined,
+            budget_max: selectedProviderProfile.budget_max || undefined,
+            ville_principale: selectedProviderProfile.ville_principale || undefined,
+            annees_experience: selectedProviderProfile.annees_experience || undefined,
+            is_early_adopter: selectedProviderProfile.is_early_adopter || false,
+            instagram_url: selectedProviderProfile.instagram_url || null,
+            facebook_url: selectedProviderProfile.facebook_url || null,
+            website_url: selectedProviderProfile.website_url || null,
+            linkedin_url: selectedProviderProfile.linkedin_url || null,
+            tiktok_url: selectedProviderProfile.tiktok_url || null,
+          }}
+          cultures={selectedProviderCultures}
+          zones={selectedProviderZones}
+          portfolio={selectedProviderPortfolio}
+          open={!!selectedProviderId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedProviderId(null)
+              setSelectedProviderProfile(null)
+              setSelectedProviderCultures([])
+              setSelectedProviderZones([])
+              setSelectedProviderPortfolio([])
+            }
+          }}
+          isCoupleView={true}
+          coupleId={user.id}
+        />
+      )}
     </div>
   )
 }

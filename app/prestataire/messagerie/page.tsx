@@ -71,14 +71,21 @@ export default function PrestataireMessageriePage() {
           return
         }
 
-        const coupleIds = [...new Set((conversationsData || []).map((c: any) => c.couple_id))]
-        const { data: couplesData } = await supabase
-          .from('couples')
-          .select('user_id, partner_1_name, partner_2_name')
-          .in('user_id', coupleIds)
+        const coupleIds = [...new Set((conversationsData || []).map((c: any) => c.couple_id).filter(Boolean))]
         
-        const couplesMap = new Map((couplesData || []).map((c: any) => [c.user_id, c]))
+        let couplesMap = new Map()
         const avatars: Record<string, string> = {}
+        
+        if (coupleIds.length > 0) {
+          const { data: couplesData } = await supabase
+            .from('couples')
+            .select('user_id, partner_1_name, partner_2_name')
+            .in('user_id', coupleIds)
+          
+          if (couplesData) {
+            couplesMap = new Map(couplesData.map((c: any) => [c.user_id, c]))
+          }
+        }
 
         const enrichedConversations = await Promise.all(
           (conversationsData || []).map(async (conv: any) => {
@@ -98,9 +105,19 @@ export default function PrestataireMessageriePage() {
               .neq('sender_id', user.id)
 
             const couple = couplesMap.get(conv.couple_id)
-            const coupleNom = couple
-              ? `${couple.partner_1_name || ''} & ${couple.partner_2_name || ''}`.trim() || 'Couple'
-              : 'Couple'
+            let coupleNom = 'Couple'
+            
+            if (couple) {
+              const name1 = couple.partner_1_name?.trim() || ''
+              const name2 = couple.partner_2_name?.trim() || ''
+              if (name1 && name2) {
+                coupleNom = `${name1} & ${name2}`
+              } else if (name1) {
+                coupleNom = name1
+              } else if (name2) {
+                coupleNom = name2
+              }
+            }
 
             return {
               id: conv.id,
@@ -216,65 +233,81 @@ export default function PrestataireMessageriePage() {
     fetchMessages()
 
     // Real-time: écouter les nouveaux messages
+    if (typeof window === 'undefined') return
+    
     const supabase = createClient()
-    const channel = supabase
-      .channel(`messages:${selectedConversation}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${selectedConversation}`
-        },
-        (payload) => {
-          const newMessage = payload.new as {
-            id: string
-            conversation_id: string
-            sender_id: string
-            content: string
-            read_at: string | null
-            created_at: string
-          }
-          
-          let content = newMessage.content
-          let attachments: Attachment[] | undefined = undefined
+    let channel: ReturnType<typeof supabase.channel> | null = null
 
-          try {
-            const parsed = JSON.parse(newMessage.content)
-            if (parsed.attachments) {
-              content = parsed.text || ''
-              attachments = parsed.attachments
+    try {
+      channel = supabase
+        .channel(`messages:${selectedConversation}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `conversation_id=eq.${selectedConversation}`
+          },
+          (payload) => {
+            const newMessage = payload.new as {
+              id: string
+              conversation_id: string
+              sender_id: string
+              content: string
+              read_at: string | null
+              created_at: string
             }
-          } catch {
-            // C'est du texte normal
-          }
+            
+            let content = newMessage.content
+            let attachments: Attachment[] | undefined = undefined
 
-          const formattedMessage: Message = {
-            id: newMessage.id,
-            conversation_id: newMessage.conversation_id,
-            sender_id: newMessage.sender_id,
-            sender_type: newMessage.sender_id === user.id ? 'prestataire' : 'couple',
-            contenu: content,
-            created_at: newMessage.created_at,
-            lu: newMessage.read_at !== null,
-            attachments,
+            try {
+              const parsed = JSON.parse(newMessage.content)
+              if (parsed.attachments) {
+                content = parsed.text || ''
+                attachments = parsed.attachments
+              }
+            } catch {
+              // C'est du texte normal
+            }
+
+            const formattedMessage: Message = {
+              id: newMessage.id,
+              conversation_id: newMessage.conversation_id,
+              sender_id: newMessage.sender_id,
+              sender_type: newMessage.sender_id === user.id ? 'prestataire' : 'couple',
+              contenu: content,
+              created_at: newMessage.created_at,
+              lu: newMessage.read_at !== null,
+              attachments,
+            }
+            setMessages(prev => [...prev, formattedMessage])
+            
+            // Marquer comme lu si c'est le prestataire qui reçoit
+            if (newMessage.sender_id !== user.id) {
+              supabase
+                .from('messages')
+                .update({ read_at: new Date().toISOString() })
+                .eq('id', newMessage.id)
+            }
           }
-          setMessages(prev => [...prev, formattedMessage])
-          
-          // Marquer comme lu si c'est le prestataire qui reçoit
-          if (newMessage.sender_id !== user.id) {
-            supabase
-              .from('messages')
-              .update({ read_at: new Date().toISOString() })
-              .eq('id', newMessage.id)
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            // Subscription réussie
+          } else if (status === 'CHANNEL_ERROR') {
+            console.warn('Erreur de subscription Realtime, utilisation du polling')
           }
-        }
-      )
-      .subscribe()
+        })
+    } catch (error) {
+      console.warn('Erreur lors de la configuration Realtime:', error)
+    }
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [selectedConversation, user])
 
@@ -521,7 +554,27 @@ export default function PrestataireMessageriePage() {
                                 .is('read_at', null)
                                 .neq('sender_id', user.id)
 
-                              const coupleNom = conv.couple_id ? 'Couple' : 'Couple'
+                              // Récupérer le nom du couple
+                              let coupleNom = 'Couple'
+                              if (conv.couple_id) {
+                                const { data: coupleData } = await supabase
+                                  .from('couples')
+                                  .select('partner_1_name, partner_2_name')
+                                  .eq('user_id', conv.couple_id)
+                                  .single()
+                                
+                                if (coupleData) {
+                                  const name1 = coupleData.partner_1_name?.trim() || ''
+                                  const name2 = coupleData.partner_2_name?.trim() || ''
+                                  if (name1 && name2) {
+                                    coupleNom = `${name1} & ${name2}`
+                                  } else if (name1) {
+                                    coupleNom = name1
+                                  } else if (name2) {
+                                    coupleNom = name2
+                                  }
+                                }
+                              }
 
                               return {
                                 id: conv.id,
