@@ -132,6 +132,15 @@ export default function RecherchePage() {
     const supabase = createClient()
 
     try {
+      // Vérifier d'abord que l'utilisateur est bien authentifié
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        console.warn('Pas de session utilisateur')
+        setProviders([])
+        setLoading(false)
+        return
+      }
+
       // Construire la requête de base
       let query = supabase
         .from('profiles')
@@ -165,38 +174,55 @@ export default function RecherchePage() {
       const { data: profilesData, error } = await query.limit(50)
 
       if (error) {
-        console.error('Erreur recherche:', error)
-        // Codes d'erreur à ignorer (cas normaux)
-        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
-        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'column']
+        // Améliorer le logging pour comprendre l'erreur
+        const errorInfo = {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          // Ajouter toutes les propriétés disponibles
+          ...error
+        }
         
-        const isIgnorableError = ignorableErrorCodes.includes(error.code) || 
-          ignorableMessages.some(msg => error.message?.toLowerCase().includes(msg.toLowerCase()))
+        console.error('Erreur recherche:', errorInfo)
+        
+        // Codes d'erreur à ignorer (cas normaux)
+        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301', '42501']
+        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'column', 'permission']
+        
+        const errorCode = error.code || ''
+        const errorMessage = error.message || ''
+        const errorString = JSON.stringify(error)
+        
+        const isIgnorableError = ignorableErrorCodes.includes(errorCode) || 
+          ignorableMessages.some(msg => errorMessage.toLowerCase().includes(msg.toLowerCase())) ||
+          ignorableMessages.some(msg => errorString.toLowerCase().includes(msg.toLowerCase()))
         
         if (isIgnorableError) {
-          // Erreur ignorable : probablement colonne manquante ou pas de données
+          // Erreur ignorable : probablement colonne manquante, permission RLS ou pas de données
+          console.warn('Erreur ignorable (probablement RLS ou colonne manquante):', errorInfo)
           setProviders([])
           setLoading(false)
           return
         }
         
         // Vraie erreur : logger et afficher
-        console.error('Erreur détaillée:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        })
+        console.error('Erreur détaillée:', errorInfo)
         setProviders([])
         setLoading(false)
         return
       }
 
       if (!profilesData || profilesData.length === 0) {
+        console.log('Aucun prestataire trouvé. Vérifiez que:')
+        console.log('1. La migration RLS (012_couples_can_view_prestataires.sql) a été exécutée')
+        console.log('2. Il y a des prestataires dans la table profiles avec role="prestataire"')
         setProviders([])
         setLoading(false)
         return
       }
+
+      console.log(`✅ ${profilesData.length} prestataire(s) trouvé(s)`)
 
       // Pour chaque profil, récupérer les cultures, zones et portfolio
       const enrichedProviders = await Promise.all(
@@ -374,10 +400,10 @@ export default function RecherchePage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
             Rechercher un prestataire
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base sm:text-lg">
             Trouvez le prestataire parfait pour votre mariage
           </p>
         </motion.div>
@@ -389,24 +415,24 @@ export default function RecherchePage() {
           transition={{ delay: 0.1 }}
           className="relative space-y-3"
         >
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {/* Dropdown filtres avec sous-menus */}
             <Popover open={showFiltersDropdown} onOpenChange={setShowFiltersDropdown}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-14 px-4 border-2 border-gray-200 hover:border-[#823F91] focus-visible:border-[#823F91] rounded-xl flex items-center gap-2 min-w-[200px]"
+                  className="h-14 px-3 sm:px-4 border-2 border-gray-200 hover:border-[#823F91] focus-visible:border-[#823F91] rounded-xl flex items-center gap-2 w-full sm:w-auto sm:min-w-[180px]"
                 >
-                  <Filter className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-900">
+                  <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-900 truncate">
                     {selectedCategory || selectedCulture || selectedCountry 
                       ? 'Filtres actifs'
                       : 'Filtres'}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-gray-400 ml-auto" />
+                  <ChevronDown className="h-4 w-4 text-gray-400 ml-auto flex-shrink-0" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-2 bg-white" align="start">
+              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white" align="start">
                 <div className="space-y-1">
                   {/* Métier */}
                   <Popover open={openSubDropdown === 'metier'} onOpenChange={(open) => setOpenSubDropdown(open ? 'metier' : null)}>
@@ -428,7 +454,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999]" 
+                      className="w-[calc(100vw-2rem)] sm:w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999]" 
                       side="left" 
                       align="start" 
                       sideOffset={8}
@@ -497,7 +523,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
                       side="left" 
                       align="start" 
                       sideOffset={8}
@@ -550,7 +576,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
                       side="left" 
                       align="start" 
                       sideOffset={8}
@@ -594,15 +620,15 @@ export default function RecherchePage() {
             </Popover>
 
             {/* Barre de recherche */}
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <Input
                 ref={inputRef}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowFiltersDropdown(false)}
                 placeholder="Rechercher par nom, ville, culture..."
-                className="pl-12 pr-12 h-14 text-lg border-2 border-gray-200 focus-visible:border-[#823F91] focus-visible:ring-[#823F91] rounded-xl bg-white"
+                className="pl-10 sm:pl-12 pr-10 sm:pr-12 h-14 text-base sm:text-lg border-2 border-gray-200 focus-visible:border-[#823F91] focus-visible:ring-[#823F91] rounded-xl bg-white"
               />
               {searchQuery && (
                 <Button
@@ -709,16 +735,16 @@ export default function RecherchePage() {
                   onClick={() => handleProviderClick(provider)}
                 >
                   {/* Avatar et image de fond optionnelle */}
-                  <div className="relative h-20 sm:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                  <div className="relative h-24 sm:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
                     {provider.avatar_url ? (
                       <img
                         src={provider.avatar_url}
                         alt={provider.nom_entreprise}
-                        className="h-14 w-14 sm:h-20 sm:w-20 rounded-full object-cover border-2 sm:border-4 border-white shadow-md"
+                        className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 sm:border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-4 border-white shadow-md">
-                        <span className="text-lg sm:text-2xl font-semibold text-white">
+                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-4 border-white shadow-md">
+                        <span className="text-xl sm:text-2xl font-semibold text-white">
                           {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>
                       </div>
