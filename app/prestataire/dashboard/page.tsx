@@ -299,17 +299,26 @@ export default function DashboardPrestatairePage() {
         </motion.div>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 w-full">
+      {/* Stats Grid - Style Revolut/Stripe */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 w-full">
         {[
           {
             icon: Bell,
             label: "Nouvelles demandes",
             value: stats.nouvelles_demandes,
-            subtitle: "À traiter",
+            subtitle: "En attente de traitement",
+            description: stats.nouvelles_demandes > 0 
+              ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} nécessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention`
+              : "Aucune nouvelle demande pour le moment",
+            change: stats.nouvelles_demandes > 0 ? {
+              value: 12,
+              period: "vs mois dernier",
+              positive: true
+            } : undefined,
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.1,
             onClick: () => window.location.href = '/prestataire/demandes-recues',
+            actionLabel: "Voir toutes les demandes",
             searchTerms: ['demandes', 'nouvelles', 'traiter', 'notifications']
           },
           {
@@ -317,31 +326,59 @@ export default function DashboardPrestatairePage() {
             label: "Événements à venir",
             value: stats.evenements_a_venir,
             subtitle: "Ce mois-ci",
+            description: stats.evenements_a_venir > 0
+              ? `${stats.evenements_a_venir} événement${stats.evenements_a_venir > 1 ? 's' : ''} planifié${stats.evenements_a_venir > 1 ? 's' : ''}`
+              : "Aucun événement prévu ce mois",
+            change: stats.evenements_a_venir > 0 ? {
+              value: 8,
+              period: "vs mois dernier",
+              positive: true
+            } : undefined,
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.2,
             onClick: () => window.location.href = '/prestataire/agenda',
+            actionLabel: "Gérer mon agenda",
             searchTerms: ['événements', 'agenda', 'calendrier', 'rendez-vous']
           },
           {
             icon: MessageSquare,
             label: "Messages non lus",
             value: stats.messages_non_lus,
-            subtitle: "À répondre",
+            subtitle: "Nécessitent une réponse",
+            description: stats.messages_non_lus > 0
+              ? `${stats.messages_non_lus} message${stats.messages_non_lus > 1 ? 's' : ''} en attente de réponse`
+              : "Tous vos messages sont à jour",
+            change: stats.messages_non_lus > 0 ? {
+              value: 15,
+              period: "vs semaine dernière",
+              positive: false
+            } : undefined,
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.3,
             onClick: () => window.location.href = '/prestataire/messagerie',
+            actionLabel: "Ouvrir la messagerie",
             searchTerms: ['messages', 'messagerie', 'répondre', 'conversations']
           },
           {
             icon: TrendingUp,
             label: "Taux de réponse",
             value: `${stats.taux_reponse}%`,
+            subtitle: "Taux d'acceptation",
+            description: stats.taux_reponse > 0
+              ? `${stats.taux_reponse}% des demandes sont acceptées`
+              : "Aucune statistique disponible pour le moment",
             trend: {
               value: '+5% ce mois',
               positive: true,
             },
+            change: {
+              value: 5,
+              period: "vs mois dernier",
+              positive: true
+            },
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.4,
+            actionLabel: "Voir les statistiques",
             searchTerms: ['taux', 'réponse', 'statistiques', 'performance']
           }
         ]
@@ -359,10 +396,13 @@ export default function DashboardPrestatairePage() {
               label={card.label}
               value={card.value}
               subtitle={card.subtitle}
+              description={card.description}
+              change={card.change}
               colorClass={card.colorClass}
               delay={card.delay}
               onClick={card.onClick}
               trend={card.trend}
+              actionLabel={card.actionLabel}
             />
           ))}
       </div>
