@@ -50,7 +50,7 @@ export function CalendarDashboard({
     date: null as Date | null,
   })
 
-  // Détection mobile
+  // Détection mobile avec breakpoints plus précis
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640) // Tailwind 'sm' breakpoint
@@ -152,7 +152,7 @@ export function CalendarDashboard({
 
     // Cellules vides pour les jours avant le début du mois
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-1.5 sm:p-2 h-24 sm:h-28 md:h-32"></div>)
+      days.push(<div key={`empty-${i}`} className="p-1 sm:p-1.5 md:p-2 min-h-[100px] sm:min-h-[112px] md:min-h-[128px]"></div>)
     }
 
     // Jours réels
@@ -164,32 +164,29 @@ export function CalendarDashboard({
       days.push(
         <div
           key={day}
-          className={`p-1.5 sm:p-2 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden h-24 sm:h-28 md:h-32 ${
+          className={`p-1 sm:p-1.5 md:p-2 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden min-h-[100px] sm:min-h-[112px] md:min-h-[128px] flex flex-col ${
             isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
           }`}
           onClick={() => handleDateClick(day)}
         >
-          <div className={`text-xs sm:text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
+          <div className={`text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1 flex-shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
             {day}
           </div>
-          <div className="space-y-0.5 sm:space-y-1">
+          <div className="flex-1 overflow-hidden flex flex-col gap-0.5 sm:gap-1 min-h-0">
             {dayEvents.slice(0, isMobile ? 2 : 3).map((event) => (
               <div
                 key={event.id}
-                className={`${getEventColor(event)} text-white text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded truncate leading-tight`}
+                className={`${getEventColor(event)} text-white text-[9px] sm:text-[10px] md:text-xs px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-1 rounded truncate leading-tight flex-shrink-0 min-h-[18px] sm:min-h-[20px] flex items-center`}
                 title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
               >
-                {showTime && event.time && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{event.time}</span>
-                  </div>
+                {showTime && event.time && !isMobile && (
+                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" />
                 )}
-                <div className="truncate">{event.title}</div>
+                <span className="truncate">{showTime && event.time && isMobile ? `${event.time} ` : ''}{event.title}</span>
               </div>
             ))}
             {dayEvents.length > (isMobile ? 2 : 3) && (
-              <div className="text-[10px] sm:text-xs text-gray-500 px-1 sm:px-2">
+              <div className="text-[9px] sm:text-[10px] md:text-xs text-gray-500 px-1 sm:px-1.5 flex-shrink-0">
                 +{dayEvents.length - (isMobile ? 2 : 3)} autres
               </div>
             )}
@@ -204,26 +201,26 @@ export function CalendarDashboard({
   return (
     <div className="w-full">
       <Card className="shadow-none border-0">
-        <CardHeader className="border-b bg-white pb-4">
+        <CardHeader className="border-b bg-white pb-2 sm:pb-4 px-2 sm:px-6">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={previousMonth}>
-                <ChevronLeft className="w-4 h-4" />
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="outline" size="sm" onClick={previousMonth} className="h-8 w-8 sm:h-9 sm:w-9">
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
-              <span className="text-lg font-semibold min-w-[200px] text-center">
+              <span className="text-sm sm:text-base md:text-lg font-semibold min-w-[140px] sm:min-w-[200px] text-center">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </span>
-              <Button variant="outline" size="sm" onClick={nextMonth}>
-                <ChevronRight className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={nextMonth} className="h-8 w-8 sm:h-9 sm:w-9">
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-2 sm:p-4 md:p-6">
           {/* En-tête des jours */}
-          <div className="grid grid-cols-7 gap-0 mb-2">
+          <div className="grid grid-cols-7 gap-0 mb-1 sm:mb-2">
             {dayNames.map((day) => (
-              <div key={day} className="p-1 sm:p-2 text-center font-semibold text-gray-600 text-[10px] sm:text-sm">
+              <div key={day} className="p-1 sm:p-1.5 md:p-2 text-center font-semibold text-gray-600 text-[10px] sm:text-xs md:text-sm">
                 {/* Mobile: première lettre seulement */}
                 <span className="sm:hidden">{day[0]}</span>
                 <span className="hidden sm:inline">{day}</span>
@@ -232,7 +229,7 @@ export function CalendarDashboard({
           </div>
           
           {/* Grille du calendrier */}
-          <div className="grid grid-cols-7 gap-0 border border-gray-200">
+          <div className="grid grid-cols-7 gap-0 border border-gray-200 rounded-lg overflow-hidden">
             {loading ? (
               <div className="col-span-7 p-8 text-center text-gray-500">
                 Chargement...
