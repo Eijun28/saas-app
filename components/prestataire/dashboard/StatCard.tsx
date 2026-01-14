@@ -87,7 +87,9 @@ export function StatCard({
         "overflow-hidden",
         "group",
         // Mobile: pleine largeur, desktop: responsive
-        "w-full"
+        "w-full h-full",
+        // Hauteur uniforme pour toutes les cartes
+        "flex flex-col"
       )}>
         {/* Subtle gradient overlay on hover */}
         <div className={cn(
@@ -99,7 +101,7 @@ export function StatCard({
         {/* Accent line at top (style Revolut) */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        <CardContent className="relative p-5 sm:p-6 md:p-7 space-y-5">
+        <CardContent className="relative p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
           {/* Header: Icon + Label */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -174,7 +176,7 @@ export function StatCard({
           </div>
 
           {/* Description (style Revolut - toujours affichée même si vide) */}
-          <div className="pt-3 border-t border-gray-100/80">
+          <div className="pt-3 border-t border-gray-100/80 flex-1 flex flex-col">
             <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
               {description || (
                 <span className="text-gray-400 italic">
