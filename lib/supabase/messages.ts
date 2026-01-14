@@ -295,7 +295,7 @@ export async function getOrCreateConversation(
     .from('conversations')
     .select('id, demande_id')
     .eq('couple_id', coupleId)
-    .eq('provider_id', providerId)
+    .eq('prestataire_id', providerId)
     .eq('status', 'active')
     .single()
 

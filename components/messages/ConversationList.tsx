@@ -34,7 +34,7 @@ export function ConversationList({
       if (userType === 'couple') {
         query.eq('couple_id', userId)
       } else {
-        query.eq('provider_id', userId)
+        query.eq('prestataire_id', userId)
       }
 
       const { data, error } = await query

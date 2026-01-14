@@ -40,7 +40,7 @@ export default function PrestataireMessageriePage() {
         const { data: conversationsData, error } = await supabase
           .from('conversations')
           .select('*')
-          .eq('provider_id', user.id)
+          .eq('prestataire_id', user.id)
           .order('last_message_at', { ascending: false })
 
         // Si erreur, vérifier si c'est une vraie erreur critique
@@ -298,7 +298,7 @@ export default function PrestataireMessageriePage() {
           *,
           couple:profiles!conversations_couple_id_fkey(prenom, nom, avatar_url)
         `)
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('last_message_at', { ascending: false })
 
       if (conversationsData) {

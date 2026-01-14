@@ -105,7 +105,7 @@ export default function DemandesRecuesPage() {
       const { data: demandesData, error } = await supabase
         .from('demandes')
         .select('*')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
