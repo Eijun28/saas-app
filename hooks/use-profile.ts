@@ -33,7 +33,6 @@ export function useProfile() {
         }
 
         if (!session?.user) {
-          console.log('Pas de session utilisateur')
           setProfile(null)
           setLoading(false)
           return

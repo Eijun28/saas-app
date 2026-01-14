@@ -94,9 +94,6 @@ export default function SignUpPage() {
     setError(null)
 
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:98',message:'BEFORE signUp call',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-      // #endregion
       let result
       try {
         result = await signUp(data.email, data.password, data.role, {

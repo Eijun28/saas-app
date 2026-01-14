@@ -97,7 +97,6 @@ export function AIDocumentGenerator({
         throw new Error(result.error || 'Erreur génération')
       }
 
-      console.log('✅ Document généré')
       setContent(result.content)
 
     } catch (err: any) {

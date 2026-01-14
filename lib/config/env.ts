@@ -93,9 +93,6 @@ export function getServerEnvConfig(): ServerEnvConfig {
     return validatedServerConfig
   }
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'debug-session',runId:'pre-fix',hypothesisId:'H1',location:'lib/config/env.ts:getServerEnvConfig',message:'env keys before validation (server)',data:{hasSupabaseUrl:!!process.env.NEXT_PUBLIC_SUPABASE_URL,hasSupabaseAnon:!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,hasServiceRole:!!process.env.SUPABASE_SERVICE_ROLE_KEY,hasSiteUrl:!!process.env.NEXT_PUBLIC_SITE_URL,envKeys:Object.keys(process.env||{}).filter(k=>k.startsWith('NEXT_PUBLIC')||k==='SUPABASE_SERVICE_ROLE_KEY')},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
 
   const result = serverEnvSchema.safeParse(process.env)
 

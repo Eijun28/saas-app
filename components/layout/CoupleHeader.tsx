@@ -83,9 +83,6 @@ export function CoupleHeader() {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              if (process.env.NODE_ENV === 'development') {
-                console.log('🔵 Toggle mobile couple - openMobile:', openMobile)
-              }
               setOpenMobile(!openMobile)
             }}
             className={cn(

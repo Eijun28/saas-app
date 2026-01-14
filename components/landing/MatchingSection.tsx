@@ -70,11 +70,10 @@ export default function MatchingSection() {
             "Trouver un prestataire qui comprend ma culture..."
           ]}
           onChange={(e) => {
-            console.log(e.target.value);
+            // Pas d'action nécessaire lors du changement
           }}
           onSubmit={(e) => {
             e.preventDefault();
-            console.log("submitted");
             // Rediriger vers la page de recherche ou matching
             window.location.href = '/sign-up';
           }}

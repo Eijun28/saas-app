@@ -39,9 +39,6 @@ export default function CoupleDashboardPage() {
     const fetchDashboardData = async () => {
       const supabase = createClient()
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:43',message:'fetchDashboardData entry',data:{userId:user?.id,userExists:!!user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       
       try {
         // Récupérer les données du couple (sans relation inexistante)
@@ -139,9 +136,6 @@ export default function CoupleDashboardPage() {
           })
         }
       } catch (error: any) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:131',message:'catch block entry',data:{errorExists:!!error,errorType:typeof error,errorIsNull:error===null,errorIsUndefined:error===undefined,errorConstructor:error?.constructor?.name,errorMessage:error?.message,errorStack:error?.stack,errorKeys:error?Object.keys(error):null,allErrorProps:error?Object.getOwnPropertyNames(error):null,errorString:String(error),errorJSON:error?JSON.stringify(error,Object.getOwnPropertyNames(error)):null},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-        // #endregion
         // Améliorer l'affichage de l'erreur avec toutes ses propriétés
         console.error('Erreur chargement dashboard:', {
           message: error?.message,

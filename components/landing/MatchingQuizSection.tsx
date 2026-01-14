@@ -264,7 +264,6 @@ const SkeletonMatchingFullWidth = () => {
                           className="w-full bg-white text-gray-900 rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm active:scale-95"
                           onClick={() => {
                             // Action à définir
-                            console.log('Voir les messages envoyés');
                           }}
                         >
                           Cliquer pour voir les messages envoyés

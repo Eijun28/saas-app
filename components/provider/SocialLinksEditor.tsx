@@ -143,7 +143,6 @@ export function SocialLinksEditor({ userId, currentLinks = {}, onSave }: SocialL
 
     // Mettre à jour l'état local avec les données retournées
     if (data) {
-      console.log('✅ Données sauvegardées avec succès:', data)
       const savedLinks = {
         instagram_url: data.instagram_url || '',
         facebook_url: data.facebook_url || '',

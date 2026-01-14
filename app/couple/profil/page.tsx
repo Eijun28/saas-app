@@ -627,7 +627,7 @@ export default function CoupleProfilPage() {
             wedding_description: weddingDesc,
             budget_breakdown: budgetBreakdown,
             completion_percentage: completion,
-            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage),
+            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null),
             profile_completed: completion >= 80,
             updated_at: new Date().toISOString(),
           })
@@ -650,7 +650,7 @@ export default function CoupleProfilPage() {
             wedding_description: weddingDesc,
             budget_breakdown: budgetBreakdown,
             completion_percentage: completion,
-            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage),
+            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null),
             profile_completed: completion >= 80,
           })
 

@@ -215,15 +215,11 @@ export default function RecherchePage() {
       }
 
       if (!profilesData || profilesData.length === 0) {
-        console.log('Aucun prestataire trouvé. Vérifiez que:')
-        console.log('1. La migration RLS (012_couples_can_view_prestataires.sql) a été exécutée')
-        console.log('2. Il y a des prestataires dans la table profiles avec role="prestataire"')
         setProviders([])
         setLoading(false)
         return
       }
 
-      console.log(`✅ ${profilesData.length} prestataire(s) trouvé(s)`)
 
       // Pour chaque profil, récupérer les cultures, zones et portfolio
       const enrichedProviders = await Promise.all(
@@ -359,7 +355,6 @@ export default function RecherchePage() {
         console.error('Erreur chargement portfolio:', portfolioError)
         setPortfolio([])
       } else {
-        console.log('Portfolio chargé:', portfolioData?.length || 0, 'photos pour prestataire', provider.id)
         setPortfolio(portfolioData || [])
       }
       

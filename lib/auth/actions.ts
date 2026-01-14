@@ -20,35 +20,23 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:12',message:'signUp ENTRY',data:{email,role,hasPrenom:!!profileData.prenom,hasNom:!!profileData.nom},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
   
   // ✅ VALIDATION 1: Vérifier format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:27',message:'RETURN email invalid',data:{email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return { error: 'Email invalide' }
   }
 
   // ✅ VALIDATION 2: Vérifier userType autorisé
   const ALLOWED_USER_TYPES = ['couple', 'prestataire']
   if (!ALLOWED_USER_TYPES.includes(role)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:33',message:'RETURN role invalid',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return { error: 'Type utilisateur non autorisé' }
   }
 
   // ✅ VALIDATION 3: Pour couples, vérifier noms requis
   if (role === 'couple') {
     if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:39',message:'RETURN names required',data:{hasPrenom:!!profileData.prenom?.trim(),hasNom:!!profileData.nom?.trim()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       return { error: 'Les noms des partenaires sont requis' }
     }
 
@@ -64,9 +52,6 @@ export async function signUp(
 
   const supabase = await createClient()
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:52',message:'BEFORE supabase.auth.signUp',data:{email,role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -81,10 +66,6 @@ export async function signUp(
     },
   })
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:69',message:'AFTER supabase.auth.signUp',data:{hasError:!!error,hasUser:!!data?.user,userId:data?.user?.id,errorMessage:error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
@@ -92,9 +73,6 @@ export async function signUp(
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:75',message:'RETURN error from signUp',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       return { error: translateAuthError(error.message) }
     }
   }

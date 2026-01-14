@@ -28,11 +28,8 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
     
     const newName = currentName || '';
     
-    console.log('🔄 BusinessNameEditor useEffect - currentName:', currentName, 'newName:', newName, 'initialName:', initialName, 'name:', name)
-    
     // Mettre à jour uniquement si la valeur a vraiment changé depuis la DB
     if (newName !== initialName) {
-      console.log('✅ Mise à jour BusinessNameEditor:', initialName, '->', newName)
       setName(newName);
       setInitialName(newName);
     }

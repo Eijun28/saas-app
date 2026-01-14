@@ -199,10 +199,7 @@ export function PrestataireHeader() {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log('🔵 Bouton cliqué, openMobile actuel:', openMobile)
-              const newValue = !openMobile
-              console.log('🔵 Nouvelle valeur:', newValue)
-              setOpenMobile(newValue)
+              setOpenMobile(!openMobile)
             }}
             className={cn(
               'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',

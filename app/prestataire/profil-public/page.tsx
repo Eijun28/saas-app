@@ -80,17 +80,13 @@ export default function ProfilPublicPage() {
   const reloadData = async () => {
     if (!user) return
 
-    console.log('🔄 reloadData appelé - userId:', user.id)
-
     // ✅ FIX: Réduire délai à 500ms pour un affichage plus rapide (Supabase commit généralement en <500ms)
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    console.log('📥 Début loadAllData après délai')
     await loadAllData(user.id, false)
     
     // Forcer le re-render en incrémentant refreshKey après le chargement
     setRefreshKey(prev => prev + 1)
-    console.log('✅ loadAllData terminé, refreshKey incrémenté')
   }
 
   async function loadAllData(userId: string, showLoading = true) {
@@ -101,8 +97,6 @@ export default function ProfilPublicPage() {
     try {
       // Utiliser une nouvelle instance de supabase pour éviter les problèmes de cache
       const freshSupabase = createClient()
-      
-      console.log('🔄 Chargement des données pour userId:', userId)
       
       // Essayer d'abord avec toutes les colonnes (y compris réseaux sociaux)
       let { data: profileData, error: profileError } = await freshSupabase
@@ -152,10 +146,6 @@ export default function ProfilPublicPage() {
         // Si les colonnes n'existent pas, on continue sans elles
         console.warn('⚠️ Colonnes réseaux sociaux non disponibles:', socialError?.message)
       }
-
-      console.log('📥 Données reçues de Supabase:', profileData)
-      console.log('📥 Réseaux sociaux:', socialLinks)
-      console.log('❌ Erreur (si présente):', profileError)
 
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
         console.error('Erreur profil:', profileError)
@@ -231,10 +221,6 @@ export default function ProfilPublicPage() {
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
       setRefreshKey(prev => prev + 1) // Forcer le re-render des composants enfants
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ États mis à jour, refreshKey:', refreshKey + 1)
-      }
     } catch (error) {
       console.error('Error loading profile:', error)
     } finally {
