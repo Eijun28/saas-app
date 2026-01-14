@@ -16,8 +16,7 @@ export default function MessageriePage() {
   interface Conversation {
     id: string
     couple_id: string
-    provider_id: string // Nom réel dans la DB
-    prestataire_id?: string // Alias pour compatibilité
+    prestataire_id: string // Nom réel dans la DB
     last_message_at: string | null
     created_at: string
   }
@@ -110,7 +109,7 @@ export default function MessageriePage() {
         
         if (data && data.length > 0) {
           // Récupérer les IDs des prestataires uniques
-          const prestataireIds = [...new Set(data.map((conv: Conversation) => conv.provider_id || conv.prestataire_id).filter(Boolean))]
+          const prestataireIds = [...new Set(data.map((conv: Conversation) => conv.prestataire_id).filter(Boolean))]
           
           if (prestataireIds.length > 0) {
             // Récupérer les profils des prestataires
@@ -142,7 +141,7 @@ export default function MessageriePage() {
             
             // Construire les noms avec priorité: nom_entreprise > prenom + nom
             data.forEach((conv: Conversation) => {
-              const providerId = conv.provider_id || conv.prestataire_id
+              const providerId = conv.prestataire_id
               if (providerId && prestataireData[providerId]) {
                 const prestataire = prestataireData[providerId]
                 if (prestataire.nom_entreprise) {

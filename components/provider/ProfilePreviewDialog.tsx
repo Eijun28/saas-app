@@ -139,7 +139,7 @@ export function ProfilePreviewDialog({
         .from('demandes')
         .insert({
           couple_id: coupleId,
-          provider_id: userId,
+          prestataire_id: userId,
           service_type: profile.service_type || null,
           message: demandeMessage.trim(),
           wedding_date: demandeDate || null,

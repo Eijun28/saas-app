@@ -173,7 +173,7 @@ export default function DemandesRecuesPage() {
       // 1. Récupérer les données de la demande avant de la mettre à jour
       const { data: demandeData, error: fetchError } = await supabase
         .from('demandes')
-        .select('couple_id, provider_id, service_type, wedding_date, guest_count, budget_indicatif')
+        .select('couple_id, prestataire_id, service_type, wedding_date, guest_count, budget_indicatif')
         .eq('id', demandeId)
         .single()
 
@@ -194,7 +194,7 @@ export default function DemandesRecuesPage() {
       try {
         await getOrCreateConversation(
           demandeData.couple_id,
-          demandeData.provider_id || user.id,
+          demandeData.prestataire_id || user.id,
           demandeId, // Lier la conversation à cette demande
           demandeData.service_type || undefined,
           undefined, // cultures - à récupérer si nécessaire

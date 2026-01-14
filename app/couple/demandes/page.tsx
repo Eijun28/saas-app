@@ -31,7 +31,6 @@ interface Demande {
   id: string
   couple_id: string
   prestataire_id?: string
-  provider_id?: string // Alias pour compatibilité
   service_type?: string
   type_prestation?: string // Nom réel dans la DB
   message?: string
@@ -59,7 +58,7 @@ interface Demande {
 interface Devis {
   id: string
   demande_id: string
-  provider_id: string
+  prestataire_id: string
   couple_id: string
   title: string
   description?: string
@@ -92,9 +91,8 @@ interface Favori {
   id: string
   couple_id: string
   prestataire_id?: string
-  provider_id?: string // Alias pour compatibilité
   created_at: string
-  provider?: {
+  prestataire?: {
     nom_entreprise: string
     service_type: string
     avatar_url?: string
@@ -218,7 +216,7 @@ export default function DemandesPage() {
     // Charger les profils prestataires et profiles pour chaque demande
     const transformedData: Demande[] = await Promise.all(
       demandesData.map(async (demande) => {
-        const prestataireId = demande.provider_id || demande.prestataire_id
+        const prestataireId = demande.prestataire_id
 
         // Charger le profil prestataire
         const { data: prestataireProfile } = await supabase
@@ -236,10 +234,9 @@ export default function DemandesPage() {
 
         return {
           ...demande,
-          provider_id: prestataireId, // Alias pour compatibilité
           service_type: prestataireProfile?.type_prestation || demande.type_prestation, // Alias pour compatibilité
           wedding_date: demande.wedding_date || demande.date_mariage, // Alias pour compatibilité
-          provider: prestataireProfile ? {
+          prestataire: prestataireProfile ? {
             nom_entreprise: prestataireProfile.nom_entreprise || '',
             service_type: prestataireProfile.type_prestation || '',
             avatar_url: profile?.avatar_url,
@@ -286,7 +283,7 @@ export default function DemandesPage() {
     // Charger les profils prestataires et demandes pour chaque devis
     const transformedData: Devis[] = await Promise.all(
       devisData.map(async (devis) => {
-        const prestataireId = devis.prestataire_id || devis.provider_id
+        const prestataireId = devis.prestataire_id
 
         // Charger le profil prestataire
         const { data: prestataireProfile } = await supabase
@@ -376,8 +373,7 @@ export default function DemandesPage() {
 
         return {
           ...favori,
-          provider_id: prestataireId, // Alias pour compatibilité
-          provider: prestataireProfile ? {
+          prestataire: prestataireProfile ? {
             nom_entreprise: prestataireProfile.nom_entreprise || '',
             service_type: prestataireProfile.type_prestation || '',
             avatar_url: profile?.avatar_url,
@@ -535,10 +531,10 @@ export default function DemandesPage() {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
-                          {demande.provider?.avatar_url ? (
+                          {demande.prestataire?.avatar_url ? (
                             <img
-                              src={demande.provider.avatar_url}
-                              alt={demande.provider.nom_entreprise}
+                              src={demande.prestataire.avatar_url}
+                              alt={demande.prestataire.nom_entreprise}
                               className="h-12 w-12 rounded-full object-cover"
                             />
                           ) : (
@@ -548,7 +544,7 @@ export default function DemandesPage() {
                           )}
                           <div>
                             <CardTitle className="text-lg">
-                              {demande.provider?.nom_entreprise || 'Prestataire'}
+                              {demande.prestataire?.nom_entreprise || 'Prestataire'}
                             </CardTitle>
                             <CardDescription>
                               {demande.service_type} • {new Date(demande.created_at).toLocaleDateString('fr-FR')}
@@ -757,10 +753,10 @@ export default function DemandesPage() {
                   <Card key={favori.id} className="border-gray-200 hover:shadow-md transition-shadow">
                     <CardHeader>
                       <div className="flex items-start gap-4">
-                        {favori.provider?.avatar_url ? (
+                        {favori.prestataire?.avatar_url ? (
                           <img
-                            src={favori.provider.avatar_url}
-                            alt={favori.provider.nom_entreprise}
+                            src={favori.prestataire.avatar_url}
+                            alt={favori.prestataire.nom_entreprise}
                             className="h-16 w-16 rounded-lg object-cover"
                           />
                         ) : (
@@ -770,26 +766,26 @@ export default function DemandesPage() {
                         )}
                         <div className="flex-1">
                           <CardTitle className="text-lg mb-1">
-                            {favori.provider?.nom_entreprise || 'Prestataire'}
+                            {favori.prestataire?.nom_entreprise || 'Prestataire'}
                           </CardTitle>
                           <CardDescription>
-                            {favori.provider?.service_type}
-                            {favori.provider?.ville_principale && ` • ${favori.provider.ville_principale}`}
+                            {favori.prestataire?.service_type}
+                            {favori.prestataire?.ville_principale && ` • ${favori.prestataire.ville_principale}`}
                           </CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {favori.provider?.description_courte && (
+                      {favori.prestataire?.description_courte && (
                         <p className="text-sm text-gray-600 mb-4">
-                          {favori.provider.description_courte}
+                          {favori.prestataire.description_courte}
                         </p>
                       )}
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           className="flex-1 text-purple-600 hover:text-white hover:bg-purple-600 group"
-                          onClick={() => router.push(`/provider/${favori.provider_id || favori.prestataire_id}`)}
+                          onClick={() => router.push(`/provider/${favori.prestataire_id}`)}
                         >
                           Voir le profil
                           <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

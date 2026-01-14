@@ -221,9 +221,9 @@ export function validateCoupleProfile(profile: Partial<CoupleProfile>): {
 export interface Favori {
   id: string
   couple_id: string
-  provider_id: string
+  prestataire_id: string
   created_at: string
-  provider?: {
+  prestataire?: {
     id: string
     business_name: string
     category: string
@@ -235,13 +235,13 @@ export interface Favori {
 export interface Demande {
   id: string
   couple_id: string
-  provider_id: string
+  prestataire_id: string
   service_type: string
   message: string
   status: 'pending' | 'accepted' | 'rejected' | 'responded'
   created_at: string
   updated_at: string
-  provider?: {
+  prestataire?: {
     id: string
     business_name: string
     category: string
@@ -252,7 +252,7 @@ export interface Demande {
 export interface Devis {
   id: string
   demande_id: string
-  provider_id: string
+  prestataire_id: string
   couple_id: string
   amount: number
   details: string
@@ -264,7 +264,7 @@ export interface Devis {
 
 // Interface pour le matching score
 export interface MatchingScore {
-  provider_id: string
+  prestataire_id: string
   couple_id: string
   total_score: number
   culture_score: number
