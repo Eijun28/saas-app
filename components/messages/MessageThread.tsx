@@ -85,20 +85,17 @@ export function MessageThread({
       const { error } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         sender_id: userId,
-        sender_type: userType,
         content: newMessage.trim(),
-        content_type: 'text',
       })
 
       if (error) throw error
 
       setNewMessage('')
 
-      // Update conversation last_message
+      // Update conversation last_message_at
       await supabase
         .from('conversations')
         .update({
-          last_message: newMessage.trim(),
           last_message_at: new Date().toISOString(),
         })
         .eq('id', conversationId)
