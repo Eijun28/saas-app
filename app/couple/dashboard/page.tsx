@@ -48,14 +48,9 @@ export default function CoupleDashboardPage() {
           .eq('user_id', user.id)
           .single()
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:56',message:'after couple query',data:{coupleErrorExists:!!coupleError,coupleErrorType:typeof coupleError,coupleErrorIsNull:coupleError===null,coupleErrorIsUndefined:coupleError===undefined,coupleErrorKeys:coupleError?Object.keys(coupleError):null,coupleErrorMessage:coupleError?.message,coupleErrorCode:coupleError?.code,coupleErrorDetails:coupleError?.details,coupleErrorHint:coupleError?.hint,coupleErrorStringified:coupleError?JSON.stringify(coupleError):null,coupleDataExists:!!coupleData},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D'})}).catch(()=>{});
-        // #endregion
 
         if (coupleError) {
           // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:58',message:'coupleError detected before throw',data:{errorType:typeof coupleError,errorConstructor:coupleError?.constructor?.name,errorPrototype:Object.getPrototypeOf(coupleError)?.constructor?.name,allErrorProps:coupleError?Object.getOwnPropertyNames(coupleError):null,errorString:String(coupleError),errorJSON:JSON.stringify(coupleError,Object.getOwnPropertyNames(coupleError))},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-          // #endregion
           // Améliorer l'affichage de l'erreur avec toutes ses propriétés
           console.error('Erreur lors de la récupération du couple:', {
             message: coupleError.message,
@@ -96,34 +91,8 @@ export default function CoupleDashboardPage() {
             console.error('Erreur lors du comptage des favoris:', favorisError)
           }
 
-          // Compter les messages non lus depuis les conversations
-          let messagesNonLus = 0
-          try {
-            const { data: conversations, error: conversationsError } = await supabase
-              .from('conversations')
-              .select('id')
-              .eq('couple_id', user.id)
-            
-            if (conversationsError) {
-              console.error('Erreur lors de la récupération des conversations:', conversationsError)
-            } else if (conversations && conversations.length > 0) {
-              const conversationIds = conversations.map((c: any) => c.id)
-              const { count, error: messagesError } = await supabase
-                .from('messages')
-                .select('id', { count: 'exact', head: true })
-                .in('conversation_id', conversationIds)
-                .neq('sender_id', user.id)
-                .is('read_at', null)
-              
-              if (messagesError) {
-                console.error('Erreur lors du comptage des messages:', messagesError)
-              } else {
-                messagesNonLus = count || 0
-              }
-            }
-          } catch (messagesError: any) {
-            console.error('Erreur lors du traitement des messages:', messagesError)
-          }
+          // Messages désactivés temporairement
+          const messagesNonLus = 0
 
           // Calculer le budget total de la même manière que dans la page budget
           const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
@@ -156,9 +125,6 @@ export default function CoupleDashboardPage() {
             .single()
           
           if (coupleError) {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/couple/dashboard/page.tsx:144',message:'fallback coupleError detected',data:{errorType:typeof coupleError,errorIsNull:coupleError===null,errorIsUndefined:coupleError===undefined,errorMessage:coupleError?.message,errorCode:coupleError?.code,errorDetails:coupleError?.details,errorHint:coupleError?.hint,errorKeys:coupleError?Object.keys(coupleError):null,allErrorProps:coupleError?Object.getOwnPropertyNames(coupleError):null,errorString:String(coupleError),errorJSON:coupleError?JSON.stringify(coupleError,Object.getOwnPropertyNames(coupleError)):null},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
-            // #endregion
             // Améliorer l'affichage de l'erreur avec toutes ses propriétés
             console.error('Erreur lors de la récupération du couple (fallback):', {
               message: coupleError.message,
@@ -195,24 +161,8 @@ export default function CoupleDashboardPage() {
               .select('id', { count: 'exact', head: true })
               .eq('couple_id', user.id)
             
-            // Compter les messages non lus
-            const { data: conversations } = await fallbackSupabase
-              .from('conversations')
-              .select('id')
-              .eq('couple_id', user.id)
-            
-            let messagesNonLus = 0
-            if (conversations && conversations.length > 0) {
-              const conversationIds = conversations.map(c => c.id)
-              const { count } = await fallbackSupabase
-                .from('messages')
-                .select('id', { count: 'exact', head: true })
-                .in('conversation_id', conversationIds)
-                .neq('sender_id', user.id)
-                .is('read_at', null)
-              
-              messagesNonLus = count || 0
-            }
+            // Messages désactivés temporairement
+            const messagesNonLus = 0
             
             // Calculer le budget total de la même manière que dans la page budget
             const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0

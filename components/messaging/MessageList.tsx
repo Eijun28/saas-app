@@ -87,20 +87,19 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
   return (
     <div 
       ref={containerRef}
-      className="flex-1 overflow-y-auto bg-[#F5F5F7] px-2 sm:px-4 py-4 sm:py-6 scroll-smooth"
+      className="flex-1 overflow-y-auto bg-white px-3 sm:px-4 py-3 sm:py-4 scroll-smooth"
       style={{
-        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(130, 63, 145, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(157, 95, 168, 0.03) 0%, transparent 50%)',
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent'
       }}
     >
-      <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+      <div className="max-w-3xl mx-auto space-y-1">
         {groupedMessages.map((group, groupIndex) => (
           <div key={group.date}>
             {/* Date separator */}
             {groupIndex > 0 && (
-              <div className="flex items-center justify-center my-4 sm:my-6">
-                <div className="bg-white/80 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs text-gray-500 shadow-sm">
+              <div className="flex items-center justify-center my-5 sm:my-6">
+                <div className="bg-gray-100/80 backdrop-blur-sm px-3 sm:px-4 py-1.5 rounded-full text-[11px] sm:text-xs text-gray-500 font-medium">
                   {new Date(group.date).toLocaleDateString('fr-FR', { 
                     weekday: 'long', 
                     day: 'numeric', 
@@ -110,7 +109,7 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
               </div>
             )}
             
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {group.items.map((message, index) => {
                 const isOwn = message.sender_id === currentUserId
                 const prevMessage = index > 0 ? group.items[index - 1] : null
@@ -121,29 +120,29 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
                 return (
                   <div
                     key={message.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isConsecutive ? 'mt-2 sm:mt-3' : ''}`}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${!isConsecutive ? 'mt-2' : 'mt-0.5'}`}
                   >
-                    <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[65%]`}>
+                    <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[70%]`}>
                       <div
-                        className={`relative rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 shadow-sm transition-all duration-200 ${
+                        className={`relative rounded-3xl px-4 py-2.5 transition-all duration-200 ${
                           isOwn
-                            ? 'bg-[#007AFF] text-white rounded-br-md'
-                            : 'bg-white text-gray-900 rounded-bl-md border border-gray-200/50'
-                        } ${isConsecutive && !isOwn ? 'ml-0' : ''}`}
+                            ? 'bg-[#007AFF] text-white rounded-br-sm'
+                            : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                        }`}
                         style={{
                           boxShadow: isOwn 
-                            ? '0 1px 2px rgba(0, 122, 255, 0.3)' 
-                            : '0 1px 2px rgba(0, 0, 0, 0.1)'
+                            ? '0 1px 2px rgba(0, 122, 255, 0.4), 0 0 1px rgba(0, 122, 255, 0.3)' 
+                            : '0 1px 2px rgba(0, 0, 0, 0.08)'
                         }}
                       >
-                        <p className="text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words select-text">
+                        <p className="text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal">
                           {message.content}
                         </p>
                       </div>
                       
                       {showTime && (
                         <span 
-                          className={`text-[10px] sm:text-[11px] text-gray-400 mt-0.5 sm:mt-1 px-1 ${isOwn ? 'text-right' : 'text-left'}`}
+                          className={`text-[11px] text-gray-400 mt-0.5 px-1.5 ${isOwn ? 'text-right' : 'text-left'}`}
                         >
                           {formatTime(message.created_at)}
                         </span>
@@ -157,7 +156,7 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
         ))}
         
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] sm:min-h-[calc(100vh-250px)] px-4">
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] sm:min-h-[calc(100vh-250px)] px-4 pt-12 sm:pt-16">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-[#007AFF]/10 to-[#0051D5]/10 flex items-center justify-center mb-4 sm:mb-5">
               <svg
                 className="w-8 h-8 sm:w-10 sm:h-10 text-[#007AFF]"

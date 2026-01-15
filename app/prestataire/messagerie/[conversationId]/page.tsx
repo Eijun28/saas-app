@@ -38,7 +38,7 @@ export default async function PrestataireConversationPage({ params }: Conversati
   const otherPartyId = conversation.couple_id === user.id ? conversation.provider_id : conversation.couple_id
 
   return (
-    <div className="flex flex-col h-screen sm:h-[calc(100vh-64px)] bg-[#F5F5F7] overflow-hidden">
+    <div className="flex flex-col h-screen sm:h-[calc(100vh-64px)] bg-white overflow-hidden">
       <ConversationHeader
         conversation={{
           id: conversation.id,

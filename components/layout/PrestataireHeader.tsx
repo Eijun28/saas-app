@@ -177,8 +177,8 @@ export function PrestataireHeader() {
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
 
   return (
-    <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center'>
-      <div className='w-full flex items-center justify-between gap-6 px-5 sm:px-6 relative z-[101]'>
+    <header className='h-14 sm:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full shadow-sm shadow-black/5 flex items-center'>
+      <div className='w-full flex items-center justify-between gap-3 sm:gap-6 px-3 sm:px-5 md:px-6 relative z-[101]'>
         {/* Sidebar toggle button - MOBILE uniquement */}
         <div className='md:hidden'>
           <Button
@@ -190,30 +190,30 @@ export function PrestataireHeader() {
               setOpenMobile(!openMobile)
             }}
             className={cn(
-              'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-              'hover:bg-gray-100',
+              'h-9 w-9 sm:h-10 sm:w-10 rounded-xl transition-all duration-200 flex-shrink-0',
+              'hover:bg-gray-100 active:bg-gray-200',
               'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2'
             )}
             style={{ pointerEvents: 'auto' }}
             aria-label={openMobile ? 'Fermer la sidebar' : 'Ouvrir la sidebar'}
           >
             {openMobile ? (
-              <PanelLeftClose className='h-6 w-6 text-black' />
+              <PanelLeftClose className='h-5 w-5 sm:h-6 sm:w-6 text-gray-700' />
             ) : (
-              <PanelLeft className='h-6 w-6 text-black' />
+              <PanelLeft className='h-5 w-5 sm:h-6 sm:w-6 text-gray-700' />
             )}
           </Button>
         </div>
 
         {/* Notifications et Avatar - alignés à droite */}
-        <div className='flex items-center gap-3 ml-auto'>
+        <div className='flex items-center gap-2 sm:gap-3 ml-auto'>
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className='relative h-10 w-10 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg transition-colors'>
-                <Bell className='h-5 w-5 text-black' />
+              <button className='relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center cursor-pointer hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors'>
+                <Bell className='h-4 w-4 sm:h-5 sm:w-5 text-gray-700' />
                 {unreadCount > 0 && (
-                  <span className='absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#823F91] text-white text-xs font-semibold flex items-center justify-center'>
+                  <span className='absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-[#823F91] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center'>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -251,10 +251,10 @@ export function PrestataireHeader() {
           <div className="relative z-[103]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className='h-auto gap-2 px-2 py-1.5 flex items-center cursor-pointer hover:opacity-80 transition-opacity'>
-                  <Avatar className='h-9 w-9 rounded-xl'>
+                <button className='h-auto gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 flex items-center cursor-pointer hover:opacity-80 active:opacity-70 transition-opacity'>
+                  <Avatar className='h-8 w-8 sm:h-9 sm:w-9 rounded-xl ring-1 ring-gray-100'>
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                    <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white font-semibold'>
+                    <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs sm:text-sm font-semibold'>
                       {profile?.name
                         ?.split(' ')
                         .map((n) => n[0])

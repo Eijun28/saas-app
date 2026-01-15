@@ -152,7 +152,7 @@ export function CalendarDashboard({
 
     // Cellules vides pour les jours avant le début du mois
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-1 sm:p-1.5 md:p-2 aspect-square"></div>)
+      days.push(<div key={`empty-${i}`} className="p-0.5 sm:p-1 aspect-square min-h-[60px] sm:min-h-[70px] md:min-h-[80px]"></div>)
     }
 
     // Jours réels
@@ -164,30 +164,30 @@ export function CalendarDashboard({
       days.push(
         <div
           key={day}
-          className={`p-1 sm:p-1.5 md:p-2 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden aspect-square flex flex-col ${
+          className={`p-0.5 sm:p-1 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden aspect-square min-h-[60px] sm:min-h-[70px] md:min-h-[80px] flex flex-col ${
             isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
           }`}
           onClick={() => handleDateClick(day)}
         >
-          <div className={`text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1 flex-shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
+          <div className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 flex-shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
             {day}
           </div>
-          <div className="flex-1 overflow-hidden flex flex-col gap-0.5 sm:gap-1 min-h-0">
-            {dayEvents.slice(0, isMobile ? 2 : 3).map((event) => (
+          <div className="flex-1 overflow-hidden flex flex-col gap-0.5 min-h-0">
+            {dayEvents.slice(0, isMobile ? 1 : 2).map((event) => (
               <div
                 key={event.id}
-                className={`${getEventColor(event)} text-white text-[9px] sm:text-[10px] md:text-xs px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-1 rounded truncate leading-tight flex-shrink-0 min-h-[18px] sm:min-h-[20px] flex items-center`}
+                className={`${getEventColor(event)} text-white text-[8px] sm:text-[9px] md:text-[10px] px-0.5 sm:px-1 py-0.5 rounded truncate leading-tight flex-shrink-0 min-h-[14px] sm:min-h-[16px] flex items-center`}
                 title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
               >
                 {showTime && event.time && !isMobile && (
-                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" />
+                  <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5 mr-0.5 flex-shrink-0" />
                 )}
                 <span className="truncate">{showTime && event.time && isMobile ? `${event.time} ` : ''}{event.title}</span>
               </div>
             ))}
-            {dayEvents.length > (isMobile ? 2 : 3) && (
-              <div className="text-[9px] sm:text-[10px] md:text-xs text-gray-500 px-1 sm:px-1.5 flex-shrink-0">
-                +{dayEvents.length - (isMobile ? 2 : 3)} autres
+            {dayEvents.length > (isMobile ? 1 : 2) && (
+              <div className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500 px-0.5 sm:px-1 flex-shrink-0">
+                +{dayEvents.length - (isMobile ? 1 : 2)}
               </div>
             )}
           </div>
@@ -201,36 +201,36 @@ export function CalendarDashboard({
   return (
     <div className="w-full">
       <Card className="shadow-none border-0">
-        <CardHeader className="border-b bg-[rgba(252,249,253,1)] pb-2 sm:pb-4 px-2 sm:px-6" style={{ borderBottomColor: 'rgba(255, 252, 250, 1)', boxShadow: '0px 4px 12px 0px rgba(0, 0, 0, 0.15)', backgroundColor: 'rgba(252, 249, 253, 1)' }}>
+        <CardHeader className="border-b bg-[rgba(252,249,253,1)] pb-2 sm:pb-3 px-3 sm:px-4 md:px-6" style={{ borderBottomColor: 'rgba(255, 252, 250, 1)', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.1)', backgroundColor: 'rgba(252, 249, 253, 1)' }}>
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={previousMonth} 
-                className="h-8 w-8 sm:h-9 sm:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50"
+                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50 p-0"
               >
-                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                <ChevronLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
               </Button>
-              <span className="text-sm sm:text-base md:text-lg font-semibold min-w-[140px] sm:min-w-[200px] text-center">
+              <span className="text-xs sm:text-sm md:text-base font-semibold min-w-[120px] sm:min-w-[160px] md:min-w-[200px] text-center">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </span>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={nextMonth} 
-                className="h-8 w-8 sm:h-9 sm:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50"
+                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50 p-0"
               >
-                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-2 sm:p-4 md:p-6">
+        <CardContent className="p-2 sm:p-3 md:p-4">
           {/* En-tête des jours */}
-          <div className="grid grid-cols-7 gap-0 mb-1 sm:mb-2">
+          <div className="grid grid-cols-7 gap-0 mb-1">
             {dayNames.map((day) => (
-              <div key={day} className="p-1 sm:p-1.5 md:p-2 text-center font-semibold text-gray-600 text-[10px] sm:text-xs md:text-sm">
+              <div key={day} className="p-1 sm:p-1.5 text-center font-semibold text-gray-600 text-[10px] sm:text-xs">
                 {/* Mobile: première lettre seulement */}
                 <span className="sm:hidden">{day[0]}</span>
                 <span className="hidden sm:inline">{day}</span>

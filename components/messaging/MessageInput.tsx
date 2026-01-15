@@ -70,29 +70,29 @@ export function MessageInput({ conversationId, senderId, onMessageSent }: Messag
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-xl border-t border-gray-200/50 safe-area-bottom">
-      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
-        <div className="flex items-end gap-1.5 sm:gap-2 bg-gray-100 rounded-3xl px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200/50 focus-within:bg-white focus-within:border-[#007AFF]/30 focus-within:shadow-sm transition-all">
+    <div className="bg-white border-t border-gray-200/60 safe-area-bottom">
+      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+        <div className="flex items-end gap-2 bg-gray-100 rounded-full px-4 py-2.5 border border-gray-200/60 focus-within:bg-white focus-within:border-gray-300 focus-within:shadow-sm transition-all">
           <textarea
             ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Message"
-            className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] text-gray-900 placeholder:text-gray-400 min-h-[20px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-500 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
             rows={1}
             disabled={isSending}
           />
           <button
             type="submit"
             disabled={!content.trim() || isSending}
-            className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+            className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
               content.trim() && !isSending
-                ? 'bg-[#007AFF] text-white shadow-md hover:bg-[#0051D5] active:scale-95'
-                : 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                ? 'bg-[#007AFF] text-white shadow-sm hover:bg-[#0051D5] active:scale-95'
+                : 'bg-transparent text-gray-400 cursor-not-allowed'
             }`}
           >
-            <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
+            <Send className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.5} />
           </button>
         </div>
       </form>

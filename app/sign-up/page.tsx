@@ -101,21 +101,12 @@ export default function SignUpPage() {
           nom: data.nom,
           nomEntreprise: data.nomEntreprise,
         })
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:106',message:'AFTER signUp call - SUCCESS',data:{hasResult:!!result,resultType:result ? typeof result : 'null',hasError:result && 'error' in result ? !!result.error : false,hasSuccess:result && 'success' in result ? !!result.success : false,hasRedirectTo:result && 'redirectTo' in result ? !!result.redirectTo : false,resultKeys:result ? Object.keys(result) : [],resultStringified:result ? JSON.stringify(result) : 'null'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
       } catch (signUpError: any) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:109',message:'EXCEPTION in signUp call',data:{errorMessage:signUpError?.message,errorName:signUpError?.name,errorStack:signUpError?.stack?.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         throw signUpError
       }
 
       // Vérifier si result est null ou undefined (réponse inattendue)
       if (!result) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:113',message:'RESULT IS NULL/UNDEFINED',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
         return
       }
@@ -131,9 +122,6 @@ export default function SignUpPage() {
         }
       } else {
         // Cas où result existe mais n'a ni error ni success
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:129',message:'RESULT HAS NO ERROR OR SUCCESS',data:{resultKeys:Object.keys(result),resultValue:JSON.stringify(result)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {

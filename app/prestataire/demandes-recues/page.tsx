@@ -198,61 +198,73 @@ export default function DemandesRecuesPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
+        className="w-full"
       >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2 break-words">
           Demandes reçues
         </h1>
-        <p className="text-[#823F91]/70 text-lg">
+        <p className="text-[#823F91]/70 text-sm sm:text-base lg:text-lg break-words">
           Gérez toutes vos demandes de prestations
         </p>
       </motion.div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#823F91]/50" />
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]/50 pointer-events-none" />
         <Input
           placeholder="Rechercher une demande..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20"
+          className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-11 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20 text-sm sm:text-base"
         />
       </div>
 
       <Tabs defaultValue="nouvelles" className="w-full">
-        <TabsList className="mb-8 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20">
-          <TabsTrigger value="nouvelles" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            Nouvelles
-            {demandes.nouvelles.length > 0 && (
-              <Badge className="bg-[#823F91] text-white shadow-md">
-                {demandes.nouvelles.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="en-cours" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            En cours
-            {demandes.en_cours.length > 0 && (
-              <Badge className="bg-[#823F91] text-white shadow-md">
-                {demandes.en_cours.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="terminees" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            Terminées
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+          <TabsList className="mb-6 sm:mb-8 w-full sm:w-auto bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 inline-flex min-w-full sm:min-w-0">
+            <TabsTrigger 
+              value="nouvelles" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              <span>Nouvelles</span>
+              {demandes.nouvelles.length > 0 && (
+                <Badge className="bg-[#823F91] text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center">
+                  {demandes.nouvelles.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="en-cours" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              <span>En cours</span>
+              {demandes.en_cours.length > 0 && (
+                <Badge className="bg-[#823F91] text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center">
+                  {demandes.en_cours.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="terminees" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              Terminées
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="nouvelles">
+        <TabsContent value="nouvelles" className="mt-0">
           {demandes.nouvelles.length === 0 ? (
             <EmptyState
               title="Aucune nouvelle demande"
               description="Les nouvelles demandes de couples apparaîtront ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.nouvelles
                 .filter((d) => 
                   !searchTerm || 
@@ -271,14 +283,14 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="en-cours">
+        <TabsContent value="en-cours" className="mt-0">
           {demandes.en_cours.length === 0 ? (
             <EmptyState
               title="Aucune demande en cours"
               description="Les demandes acceptées apparaîtront ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.en_cours
                 .filter((d) => 
                   !searchTerm || 
@@ -292,14 +304,14 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="terminees">
+        <TabsContent value="terminees" className="mt-0">
           {demandes.terminees.length === 0 ? (
             <EmptyState
               title="Aucune demande terminée"
               description="L'historique de vos prestations apparaîtra ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.terminees
                 .filter((d) => 
                   !searchTerm || 

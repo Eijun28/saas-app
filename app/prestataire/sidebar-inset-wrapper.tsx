@@ -12,7 +12,7 @@ export function SidebarInsetWrapper({ children }: { children: React.ReactNode })
       }}
     >
       <PrestataireHeader />
-      <main className="flex-1 w-full p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">
+      <main className="flex-1 w-full p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 overflow-x-hidden">
         {children}
       </main>
     </SidebarInset>

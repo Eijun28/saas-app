@@ -40,28 +40,28 @@ export function ConversationHeader({ conversation, otherParty, request, userType
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 safe-area-top">
-      <div className="max-w-3xl mx-auto px-2 sm:px-4 py-2.5 sm:py-3">
-        <div className="flex items-center gap-2 sm:gap-3">
+    <div className="bg-white border-b border-gray-200/60 safe-area-top">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-3.5">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleBack}
-            className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors -ml-1 sm:-ml-2"
+            className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors -ml-1"
             aria-label="Retour"
           >
-            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            <ArrowLeft className="h-5 w-5 text-gray-700" />
           </button>
           
-          <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
+          <Avatar className="h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0 ring-1 ring-gray-100">
             <AvatarImage src={otherParty.avatar_url || undefined} alt={otherParty.name} />
-            <AvatarFallback className="bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white text-xs sm:text-sm font-medium">
+            <AvatarFallback className="bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white text-sm font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-gray-900 truncate text-base sm:text-[17px]">{otherParty.name}</h2>
+            <h2 className="font-semibold text-gray-900 truncate text-[17px]">{otherParty.name}</h2>
             {request && (
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">
+              <p className="text-xs text-gray-500 truncate font-medium">
                 En ligne
               </p>
             )}

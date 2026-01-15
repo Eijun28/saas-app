@@ -386,27 +386,6 @@ export default function DashboardPrestatairePage() {
             />
           ))}
       </div>
-
-      {/* Activité récente */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-      >
-        <Card className="border-[#823F91]/20 bg-white/95 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
-              Activité récente
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <EmptyState
-              title="Aucune activité récente"
-              description="Les nouvelles demandes et messages apparaîtront ici"
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
       </div>
     </div>
   )

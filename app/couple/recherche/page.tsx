@@ -388,8 +388,8 @@ export default function RecherchePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-white p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -428,7 +428,7 @@ export default function RecherchePage() {
                   <ChevronDown className="h-4 w-4 text-gray-400 ml-auto flex-shrink-0" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white" align="start">
+              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white" align="start" side="bottom">
                 <div className="space-y-1">
                   {/* Métier */}
                   <Popover open={openSubDropdown === 'metier'} onOpenChange={(open) => setOpenSubDropdown(open ? 'metier' : null)}>
@@ -441,7 +441,7 @@ export default function RecherchePage() {
                           <Building2 className="h-4 w-4 text-gray-700" />
                           Métier
                             {selectedCategory && (
-                              <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
+                              <Badge variant="secondary" className="ml-2 text-xs bg-gray-200 text-gray-900 font-medium">
                                 {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
                               </Badge>
                             )}
@@ -450,46 +450,46 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999]" 
-                      side="left" 
+                      className="w-[calc(100vw-2rem)] sm:w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side="right" 
                       align="start" 
                       sideOffset={8}
                     >
                         <div className="space-y-1">
-                          <Button
-                            variant={selectedCategory === null ? "default" : "ghost"}
-                            className={`w-full justify-start text-sm font-medium ${selectedCategory === null ? "text-white" : "text-gray-900"}`}
+                          <button
+                            className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCategory === null ? "bg-gray-100" : ""}`}
                             onClick={() => {
                               setSelectedCategory(null)
                               setOpenSubDropdown(null)
                             }}
                           >
                             Tous les métiers
-                          </Button>
+                          </button>
                           <div className="border-t border-gray-200 my-2"></div>
                           {SERVICE_CATEGORIES.map((category) => {
                             const CategoryIcon = category.icon
                             return (
                               <div key={category.id} className="space-y-1">
-                                <div className="px-2 py-1.5 text-xs font-semibold text-gray-700 uppercase flex items-center gap-2">
+                                <div className="px-2 py-1.5 text-xs font-semibold text-[#823F91] uppercase flex items-center gap-2">
                                   <CategoryIcon className="h-3.5 w-3.5 text-[#823F91]" />
                                   {category.label}
                                 </div>
                                 {category.services.map((service) => {
                                   const ServiceIcon = service.icon
                                   return (
-                                    <Button
+                                    <button
                                       key={service.value}
-                                      variant={selectedCategory === service.value ? "default" : "ghost"}
-                                      className={`w-full justify-start text-sm pl-6 ${selectedCategory === service.value ? "text-white" : "text-gray-900"}`}
+                                      className={`w-full text-left px-6 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCategory === service.value ? "bg-gray-200" : ""}`}
                                       onClick={() => {
                                         setSelectedCategory(service.value)
                                         setOpenSubDropdown(null)
                                       }}
                                     >
-                                      <ServiceIcon className={`mr-2 h-4 w-4 ${selectedCategory === service.value ? "text-white" : "text-[#823F91]"}`} />
-                                      {service.label}
-                                    </Button>
+                                      <span className="flex items-center gap-2">
+                                        <ServiceIcon className="h-4 w-4 text-black" />
+                                        {service.label}
+                                      </span>
+                                    </button>
                                   )
                                 })}
                               </div>
@@ -510,7 +510,7 @@ export default function RecherchePage() {
                           <Sparkles className="h-4 w-4 text-gray-700" />
                           Culture
                           {selectedCulture && (
-                            <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
+                            <Badge variant="secondary" className="ml-2 text-xs bg-gray-200 text-gray-900 font-medium">
                               {CULTURES.find(c => c.id === selectedCulture)?.label}
                             </Badge>
                           )}
@@ -519,34 +519,32 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
-                      side="left" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side="right" 
                       align="start" 
                       sideOffset={8}
                     >
                       <div className="space-y-1">
-                        <Button
-                          variant={selectedCulture === null ? "default" : "ghost"}
-                          className={`w-full justify-start text-sm ${selectedCulture === null ? "text-white" : "text-gray-900"}`}
+                        <button
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCulture === null ? "bg-gray-100" : ""}`}
                           onClick={() => {
                             setSelectedCulture(null)
                             setOpenSubDropdown(null)
                           }}
                         >
                           Toutes les cultures
-                        </Button>
+                        </button>
                         {CULTURES.map((culture) => (
-                          <Button
+                          <button
                             key={culture.id}
-                            variant={selectedCulture === culture.id ? "default" : "ghost"}
-                            className={`w-full justify-start text-sm ${selectedCulture === culture.id ? "text-white" : "text-gray-900"}`}
+                            className={`w-full text-left px-3 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCulture === culture.id ? "bg-gray-200" : ""}`}
                             onClick={() => {
                               setSelectedCulture(culture.id)
                               setOpenSubDropdown(null)
                             }}
                           >
                             {culture.label}
-                          </Button>
+                          </button>
                         ))}
                       </div>
                     </PopoverContent>
@@ -563,7 +561,7 @@ export default function RecherchePage() {
                           <MapPin className="h-4 w-4 text-gray-700" />
                           Pays
                           {selectedCountry && (
-                            <Badge variant="secondary" className="ml-2 text-xs text-gray-900">
+                            <Badge variant="secondary" className="ml-2 text-xs bg-gray-200 text-gray-900 font-medium">
                               {selectedCountry}
                             </Badge>
                           )}
@@ -572,39 +570,37 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999]" 
-                      side="left" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side="right" 
                       align="start" 
                       sideOffset={8}
                     >
                       <div className="space-y-1">
-                        <Button
-                          variant={selectedCountry === null ? "default" : "ghost"}
-                          className={`w-full justify-start text-sm ${selectedCountry === null ? "text-white" : "text-gray-900"}`}
+                        <button
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCountry === null ? "bg-gray-100" : ""}`}
                           onClick={() => {
                             setSelectedCountry(null)
                             setOpenSubDropdown(null)
                           }}
                         >
                           Tous les pays
-                        </Button>
+                        </button>
                         {CONTINENTS.map((continent) => (
                           <div key={continent.id} className="space-y-1">
-                            <div className="px-2 py-1 text-xs font-semibold text-gray-700 uppercase">
+                            <div className="px-2 py-1 text-xs font-semibold text-[#823F91] uppercase">
                               {continent.label}
                             </div>
                             {COUNTRIES_BY_CONTINENT[continent.id]?.map((country) => (
-                              <Button
+                              <button
                                 key={country}
-                                variant={selectedCountry === country ? "default" : "ghost"}
-                                className={`w-full justify-start text-sm pl-4 ${selectedCountry === country ? "text-white" : "text-gray-900"}`}
+                                className={`w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCountry === country ? "bg-gray-200" : ""}`}
                                 onClick={() => {
                                   setSelectedCountry(country)
                                   setOpenSubDropdown(null)
                                 }}
                               >
                                 {country}
-                              </Button>
+                              </button>
                             ))}
                           </div>
                         ))}
@@ -719,7 +715,7 @@ export default function RecherchePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {providers.map((provider, index) => (
                 <motion.div
                   key={provider.id}
@@ -727,20 +723,20 @@ export default function RecherchePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="bg-white rounded-xl border border-gray-200 hover:border-[#823F91]/50 hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col"
+                  className="bg-white rounded-xl border border-gray-200 hover:border-[#823F91]/50 hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col h-full"
                   onClick={() => handleProviderClick(provider)}
                 >
                   {/* Avatar et image de fond optionnelle */}
-                  <div className="relative h-24 sm:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                  <div className="relative h-20 sm:h-24 md:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
                     {provider.avatar_url ? (
                       <img
                         src={provider.avatar_url}
                         alt={provider.nom_entreprise}
-                        className="h-16 w-16 sm:h-20 sm:w-20 rounded-full object-cover border-2 sm:border-4 border-white shadow-md"
+                        className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full object-cover border-2 sm:border-3 md:border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-4 border-white shadow-md">
-                        <span className="text-xl sm:text-2xl font-semibold text-white">
+                      <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-3 md:border-4 border-white shadow-md">
+                        <span className="text-lg sm:text-xl md:text-2xl font-semibold text-white">
                           {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>
                       </div>
@@ -748,39 +744,39 @@ export default function RecherchePage() {
                   </div>
 
                   {/* Contenu */}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <div className="mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
+                  <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                    <div className="mb-2 sm:mb-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate mb-1">
                         {provider.nom_entreprise || `${provider.prenom || ''} ${provider.nom || ''}`.trim() || 'Prestataire'}
                       </h3>
                       {provider.service_type && (
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />
-                          <span className="capitalize">{provider.service_type.replace('_', ' ')}</span>
+                        <p className="text-xs sm:text-sm text-gray-900 font-medium flex items-center gap-1">
+                          <Building2 className="h-3 w-3 text-gray-700 flex-shrink-0" />
+                          <span className="capitalize truncate">{provider.service_type.replace('_', ' ')}</span>
                         </p>
                       )}
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
+                    <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-2 sm:mb-3">
                       {provider.ville_principale && (
-                        <Badge variant="outline" className="text-xs px-2 py-0.5">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {provider.ville_principale}
+                        <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
+                          <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 flex-shrink-0" />
+                          <span className="truncate max-w-[80px] sm:max-w-none">{provider.ville_principale}</span>
                         </Badge>
                       )}
                       {provider.cultures.slice(0, 1).map((culture) => (
                         <Badge
                           key={culture.id}
                           variant="outline"
-                          className="text-xs px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700"
+                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700"
                         >
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          {culture.label}
+                          <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 flex-shrink-0" />
+                          <span className="truncate max-w-[70px] sm:max-w-none">{culture.label}</span>
                         </Badge>
                       ))}
                       {provider.cultures.length > 1 && (
-                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5">
                           +{provider.cultures.length - 1}
                         </Badge>
                       )}
@@ -788,8 +784,8 @@ export default function RecherchePage() {
 
                     {/* Budget */}
                     {(provider.budget_min || provider.budget_max) && (
-                      <div className="mt-auto pt-3 border-t border-gray-100">
-                        <p className="text-sm text-gray-600">
+                      <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           <span className="font-semibold text-gray-900">
                             {provider.budget_min?.toLocaleString('fr-FR')}€
                             {provider.budget_max && ` - ${provider.budget_max.toLocaleString('fr-FR')}€`}
