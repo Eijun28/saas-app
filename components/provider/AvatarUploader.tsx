@@ -248,6 +248,12 @@ export function AvatarUploader({
       setAvatarUrl(urlWithTimestamp);
       setImageKey(prev => prev + 1); // Forcer le re-render
       onAvatarUpdate?.(urlData.publicUrl); // Callback sans timestamp (pour la DB)
+      
+      // Déclencher un événement pour mettre à jour le header
+      window.dispatchEvent(new CustomEvent('avatar-updated', { 
+        detail: { avatarUrl: urlData.publicUrl } 
+      }));
+      
       toast.success('Succès', {
         description: 'Photo de profil mise à jour',
       });

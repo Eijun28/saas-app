@@ -37,36 +37,49 @@ export function PrestataireHeader() {
     link?: string
   }>>([])
 
+  const loadProfile = async () => {
+    if (!user) return
+
+    const supabase = createClient()
+
+    // Récupérer le profil du prestataire
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('prenom, nom, email, avatar_url')
+      .eq('id', user.id)
+      .single()
+
+    if (profileData) {
+      const fullName = [profileData.prenom, profileData.nom].filter(Boolean).join(' ') || 'Prestataire'
+      
+      setProfile({
+        name: fullName,
+        email: profileData.email || user.email || '',
+        avatar: profileData.avatar_url || undefined
+      })
+    } else {
+      setProfile({
+        name: 'Prestataire',
+        email: user.email || '',
+        avatar: undefined
+      })
+    }
+  }
+
   useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) return
+    loadProfile()
+  }, [user])
 
-      const supabase = createClient()
-
-      // Récupérer le profil du prestataire
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('prenom, nom, email, avatar_url')
-        .eq('id', user.id)
-        .single()
-
-      if (profileData) {
-        const fullName = [profileData.prenom, profileData.nom].filter(Boolean).join(' ') || 'Prestataire'
-        setProfile({
-          name: fullName,
-          email: profileData.email || user.email || '',
-          avatar: profileData.avatar_url || undefined
-        })
-      } else {
-        setProfile({
-          name: 'Prestataire',
-          email: user.email || '',
-          avatar: undefined
-        })
-      }
+  // Écouter les événements de mise à jour d'avatar
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      loadProfile()
     }
 
-    loadProfile()
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => {
+      window.removeEventListener('avatar-updated', handleAvatarUpdate)
+    }
   }, [user])
 
   useEffect(() => {
@@ -253,7 +266,11 @@ export function PrestataireHeader() {
               <DropdownMenuTrigger asChild>
                 <button className='h-auto gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 flex items-center cursor-pointer hover:opacity-80 active:opacity-70 transition-opacity'>
                   <Avatar className='h-8 w-8 sm:h-9 sm:w-9 rounded-xl ring-1 ring-gray-100'>
-                    <AvatarImage src={profile?.avatar} alt={profile?.name} />
+                    <AvatarImage 
+                      src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined} 
+                      alt={profile?.name}
+                      key={profile?.avatar} 
+                    />
                     <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs sm:text-sm font-semibold'>
                       {profile?.name
                         ?.split(' ')
