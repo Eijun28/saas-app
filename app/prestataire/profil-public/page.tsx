@@ -308,35 +308,41 @@ export default function ProfilPublicPage() {
         </div>
       </div>
 
-      <div className="container max-w-7xl py-8">
-        <Card className="p-6 mb-6 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border-[#823F91]/20">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-semibold text-[#823F91]">Profil à {completionPercent}%</h3>
-              <p className="text-sm text-[#823F91]">
+      <div className="container max-w-7xl py-4 sm:py-6 md:py-8">
+        <Card className="p-3 sm:p-4 mb-4 sm:mb-5 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border-[#823F91]/20">
+          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h3 className="font-semibold text-sm sm:text-base text-[#823F91] whitespace-nowrap">
+                  Profil à {completionPercent}%
+                </h3>
+                {completionPercent === 100 && (
+                  <Badge className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-sm text-xs px-2 py-0.5 h-5 flex items-center">
+                    <Check className="h-2.5 w-2.5 mr-1" />
+                    Complet
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-[#823F91]/80 mt-0.5">
                 {completedCount} sur {completionChecks.length} sections complétées
               </p>
             </div>
-            {completionPercent === 100 && (
-              <Badge className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-md shadow-[#823F91]/30">
-                <Check className="h-3 w-3 mr-1" />
-                Complet
-              </Badge>
-            )}
           </div>
           <Progress 
             value={completionPercent} 
-            className="h-2 bg-[#823F91]/20 [&>div]:bg-gradient-to-r [&>div]:from-[#823F91] [&>div]:to-[#9D5FA8]" 
+            className="h-1.5 sm:h-2 bg-[#823F91]/20 [&>div]:bg-gradient-to-r [&>div]:from-[#823F91] [&>div]:to-[#9D5FA8]" 
           />
         </Card>
 
         {completionPercent < 100 && (
-          <Card className="p-4 mb-6 border-[#823F91]/30 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10">
-            <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-[#823F91] shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-sm mb-2 text-[#823F91]">Pour compléter votre profil :</h4>
-                <ul className="text-sm space-y-1">
+          <Card className="p-3 sm:p-4 mb-4 sm:mb-5 border-[#823F91]/30 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10">
+            <div className="flex gap-2 sm:gap-3">
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-xs sm:text-sm mb-1.5 sm:mb-2 text-[#823F91]">
+                  Pour compléter votre profil :
+                </h4>
+                <ul className="text-xs sm:text-sm space-y-0.5 sm:space-y-1">
                   {completionChecks
                     .filter(c => !c.complete)
                     .map((check, i) => (
@@ -350,34 +356,40 @@ export default function ProfilPublicPage() {
           </Card>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3">
           <Collapsible
             open={openSections.infos}
             onOpenChange={() => toggleSection('infos')}
           >
-            <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
-                <div className="flex items-center gap-3">
-                  {profile?.avatar_url && profile?.nom_entreprise && profile?.description_courte ? (
-                    <Check className="h-5 w-5 text-[#823F91]" />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
-                  )}
-                  <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Informations de base</h3>
-                    <p className="text-sm text-[#823F91]">
+            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    {profile?.avatar_url && profile?.nom_entreprise && profile?.description_courte ? (
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                    ) : (
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
+                    )}
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
+                      Informations de base
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
                       Photo de profil, nom et description
                     </p>
                   </div>
                 </div>
-                {openSections.infos ? (
-                  <ChevronUp className="h-5 w-5 text-[#823F91]" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-[#823F91]" />
-                )}
+                <div className="flex-shrink-0 ml-2">
+                  {openSections.infos ? (
+                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  )}
+                </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 space-y-6 border-t border-[#823F91]/20 pt-6 bg-background">
+                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
                   <AvatarUploader
                     userId={user.id}
                     currentAvatarUrl={profile?.avatar_url}
@@ -433,31 +445,37 @@ export default function ProfilPublicPage() {
             open={openSections.cultures}
             onOpenChange={() => toggleSection('cultures')}
           >
-            <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
-                <div className="flex items-center gap-3">
-                  {cultures.length > 0 ? (
-                    <Check className="h-5 w-5 text-[#823F91]" />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
-                  )}
-                  <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Cultures maîtrisées</h3>
-                    <p className="text-sm text-[#823F91]">
+            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    {cultures.length > 0 ? (
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                    ) : (
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
+                    )}
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
+                      Cultures maîtrisées
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
                       {cultures.length > 0
                         ? `${cultures.length} culture${cultures.length > 1 ? 's' : ''} sélectionnée${cultures.length > 1 ? 's' : ''}`
                         : 'Aucune culture sélectionnée'}
                     </p>
                   </div>
                 </div>
-                {openSections.cultures ? (
-                  <ChevronUp className="h-5 w-5 text-[#823F91]" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-[#823F91]" />
-                )}
+                <div className="flex-shrink-0 ml-2">
+                  {openSections.cultures ? (
+                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  )}
+                </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
+                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
                   <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>
@@ -468,31 +486,37 @@ export default function ProfilPublicPage() {
             open={openSections.zones}
             onOpenChange={() => toggleSection('zones')}
           >
-            <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
-                <div className="flex items-center gap-3">
-                  {zones.length > 0 ? (
-                    <Check className="h-5 w-5 text-[#823F91]" />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
-                  )}
-                  <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Zones d'intervention</h3>
-                    <p className="text-sm text-[#823F91]">
+            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    {zones.length > 0 ? (
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                    ) : (
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
+                    )}
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
+                      Zones d'intervention
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
                       {zones.length > 0
                         ? `${zones.length} département${zones.length > 1 ? 's' : ''}`
                         : 'Aucune zone sélectionnée'}
                     </p>
                   </div>
                 </div>
-                {openSections.zones ? (
-                  <ChevronUp className="h-5 w-5 text-[#823F91]" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-[#823F91]" />
-                )}
+                <div className="flex-shrink-0 ml-2">
+                  {openSections.zones ? (
+                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  )}
+                </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
+                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
                   <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>
@@ -503,31 +527,37 @@ export default function ProfilPublicPage() {
             open={openSections.portfolio}
             onOpenChange={() => toggleSection('portfolio')}
           >
-            <Card className="border-[#823F91]/20 overflow-hidden">
-              <CollapsibleTrigger className="w-full px-6 py-3 flex items-center justify-between bg-background">
-                <div className="flex items-center gap-3">
-                  {portfolio.length > 0 ? (
-                    <Check className="h-5 w-5 text-[#823F91]" />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full border-2 border-[#823F91]/40" />
-                  )}
-                  <div className="text-left">
-                    <h3 className="font-semibold text-[#823F91]">Portfolio</h3>
-                    <p className="text-sm text-[#823F91]">
+            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    {portfolio.length > 0 ? (
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                    ) : (
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
+                    )}
+                  </div>
+                  <div className="text-left flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
+                      Portfolio
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
                       {portfolio.length > 0
                         ? `${portfolio.length} photo${portfolio.length > 1 ? 's' : ''}`
                         : 'Aucune photo ajoutée'}
                     </p>
                   </div>
                 </div>
-                {openSections.portfolio ? (
-                  <ChevronUp className="h-5 w-5 text-[#823F91]" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-[#823F91]" />
-                )}
+                <div className="flex-shrink-0 ml-2">
+                  {openSections.portfolio ? (
+                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                  )}
+                </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-6 pb-6 border-t border-[#823F91]/20 pt-6 bg-background">
+                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
                   <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
                 </div>
               </CollapsibleContent>

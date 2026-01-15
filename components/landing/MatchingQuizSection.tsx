@@ -54,9 +54,10 @@ const SkeletonMatchingFullWidth = () => {
     
     let typingTimeout: ReturnType<typeof setTimeout> | null = null;
     let responseTimeout: ReturnType<typeof setTimeout> | null = null;
-    let cycleTimeout: ReturnType<typeof setInterval> | null = null;
     let coupleMessageTimeout: ReturnType<typeof setTimeout> | null = null;
     let sendTimeout: ReturnType<typeof setTimeout> | null = null;
+    let finalMessageTimeout: ReturnType<typeof setTimeout> | null = null;
+    let restartTimeout: ReturnType<typeof setTimeout> | null = null;
     
     const startCycle = () => {
       const current = conversationSets[currentSet];
@@ -135,13 +136,19 @@ const SkeletonMatchingFullWidth = () => {
                     }]);
                     
                     // Puis la réponse finale de l'IA avec le bouton
-                    setTimeout(() => {
+                    finalMessageTimeout = setTimeout(() => {
                       setDisplayedMessages(prev => [...prev, {
                         from: "ai",
                         text: "Demandes envoyées !",
                         avatar: "ai",
                         button: true
                       }]);
+                      
+                      // Attendre 4 secondes après l'affichage du message avec bouton avant de redémarrer
+                      restartTimeout = setTimeout(() => {
+                        // Passer au prochain set de conversation
+                        setCurrentSet((prev) => (prev + 1) % conversationSets.length);
+                      }, 4000);
                     }, 1500);
                   }, 2000);
                 }, 2000);
@@ -153,41 +160,17 @@ const SkeletonMatchingFullWidth = () => {
       
       typeNextChar();
     };
-
-    // Calculer le temps total pour une conversation complète
-    const getConversationDuration = (query: string) => {
-      // Temps de frappe : ~50ms par caractère en moyenne (avec variations)
-      const typingTime = query.length * 60; // Un peu plus pour être sûr
-      // Temps d'envoi et affichage message 1 : ~700ms
-      const sendTime = 700;
-      // Délai avant message 2 : 2000ms
-      const delayBeforeMsg2 = 2000;
-      // Délai avant message 3 : 2000ms
-      const delayBeforeMsg3 = 2000;
-      // Délai avant message 4 : 1500ms
-      const delayBeforeMsg4 = 1500;
-      // Temps d'affichage final avant de recommencer : 2000ms (réduit de 3000ms)
-      const finalDisplayTime = 2000;
-      
-      return typingTime + sendTime + delayBeforeMsg2 + delayBeforeMsg3 + delayBeforeMsg4 + finalDisplayTime;
-    };
     
     // Démarrer le cycle initial
     startCycle();
-    
-    // Changer de set après le temps nécessaire pour chaque conversation complète
-    // Le timing est calculé pour chaque conversation individuellement
-    const currentDuration = getConversationDuration(conversationSets[currentSet].query);
-    cycleTimeout = setTimeout(() => {
-      setCurrentSet((prev) => (prev + 1) % conversationSets.length);
-    }, currentDuration);
 
     return () => {
       if (typingTimeout) clearTimeout(typingTimeout);
       if (responseTimeout) clearTimeout(responseTimeout);
-      if (cycleTimeout) clearTimeout(cycleTimeout);
       if (coupleMessageTimeout) clearTimeout(coupleMessageTimeout);
       if (sendTimeout) clearTimeout(sendTimeout);
+      if (finalMessageTimeout) clearTimeout(finalMessageTimeout);
+      if (restartTimeout) clearTimeout(restartTimeout);
     };
   }, [isInView, currentSet]);
 
@@ -197,71 +180,64 @@ const SkeletonMatchingFullWidth = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="w-full max-w-7xl mx-auto h-full min-h-[500px] sm:min-h-[600px] bg-white rounded-none sm:rounded-3xl shadow-xl border-x-0 sm:border-x border-t border-b border-gray-100 p-3 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden flex flex-col"
+      className="w-full max-w-7xl mx-auto h-full min-h-[400px] sm:min-h-[500px] bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl border border-gray-100 p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden flex flex-col"
     >
       <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col flex-1 min-h-0">
         {/* Conversation - messages qui apparaissent au-dessus du champ de saisie */}
         <div 
           ref={messagesContainerRef}
-          className="flex flex-col space-y-4 sm:space-y-6 pt-2 sm:pt-4 flex-1 min-h-0 overflow-y-auto scroll-smooth px-1"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(130, 63, 145, 0.3) transparent' }}
+          className="flex flex-col space-y-1 pt-2 sm:pt-3 flex-1 min-h-0 overflow-y-auto scroll-smooth px-2 sm:px-3 bg-white"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {displayedMessages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-400">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-gray-50" style={{ background: 'linear-gradient(to right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1))' }}>
-                <Sparkles className="w-6 h-6" style={{ color: '#c081e3' }} />
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 bg-gray-100">
+                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
               </div>
-              <p className="text-sm font-medium mb-1">Commencez votre recherche</p>
-              <p className="text-xs text-gray-500">Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...</p>
+              <p className="text-sm sm:text-base font-medium mb-1 text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
+                Commencez votre recherche
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500 px-4 text-center" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
+                Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...
+              </p>
             </div>
           ) : (
             <>
               {displayedMessages.map((msg, i) => (
                 <div
                   key={`msg-${i}-${msg.from}`}
-                  className={`flex ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full`}
+                  className={`flex ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full mb-1`}
                 >
-                  <div className={`flex items-start ${
-                    msg.from === "ai" 
-                      ? "flex-row-reverse space-x-reverse max-w-[75%] sm:max-w-[70%] md:max-w-[65%] gap-2 sm:gap-4 md:gap-5" 
-                      : "max-w-[90%] sm:max-w-[85%] md:max-w-[80%] space-x-2 sm:space-x-4 md:space-x-5"
-                  }`}>
+                  <div 
+                    className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] ${
+                      msg.from === "ai" ? "ml-auto" : "mr-auto"
+                    }`}
+                  >
                     <div 
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" 
-                      style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
-                    >
-                      {msg.avatar === "couple" ? (
-                        <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      ) : (
-                        <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      )}
-                    </div>
-                    <div 
-                      className={`rounded-xl sm:rounded-2xl px-3 py-2.5 sm:px-5 sm:py-4 break-words shadow-sm ${
+                      className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 break-words ${
                         msg.from === "couple" 
-                          ? "bg-gray-50 text-gray-900 border border-gray-100" 
-                          : "text-white"
+                          ? "bg-gray-100 text-gray-900 rounded-bl-sm" 
+                          : "bg-[#823F91] text-white rounded-br-sm"
                       }`}
                       style={msg.from === "ai" ? { 
-                        background: 'linear-gradient(to right, #c081e3, #823F91)',
-                        boxShadow: '0 2px 8px rgba(130, 63, 145, 0.2)',
-                        color: '#ffffff'
+                        backgroundColor: '#823F91',
                       } : {}}
                     >
                       <p 
-                        className={`text-sm sm:text-base font-medium leading-relaxed whitespace-pre-wrap break-words ${
-                          msg.button ? 'mb-3' : ''
-                        } ${
-                          msg.from === "ai" ? "text-white" : ""
+                        className={`text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words ${
+                          msg.button ? 'mb-2' : ''
                         }`}
-                        style={msg.from === "ai" ? { color: '#ffffff' } : {}}
+                        style={{ 
+                          fontFamily: msg.from === "ai" ? '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' : '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                          fontWeight: 400
+                        }}
                       >
                         {msg.text}
                       </p>
                       {msg.button && (
                         <button
-                          className="w-full bg-white text-gray-900 rounded-lg px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm active:scale-95"
+                          className="w-full bg-white text-gray-900 rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 transition-colors active:scale-95 mt-2"
                           onClick={() => {
                             // Action à définir
                           }}
@@ -277,56 +253,55 @@ const SkeletonMatchingFullWidth = () => {
           )}
         </div>
 
-        {/* Zone de frappe - style ChatGPT/Cursor, collée en bas de la carte */}
-        <div className="flex-shrink-0 pt-3 sm:pt-4 border-t border-gray-200">
-          <div 
-            className={`flex items-end gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border transition-all duration-200 px-3 py-3 sm:px-[18px] sm:py-[14px] min-h-[56px] sm:min-h-[60px] ${
-              isTyping || typedText 
-                ? "bg-white border-gray-300 shadow-lg ring-1 ring-gray-200" 
-                : isSending
-                ? "bg-gray-50 border-gray-200 opacity-60"
-                : "bg-gray-50 border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 shadow-sm" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div className="flex-1 relative min-h-[36px] flex items-center">
-              <div className="w-full relative">
-                <div 
-                  className="w-full bg-transparent text-sm sm:text-base text-gray-900 placeholder-gray-400 py-2 min-h-[36px] flex items-center"
-                  style={{
-                    minHeight: '36px',
-                    lineHeight: '1.6',
-                    whiteSpace: 'pre-wrap',
-                    wordWrap: 'break-word'
-                  }}
-                >
-                  {typedText || (isTyping ? '' : '')}
-                  {isTyping && (
-                    <span className="inline-block w-0.5 h-5 bg-gray-400 ml-1.5 animate-pulse" style={{ animationDuration: '1s' }} />
-                  )}
-                </div>
-                {!typedText && !isTyping && (
-                  <div className="absolute inset-0 flex items-center pointer-events-none">
-                    <span className="text-gray-400 text-sm sm:text-base">Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...</span>
+        {/* Zone de frappe - style iMessage */}
+        <div className="flex-shrink-0 pt-2 sm:pt-3 border-t border-gray-200/50 bg-white">
+          <div className="flex items-end gap-2 px-2 pb-2">
+            <div className="flex-1 relative">
+              <div 
+                className={`rounded-3xl border transition-all duration-200 px-3 sm:px-4 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[40px] flex items-center ${
+                  isTyping || typedText 
+                    ? "bg-white border-gray-300" 
+                    : isSending
+                    ? "bg-gray-100 border-gray-200 opacity-60"
+                    : "bg-gray-100 border-gray-200"
+                }`}
+              >
+                <div className="flex-1 relative min-h-[24px] flex items-center">
+                  <div className="w-full relative">
+                    <div 
+                      className="w-full bg-transparent text-sm sm:text-[15px] text-gray-900 py-1 min-h-[24px] flex items-center"
+                      style={{
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                        lineHeight: '1.4',
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word'
+                      }}
+                    >
+                      {typedText || (isTyping ? '' : '')}
+                      {isTyping && (
+                        <span className="inline-block w-0.5 h-4 bg-[#823F91] ml-1 animate-pulse" style={{ animationDuration: '1s' }} />
+                      )}
+                    </div>
+                    {!typedText && !isTyping && (
+                      <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <span className="text-gray-400 text-sm sm:text-[15px]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
+                          Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
             {showSendButton && (
               <button
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 text-white transition-all hover:scale-105 hover:shadow-md active:scale-95"
-                style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 bg-[#823F91] text-white transition-all hover:bg-[#6D3478] active:scale-95 shadow-sm"
               >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
             {isSending && (
-              <div
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}
-              >
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 bg-[#823F91]/60">
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" style={{ animationDuration: '1s' }} />
               </div>
             )}

@@ -50,12 +50,12 @@ export default function PricingSection() {
   };
 
   // Plans pour les prestataires (prix mensuels de base)
-  const prestatairesPricingBase: Array<Omit<PricingColumnProps, 'price' | 'billingPeriod'> & { monthlyPrice: number }> = [
+  const prestatairesPricingBase: Array<Omit<PricingColumnProps, 'price' | 'billingPeriod'> & { monthlyPrice: number; comingSoon?: boolean }> = [
     {
       name: "PACK STARTER",
       description: "Pour tester NUPLY",
-      monthlyPrice: 29,
-      priceNote: "",
+      monthlyPrice: 0,
+      priceNote: "Gratuit pour toujours",
       cta: {
         variant: "outline",
         label: user ? "Activer Starter" : "S'inscrire et activer Starter",
@@ -95,6 +95,7 @@ export default function PricingSection() {
         "Paiements en ligne + acomptes sécurisés",
       ],
       variant: "glow-brand",
+      comingSoon: true,
     },
     {
       name: "PACK PREMIUM",
@@ -120,6 +121,7 @@ export default function PricingSection() {
         "Exports comptables automatisés",
       ],
       variant: "glow",
+      comingSoon: true,
     },
   ];
 
@@ -128,6 +130,7 @@ export default function PricingSection() {
     ...plan,
     price: calculatePrice(plan.monthlyPrice, billingPeriod),
     billingPeriod,
+    comingSoon: plan.comingSoon || false,
   }));
 
   const currentPricing = userType === 'couples' ? couplesPricing : prestatairesPricing;
@@ -310,8 +313,9 @@ export default function PricingSection() {
                     features={plan.features}
                     variant={plan.variant}
                     className={plan.className}
+                    comingSoon={plan.comingSoon}
                   />
-                  {user && plan.cta.planType && plan.price > 0 && (
+                  {user && plan.cta.planType && plan.price > 0 && !plan.comingSoon && (
                     <div className="px-6 pb-6">
                       <CheckoutButton
                         planType={plan.cta.planType}
