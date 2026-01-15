@@ -89,28 +89,18 @@ export default function DashboardPrestatairePage() {
       try {
         const supabase = createClient()
         
-        // Récupérer d'abord les IDs des conversations
-        const { data: conversations, error: conversationsError } = await supabase
-          .from('conversations')
-          .select('id')
-          .eq('prestataire_id', user.id)
-
-        // Si erreur et ce n'est pas juste une table qui n'existe pas encore, ignorer silencieusement
-        const conversationIds = (conversations?.map(c => c.id) || [])
-
         // Paralléliser toutes les requêtes
         const [
           { count: nouvellesDemandes, error: demandesError },
           { count: evenementsAvenir, error: eventsError },
-          { count: messagesNonLus },
           { count: demandesCeMois },
           { count: totalDemandes }
         ] = await Promise.all([
-          // Nouvelles demandes (status = 'new')
+          // Nouvelles demandes (requests.status = 'pending')
           supabase
-            .from('demandes')
+            .from('requests')
             .select('id', { count: 'exact', head: true })
-            .eq('prestataire_id', user.id)
+            .eq('provider_id', user.id)
             .eq('status', 'pending'),
           
           // Événements à venir (date >= today)
@@ -120,28 +110,18 @@ export default function DashboardPrestatairePage() {
             .eq('prestataire_id', user.id)
             .gte('date', new Date().toISOString().split('T')[0]),
           
-          // Messages non lus dans les conversations du prestataire
-          conversationIds.length > 0
-            ? supabase
-                .from('messages')
-                .select('id', { count: 'exact', head: true })
-                .is('read_at', null)
-                .neq('sender_id', user.id)
-                .in('conversation_id', conversationIds)
-            : Promise.resolve({ count: 0, error: null }),
-          
           // Demandes ce mois (créées ce mois)
           supabase
-            .from('demandes')
+            .from('requests')
             .select('id', { count: 'exact', head: true })
-            .eq('prestataire_id', user.id)
+            .eq('provider_id', user.id)
             .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
           
           // Total demandes pour calculer le taux de réponse
           supabase
-            .from('demandes')
+            .from('requests')
             .select('id', { count: 'exact', head: true })
-            .eq('prestataire_id', user.id)
+            .eq('provider_id', user.id)
         ])
 
         // Fonction pour vérifier si une erreur est ignorable
@@ -173,9 +153,9 @@ export default function DashboardPrestatairePage() {
 
         // Calculer le taux de réponse (demandes acceptées / total demandes)
         const { count: demandesAcceptees, error: accepteesError } = await supabase
-          .from('demandes')
+          .from('requests')
           .select('id', { count: 'exact', head: true })
-          .eq('prestataire_id', user.id)
+          .eq('provider_id', user.id)
           .eq('status', 'accepted')
         
         // Ignorer l'erreur si ce n'est pas une erreur critique
@@ -195,7 +175,7 @@ export default function DashboardPrestatairePage() {
         setStats({
           nouvelles_demandes: nouvellesDemandes || 0,
           evenements_a_venir: evenementsAvenir || 0,
-          messages_non_lus: messagesNonLus || 0,
+          messages_non_lus: 0,
           taux_reponse: tauxReponse,
           demandes_ce_mois: demandesCeMois || 0,
         })

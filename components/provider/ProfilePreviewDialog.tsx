@@ -136,14 +136,11 @@ export function ProfilePreviewDialog({
 
     try {
       const { data, error } = await supabase
-        .from('demandes')
+        .from('requests')
         .insert({
-          couple_id: coupleId,
-          provider_id: userId,
-          service_type: profile.service_type || null,
-          message: demandeMessage.trim(),
-          wedding_date: demandeDate || null,
-          budget_indicatif: demandeBudget ? parseFloat(demandeBudget) : null,
+          couple_id: coupleId, // coupleId doit être auth.users.id (couples.user_id)
+          provider_id: userId, // userId = prestataire auth.users.id
+          initial_message: demandeMessage.trim(),
           status: 'pending',
         })
         .select()
