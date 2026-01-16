@@ -275,9 +275,9 @@ export function ProfilePreviewDialog({
 
             {/* CONTENT SCROLLABLE */}
             <ScrollArea className="flex-1 overflow-auto">
-              <div className="p-4 md:p-5">
+              <div className="p-4 md:p-6 flex flex-col items-center">
                 {/* TAB À PROPOS */}
-                <TabsContent value="about" className="mt-0 space-y-6">
+                <TabsContent value="about" className="mt-0 space-y-6 w-full max-w-2xl mx-auto">
                   {/* Description courte */}
                   {profile.description_courte && (
                     <div>
@@ -441,7 +441,7 @@ export function ProfilePreviewDialog({
                 </TabsContent>
 
                 {/* TAB PORTFOLIO */}
-                <TabsContent value="portfolio" className="mt-0">
+                <TabsContent value="portfolio" className="mt-0 w-full max-w-2xl mx-auto">
                   {portfolio && portfolio.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
                       {portfolio.map((image) => (
@@ -487,10 +487,10 @@ export function ProfilePreviewDialog({
                 </TabsContent>
 
                 {/* TAB CONTACT */}
-                <TabsContent value="contact" className="mt-0">
+                <TabsContent value="contact" className="mt-0 w-full max-w-2xl mx-auto">
                   {isCoupleView ? (
-                    <div className="space-y-4">
-                      <div className="text-center mb-6">
+                    <div className="space-y-4 w-full flex flex-col items-center">
+                      <div className="text-center mb-6 w-full">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 mb-3">
                           <Send className="h-6 w-6 text-[#823F91]" />
                         </div>
@@ -502,7 +502,7 @@ export function ProfilePreviewDialog({
                         </p>
                       </div>
 
-                      <Card className="p-5 md:p-6 border-2 border-[#823F91]/20 bg-gradient-to-br from-white to-purple-50/30">
+                      <Card className="p-5 md:p-6 border-2 border-[#823F91]/20 bg-gradient-to-br from-white to-purple-50/30 w-full max-w-xl mx-auto">
                         <div className="space-y-5">
                           {/* Message */}
                           <div className="space-y-2">

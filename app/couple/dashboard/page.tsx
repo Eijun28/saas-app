@@ -246,116 +246,129 @@ export default function CoupleDashboardPage() {
   return (
     <div className="w-full">
       <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
-        {/* Statistiques rapides - intégrées en haut */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4"
-        >
-          <motion.div 
-            className="flex items-center gap-3 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
-            whileHover={{ scale: 1.02 }}
-          >
-            <motion.div 
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
-              animate={{ 
-                boxShadow: [
-                  "0 0 0 0 rgba(130, 63, 145, 0.4)",
-                  "0 0 0 8px rgba(130, 63, 145, 0)",
-                  "0 0 0 0 rgba(130, 63, 145, 0)"
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </motion.div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Prestataires trouvés</p>
-              <p className="text-xl sm:text-2xl font-extrabold text-gray-900">{stats.prestatairesTrouves}</p>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="flex items-center gap-3 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
-            whileHover={{ scale: 1.02 }}
-          >
-            <motion.div 
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
-              animate={{ 
-                boxShadow: [
-                  "0 0 0 0 rgba(130, 63, 145, 0.4)",
-                  "0 0 0 8px rgba(130, 63, 145, 0)",
-                  "0 0 0 0 rgba(130, 63, 145, 0)"
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
-            >
-              <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </motion.div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Budget alloué</p>
-              <div className="flex items-center gap-2">
-                <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
-                  {stats.budgetAlloue > 0 ? `${stats.budgetAlloue.toLocaleString('fr-FR')} €` : '0 €'}
-                </p>
-                {stats.budgetAlloue > 0 && (
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-[#823F91] text-sm"
-                  >
-                    ↗
-                  </motion.span>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            className="flex flex-col gap-2 p-4 sm:p-5 rounded-xl bg-white/95 backdrop-blur-sm border border-[#823F91]/10 shadow-md shadow-black/5 hover:shadow-lg hover:-translate-y-[2px] transition-all duration-200"
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="flex items-center gap-3">
-              <motion.div 
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
-                animate={{ 
-                  boxShadow: [
-                    "0 0 0 0 rgba(130, 63, 145, 0.4)",
-                    "0 0 0 8px rgba(130, 63, 145, 0)",
-                    "0 0 0 0 rgba(130, 63, 145, 0)"
-                  ]
-                }}
-                transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+        {/* Statistiques rapides - Style prestataire optimisé */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 w-full items-stretch">
+          {[
+            {
+              icon: TrendingUp,
+              label: "Prestataires trouvés",
+              value: stats.prestatairesTrouves,
+              subtitle: "Dans vos favoris",
+              description: stats.prestatairesTrouves > 0
+                ? `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegardé${stats.prestatairesTrouves > 1 ? 's' : ''}`
+                : "Aucun prestataire sauvegardé pour le moment",
+              onClick: () => router.push('/couple/recherche'),
+              actionLabel: "Rechercher des prestataires",
+              delay: 0.1,
+            },
+            {
+              icon: Wallet,
+              label: "Budget alloué",
+              value: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} €`,
+              subtitle: "Budget total",
+              description: stats.budgetAlloue > 0
+                ? `${stats.budgetAlloue.toLocaleString('fr-FR')} € alloués à votre mariage`
+                : "Aucun budget défini pour le moment",
+              onClick: () => router.push('/couple/budget'),
+              actionLabel: "Gérer mon budget",
+              delay: 0.2,
+            },
+            {
+              icon: Calendar,
+              label: "Jours restants",
+              value: stats.joursRestants !== null ? stats.joursRestants : '-',
+              subtitle: "Avant le mariage",
+              description: stats.joursRestants !== null && stats.joursRestants > 0
+                ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} avant votre mariage`
+                : stats.joursRestants === null
+                ? "Date de mariage non définie"
+                : "Votre mariage est aujourd'hui !",
+              onClick: () => router.push('/couple/profil'),
+              actionLabel: "Modifier la date",
+              delay: 0.3,
+            },
+          ].map((card, index) => {
+            const Icon = card.icon
+            return (
+              <motion.div
+                key={card.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
+                className="relative border border-gray-200/60 bg-white rounded-xl hover:border-gray-300 hover:shadow-xl hover:shadow-gray-900/5 transition-all duration-300 ease-out overflow-hidden group cursor-pointer"
+                onClick={card.onClick}
               >
-                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </motion.div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1 font-medium tracking-wide">Jours restants</p>
-                <p className="text-xl sm:text-2xl font-extrabold text-gray-900">
-                  {stats.joursRestants !== null ? stats.joursRestants : '-'}
-                </p>
-              </div>
-            </div>
-            {stats.joursRestants !== null && stats.joursRestants > 0 && (
-              <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min((stats.joursRestants / 365) * 100, 100)}%` }}
-                  transition={{ duration: 1, delay: 0.3 }}
-                  className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
-                />
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
+                <div className="p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
+                  {/* Header: Icon + Label */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <motion.div 
+                        className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
+                        whileHover={{ scale: 1.05, rotate: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                      </motion.div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                          {card.label}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Sections principales - design plus épuré */}
+                  {/* Main Value */}
+                  <div className="space-y-2">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: card.delay + 0.1 }}
+                      className="flex items-baseline gap-2 flex-wrap"
+                    >
+                      <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
+                        {card.value}
+                      </p>
+                    </motion.div>
+                    
+                    {/* Subtitle */}
+                    {card.subtitle && (
+                      <p className="text-sm sm:text-base text-gray-600 font-medium">
+                        {card.subtitle}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  <div className="pt-3 border-t border-gray-100/80 flex-1 flex flex-col">
+                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
+                      {card.description}
+                    </p>
+                  </div>
+
+                  {/* Action button */}
+                  {card.actionLabel && (
+                    <div className="pt-4 border-t border-gray-100/80">
+                      <button className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
+                        <span className="group-hover/btn:underline">{card.actionLabel}</span>
+                        <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Hover effect overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+
+        {/* Sections principales - Style prestataire optimisé */}
         <motion.div
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5"
         >
           {sections.map((section, index) => {
             const Icon = section.icon
@@ -370,19 +383,22 @@ export default function CoupleDashboardPage() {
                   duration: 0.4,
                   ease: [0.16, 1, 0.3, 1] as const,
                 }}
-                whileHover={{ y: -2 }}
               >
-                <Link href={section.href} className="block">
+                <Link href={section.href} className="block h-full">
                   <div className={cn(
-                    "group relative p-5 rounded-xl bg-white/95 backdrop-blur-sm border transition-all duration-200 min-h-[140px] flex flex-col",
+                    "group relative p-4 sm:p-5 rounded-xl bg-white border transition-all duration-300 min-h-[140px] flex flex-col h-full",
                     isSearchSection 
-                      ? "border-2 border-[#823F91]/30 shadow-md shadow-[#823F91]/10 hover:shadow-lg hover:shadow-[#823F91]/15" 
-                      : "border border-gray-100 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/5"
+                      ? "border-[#823F91]/30 shadow-md shadow-[#823F91]/10 hover:shadow-xl hover:shadow-[#823F91]/15 hover:border-[#823F91]/50" 
+                      : "border-gray-200/60 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-900/5"
                   )}>
-                    <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                      <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-110 group-hover:-rotate-[5deg] transition-all duration-200">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 relative z-10">
+                      <motion.div 
+                        className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
+                        whileHover={{ scale: 1.05, rotate: -2 }}
+                        transition={{ duration: 0.2 }}
+                      >
                         <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                      </div>
+                      </motion.div>
                       <div className="flex-1 min-w-0 flex flex-col">
                         <div className="flex items-start justify-between gap-2 mb-1.5">
                           <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors">
@@ -411,6 +427,9 @@ export default function CoupleDashboardPage() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Hover effect overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
                   </div>
                 </Link>
               </motion.div>

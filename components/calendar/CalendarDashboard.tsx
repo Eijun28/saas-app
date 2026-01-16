@@ -227,18 +227,62 @@ export function CalendarDashboard({
                       </div>
                     )
                   },
+                  CaptionLabel: () => {
+                    const monthName = formatMonth(currentDate)
+                    const year = format(currentDate, 'yyyy')
+                    
+                    const handlePreviousMonth = () => {
+                      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
+                    }
+                    
+                    const handleNextMonth = () => {
+                      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
+                    }
+                    
+                    return (
+                      <div className="flex items-center gap-2 relative z-20">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handlePreviousMonth()
+                          }}
+                          className="h-6 w-6 flex items-center justify-center text-gray-900 hover:text-gray-700 transition-colors cursor-pointer z-20 relative"
+                          aria-label="Mois précédent"
+                        >
+                          <ChevronLeft className="h-4 w-4 pointer-events-none" />
+                        </button>
+                        <span className="text-base sm:text-lg md:text-xl font-semibold text-gray-900">
+                          {monthName} {year}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleNextMonth()
+                          }}
+                          className="h-6 w-6 flex items-center justify-center text-gray-900 hover:text-gray-700 transition-colors cursor-pointer z-20 relative"
+                          aria-label="Mois suivant"
+                        >
+                          <ChevronRight className="h-4 w-4 pointer-events-none" />
+                        </button>
+                      </div>
+                    )
+                  },
                 }}
                 classNames={{
                   months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 justify-center",
                   month: "space-y-4 w-full",
                   caption: "flex justify-center items-center pt-1 mb-4 w-full relative",
                   caption_label: "text-base sm:text-lg md:text-xl font-semibold text-gray-900 text-center",
-                  nav: "space-x-1 flex items-center justify-between w-full absolute inset-x-0",
+                  nav: "space-x-1 flex items-center justify-between w-full absolute inset-x-0 pointer-events-none",
                   nav_button: cn(
-                    "h-8 w-8 md:h-9 md:w-9 bg-transparent p-0 opacity-70 hover:opacity-100 text-gray-900 hover:text-gray-900 border-0"
+                    "h-8 w-8 md:h-9 md:w-9 bg-transparent p-0 opacity-0 pointer-events-none"
                   ),
-                  nav_button_previous: "",
-                  nav_button_next: "",
+                  nav_button_previous: "pointer-events-none",
+                  nav_button_next: "pointer-events-none",
                   table: "w-full border-collapse border-0",
                   head_row: "flex",
                   head_cell: "text-gray-900 font-semibold rounded-md w-full font-normal text-xs sm:text-sm md:text-base border-0",
