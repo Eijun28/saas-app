@@ -199,7 +199,7 @@ const SkeletonMatchingFullWidth = () => {
                 Commencez votre recherche
               </p>
               <p className="text-xs sm:text-sm text-gray-500 px-4 text-center" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
-                Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...
+                Ex: Traiteur halal libanais, 120 invités, Paris
               </p>
             </div>
           ) : (
@@ -285,7 +285,7 @@ const SkeletonMatchingFullWidth = () => {
                     {!typedText && !isTyping && (
                       <div className="absolute inset-0 flex items-center pointer-events-none">
                         <span className="text-gray-400 text-sm sm:text-[15px]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
-                          Ex: Traiteur halal spécialisé cuisine libanaise + française, 120 invités, Paris...
+                          Ex: Traiteur halal libanais, 120 invités, Paris
                         </span>
                       </div>
                     )}
