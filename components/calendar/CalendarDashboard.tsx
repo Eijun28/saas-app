@@ -10,6 +10,16 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
+import { fr } from 'date-fns/locale'
+import { isSameDay, isToday, format } from 'date-fns'
+import { cn } from '@/lib/utils'
+
+// Formatter pour capitaliser le mois
+const formatMonth = (date: Date) => {
+  const monthName = format(date, 'MMMM', { locale: fr })
+  return monthName.charAt(0).toUpperCase() + monthName.slice(1)
+}
 
 export interface CalendarEvent {
   id: string
@@ -40,7 +50,7 @@ export function CalendarDashboard({
   loading = false,
 }: CalendarDashboardProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState<number | null>(null)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [newEvent, setNewEvent] = useState({
@@ -60,57 +70,50 @@ export function CalendarDashboard({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const daysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  const formatDateKey = (date: Date) => {
+    return format(date, 'yyyy-MM-dd')
   }
 
-  const firstDayOfMonth = (date: Date) => {
-    // getDay() retourne 0 pour dimanche, 1 pour lundi, etc.
-    // On convertit pour que lundi = 0, dimanche = 6
-    const day = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
-    return (day + 6) % 7 // Convertit dimanche (0) en 6, lundi (1) en 0, etc.
-  }
-
-  const monthNames = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-  ]
-
-  const dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-
-  const previousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
-  }
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-  }
-
-  const formatDateKey = (day: number) => {
-    const year = currentDate.getFullYear()
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
-    const dayStr = String(day).padStart(2, '0')
-    return `${year}-${month}-${dayStr}`
-  }
-
-  const getEventsForDate = (dateKey: string) => {
+  const getEventsForDate = (date: Date) => {
+    const dateKey = formatDateKey(date)
     return events.filter(event => event.date === dateKey)
   }
 
-  const getEventColor = (event: CalendarEvent) => {
+  const getEventColorHex = (event: CalendarEvent): string => {
+    if (eventColor) {
+      const colorClass = eventColor(event)
+      // Si c'est déjà une couleur hex, la retourner
+      if (colorClass.startsWith('#')) return colorClass
+      // Sinon convertir les classes Tailwind en hex
+      const colorMap: Record<string, string> = {
+        'bg-blue-500': '#3b82f6',
+        'bg-green-500': '#22c55e',
+        'bg-purple-500': '#a855f7',
+        'bg-pink-500': '#ec4899',
+        'bg-orange-500': '#f97316',
+      }
+      return colorMap[colorClass] || '#3b82f6'
+    }
+    // Couleurs par défaut (retourner directement la couleur hex)
+    const colors = ['#3b82f6', '#22c55e', '#a855f7', '#ec4899', '#f97316'] // blue, green, purple, pink, orange
+    const hash = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return colors[hash % colors.length]
+  }
+
+  const getEventColorClass = (event: CalendarEvent): string => {
     if (eventColor) {
       return eventColor(event)
     }
-    // Couleurs par défaut
+    // Couleurs par défaut (classes Tailwind)
     const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500']
     const hash = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
     return colors[hash % colors.length]
   }
 
-  const handleDateClick = (day: number) => {
-    setSelectedDate(day)
-    const dateKey = formatDateKey(day)
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return
+    
+    setSelectedDate(date)
     setNewEvent({
       title: '',
       time: '',
@@ -141,113 +144,123 @@ export function CalendarDashboard({
     }
   }
 
-  const renderCalendarDays = () => {
-    const days: React.ReactNode[] = []
-    const totalDays = daysInMonth(currentDate)
-    const firstDay = firstDayOfMonth(currentDate)
-    const today = new Date()
-    const isCurrentMonth = 
-      today.getMonth() === currentDate.getMonth() && 
-      today.getFullYear() === currentDate.getFullYear()
-
-    // Cellules vides pour les jours avant le début du mois
-    for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-0.5 sm:p-1 aspect-square min-h-[60px] sm:min-h-[70px] md:min-h-[80px]"></div>)
-    }
-
-    // Jours réels
-    for (let day = 1; day <= totalDays; day++) {
-      const dateKey = formatDateKey(day)
-      const dayEvents = getEventsForDate(dateKey)
-      const isToday = isCurrentMonth && day === today.getDate()
-
-      days.push(
-        <div
-          key={day}
-          className={`p-0.5 sm:p-1 border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden aspect-square min-h-[60px] sm:min-h-[70px] md:min-h-[80px] flex flex-col ${
-            isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
-          }`}
-          onClick={() => handleDateClick(day)}
-        >
-          <div className={`text-[10px] sm:text-xs md:text-sm font-semibold mb-0.5 flex-shrink-0 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
-            {day}
-          </div>
-          <div className="flex-1 overflow-hidden flex flex-col gap-0.5 min-h-0">
-            {dayEvents.slice(0, isMobile ? 1 : 2).map((event) => (
-              <div
-                key={event.id}
-                className={`${getEventColor(event)} text-white text-[8px] sm:text-[9px] md:text-[10px] px-0.5 sm:px-1 py-0.5 rounded truncate leading-tight flex-shrink-0 min-h-[14px] sm:min-h-[16px] flex items-center`}
-                title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
-              >
-                {showTime && event.time && !isMobile && (
-                  <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5 mr-0.5 flex-shrink-0" />
-                )}
-                <span className="truncate">{showTime && event.time && isMobile ? `${event.time} ` : ''}{event.title}</span>
-              </div>
-            ))}
-            {dayEvents.length > (isMobile ? 1 : 2) && (
-              <div className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500 px-0.5 sm:px-1 flex-shrink-0">
-                +{dayEvents.length - (isMobile ? 1 : 2)}
-              </div>
-            )}
-          </div>
-        </div>
-      )
-    }
-
-    return days
-  }
-
   return (
     <div className="w-full">
-      <Card className="shadow-none border-0">
-        <CardHeader className="border-b bg-[rgba(252,249,253,1)] pb-2 sm:pb-3 px-3 sm:px-4 md:px-6" style={{ borderBottomColor: 'rgba(255, 252, 250, 1)', boxShadow: '0px 2px 8px 0px rgba(0, 0, 0, 0.1)', backgroundColor: 'rgba(252, 249, 253, 1)' }}>
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={previousMonth} 
-                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50 p-0"
-              >
-                <ChevronLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-              </Button>
-              <span className="text-xs sm:text-sm md:text-base font-semibold min-w-[120px] sm:min-w-[160px] md:min-w-[200px] text-center">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-              </span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={nextMonth} 
-                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 border-0 shadow-sm hover:shadow-md transition-all bg-white hover:bg-gray-50 p-0"
-              >
-                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
-              </Button>
+      <Card className="border-0 shadow-lg">
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          {loading ? (
+            <div className="p-8 text-center text-gray-500">
+              Chargement...
             </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-3 md:p-4">
-          {/* En-tête des jours */}
-          <div className="grid grid-cols-7 gap-0 mb-1">
-            {dayNames.map((day) => (
-              <div key={day} className="p-1 sm:p-1.5 text-center font-semibold text-gray-600 text-[10px] sm:text-xs">
-                {/* Mobile: première lettre seulement */}
-                <span className="sm:hidden">{day[0]}</span>
-                <span className="hidden sm:inline">{day}</span>
+          ) : (
+            <div className="flex justify-center items-center w-full">
+              <div className="w-full flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate || undefined}
+                  onSelect={handleDateSelect}
+                  month={currentDate}
+                  onMonthChange={setCurrentDate}
+                  locale={fr}
+                  className="rounded-lg border-0 [--cell-size:2.5rem] sm:[--cell-size:3rem] md:[--cell-size:4rem] lg:[--cell-size:5rem]"
+                  formatters={{
+                    formatCaption: (date) => {
+                      const monthName = formatMonth(date)
+                      const year = format(date, 'yyyy')
+                      return `${monthName} ${year}`
+                    },
+                  }}
+                modifiers={{
+                  hasEvents: events.map(event => {
+                    const [year, month, day] = event.date.split('-').map(Number)
+                    return new Date(year, month - 1, day)
+                  }),
+                }}
+                modifiersClassNames={{
+                  hasEvents: 'relative',
+                }}
+                components={{
+                  DayButton: (props) => {
+                    const dayEvents = getEventsForDate(props.day.date)
+                    const hasEvents = dayEvents.length > 0
+                    
+                    return (
+                      <div className="relative w-full h-full">
+                        <CalendarDayButton 
+                          {...props}
+                          className={cn(
+                            props.className,
+                            "!text-gray-900 hover:!text-gray-900 focus:!text-gray-900",
+                            "data-[selected=true]:!text-white data-[selected=true]:!bg-[#823F91]",
+                            "shadow-sm hover:shadow-md transition-shadow",
+                            "!border-0 !border-none",
+                            "[&>span]:!text-gray-900 [&>span]:!opacity-100",
+                            "data-[selected=true]:[&>span]:!text-white",
+                            "hover:[&>span]:!text-gray-900",
+                            "focus:!ring-0 focus-visible:!ring-0",
+                            "group-data-[focused=true]/day:!border-0 group-data-[focused=true]/day:!ring-0",
+                            // Griser les jours hors du mois (utiliser le modifier outside)
+                            props.modifiers.outside && "!text-gray-400 !opacity-50 [&>span]:!text-gray-400 [&>span]:!opacity-50 hover:!text-gray-400"
+                          )}
+                        />
+                        {/* Indicateur subtil pour les événements */}
+                        {hasEvents && (
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5 justify-center items-center pointer-events-none">
+                            {dayEvents.slice(0, 3).map((event) => {
+                              const colorHex = getEventColorHex(event)
+                              return (
+                                <div
+                                  key={event.id}
+                                  className="h-1.5 w-1.5 rounded-full"
+                                  style={{ backgroundColor: colorHex }}
+                                  title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
+                                />
+                              )
+                            })}
+                            {dayEvents.length > 3 && (
+                              <span className="text-[8px] text-gray-600 ml-0.5 font-medium">
+                                +{dayEvents.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  },
+                }}
+                classNames={{
+                  months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 justify-center",
+                  month: "space-y-4 w-full",
+                  caption: "flex justify-center items-center pt-1 mb-4 w-full relative",
+                  caption_label: "text-base sm:text-lg md:text-xl font-semibold text-gray-900 text-center",
+                  nav: "space-x-1 flex items-center justify-between w-full absolute inset-x-0",
+                  nav_button: cn(
+                    "h-8 w-8 md:h-9 md:w-9 bg-transparent p-0 opacity-70 hover:opacity-100 text-gray-900 hover:text-gray-900 border-0"
+                  ),
+                  nav_button_previous: "",
+                  nav_button_next: "",
+                  table: "w-full border-collapse border-0",
+                  head_row: "flex",
+                  head_cell: "text-gray-900 font-semibold rounded-md w-full font-normal text-xs sm:text-sm md:text-base border-0",
+                  row: "flex w-full mt-1 sm:mt-2",
+                  cell: "h-auto w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border-0",
+                  day: cn(
+                    "h-auto w-full p-0 font-normal text-gray-900 border-0",
+                    "hover:text-gray-900 focus:text-gray-900",
+                    "aria-selected:opacity-100"
+                  ),
+                  day_range_end: "day-range-end",
+                  day_selected: "bg-[#823F91] text-white hover:bg-[#6D3478] hover:text-white focus:bg-[#823F91] focus:text-white shadow-md border-0",
+                  day_today: "bg-gray-100 text-gray-900 font-semibold border-0",
+                  day_outside: "text-gray-400 opacity-50 border-0 [&>button]:!text-gray-400 [&>button]:!opacity-50 [&>button>span]:!text-gray-400 [&>button>span]:!opacity-50",
+                  day_disabled: "text-gray-300 opacity-40 border-0",
+                  day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground border-0",
+                  day_hidden: "invisible",
+                }}
+              />
               </div>
-            ))}
-          </div>
-          
-          {/* Grille du calendrier */}
-          <div className="grid grid-cols-7 gap-0 border border-gray-200 rounded-lg overflow-hidden">
-            {loading ? (
-              <div className="col-span-7 p-8 text-center text-gray-500">
-                Chargement...
-              </div>
-            ) : (
-              renderCalendarDays()
-            )}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -259,7 +272,7 @@ export function CalendarDashboard({
             <DialogDescription>
               {selectedDate && (
                 <span className="font-medium text-[#823F91]">
-                  {new Date(currentDate.getFullYear(), currentDate.getMonth(), selectedDate).toLocaleDateString('fr-FR', {
+                  {selectedDate.toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
@@ -277,7 +290,7 @@ export function CalendarDashboard({
             transition={{ delay: 0.1, duration: 0.3 }}
           >
             {/* Événements existants - Seulement si > 0 */}
-            {selectedDate && getEventsForDate(formatDateKey(selectedDate)).length > 0 && (
+            {selectedDate && getEventsForDate(selectedDate).length > 0 && (
               <motion.div
                 className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200"
                 initial={{ opacity: 0, height: 0 }}
@@ -288,10 +301,10 @@ export function CalendarDashboard({
                   Événements ce jour :
                 </h4>
                 <div className="space-y-2">
-                  {getEventsForDate(formatDateKey(selectedDate)).map((event) => (
+                  {getEventsForDate(selectedDate).map((event) => (
                     <motion.div
                       key={event.id}
-                      className={`${getEventColor(event)} text-white px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm`}
+                      className={cn(getEventColorClass(event), "text-white px-3 py-2 rounded-lg flex items-center gap-2 shadow-sm")}
                       whileHover={{ scale: 1.02 }}
                     >
                       {showTime && event.time && (
