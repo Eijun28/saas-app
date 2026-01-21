@@ -88,6 +88,13 @@ export default function MatchingPage() {
     loadCoupleProfile();
   }, []);
 
+  // Charger les conversations sauvegardées au montage et quand coupleId change
+  useEffect(() => {
+    if (coupleId) {
+      loadSavedConversations();
+    }
+  }, [coupleId]);
+
   // Auto-scroll vers le bas à chaque nouveau message
   useEffect(() => {
     if (vue === 'chat' && messagesEndRef.current) {
@@ -327,7 +334,13 @@ export default function MatchingPage() {
     <div className="min-h-screen bg-gradient-to-br from-white to-purple-50">
       <AnimatePresence mode="wait">
         {vue === 'landing' && (
-          <LandingView key="landing" onStart={startMatching} />
+          <LandingView 
+            key="landing" 
+            onStart={startMatching}
+            savedConversations={savedConversations}
+            loadingConversations={loadingConversations}
+            onSelectConversation={handleSelectConversation}
+          />
         )}
         
         {vue === 'chat' && (
@@ -404,7 +417,14 @@ export default function MatchingPage() {
 // COMPOSANT LANDING VIEW
 // ============================================
 
-function LandingView({ onStart }: { onStart: () => void }) {
+interface LandingViewProps {
+  onStart: () => void;
+  savedConversations: ChatbotConversation[];
+  loadingConversations: boolean;
+  onSelectConversation: (conversation: ChatbotConversation) => void;
+}
+
+function LandingView({ onStart, savedConversations, loadingConversations, onSelectConversation }: LandingViewProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -422,7 +442,7 @@ function LandingView({ onStart }: { onStart: () => void }) {
             transition={{ delay: 0.2, duration: 0.4 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-2"
           >
-            Matching IA Intelligent
+            Matching IA
           </motion.h1>
 
           <motion.p
@@ -431,7 +451,7 @@ function LandingView({ onStart }: { onStart: () => void }) {
             transition={{ delay: 0.3, duration: 0.4 }}
             className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed px-2"
           >
-            Notre IA conversationnelle vous aide à trouver les 3 meilleurs prestataires qui correspondent{' '}
+            Notre IA conversationnelle vous aide à trouver les meilleurs prestataires qui correspondent{' '}
             <span className="font-semibold text-[#823F91]">EXACTEMENT</span> à votre vision.
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
@@ -446,8 +466,8 @@ function LandingView({ onStart }: { onStart: () => void }) {
             <Button
               onClick={onStart}
               variant="default"
-              size="lg"
-              className="bg-gradient-to-br from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white shadow-lg hover:shadow-xl transition-all text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto w-full sm:w-auto"
+              size="default"
+              className="bg-gradient-to-br from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white shadow-lg hover:shadow-xl transition-all text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 h-auto w-full sm:w-auto"
             >
               Commencer le matching
             </Button>
@@ -465,17 +485,78 @@ function LandingView({ onStart }: { onStart: () => void }) {
             Mes recherches sauvegardées
           </h3>
           
-          <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 text-center">
-            <div className="text-gray-400 mb-3 sm:mb-4">
-              <Search className="h-10 w-10 sm:h-12 sm:w-12 mx-auto opacity-50" />
+          {loadingConversations ? (
+            <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-[#823F91] animate-spin" />
             </div>
-            <p className="text-base sm:text-lg text-gray-500">
-              Aucune recherche pour le moment
-            </p>
-            <p className="text-sm text-gray-400 mt-2">
-              Vos recherches intelligentes apparaîtront ici une fois terminées
-            </p>
-          </div>
+          ) : savedConversations.length === 0 ? (
+            <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-6 sm:p-8 md:p-12 text-center">
+              <div className="text-gray-400 mb-3 sm:mb-4">
+                <Search className="h-10 w-10 sm:h-12 sm:w-12 mx-auto opacity-50" />
+              </div>
+              <p className="text-base sm:text-lg text-gray-500">
+                Aucune recherche pour le moment
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                Vos recherches intelligentes apparaîtront ici une fois terminées
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:gap-6">
+              {savedConversations.map((conversation) => {
+                const criteria = conversation.extracted_criteria;
+                const budgetMin = criteria?.budget_min;
+                const budgetMax = criteria?.budget_max;
+                const budgetText = budgetMin || budgetMax 
+                  ? `Budget : ${budgetMin || 0}€ - ${budgetMax || '∞'}€`
+                  : 'Budget non spécifié';
+                
+                return (
+                  <div
+                    key={conversation.id}
+                    onClick={() => onSelectConversation(conversation)}
+                    className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-6 hover:border-[#823F91] hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="text-base sm:text-lg font-semibold text-gray-900">
+                            {conversation.service_type || 'Recherche'}
+                          </h4>
+                          <span
+                            className={cn(
+                              'text-xs px-2 py-0.5 rounded-full',
+                              conversation.status === 'completed'
+                                ? 'bg-green-100 text-green-700'
+                                : conversation.status === 'in_progress'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-100 text-gray-700'
+                            )}
+                          >
+                            {conversation.status === 'completed'
+                              ? 'Terminée'
+                              : conversation.status === 'in_progress'
+                                ? 'En cours'
+                                : 'Abandonnée'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          {budgetText}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(conversation.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
 			</div>
     </motion.div>
