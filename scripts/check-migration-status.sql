@@ -25,11 +25,11 @@ SELECT EXISTS (
   AND constraint_name = 'profiles_role_check'
 ) AS role_check_constraint_exists;
 
--- 4. Vérifier le trigger handle_new_user
+-- 4. Vérifier le trigger handle_new_user sur auth.users (pas sur profiles !)
 SELECT EXISTS (
   SELECT 1 FROM information_schema.triggers
-  WHERE trigger_schema = 'public'
-  AND event_object_table = 'profiles'
+  WHERE trigger_schema = 'auth'
+  AND event_object_table = 'users'
   AND trigger_name = 'on_auth_user_created'
 ) AS trigger_exists;
 
@@ -66,7 +66,7 @@ SELECT
   )) AS "Contrainte CHECK role existe",
   (SELECT EXISTS (
     SELECT 1 FROM information_schema.triggers
-    WHERE trigger_schema = 'public'
-    AND event_object_table = 'profiles'
+    WHERE trigger_schema = 'auth'
+    AND event_object_table = 'users'
     AND trigger_name = 'on_auth_user_created'
   )) AS "Trigger existe";
