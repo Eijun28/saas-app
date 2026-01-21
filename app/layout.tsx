@@ -6,6 +6,7 @@ import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 // import Chatbot from "@/components/Chatbot"; // Désactivé temporairement - à réactiver plus tard
 import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "NUPLY — Le mariage moderne",
@@ -50,6 +51,7 @@ export default function RootLayout({
         
         {/* Toaster pour les notifications */}
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
