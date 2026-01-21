@@ -22,24 +22,49 @@ export async function saveChatbotConversation(
     }
 
     // Vérifier que l'utilisateur correspond au couple_id
-    // couple_id dans chatbot_conversations pointe vers profiles(id), qui correspond à couples.user_id
-    const { data: couple } = await supabase
+    const { data: couple, error: coupleError } = await supabase
       .from('couples')
       .select('id, user_id')
       .eq('user_id', user.id)
       .eq('id', coupleId)
       .single();
 
+    if (coupleError) {
+      console.error('Error fetching couple:', {
+        error: coupleError,
+        coupleId,
+        userId: user.id,
+      });
+      return { 
+        success: false, 
+        error: `Couple non trouvé: ${coupleError.message || 'Erreur lors de la vérification du couple'}` 
+      };
+    }
+
     if (!couple) {
-      return { success: false, error: 'Couple non trouvé' };
+      console.error('Couple not found:', {
+        coupleId,
+        userId: user.id,
+      });
+      return { success: false, error: 'Couple non trouvé. Veuillez compléter votre profil couple.' };
+    }
+
+    // Vérifier que le couple_id existe bien dans la table couples
+    if (!couple.id || couple.id !== coupleId) {
+      console.error('Couple ID mismatch:', {
+        expected: coupleId,
+        found: couple.id,
+        userId: user.id,
+      });
+      return { success: false, error: 'Erreur de validation du couple' };
     }
 
     // Insérer la conversation dans Supabase
-    // couple_id doit être le user_id (qui correspond à profiles.id)
+    // couple_id référence directement couples.id
     const { data, error } = await supabase
       .from('chatbot_conversations')
       .insert({
-        couple_id: couple.user_id, // Utiliser user_id qui correspond à profiles.id
+        couple_id: couple.id, // Utiliser directement couples.id
         service_type: serviceType,
         messages: messages as any,
         extracted_criteria: extractedCriteria as any,
@@ -49,8 +74,27 @@ export async function saveChatbotConversation(
       .single();
 
     if (error) {
-      console.error('Error inserting chatbot conversation:', error);
-      return { success: false, error: error.message || 'Erreur lors de la sauvegarde' };
+      console.error('Error inserting chatbot conversation:', {
+        error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        coupleId: couple.id,
+        userId: user.id,
+      });
+      
+      // Messages d'erreur plus spécifiques selon le code d'erreur
+      let errorMessage = 'Erreur lors de la sauvegarde';
+      if (error.code === '23503') {
+        errorMessage = 'Erreur : Le couple n\'existe pas dans la base de données. Veuillez compléter votre profil couple.';
+      } else if (error.code === '23505') {
+        errorMessage = 'Cette conversation existe déjà.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      return { success: false, error: errorMessage };
     }
 
     return { success: true, conversationId: data.id };
@@ -77,7 +121,6 @@ export async function getChatbotConversations(
     }
 
     // Vérifier que l'utilisateur correspond au couple_id
-    // couple_id dans chatbot_conversations pointe vers profiles(id), qui correspond à couples.user_id
     const { data: couple } = await supabase
       .from('couples')
       .select('id, user_id')
@@ -90,11 +133,11 @@ export async function getChatbotConversations(
     }
 
     // Récupérer les conversations depuis Supabase
-    // couple_id dans la table correspond à user_id (profiles.id)
+    // couple_id référence directement couples.id
     const { data, error } = await supabase
       .from('chatbot_conversations')
       .select('*')
-      .eq('couple_id', couple.user_id) // Utiliser user_id qui correspond à profiles.id
+      .eq('couple_id', couple.id) // Utiliser directement couples.id
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -150,16 +193,20 @@ export async function getChatbotConversation(
     }
 
     // Vérifier que l'utilisateur a accès à cette conversation
-    // couple_id dans chatbot_conversations pointe vers profiles(id), qui correspond à couples.user_id
     const { data: couple } = await supabase
       .from('couples')
       .select('id, user_id')
       .eq('user_id', user.id)
-      .eq('user_id', data.couple_id) // couple_id correspond à user_id (profiles.id)
       .single();
 
     if (!couple) {
       return null;
+    }
+
+    // Vérifier que la conversation appartient bien à ce couple
+    // couple_id référence directement couples.id
+    if (data.couple_id !== couple.id) {
+      return null; // Accès refusé
     }
 
     return {

@@ -4,6 +4,104 @@ import { createClient } from '@/lib/supabase/server';
 import { calculateTotalScore } from '@/lib/matching/scoring';
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
 
+/**
+ * Normalise le service_type extrait par le chatbot pour correspondre au format de la base
+ * Utilise les valeurs réelles de SERVICE_TYPES
+ */
+function normalizeServiceType(serviceType: string | null | undefined): string {
+  if (!serviceType) return '';
+  
+  const normalized = serviceType.toLowerCase().trim();
+  
+  // Valeurs réelles de la base (d'après lib/constants/service-types.ts)
+  const validServiceTypes = [
+    'photographe', 'videaste', 'traiteur', 'patissier', 'dj', 'animation',
+    'coiffure_maquillage', 'robe_mariee', 'bijoutier', 'fleuriste',
+    'salle', 'location_materiel', 'location_vehicules',
+    'neggafa', 'zaffa', 'henna_artiste', 'calligraphe', 'musicien_traditionnel',
+    'danseuse_orientale', 'couturier_traditionnel', 'decorateur_maghrebin',
+    'organisateur_ceremonie', 'wedding_planner', 'faire_part', 'officiant', 'autre'
+  ];
+  
+  // Mapping des variations vers les formats de la base
+  const serviceTypeMap: Record<string, string> = {
+    // Papeterie / Faire-part
+    'papetier': 'faire_part',
+    'papeterie': 'faire_part',
+    'faire-part': 'faire_part',
+    'faire part': 'faire_part',
+    'invitations': 'faire_part',
+    'invitation': 'faire_part',
+    
+    // Photographe
+    'photographe': 'photographe',
+    'photographie': 'photographe',
+    'photo': 'photographe',
+    
+    // Vidéaste
+    'vidéaste': 'videaste',
+    'videaste': 'videaste',
+    'video': 'videaste',
+    'vidéo': 'videaste',
+    
+    // Traiteur
+    'traiteur': 'traiteur',
+    'catering': 'traiteur',
+    
+    // DJ
+    'dj': 'dj',
+    'musicien': 'dj',
+    'musique': 'dj',
+    
+    // Wedding Planner
+    'wedding planner': 'wedding_planner',
+    'wedding_planner': 'wedding_planner',
+    'planner': 'wedding_planner',
+    'organisateur': 'wedding_planner',
+    
+    // Fleuriste / Décorateur
+    'fleuriste': 'fleuriste',
+    'décorateur': 'fleuriste',
+    'decorateur': 'fleuriste',
+    'decoration': 'fleuriste',
+    
+    // Autres
+    'coiffeur': 'coiffure_maquillage',
+    'maquilleur': 'coiffure_maquillage',
+    'coiffure': 'coiffure_maquillage',
+    'maquillage': 'coiffure_maquillage',
+    'robe': 'robe_mariee',
+    'costume': 'robe_mariee',
+    'pâtissier': 'patissier',
+    'patissier': 'patissier',
+    'cake': 'patissier',
+    'salle': 'salle',
+    'lieu': 'salle',
+  };
+  
+  // Chercher une correspondance exacte d'abord
+  if (serviceTypeMap[normalized]) {
+    return serviceTypeMap[normalized];
+  }
+  
+  // Chercher une correspondance partielle
+  for (const [key, value] of Object.entries(serviceTypeMap)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return value;
+    }
+  }
+  
+  // Vérifier si c'est déjà une valeur valide
+  if (validServiceTypes.includes(normalized)) {
+    return normalized;
+  }
+  
+  // Si pas de correspondance, retourner tel quel (normalisé en minuscules)
+  // Le matching pourra quand même fonctionner si le service_type correspond exactement
+  console.warn(`⚠️ Service type non reconnu: "${serviceType}" -> "${normalized}"`);
+  return normalized;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -18,7 +116,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier que le couple existe
+    // matching_history.couple_id référence maintenant couples(id) directement
+    const { data: couple } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('id', couple_id)
+      .single();
+
+    if (!couple) {
+      return NextResponse.json(
+        { error: 'Couple non trouvé' },
+        { status: 404 }
+      );
+    }
+
     console.log('🔍 Matching pour:', search_criteria.service_type);
+    console.log('📋 Critères de recherche:', JSON.stringify(search_criteria, null, 2));
+
+    // Normaliser le service_type pour correspondre au format de la base
+    const normalizedServiceType = normalizeServiceType(search_criteria.service_type);
+    console.log('🔄 Service type normalisé:', normalizedServiceType);
 
     // ÉTAPE 1 : FILTRES DURS
     let query = supabase
@@ -43,13 +161,32 @@ export async function POST(request: NextRequest) {
           total_reviews
         )
       `)
-      .eq('role', 'prestataire')
-      .eq('service_type', search_criteria.service_type);
+      .eq('role', 'prestataire');
 
-    // Filtre budget si défini
+    // Recherche flexible du service_type (insensible à la casse et aux variations)
+    // D'abord essayer une correspondance exacte
+    query = query.eq('service_type', normalizedServiceType);
+    
+    // Si pas de résultats, on pourra essayer une recherche partielle (à implémenter si nécessaire)
+
+    // Filtre budget si défini - LOGIQUE AMÉLIORÉE
+    // Un prestataire correspond si sa fourchette chevauche celle du couple
     if (search_criteria.budget_max) {
+      // Le prestataire doit avoir un budget_min <= budget_max du couple
+      // (sinon il est trop cher même au minimum)
       query = query.lte('budget_min', search_criteria.budget_max);
+      
+      // Si le couple a un budget_min, on filtre aussi les prestataires trop chers
+      // Un prestataire est trop cher si son budget_max existe ET est < budget_min du couple
+      // On garde donc ceux qui n'ont pas de budget_max OU dont budget_max >= budget_min du couple
+      if (search_criteria.budget_min) {
+        // Note: Supabase ne supporte pas directement OR dans les filtres simples
+        // On va plutôt être moins restrictif : on garde tous ceux dont budget_min <= budget_max du couple
+        // Le scoring s'occupera de pénaliser ceux qui sont hors budget
+      }
     }
+
+    console.log('🔎 Requête Supabase:', query);
 
     const { data: providers, error } = await query;
 
@@ -61,15 +198,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (error) {
+      console.error('❌ Erreur Supabase lors de la recherche:', error);
+      console.error('Détails:', JSON.stringify(error, null, 2));
+    }
+
     if (!providers || providers.length === 0) {
+      console.warn('⚠️ Aucun prestataire trouvé avec les critères:', {
+        service_type: search_criteria.service_type,
+        budget_min: search_criteria.budget_min,
+        budget_max: search_criteria.budget_max,
+        role: 'prestataire',
+      });
+      
+      // Vérifier combien de prestataires existent pour ce service_type
+      const { count: totalCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'prestataire')
+        .eq('service_type', search_criteria.service_type);
+      
+      console.log(`ℹ️ Total prestataires pour ${search_criteria.service_type}:`, totalCount);
+      
       return NextResponse.json({
         matches: [],
         total_candidates: 0,
         search_criteria,
+        debug: {
+          service_type: search_criteria.service_type,
+          total_providers_for_service: totalCount || 0,
+        },
       });
     }
 
-    console.log(`✅ ${providers.length} prestataires trouvés`);
+    console.log(`✅ ${providers.length} prestataires trouvés après filtres`);
+    console.log('📊 Prestataires:', providers.map(p => ({
+      id: p.id,
+      nom_entreprise: p.nom_entreprise,
+      service_type: p.service_type,
+      budget_min: p.budget_min,
+      budget_max: p.budget_max,
+    })));
 
     // ÉTAPE 2 : ENRICHIR AVEC CULTURES ET ZONES
     const enrichedProviders = await Promise.all(
@@ -130,10 +299,11 @@ export async function POST(request: NextRequest) {
       .map((p, index) => ({ ...p, rank: index + 1 }));
 
     // ÉTAPE 5 : SAUVEGARDER DANS MATCHING_HISTORY
+    // matching_history.couple_id référence maintenant couples(id) directement
     const { error: historyError } = await supabase
       .from('matching_history')
       .insert({
-        couple_id,
+        couple_id: couple_id, // couples.id directement
         conversation_id,
         service_type: search_criteria.service_type,
         search_criteria,
