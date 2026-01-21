@@ -62,8 +62,11 @@ export async function signUp(
     }
   }
 
+  logger.critical('🔧 Création client Supabase...', { email, role })
   const supabase = await createClient()
+  logger.critical('✅ Client Supabase créé', { email, role })
 
+  logger.critical('📧 Tentative signUp Supabase Auth...', { email, role })
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -78,19 +81,30 @@ export async function signUp(
     },
   })
 
+  logger.critical('📧 Réponse signUp reçue', { 
+    email, 
+    role, 
+    hasUser: !!data?.user, 
+    hasError: !!error,
+    errorMessage: error?.message 
+  })
+
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
+    logger.critical('⚠️ Erreur lors du signUp', { email, role, error: error.message, hasUser: !!data?.user })
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
     if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
+      logger.critical('🚨 Erreur signUp - retour erreur', { email, role, error: error.message })
       return { error: translateAuthError(error.message) }
     }
   }
 
   // Vérifier que l'utilisateur a été créé
   if (!data?.user) {
+    logger.critical('🚨 Aucun utilisateur créé après signUp', { email, role })
     logger.error('Aucun utilisateur créé après signUp')
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
