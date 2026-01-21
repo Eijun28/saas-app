@@ -151,6 +151,19 @@ export async function signUp(
           return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
         }
 
+        // ⚠️ PROTECTION: Supprimer tout profil créé par erreur dans profiles pour les couples
+        // (au cas où le trigger handle_new_user aurait créé un profil)
+        try {
+          await adminClient
+            .from('profiles')
+            .delete()
+            .eq('id', userId)
+          logger.critical('🧹 Nettoyage: Profil supprimé de profiles (si existait)', { userId })
+        } catch (cleanupError) {
+          // Ne pas bloquer si la suppression échoue (peut-être que le profil n'existe pas)
+          logger.warn('Nettoyage profil profiles (non bloquant):', cleanupError)
+        }
+
         // Créer directement dans couples (pas de profil dans profiles pour les couples)
         logger.critical('📝 Tentative création enregistrement couple', { userId, email })
         
