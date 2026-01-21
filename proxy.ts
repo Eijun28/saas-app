@@ -45,25 +45,27 @@ export default async function proxy(request: NextRequest) {
   // Connecté + route auth = redirect vers dashboard
   if (user && isAuthRoute) {
     // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
+    // Si l'utilisateur est dans couples, c'est forcément un couple
+    const { data: couple, error: coupleError } = await supabase
       .from('couples')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (couple) {
+    if (couple && !coupleError) {
       return NextResponse.redirect(new URL('/couple/dashboard', request.url))
     }
 
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
+    // Sinon vérifier dans profiles
+    // Si l'utilisateur est dans profiles, c'est forcément un prestataire
+    // (car seuls les prestataires sont stockés dans profiles)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('id')
       .eq('id', user.id)
-      .eq('role', 'prestataire')
-      .single()
+      .maybeSingle()
 
-    if (profile && profile.role === 'prestataire') {
+    if (profile && !profileError) {
       return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
     }
   }
@@ -74,13 +76,14 @@ export default async function proxy(request: NextRequest) {
     const isTryingToAccessPrestataire = request.nextUrl.pathname.startsWith('/prestataire')
 
     // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
+    // Si l'utilisateur est dans couples, c'est forcément un couple
+    const { data: couple, error: coupleError } = await supabase
       .from('couples')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (couple) {
+    if (couple && !coupleError) {
       // Couple essaie d'accéder à une route prestataire
       if (isTryingToAccessPrestataire) {
         return NextResponse.redirect(new URL('/couple/dashboard', request.url))
@@ -89,15 +92,16 @@ export default async function proxy(request: NextRequest) {
       return supabaseResponse
     }
 
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
+    // Sinon vérifier dans profiles
+    // Si l'utilisateur est dans profiles, c'est forcément un prestataire
+    // (car seuls les prestataires sont stockés dans profiles)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('id')
       .eq('id', user.id)
-      .eq('role', 'prestataire')
-      .single()
+      .maybeSingle()
 
-    if (profile && profile.role === 'prestataire') {
+    if (profile && !profileError) {
       // Prestataire essaie d'accéder à une route couple
       if (isTryingToAccessCouple) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))

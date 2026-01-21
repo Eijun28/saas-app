@@ -322,7 +322,6 @@ export async function signUp(
           prenom: profileData.prenom || null,
           nom: profileData.nom || null,
           nom_entreprise: profileData.nomEntreprise || null,
-          onboarding_completed: false, // S'assurer que ce champ est défini
         }
         
         const { error: profileError } = await adminClient
@@ -484,31 +483,35 @@ export async function signIn(email: string, password: string) {
 
   if (data.user) {
     // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
+    // Si l'utilisateur est dans couples, c'est forcément un couple
+    const { data: couple, error: coupleError } = await supabase
       .from('couples')
       .select('id')
       .eq('user_id', data.user.id)
-      .single()
+      .maybeSingle()
 
-    if (couple) {
+    if (couple && !coupleError) {
       revalidatePath('/', 'layout')
       return { success: true, redirectTo: '/couple/dashboard' }
     }
 
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
+    // Sinon vérifier dans profiles
+    // Si l'utilisateur est dans profiles, c'est forcément un prestataire
+    // (car seuls les prestataires sont stockés dans profiles)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('id')
       .eq('id', data.user.id)
-      .eq('role', 'prestataire')
-      .single()
+      .maybeSingle()
 
     revalidatePath('/', 'layout')
 
-    if (profile && profile.role === 'prestataire') {
+    if (profile && !profileError) {
       return { success: true, redirectTo: '/prestataire/dashboard' }
     }
 
+    // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
+    // (cas d'un compte auth créé mais profil non complété)
     return { success: true, redirectTo: '/' }
   }
 

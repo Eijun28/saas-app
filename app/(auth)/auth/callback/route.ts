@@ -25,25 +25,27 @@ export async function GET(request: Request) {
     
     if (user) {
       // Vérifier d'abord dans couples
+      // Si l'utilisateur est dans couples, c'est forcément un couple
       const { data: couple, error: coupleError } = await supabase
         .from('couples')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (couple && !coupleError) {
         return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
       }
 
-      // Sinon vérifier dans profiles (prestataires uniquement)
+      // Sinon vérifier dans profiles
+      // Si l'utilisateur est dans profiles, c'est forcément un prestataire
+      // (car seuls les prestataires sont stockés dans profiles)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('id')
         .eq('id', user.id)
-        .eq('role', 'prestataire')
-        .single()
+        .maybeSingle()
 
-      if (profile && profile.role === 'prestataire' && !profileError) {
+      if (profile && !profileError) {
         return NextResponse.redirect(`${requestUrl.origin}/prestataire/dashboard`)
       }
 

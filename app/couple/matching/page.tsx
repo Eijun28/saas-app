@@ -70,6 +70,7 @@ export default function MatchingPage() {
         setCoupleProfile({
           partner_1_name: profile.partner_1_name,
           partner_2_name: profile.partner_2_name,
+          avatar_url: (profile as any).avatar_url || null,
           cultures: (profile as any).cultures || [],
           wedding_date: (profile as any).wedding_date,
           wedding_location: (profile as any).wedding_city || (profile as any).wedding_region || null,
@@ -604,6 +605,11 @@ function ChatView({
 }: ChatViewProps) {
   // Déterminer si on a des messages (plus que le message initial du bot)
   const hasMessages = messages.length > 1;
+  
+  // State pour gérer les erreurs de chargement d'image du bot
+  const [botAvatarError, setBotAvatarError] = useState(false);
+  // State pour gérer les erreurs de chargement d'image du couple
+  const [coupleAvatarError, setCoupleAvatarError] = useState(false);
 
   // Auto-resize textarea amélioré
   useEffect(() => {
@@ -621,6 +627,11 @@ function ChatView({
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, hasMessages]);
+
+  // Réinitialiser les erreurs d'avatar quand le profil change
+  useEffect(() => {
+    setCoupleAvatarError(false);
+  }, [coupleProfile?.avatar_url]);
 
   // Message de bienvenue personnalisé
   const getWelcomeMessage = () => {
@@ -821,10 +832,19 @@ function ChatView({
                     message.role === 'user' ? 'justify-end' : ''
                   )}
                 >
-                  {/* Avatar bot */}
+                  {/* Avatar bot - Image de l'assistant IA */}
                   {message.role === 'bot' && (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#823F91]" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {!botAvatarError ? (
+                        <img
+                          src="/images/ai-assistant-avatar.png"
+                          alt="Assistant IA"
+                          className="w-full h-full object-cover object-center"
+                          onError={() => setBotAvatarError(true)}
+                        />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#823F91]" />
+                      )}
                     </div>
                   )}
 
@@ -841,8 +861,19 @@ function ChatView({
                       <div className="bg-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 max-w-[80%] sm:max-w-[75%] text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                         {message.content}
                       </div>
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 text-xs sm:text-sm font-semibold">
-                        {getUserInitials()}
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {coupleProfile?.avatar_url && !coupleAvatarError ? (
+                          <img
+                            src={coupleProfile.avatar_url}
+                            alt="Profil couple"
+                            className="w-full h-full object-cover"
+                            onError={() => setCoupleAvatarError(true)}
+                          />
+                        ) : (
+                          <span className="text-xs sm:text-sm font-semibold">
+                            {getUserInitials()}
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
@@ -856,8 +887,17 @@ function ChatView({
                   animate={{ opacity: 1 }}
                   className="flex gap-2 sm:gap-3 items-start"
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#823F91]" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {!botAvatarError ? (
+                      <img
+                        src="/images/ai-assistant-avatar.png"
+                        alt="Assistant IA"
+                        className="w-full h-full object-cover object-center"
+                        onError={() => setBotAvatarError(true)}
+                      />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#823F91]" />
+                    )}
                   </div>
                   <div className="flex gap-1 items-center h-8 sm:h-10">
                     <span
