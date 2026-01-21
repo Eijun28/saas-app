@@ -15,7 +15,6 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
 import { createMissingConversations } from '@/lib/supabase/fix-conversations'
-import { RefreshCw } from 'lucide-react'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
