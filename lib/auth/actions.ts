@@ -45,9 +45,21 @@ export async function signUp(
     profileData.nom = profileData.nom.trim().substring(0, 100)
   }
 
-  // ✅ VALIDATION 4: Pour prestataires, vérifier nom entreprise si fourni
-  if (role === 'prestataire' && profileData.nomEntreprise) {
-    profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+  // ✅ VALIDATION 4: Pour prestataires, vérifier et sanitizer les données
+  if (role === 'prestataire') {
+    // Vérifier que prenom et nom sont fournis (requis pour prestataires aussi)
+    if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
+      return { error: 'Le prénom et le nom sont requis pour les prestataires' }
+    }
+    
+    // Sanitize les noms (protection XSS)
+    profileData.prenom = profileData.prenom.trim().substring(0, 100)
+    profileData.nom = profileData.nom.trim().substring(0, 100)
+    
+    // Sanitize nom entreprise si fourni
+    if (profileData.nomEntreprise) {
+      profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+    }
   }
 
   const supabase = await createClient()
@@ -280,16 +292,19 @@ export async function signUp(
         // Insérer ou mettre à jour dans la table profiles (prestataires)
         logger.critical('📝 Tentative création/mise à jour profil prestataire', { userId, email })
         
+        // Préparer les données du profil (déjà sanitizées dans les validations)
+        const profileInsertData = {
+          id: userId,
+          email: email,
+          role: 'prestataire' as const,
+          prenom: profileData.prenom || null,
+          nom: profileData.nom || null,
+          nom_entreprise: profileData.nomEntreprise || null,
+        }
+        
         const { error: profileError } = await adminClient
           .from('profiles')
-          .upsert({
-            id: userId,
-            email: email,
-            role: 'prestataire',
-            prenom: profileData.prenom.trim().substring(0, 100),
-            nom: profileData.nom.trim().substring(0, 100),
-            nom_entreprise: profileData.nomEntreprise ? profileData.nomEntreprise.trim().substring(0, 200) : null,
-          }, {
+          .upsert(profileInsertData, {
             onConflict: 'id'
           })
 
