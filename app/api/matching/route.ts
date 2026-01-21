@@ -191,16 +191,12 @@ export async function POST(request: NextRequest) {
     const { data: providers, error } = await query;
 
     if (error) {
-      console.error('Erreur Supabase:', error);
-      return NextResponse.json(
-        { error: 'Erreur lors de la recherche' },
-        { status: 500 }
-      );
-    }
-
-    if (error) {
       console.error('❌ Erreur Supabase lors de la recherche:', error);
       console.error('Détails:', JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        { error: 'Erreur lors de la recherche', details: error.message },
+        { status: 500 }
+      );
     }
 
     if (!providers || providers.length === 0) {
