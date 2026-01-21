@@ -68,9 +68,9 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
       const profile = await getCurrentCoupleProfile();
       if (profile) {
         setCoupleProfile({
-          cultures: profile.cultures || [],
+          cultures: [], // Les cultures sont stockées comme IDs dans preferences, pas directement accessibles
           wedding_date: profile.wedding_date,
-          wedding_location: profile.wedding_city || profile.wedding_region || null,
+          wedding_location: profile.wedding_location || null,
           budget_min: profile.budget_min,
           budget_max: profile.budget_max,
           guest_count: profile.guest_count,
@@ -235,11 +235,11 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                   </div>
                 )}
 
-                {extractedCriteria.specific_needs && extractedCriteria.specific_needs.length > 0 && (
+                {extractedCriteria.specific_requirements && extractedCriteria.specific_requirements.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Besoins spécifiques</h4>
                     <ul className="list-disc list-inside space-y-1">
-                      {extractedCriteria.specific_needs.map((need, idx) => (
+                      {extractedCriteria.specific_requirements.map((need, idx) => (
                         <li key={idx} className="text-sm text-gray-900">{need}</li>
                       ))}
                     </ul>

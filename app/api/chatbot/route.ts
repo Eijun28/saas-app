@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/api-error-handler';
 
@@ -109,10 +110,13 @@ Sinon, garde "continue" et pose des questions pour clarifier.
 IMPORTANT : Le modèle doit être patient et ne pas se précipiter vers la validation.`;
 
     // Convertir les messages au format OpenAI
-    const openaiMessages = messages.map((msg: any) => ({
-      role: msg.role === 'bot' ? 'assistant' : 'user',
-      content: msg.content,
-    }));
+    const openaiMessages: ChatCompletionMessageParam[] = messages.map((msg: any) => {
+      const role = msg.role === 'bot' ? 'assistant' : 'user';
+      return {
+        role: role as 'user' | 'assistant',
+        content: msg.content,
+      };
+    });
 
     // Appel à OpenAI
     const response = await openai.chat.completions.create({

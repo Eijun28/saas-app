@@ -78,9 +78,9 @@ export default function Chatbot() {
       const profile = await getCurrentCoupleProfile();
       if (profile) {
         setCoupleProfile({
-          cultures: profile.cultures || [],
+          cultures: [], // Les cultures sont stockées comme IDs dans preferences, pas directement accessibles
           wedding_date: profile.wedding_date,
-          wedding_location: profile.wedding_city || profile.wedding_region || null,
+          wedding_location: profile.wedding_location || null,
           budget_min: profile.budget_min,
           budget_max: profile.budget_max,
           guest_count: profile.guest_count,

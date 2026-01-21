@@ -7,4 +7,10 @@ export type {
   SearchCriteria as ChatbotSearchCriteria,
   ChatbotState,
 } from './chatbot'
+export type {
+  MatchingRequest,
+  ProviderMatch,
+  ScoreBreakdown,
+  MatchingResult,
+} from './matching'
 
