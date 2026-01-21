@@ -95,9 +95,12 @@ export async function signUp(
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
 
+  logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
+
   // Créer le profil utilisateur selon le rôle
   try {
       if (role === 'couple') {
+        logger.critical('👥 Traitement inscription COUPLE', { userId: data.user.id })
         // Créer le client admin pour contourner les politiques RLS
         let adminClient
         try {
@@ -225,11 +228,15 @@ export async function signUp(
           }
         }
       } else {
+        logger.critical('💼 Traitement inscription PRESTATAIRE', { userId: data.user.id, email })
         // Créer le client admin
         let adminClient
         try {
+          logger.critical('🔧 Création client admin...', { userId: data.user.id })
           adminClient = createAdminClient()
+          logger.critical('✅ Client admin créé avec succès', { userId: data.user.id })
         } catch (adminError: any) {
+          logger.critical('🚨 Erreur création client admin:', { userId: data.user.id, error: adminError })
           logger.error('Erreur création client admin:', adminError)
           // Essayer de supprimer l'utilisateur créé
           try {
