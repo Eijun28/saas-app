@@ -432,7 +432,7 @@ export default function AgendaPage() {
               <span className="sm:hidden">Ajouter</span>
             </Button>
           </DialogTrigger>
-          <DialogContent size="sm" className="sm:max-w-[450px]">
+          <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
             <DialogHeader>
               <DialogTitle className="text-lg sm:text-xl">Créer un événement</DialogTitle>
             </DialogHeader>
@@ -701,7 +701,7 @@ export default function AgendaPage() {
 
       {/* Dialog Modifier */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent size="sm" className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
           <DialogHeader>
             <DialogTitle>Modifier l'événement</DialogTitle>
           </DialogHeader>

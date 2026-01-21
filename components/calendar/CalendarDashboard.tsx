@@ -310,7 +310,7 @@ export function CalendarDashboard({
 
       {/* Dialog d'ajout d'événement */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent size="sm" className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
           <DialogHeader>
             <DialogTitle>Créer un événement</DialogTitle>
             <DialogDescription>

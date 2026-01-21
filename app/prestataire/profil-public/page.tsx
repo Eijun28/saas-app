@@ -412,7 +412,6 @@ export default function ProfilPublicPage() {
                     key={`profile-desc-${profile?._timestamp || 0}`}
                     userId={user.id}
                     currentDescription={profile?.description_courte}
-                    currentBio={profile?.bio}
                     onSave={reloadData}
                   />
                   <ProfessionalInfoEditor
@@ -422,6 +421,7 @@ export default function ProfilPublicPage() {
                     currentBudgetMax={profile?.budget_max}
                     currentExperience={profile?.annees_experience}
                     currentVille={profile?.ville_principale}
+                    currentServiceType={profile?.service_type}
                     onSave={reloadData}
                   />
                   <SocialLinksEditor

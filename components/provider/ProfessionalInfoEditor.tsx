@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { CityAutocompleteInput } from '@/components/provider/CityAutocompleteInput'
+import { getServiceTypeLabel } from '@/lib/constants/service-types'
 
 interface ProfessionalInfoEditorProps {
   userId: string
@@ -13,6 +15,7 @@ interface ProfessionalInfoEditorProps {
   currentBudgetMax?: number
   currentExperience?: number
   currentVille?: string
+  currentServiceType?: string
   onSave?: () => void
 }
 
@@ -22,6 +25,7 @@ export function ProfessionalInfoEditor({
   currentBudgetMax,
   currentExperience,
   currentVille,
+  currentServiceType,
   onSave,
 }: ProfessionalInfoEditorProps) {
   const [budgetMin, setBudgetMin] = useState(currentBudgetMin?.toString() || '')
@@ -177,25 +181,29 @@ export function ProfessionalInfoEditor({
 
   return (
     <div className="space-y-6">
+      {/* Profession (service_type) - Lecture seule */}
+      {currentServiceType && (
+        <div className="space-y-2">
+          <Label>Profession</Label>
+          <p className="text-sm text-muted-foreground py-2 px-3 bg-gray-50 rounded-lg border border-gray-200">
+            {getServiceTypeLabel(currentServiceType)}
+          </p>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="ville">Ville principale</Label>
         <p className="text-sm text-muted-foreground">Où êtes-vous basé(e) ?</p>
-        <Input
-          id="ville"
-          placeholder="Ex: Paris, Lyon, Marseille"
+        <CityAutocompleteInput
           value={ville}
-          onChange={(e) => {
+          onChange={(value) => {
             isEditingRef.current = true
-            setVille(e.target.value)
-          }}
-          onBlur={() => {
+            setVille(value)
             setTimeout(() => {
               isEditingRef.current = false
             }, 100)
           }}
-          onFocus={() => {
-            isEditingRef.current = true
-          }}
+          placeholder="Tapez votre ville..."
         />
       </div>
 

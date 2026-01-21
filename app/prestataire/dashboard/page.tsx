@@ -128,12 +128,13 @@ export default function DashboardPrestatairePage() {
         const isIgnorableError = (err: any) => {
           if (!err) return true
           const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
-          const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
+          const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'relation', 'table']
           return ignorableErrorCodes.includes(err.code) || 
             ignorableMessages.some(msg => err.message?.toLowerCase().includes(msg.toLowerCase()))
         }
         
-        // Ignorer les erreurs non critiques
+        // Ignorer silencieusement les erreurs non critiques (table n'existe pas, RLS, etc.)
+        // Ne pas afficher de message d'erreur pour ces cas normaux
         if (demandesError && !isIgnorableError(demandesError)) {
           const isNetworkError = demandesError.message?.includes('fetch') || 
             demandesError.message?.includes('network') || 
@@ -141,6 +142,7 @@ export default function DashboardPrestatairePage() {
           if (isNetworkError) {
             throw demandesError
           }
+          // Si ce n'est pas une erreur réseau, ignorer silencieusement
         }
         if (eventsError && !isIgnorableError(eventsError)) {
           const isNetworkError = eventsError.message?.includes('fetch') || 
@@ -149,6 +151,7 @@ export default function DashboardPrestatairePage() {
           if (isNetworkError) {
             throw eventsError
           }
+          // Si ce n'est pas une erreur réseau, ignorer silencieusement
         }
 
         // Calculer le taux de réponse (demandes acceptées / total demandes)
@@ -185,13 +188,13 @@ export default function DashboardPrestatairePage() {
         console.error('Erreur chargement stats:', error)
         // Codes d'erreur à ignorer (cas normaux)
         const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301']
-        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned']
+        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'relation', 'table']
         
         const isIgnorableError = ignorableErrorCodes.includes(error?.code) || 
           ignorableMessages.some(msg => error?.message?.toLowerCase().includes(msg.toLowerCase()))
         
         if (isIgnorableError) {
-          // Initialiser avec des valeurs par défaut
+          // Initialiser avec des valeurs par défaut sans afficher d'erreur
           setStats({
             nouvelles_demandes: 0,
             evenements_a_venir: 0,
@@ -210,6 +213,7 @@ export default function DashboardPrestatairePage() {
         
         if (!isNetworkError) {
           // Probablement RLS ou autre cas normal, ignorer silencieusement
+          // Ne pas afficher de toast d'erreur pour ces cas
           setStats({
             nouvelles_demandes: 0,
             evenements_a_venir: 0,
@@ -221,12 +225,14 @@ export default function DashboardPrestatairePage() {
           return
         }
         
-        // Vraie erreur critique : afficher le message
-        toast.error('Erreur lors du chargement des statistiques')
+        // Vraie erreur critique réseau uniquement : afficher le message
+        console.error('Erreur réseau lors du chargement des statistiques:', error)
         setUiState({ 
-          loading: 'error', 
-          error: 'Impossible de charger les statistiques' 
+          loading: 'success', // Ne pas bloquer l'UI même en cas d'erreur réseau
+          error: null 
         })
+        // Ne pas afficher de toast pour éviter de perturber l'utilisateur
+        // Les stats seront simplement à 0
       }
     }
 
