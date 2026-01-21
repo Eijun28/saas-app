@@ -5,7 +5,8 @@ import { motion } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Search, RefreshCw } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { DemandeCard } from '@/components/prestataire/demandes/DemandeCard'
@@ -13,6 +14,8 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
+import { createMissingConversations } from '@/lib/supabase/fix-conversations'
+import { RefreshCw } from 'lucide-react'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
@@ -30,6 +33,7 @@ export default function DemandesRecuesPage() {
     loading: 'idle',
     error: null,
   })
+  const [isFixingConversations, setIsFixingConversations] = useState(false)
 
   const { user } = useUser()
 
@@ -128,20 +132,48 @@ export default function DemandesRecuesPage() {
     let couplesMap = new Map()
     
     if (coupleUserIds.length > 0) {
-      const { data: couplesData } = await supabase
+      const { data: couplesData, error: couplesError } = await supabase
         .from('couples')
         .select('user_id, partner_1_name, partner_2_name, wedding_date')
         .in('user_id', coupleUserIds)
+      
+      if (couplesError) {
+        console.error('Erreur récupération couples:', couplesError)
+      }
       
       if (couplesData) {
         couplesMap = new Map(couplesData.map((c: any) => [c.user_id, c]))
       }
     }
 
+    // Si aucun couple trouvé, essayer de récupérer depuis profiles (fallback)
+    if (couplesMap.size === 0 && coupleUserIds.length > 0) {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, prenom, nom, nom_entreprise')
+        .in('id', coupleUserIds)
+      
+      if (profilesData) {
+        profilesData.forEach((p: any) => {
+          couplesMap.set(p.id, {
+            user_id: p.id,
+            partner_1_name: p.prenom || p.nom_entreprise || 'Utilisateur',
+            partner_2_name: p.nom || '',
+            wedding_date: null,
+          })
+        })
+      }
+    }
+
     // Fusionner les données
     const data = requestsData.map((request: any) => ({
       ...request,
-      couple: couplesMap.get(request.couple_id) || null
+      couple: couplesMap.get(request.couple_id) || {
+        user_id: request.couple_id,
+        partner_1_name: 'Couple',
+        partner_2_name: '',
+        wedding_date: null,
+      }
     }))
 
     setDemandes(formatAndGroupDemandes(data))
@@ -159,18 +191,58 @@ export default function DemandesRecuesPage() {
 
     const supabase = createClient()
     
+    // Récupérer d'abord la demande pour obtenir couple_id
+    const { data: requestData, error: fetchError } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status')
+      .eq('id', requestId)
+      .eq('provider_id', user.id)
+      .single()
+
+    if (fetchError || !requestData) {
+      toast.error(`Erreur: ${fetchError?.message || 'Demande introuvable'}`)
+      return
+    }
+
+    // Mettre à jour le statut de la demande
     const { error: updateError } = await supabase
       .from('requests')
       .update({ status: 'accepted' })
       .eq('id', requestId)
-      .eq('provider_id', user.id) // Sécurité supplémentaire
+      .eq('provider_id', user.id)
 
     if (updateError) {
       toast.error(`Erreur: ${updateError.message}`)
       return
     }
 
-    toast.success('Demande acceptée')
+    // Vérifier si une conversation existe déjà, sinon la créer
+    const { data: existingConv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('request_id', requestId)
+      .maybeSingle()
+
+    if (!existingConv) {
+      // Créer la conversation manuellement si le trigger ne l'a pas fait
+      const { error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          request_id: requestId,
+          couple_id: requestData.couple_id,
+          provider_id: requestData.provider_id,
+        })
+
+      if (convError) {
+        console.error('Erreur création conversation:', convError)
+        // Ne pas bloquer l'acceptation si la conversation existe déjà ou si c'est une erreur de contrainte
+        if (convError.code !== '23505') {
+          toast.error('Demande acceptée mais erreur lors de la création de la conversation')
+        }
+      }
+    }
+
+    toast.success('Demande acceptée - La conversation est maintenant disponible dans la messagerie')
     fetchDemandes()
   }
 
@@ -193,6 +265,24 @@ export default function DemandesRecuesPage() {
     fetchDemandes()
   }
 
+  const handleFixConversations = async () => {
+    setIsFixingConversations(true)
+    try {
+      const result = await createMissingConversations()
+      if (result.success) {
+        toast.success(result.message || 'Conversations vérifiées')
+        // Rafraîchir les demandes
+        fetchDemandes()
+      } else {
+        toast.error(`Erreur: ${result.error?.message || 'Erreur inconnue'}`)
+      }
+    } catch (error: any) {
+      toast.error(`Erreur: ${error.message || 'Erreur inconnue'}`)
+    } finally {
+      setIsFixingConversations(false)
+    }
+  }
+
   if (uiState.loading === 'loading') {
     return <LoadingSpinner size="lg" text="Chargement des demandes..." />
   }
@@ -212,6 +302,26 @@ export default function DemandesRecuesPage() {
           Gérez toutes vos demandes de prestations
         </p>
       </motion.div>
+
+      {/* Bouton pour créer les conversations manquantes */}
+      {demandes.en_cours.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-end"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFixConversations}
+            disabled={isFixingConversations}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFixingConversations ? 'animate-spin' : ''}`} />
+            {isFixingConversations ? 'Vérification...' : 'Vérifier les conversations'}
+          </Button>
+        </motion.div>
+      )}
 
       <div className="relative w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]/50 pointer-events-none" />
