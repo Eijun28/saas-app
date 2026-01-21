@@ -1,10 +1,8 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { generateMetadata as generateSeoMetadata } from '@/lib/seo/config'
 
-export const metadata: Metadata = {
-  title: 'Mentions légales — NUPLY',
-  description: 'Mentions légales et conditions d\'utilisation de NUPLY',
-}
+export const metadata: Metadata = generateSeoMetadata('legal')
 
 export default function LegalPage() {
   return (

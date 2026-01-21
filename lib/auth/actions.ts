@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email/resend'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
+import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 import { revalidatePath } from 'next/cache'
 
@@ -408,25 +409,87 @@ export async function signUp(
       }
     } catch (err: any) {
       logger.error('Erreur lors de la création du profil', err)
-      // Si c'est une erreur RLS mais que l'utilisateur est créé, on continue
+      const userId = data.user.id
+      
+      // Si c'est une erreur RLS, vérifier si le profil a quand même été créé
       if (err.message?.includes('row-level security')) {
-        logger.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
-        // IMPORTANT: Même en cas d'erreur RLS, on doit retourner un résultat valide
-        // L'utilisateur est créé, donc on considère que l'inscription est réussie
-        logger.critical('🎉 INSCRIPTION RÉUSSIE (malgré erreur RLS)', { email, role, userId: data.user.id })
-        const response = { success: true, redirectTo: '/auth/confirm' }
+        logger.warn('Erreur RLS détectée, vérification si le profil existe quand même...', { userId, role })
+        
+        // Vérifier si le profil a été créé malgré l'erreur RLS
         try {
-          revalidatePath('/', 'layout')
-        } catch (revalidateError: any) {
-          logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+          const adminClient = createAdminClient()
+          let profileExists = false
+          
+          if (role === 'couple') {
+            const { data: coupleCheck } = await adminClient
+              .from('couples')
+              .select('id')
+              .eq('user_id', userId)
+              .maybeSingle()
+            profileExists = !!coupleCheck
+          } else {
+            const { data: profileCheck } = await adminClient
+              .from('profiles')
+              .select('id')
+              .eq('id', userId)
+              .maybeSingle()
+            profileExists = !!profileCheck
+          }
+          
+          if (profileExists) {
+            // Le profil existe malgré l'erreur RLS, l'inscription est réussie
+            logger.critical('✅ Profil vérifié et existant malgré erreur RLS', { userId, role })
+            const response = { success: true, redirectTo: '/auth/confirm' }
+            try {
+              revalidatePath('/', 'layout')
+            } catch (revalidateError: any) {
+              logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+            }
+            return response
+          } else {
+            // Le profil n'existe pas, essayer de le créer avec le client admin
+            logger.warn('Profil non trouvé après erreur RLS, tentative de création avec client admin...', { userId, role })
+            
+            // La création avec adminClient a déjà été tentée dans le bloc try principal
+            // Si on arrive ici, c'est que ça a échoué
+            // Ne pas retourner succès si le profil n'existe pas
+            logger.critical('🚨 ÉCHEC: Profil non créé après erreur RLS', { userId, role, error: err.message })
+            
+            // Essayer de supprimer l'utilisateur créé pour éviter un compte orphelin
+            try {
+              await adminClient.auth.admin.deleteUser(userId)
+              logger.warn('Utilisateur supprimé car profil non créé', { userId })
+            } catch (deleteError) {
+              logger.error('Erreur lors de la suppression de l\'utilisateur orphelin:', deleteError)
+            }
+            
+            return { 
+              error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
+            }
+          }
+        } catch (checkError: any) {
+          // Erreur lors de la vérification, ne pas retourner succès
+          logger.error('Erreur lors de la vérification du profil après erreur RLS:', checkError)
+          
+          // Essayer de supprimer l'utilisateur créé
+          try {
+            const adminClient = createAdminClient()
+            await adminClient.auth.admin.deleteUser(userId)
+          } catch {}
+          
+          return { 
+            error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
+          }
         }
-        return response
       } else {
-        // Essayer de supprimer l'utilisateur créé en cas d'erreur
+        // Erreur non-RLS, essayer de supprimer l'utilisateur créé en cas d'erreur
         try {
           const adminClient = createAdminClient()
           await adminClient.auth.admin.deleteUser(data.user.id)
-        } catch {}
+          logger.warn('Utilisateur supprimé après erreur non-RLS', { userId: data.user.id })
+        } catch (deleteError) {
+          logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
+        }
         return { error: translateAuthError(err.message || 'Erreur inconnue') }
       }
     }
@@ -482,32 +545,14 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Vérifier d'abord dans la table couples
-    // Si l'utilisateur est dans couples, c'est forcément un couple
-    const { data: couple, error: coupleError } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .maybeSingle()
-
-    if (couple && !coupleError) {
-      revalidatePath('/', 'layout')
-      return { success: true, redirectTo: '/couple/dashboard' }
-    }
-
-    // Sinon vérifier dans profiles
-    // Si l'utilisateur est dans profiles, c'est forcément un prestataire
-    // (car seuls les prestataires sont stockés dans profiles)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', data.user.id)
-      .maybeSingle()
-
+    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
+    const roleCheck = await getUserRoleServer(data.user.id)
+    
     revalidatePath('/', 'layout')
-
-    if (profile && !profileError) {
-      return { success: true, redirectTo: '/prestataire/dashboard' }
+    
+    if (roleCheck.role) {
+      const dashboardUrl = getDashboardUrl(roleCheck.role)
+      return { success: true, redirectTo: dashboardUrl }
     }
 
     // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil

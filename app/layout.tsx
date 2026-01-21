@@ -7,10 +7,15 @@ import FooterWrapper from "@/components/layout/FooterWrapper";
 // import Chatbot from "@/components/Chatbot"; // Désactivé temporairement - à réactiver plus tard
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { seoConfig } from "@/lib/seo/config";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
-  title: "NUPLY — Le mariage moderne",
-  description: "Matching IA, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
+  ...seoConfig.defaultMetadata,
+  title: seoConfig.pages.home.title,
+  description: seoConfig.pages.home.description,
+  keywords: seoConfig.pages.home.keywords,
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -37,6 +42,8 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${GeistSans.className} antialiased bg-background`} suppressHydrationWarning>
+        {/* Données structurées pour le SEO */}
+        <JsonLd data={[generateOrganizationSchema(), generateWebSiteSchema()]} />
         <NuplyNavbarMenu />
         <div id="dialog-container" style={{ position: 'relative', zIndex: 99999 }} />
         <main>

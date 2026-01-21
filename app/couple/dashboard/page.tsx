@@ -113,70 +113,7 @@ export default function CoupleDashboardPage() {
           hint: error?.hint,
           fullError: error
         })
-        // En cas d'erreur, essayer avec les requêtes séparées (fallback)
-        try {
-          const fallbackSupabase = createClient()
-          
-          // Récupérer les données du couple
-          const { data: coupleData, error: coupleError } = await fallbackSupabase
-            .from('couples')
-            .select('*')
-            .eq('user_id', user.id)
-            .single()
-          
-          if (coupleError) {
-            // Améliorer l'affichage de l'erreur avec toutes ses propriétés
-            console.error('Erreur lors de la récupération du couple (fallback):', {
-              message: coupleError.message,
-              code: coupleError.code,
-              details: coupleError.details,
-              hint: coupleError.hint,
-              fullError: coupleError
-            })
-            return
-          }
-          
-          if (coupleData) {
-            // Extraire le prénom et nom
-            if (coupleData.partner_1_name) {
-              const nameParts = coupleData.partner_1_name.split(' ')
-              setPrenom(nameParts[0] || '')
-              setNom(nameParts.slice(1).join(' ') || '')
-            }
-            
-            setCoupleProfile(coupleData)
-            
-            // Calculer les jours restants
-            let joursRestants = null
-            if (coupleData.wedding_date) {
-              const dateMariage = new Date(coupleData.wedding_date)
-              const aujourdhui = new Date()
-              const diff = dateMariage.getTime() - aujourdhui.getTime()
-              joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
-            }
-            
-            // Compter les favoris
-            const { count: favorisCount } = await fallbackSupabase
-              .from('favoris')
-              .select('id', { count: 'exact', head: true })
-              .eq('couple_id', user.id)
-            
-            // Messages désactivés temporairement
-            const messagesNonLus = 0
-            
-            // Calculer le budget total de la même manière que dans la page budget
-            const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
-            
-            setStats({
-              prestatairesTrouves: favorisCount || 0,
-              budgetAlloue: budgetTotal,
-              joursRestants,
-              messagesNonLus,
-            })
-          }
-        } catch (fallbackError: any) {
-          console.error('Erreur lors du fallback:', fallbackError)
-        }
+        // Ne pas bloquer l'UI, les stats resteront à leurs valeurs par défaut
       }
     }
 
