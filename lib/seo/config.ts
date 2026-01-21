@@ -121,14 +121,16 @@ export function generateMetadata(
     ...seoConfig.defaultMetadata,
     title: pageConfig.title,
     description: pageConfig.description,
-    keywords: pageConfig.keywords,
+    keywords: [...pageConfig.keywords],
     openGraph: {
       ...seoConfig.defaultMetadata.openGraph,
+      images: seoConfig.defaultMetadata.openGraph?.images ? [...seoConfig.defaultMetadata.openGraph.images] : undefined,
       title: pageConfig.title,
       description: pageConfig.description,
     },
     twitter: {
       ...seoConfig.defaultMetadata.twitter,
+      images: seoConfig.defaultMetadata.twitter?.images ? [...seoConfig.defaultMetadata.twitter.images] : undefined,
       title: pageConfig.title,
       description: pageConfig.description,
     },
@@ -176,13 +178,13 @@ export function createMetadata(metadata: {
               alt: metadata.title,
             },
           ]
-        : seoConfig.defaultMetadata.openGraph?.images,
+        : seoConfig.defaultMetadata.openGraph?.images ? [...seoConfig.defaultMetadata.openGraph.images] : undefined,
     },
     twitter: {
       ...seoConfig.defaultMetadata.twitter,
       title: metadata.title,
       description: metadata.description,
-      images: metadata.image ? [metadata.image] : seoConfig.defaultMetadata.twitter?.images,
+      images: metadata.image ? [metadata.image] : (seoConfig.defaultMetadata.twitter?.images ? [...seoConfig.defaultMetadata.twitter.images] : undefined),
     },
   };
 }

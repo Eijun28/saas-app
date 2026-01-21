@@ -64,21 +64,25 @@ export async function GET(request: Request) {
             if (!coupleError) {
               logger.info('✅ Profil couple récupéré avec succès', { userId: user.id })
               // Créer aussi les préférences vides
-              await adminClient
-                .from('couple_preferences')
-                .insert({
-                  couple_id: user.id,
-                  languages: ['français'],
-                  essential_services: [],
-                  optional_services: [],
-                  cultural_preferences: {},
-                  service_priorities: {},
-                  budget_breakdown: {},
-                  profile_completed: false,
-                  completion_percentage: 0,
-                  onboarding_step: 0,
-                })
-                .catch(() => {}) // Ne pas bloquer si les préférences échouent
+              try {
+                await adminClient
+                  .from('couple_preferences')
+                  .insert({
+                    couple_id: user.id,
+                    languages: ['français'],
+                    essential_services: [],
+                    optional_services: [],
+                    cultural_preferences: {},
+                    service_priorities: {},
+                    budget_breakdown: {},
+                    profile_completed: false,
+                    completion_percentage: 0,
+                    onboarding_step: 0,
+                  })
+              } catch (prefError) {
+                // Ne pas bloquer si les préférences échouent
+                logger.warn('Erreur création préférences (non bloquant):', prefError)
+              }
               
               return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
             } else {
