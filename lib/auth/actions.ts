@@ -293,6 +293,7 @@ export async function signUp(
         logger.critical('📝 Tentative création/mise à jour profil prestataire', { userId, email })
         
         // Préparer les données du profil (déjà sanitizées dans les validations)
+        // Note: Le trigger peut avoir déjà créé un profil basique, l'upsert le complétera
         const profileInsertData = {
           id: userId,
           email: email,
@@ -300,6 +301,7 @@ export async function signUp(
           prenom: profileData.prenom || null,
           nom: profileData.nom || null,
           nom_entreprise: profileData.nomEntreprise || null,
+          onboarding_completed: false, // S'assurer que ce champ est défini
         }
         
         const { error: profileError } = await adminClient
@@ -309,16 +311,29 @@ export async function signUp(
           })
 
         if (profileError) {
+          // Logger toutes les informations de l'erreur pour debugging
           logger.critical('🚨 ÉCHEC: Erreur création profil prestataire', {
             userId,
             email,
             error: profileError.message,
             code: profileError.code,
-            details: profileError.details
+            details: profileError.details,
+            hint: profileError.hint,
+            fullError: JSON.stringify(profileError, null, 2)
           })
+          
+          // Créer un message d'erreur plus détaillé pour le développement
+          let errorMessage = profileError.message || 'Erreur inconnue'
+          if (profileError.hint) {
+            errorMessage += ` (${profileError.hint})`
+          }
+          if (profileError.code) {
+            errorMessage += ` [Code: ${profileError.code}]`
+          }
+          
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: translateAuthError(`Erreur création profil: ${profileError.message}`) }
+          return { error: translateAuthError(`Erreur création profil: ${errorMessage}`) }
         } else {
           logger.critical('✅ Profil prestataire créé avec succès', { userId })
         }
