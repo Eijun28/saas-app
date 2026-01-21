@@ -333,7 +333,7 @@ export function ProfilePreviewDialog({
             </TabsList>
 
             {/* CONTENT SCROLLABLE */}
-            <ScrollArea className="flex-1 min-h-0 w-full">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <div className="p-4 md:p-5">
                 {/* TAB À PROPOS */}
                 <TabsContent value="about" className="mt-0 space-y-6 w-full">
@@ -622,7 +622,7 @@ export function ProfilePreviewDialog({
                   )}
                 </TabsContent>
               </div>
-            </ScrollArea>
+            </div>
           </Tabs>
 
           {/* FOOTER FIXE */}
