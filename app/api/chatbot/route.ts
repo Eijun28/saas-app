@@ -3,6 +3,8 @@ import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/api-error-handler';
+import { getServiceSpecificPrompt, shouldAskQuestion } from '@/lib/chatbot/service-prompts';
+import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -70,23 +72,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Construire le contexte du couple si disponible
+    // Construire le contexte du couple enrichi si disponible
     const coupleContext = couple_profile ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INFORMATIONS DU COUPLE (DÉJÀ CONNUES - NE PAS REDEMANDER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Informations du couple disponibles :
+✅ Cultures : ${couple_profile.cultures?.join(', ') || 'Non spécifié'}
+✅ Date mariage : ${couple_profile.wedding_date || 'Non spécifié'}
+✅ Lieu : ${couple_profile.wedding_location || couple_profile.wedding_city || couple_profile.wedding_region || 'Non spécifié'}
+✅ Budget global mariage : ${couple_profile.budget_min ? `${couple_profile.budget_min}€` : ''}${couple_profile.budget_min && couple_profile.budget_max ? ' - ' : ''}${couple_profile.budget_max ? `${couple_profile.budget_max}€` : ''}${!couple_profile.budget_min && !couple_profile.budget_max ? 'Non spécifié' : ''}
+✅ Nombre d'invités : ${couple_profile.guest_count || 'Non spécifié'}
+${couple_profile.wedding_style ? `✅ Style mariage : ${couple_profile.wedding_style}` : ''}
+${couple_profile.ambiance ? `✅ Ambiance souhaitée : ${couple_profile.ambiance}` : ''}
 
-Cultures : ${couple_profile.cultures?.join(', ') || 'Non spécifié'}
-Date mariage : ${couple_profile.wedding_date || 'Non spécifié'}
-Lieu : ${couple_profile.wedding_location || 'Non spécifié'}
-Budget global : ${couple_profile.budget_min || 0}€ - ${couple_profile.budget_max || 0}€
-Nombre d'invités : ${couple_profile.guest_count || 'Non spécifié'}
-N'utilise ces infos que si pertinentes. Ne les répète pas inutilement.
+RÈGLES IMPORTANTES :
+- NE JAMAIS redemander ces informations déjà connues
+- Utilise ces données pour pré-remplir les critères extraits
+- Si une info manque dans cette liste, tu peux la demander
+- Adapte tes questions selon ces données (ex: si déjà 100 invités, ne demande pas le nombre pour traiteur)
+- Référence ces infos naturellement dans tes réponses sans les répéter mot pour mot
 ` : '';
 
+    // Générer le prompt spécialisé selon le service
+    const serviceSpecificPrompt = service_type ? getServiceSpecificPrompt(service_type, couple_profile) : '';
+    
+    // Calculer les moyennes de marché pour guider le couple
+    let marketAverageInfo = '';
+    if (service_type) {
+      const marketAvg = await calculateMarketAverage(service_type);
+      if (marketAvg) {
+        marketAverageInfo = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GUIDE DE BUDGET POUR ${service_type.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${formatBudgetGuideMessage(marketAvg, service_type)}
+
+Note moyenne : ${marketAvg.average_rating}/5
+Expérience moyenne : ${marketAvg.average_experience} ans
+
+Utilise ces informations pour guider le couple sur les budgets réalistes.
+Si le couple demande conseil sur le budget, référence ces moyennes.
+`;
+      }
+    }
+    
     // System prompt pour le chatbot
     const systemPrompt = `Tu es l'assistant IA de NUPLY, plateforme de matching entre couples et prestataires de mariage multiculturels.
 
 ${coupleContext}
+
+${marketAverageInfo}
+
+${serviceSpecificPrompt}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RÈGLES ABSOLUES
@@ -109,35 +148,55 @@ RÈGLES ABSOLUES
    - Utilisateur concis (<15 mots) → Poser UNE question précise avec exemples
    - Utilisateur moyen → Poser UNE question ouverte courte
 
-4. PROGRESSION LOGIQUE
-   Ordre des infos à extraire :
+4. PROGRESSION LOGIQUE ADAPTÉE AU SERVICE
+   Ordre des infos à extraire selon le type de service :
    
-   Question 1 : Service type (si pas encore clair)
-   Question 2 : Culture + Importance culturelle
-   Question 3 : Budget (fourchette rapide)
-   Question 4 : Style/Vision (moderne, traditionnel, fusion)
-   Question 5 : Localisation + Date (si pas dans profil)
+   ÉTAPE 1 : Service type (si pas encore clair)
+   ÉTAPE 2 : Utiliser les données du couple (cultures, date, lieu, invités) - NE PAS REDEMANDER
+   ÉTAPE 3 : Questions spécifiques au service (voir section QUESTIONS SPÉCIFIQUES ci-dessous)
+   ÉTAPE 4 : Budget pour ce service spécifique (si pas dans profil ou différent du budget global)
+   ÉTAPE 5 : Style/Vision spécifique au service
    
-   Dès que tu as service + culture + budget → PASSE EN VALIDATION
+   RÈGLE D'OR : Si les données du couple sont complètes ET tu as les critères spécifiques au service → VALIDATION IMMÉDIATE
+   
+   Exemple pour traiteur :
+   - Si couple a déjà 100 invités dans profil → NE PAS redemander
+   - Poser : type de service, régime alimentaire, style culinaire
+   - Si couple a déjà budget global → adapter pour budget traiteur (portion du budget global)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXEMPLES DE BONNES RÉPONSES (COURTES)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+EXEMPLE 1 - Photographe (avec données couple disponibles) :
 Utilisateur : "Je cherche un photographe"
-Toi : "Parfait ! Votre mariage a une culture particulière ? (maghrébin, indien, européen...)"
+Toi : "Parfait ! Style de photos préféré ? (reportage, posé, artistique)"
 
-Utilisateur : "Oui maghrébin"
-Toi : "D'accord. Budget approximatif pour le photographe ?"
+Utilisateur : "Reportage"
+Toi : "D'accord. Durée de prestation souhaitée ? (cérémonie uniquement, journée complète)"
 
-Utilisateur : "2000€ environ"
-Toi : "Niveau style, vous préférez moderne, traditionnel ou un mix ?"
-
-Utilisateur : "Moderne"
+Utilisateur : "Journée complète"
 Toi : "Compris ! Je résume :
-- Photographe maghrébin moderne
-- Budget ~2000€
-- Mariage le ${couple_profile?.wedding_date || 'date'} à ${couple_profile?.wedding_location || 'lieu'}
+- Photographe reportage, journée complète
+- Mariage ${couple_profile?.wedding_date ? `le ${couple_profile.wedding_date}` : 'date à confirmer'} ${couple_profile?.wedding_location ? `à ${couple_profile.wedding_location}` : ''}
+- ${couple_profile?.cultures?.length ? `Culture ${couple_profile.cultures.join(', ')}` : 'Culture à préciser'}
+- Budget à définir selon prestation
+
+Je lance la recherche ?"
+
+EXEMPLE 2 - Traiteur (avec données couple disponibles) :
+Utilisateur : "Je cherche un traiteur"
+Toi : "Parfait ! Type de service préféré ? (buffet, assiette, mix)"
+
+Utilisateur : "Buffet"
+Toi : "D'accord. Régime alimentaire ? (halal, végétarien, sans allergènes)"
+
+Utilisateur : "Halal"
+Toi : "Compris ! Je résume :
+- Traiteur buffet halal
+- ${couple_profile?.guest_count ? `${couple_profile.guest_count} invités` : 'Nombre d\'invités à confirmer'}
+- ${couple_profile?.wedding_date ? `Mariage le ${couple_profile.wedding_date}` : 'Date à confirmer'}
+- Budget à définir selon nombre d'invités
 
 Je lance la recherche ?"
 
@@ -160,14 +219,17 @@ GESTION CAS SPÉCIAUX
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CAS 1 : Utilisateur donne TOUT d'un coup
-"Je cherche un photographe maghrébin moderne, budget 2000€, mariage en juin à Paris"
+"Je cherche un photographe maghrébin moderne, budget 2000€"
 
-Toi : "Parfait, j'ai tout ! Je résume :
+Toi : "Parfait, j'ai ce qu'il faut ! Je résume :
 - Photographe maghrébin moderne
 - Budget 2000€
-- Juin 2026 à Paris
+${couple_profile?.wedding_date ? `- Mariage le ${couple_profile.wedding_date}` : ''}
+${couple_profile?.wedding_location ? `- À ${couple_profile.wedding_location}` : ''}
 
 Je lance la recherche ?"
+
+Note : Utilise les données du profil pour compléter automatiquement date/lieu si disponibles.
 
 CAS 2 : Utilisateur très vague
 "Je sais pas trop"
@@ -181,9 +243,11 @@ Réponse : "Il faut qu'il connaisse les traditions"
 Toi : "D'accord, culture importante. Et niveau budget, une fourchette ?"
 
 CAS 4 : Utilisateur demande conseil
-"C'est quoi un bon budget pour un photographe ?"
+"C'est quoi un bon budget pour un traiteur ?"
 
-Toi : "En moyenne 1500-3000€. Votre fourchette ?"
+Toi : "En moyenne 40-80€ par personne (selon les prestataires disponibles sur la plateforme). ${couple_profile?.guest_count ? `Pour ${couple_profile.guest_count} invités, comptez environ ${couple_profile.guest_count * 50}€ à ${couple_profile.guest_count * 80}€.` : 'Votre fourchette pour ce service ?'}"
+
+IMPORTANT : Si des moyennes de marché sont fournies dans le contexte (section "GUIDE DE BUDGET"), utilise-les pour donner des conseils précis et actualisés. Sinon, utilise des valeurs par défaut raisonnables.
 
 CAS 5 : Utilisateur confirme le lancement de recherche
 Question : "Je lance la recherche ?"
@@ -417,6 +481,54 @@ Exemple mauvais ton :
     // S'assurer que extracted_data existe
     if (!parsedResponse.extracted_data || typeof parsedResponse.extracted_data !== 'object') {
       parsedResponse.extracted_data = {};
+    }
+
+    // PRÉ-REMPLIR avec les données du couple si disponibles
+    if (couple_profile) {
+      // Cultures
+      if (couple_profile.cultures && couple_profile.cultures.length > 0) {
+        if (!parsedResponse.extracted_data.cultures || parsedResponse.extracted_data.cultures.length === 0) {
+          parsedResponse.extracted_data.cultures = couple_profile.cultures;
+        }
+      }
+
+      // Date mariage
+      if (couple_profile.wedding_date && !parsedResponse.extracted_data.wedding_date) {
+        parsedResponse.extracted_data.wedding_date = couple_profile.wedding_date;
+      }
+
+      // Localisation
+      if (couple_profile.wedding_city && !parsedResponse.extracted_data.wedding_city) {
+        parsedResponse.extracted_data.wedding_city = couple_profile.wedding_city;
+      }
+      if (couple_profile.wedding_region && !parsedResponse.extracted_data.wedding_department) {
+        parsedResponse.extracted_data.wedding_department = couple_profile.wedding_region;
+      }
+
+      // Nombre d'invités
+      if (couple_profile.guest_count && !parsedResponse.extracted_data.guest_count) {
+        parsedResponse.extracted_data.guest_count = couple_profile.guest_count;
+      }
+
+      // Style et ambiance
+      if (couple_profile.wedding_style && !parsedResponse.extracted_data.wedding_style) {
+        parsedResponse.extracted_data.wedding_style = couple_profile.wedding_style;
+      }
+      if (couple_profile.ambiance && !parsedResponse.extracted_data.wedding_ambiance) {
+        parsedResponse.extracted_data.wedding_ambiance = couple_profile.ambiance;
+      }
+
+      // Budget (utiliser comme référence si pas de budget spécifique au service)
+      if (couple_profile.budget_min && !parsedResponse.extracted_data.budget_min) {
+        // Ne pas pré-remplir directement, mais l'IA peut s'en servir comme référence
+        parsedResponse.extracted_data.budget_reference = {
+          global_min: couple_profile.budget_min,
+          global_max: couple_profile.budget_max,
+        };
+      }
+
+      // Marquer que les données viennent du profil
+      parsedResponse.extracted_data.auto_filled_from_profile = true;
     }
 
     // Si la réponse est trop longue, la tronquer

@@ -52,6 +52,12 @@ export interface SearchCriteria {
   
   // Données extraites du profil couple
   auto_filled_from_profile?: boolean;
+  
+  // Référence budget global (si disponible)
+  budget_reference?: {
+    global_min?: number;
+    global_max?: number;
+  };
 }
 
 export interface ChatbotState {

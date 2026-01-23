@@ -67,10 +67,17 @@ export default function MatchingPage() {
       const profile = await getCurrentCoupleProfile();
       if (profile) {
         setCoupleId(profile.id);
+        const avatarUrl = (profile as any).avatar_url || null;
+        // Debug: afficher l'URL de l'avatar dans la console
+        if (avatarUrl) {
+          console.log('✅ Avatar trouvé:', avatarUrl);
+        } else {
+          console.log('⚠️ Aucun avatar trouvé dans le profil');
+        }
         setCoupleProfile({
           partner_1_name: profile.partner_1_name,
           partner_2_name: profile.partner_2_name,
-          avatar_url: (profile as any).avatar_url || null,
+          avatar_url: avatarUrl,
           cultures: (profile as any).cultures || [],
           wedding_date: (profile as any).wedding_date,
           wedding_location: (profile as any).wedding_city || (profile as any).wedding_region || null,
@@ -837,7 +844,7 @@ function ChatView({
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {!botAvatarError ? (
                         <img
-                          src="/images/ai-assistant-avatar.png"
+                          src="/images/ai-assistant-avatar-3d.png"
                           alt="Assistant IA"
                           className="w-full h-full object-cover object-center"
                           onError={() => setBotAvatarError(true)}
@@ -890,7 +897,7 @@ function ChatView({
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {!botAvatarError ? (
                       <img
-                        src="/images/ai-assistant-avatar.png"
+                        src="/images/ai-assistant-avatar-3d.png"
                         alt="Assistant IA"
                         className="w-full h-full object-cover object-center"
                         onError={() => setBotAvatarError(true)}
@@ -1186,6 +1193,7 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving }
         <MatchResults
           matches={matchingResults.matches}
           totalCandidates={matchingResults.total_candidates}
+          matchingResult={matchingResults}
           onContactProvider={(id) => {
             // TODO: Ouvrir modal contact
             toast.info('Fonctionnalité de contact à venir');

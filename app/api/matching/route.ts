@@ -138,7 +138,8 @@ export async function POST(request: NextRequest) {
     const normalizedServiceType = normalizeServiceType(search_criteria.service_type);
     console.log('🔄 Service type normalisé:', normalizedServiceType);
 
-    // ÉTAPE 1 : FILTRES DURS
+    // ÉTAPE 1 : FILTRES DURS avec jointures optimisées
+    // Utilisation de jointures Supabase pour éviter les requêtes N+1
     let query = supabase
       .from('profiles')
       .select(`
@@ -159,6 +160,12 @@ export async function POST(request: NextRequest) {
         prestataire_public_profiles (
           rating,
           total_reviews
+        ),
+        provider_cultures (
+          culture_id
+        ),
+        provider_zones (
+          zone_id
         )
       `)
       .eq('role', 'prestataire');
@@ -169,34 +176,82 @@ export async function POST(request: NextRequest) {
     
     // Si pas de résultats, on pourra essayer une recherche partielle (à implémenter si nécessaire)
 
-    // Filtre budget si défini - LOGIQUE AMÉLIORÉE
+    // Filtre budget si défini - LOGIQUE OPTIMISÉE
     // Un prestataire correspond si sa fourchette chevauche celle du couple
+    // Chevauchement : (couple_min <= provider_max) ET (provider_min <= couple_max)
     if (search_criteria.budget_max) {
       // Le prestataire doit avoir un budget_min <= budget_max du couple
       // (sinon il est trop cher même au minimum)
       query = query.lte('budget_min', search_criteria.budget_max);
       
-      // Si le couple a un budget_min, on filtre aussi les prestataires trop chers
-      // Un prestataire est trop cher si son budget_max existe ET est < budget_min du couple
-      // On garde donc ceux qui n'ont pas de budget_max OU dont budget_max >= budget_min du couple
+      // Si le couple a un budget_min, filtrer les prestataires dont le budget_max est trop bas
+      // On garde ceux qui n'ont pas de budget_max OU dont budget_max >= budget_min du couple
       if (search_criteria.budget_min) {
-        // Note: Supabase ne supporte pas directement OR dans les filtres simples
-        // On va plutôt être moins restrictif : on garde tous ceux dont budget_min <= budget_max du couple
-        // Le scoring s'occupera de pénaliser ceux qui sont hors budget
+        // Utiliser OR avec une requête conditionnelle
+        // Note: Supabase ne supporte pas directement OR, donc on filtre côté serveur après
+        // Le filtrage strict se fera dans le scoring pour plus de précision
       }
     }
 
     console.log('🔎 Requête Supabase:', query);
 
-    const { data: providers, error } = await query;
+    let providers: any[] = [];
+    let useFallbackEnrichment = false;
+    
+    const { data: providersData, error } = await query;
 
     if (error) {
       console.error('❌ Erreur Supabase lors de la recherche:', error);
       console.error('Détails:', JSON.stringify(error, null, 2));
-      return NextResponse.json(
-        { error: 'Erreur lors de la recherche', details: error.message },
-        { status: 500 }
-      );
+      
+      // Si l'erreur concerne les jointures (code 42703 = colonne inexistante ou relation non définie)
+      // Essayer sans les jointures et charger les données séparément
+      if (error.code === '42703' || error.message?.includes('relation') || error.message?.includes('foreign key')) {
+        console.warn('⚠️ Les jointures ne fonctionnent pas, utilisation du fallback');
+        useFallbackEnrichment = true;
+        
+        // Requête sans jointures
+        const { data: providersFallback, error: fallbackError } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            nom_entreprise,
+            avatar_url,
+            bio,
+            description_courte,
+            service_type,
+            budget_min,
+            budget_max,
+            ville_principale,
+            annees_experience,
+            languages,
+            guest_capacity_min,
+            guest_capacity_max,
+            response_rate,
+            prestataire_public_profiles (
+              rating,
+              total_reviews
+            )
+          `)
+          .eq('role', 'prestataire')
+          .eq('service_type', normalizedServiceType);
+        
+        if (fallbackError) {
+          return NextResponse.json(
+            { error: 'Erreur lors de la recherche', details: fallbackError.message },
+            { status: 500 }
+          );
+        }
+        
+        providers = providersFallback || [];
+      } else {
+        return NextResponse.json(
+          { error: 'Erreur lors de la recherche', details: error.message },
+          { status: 500 }
+        );
+      }
+    } else {
+      providers = providersData || [];
     }
 
     if (!providers || providers.length === 0) {
@@ -212,17 +267,34 @@ export async function POST(request: NextRequest) {
         .from('profiles')
         .select('*', { count: 'exact', head: true })
         .eq('role', 'prestataire')
-        .eq('service_type', search_criteria.service_type);
+        .eq('service_type', normalizedServiceType);
       
-      console.log(`ℹ️ Total prestataires pour ${search_criteria.service_type}:`, totalCount);
+      console.log(`ℹ️ Total prestataires pour ${normalizedServiceType}:`, totalCount);
+      
+      // Rechercher des alternatives : prestataires du même service sans filtre budget
+      let alternativeProviders: any[] = [];
+      if (totalCount && totalCount > 0) {
+        const { data: alternatives } = await supabase
+          .from('profiles')
+          .select('id, nom_entreprise, service_type, budget_min, budget_max')
+          .eq('role', 'prestataire')
+          .eq('service_type', normalizedServiceType)
+          .limit(5);
+        
+        alternativeProviders = alternatives || [];
+      }
       
       return NextResponse.json({
         matches: [],
         total_candidates: 0,
         search_criteria,
-        debug: {
-          service_type: search_criteria.service_type,
+        suggestions: {
+          message: totalCount === 0
+            ? `Aucun prestataire trouvé pour "${search_criteria.service_type}". Essayez un autre type de service.`
+            : `Aucun prestataire ne correspond exactement à vos critères de budget. ${totalCount} prestataire(s) disponible(s) pour ce service.`,
+          alternative_providers: alternativeProviders,
           total_providers_for_service: totalCount || 0,
+          service_type: normalizedServiceType,
         },
       });
     }
@@ -236,37 +308,92 @@ export async function POST(request: NextRequest) {
       budget_max: p.budget_max,
     })));
 
-    // ÉTAPE 2 : ENRICHIR AVEC CULTURES ET ZONES
-    const enrichedProviders = await Promise.all(
-      providers.map(async (provider) => {
-        // Récupérer cultures
-        const { data: cultures } = await supabase
-          .from('provider_cultures')
-          .select('culture_id')
-          .eq('profile_id', provider.id);
+    // ÉTAPE 2 : ENRICHIR AVEC CULTURES, ZONES ET PORTFOLIO (optimisé)
+    // Récupérer tous les IDs des prestataires
+    const providerIds = providers.map(p => p.id);
+    
+    let enrichedProviders: any[];
+    
+    if (useFallbackEnrichment) {
+      // Méthode fallback : requêtes séparées (ancienne méthode)
+      console.log('📦 Utilisation de la méthode d\'enrichissement fallback');
+      enrichedProviders = await Promise.all(
+        providers.map(async (provider) => {
+          // Récupérer cultures
+          const { data: cultures } = await supabase
+            .from('provider_cultures')
+            .select('culture_id')
+            .eq('profile_id', provider.id);
 
-        // Récupérer zones
-        const { data: zones } = await supabase
-          .from('provider_zones')
-          .select('zone_id')
-          .eq('profile_id', provider.id);
+          // Récupérer zones
+          const { data: zones } = await supabase
+            .from('provider_zones')
+            .select('zone_id')
+            .eq('profile_id', provider.id);
 
-        // Compter portfolio
-        const { count: portfolioCount } = await supabase
-          .from('provider_portfolio')
-          .select('*', { count: 'exact', head: true })
-          .eq('profile_id', provider.id);
+          // Compter portfolio
+          const { count: portfolioCount } = await supabase
+            .from('provider_portfolio')
+            .select('*', { count: 'exact', head: true })
+            .eq('profile_id', provider.id);
 
+          const publicProfile = Array.isArray(provider.prestataire_public_profiles) 
+            ? provider.prestataire_public_profiles[0] 
+            : provider.prestataire_public_profiles;
+
+          return {
+            ...provider,
+            cultures: cultures?.map((c) => c.culture_id) || [],
+            zones: zones?.map((z) => z.zone_id) || [],
+            portfolio_count: portfolioCount || 0,
+            average_rating: publicProfile?.rating || 0,
+            review_count: publicProfile?.total_reviews || 0,
+          };
+        })
+      );
+    } else {
+      // Méthode optimisée : jointures Supabase + requête groupée pour portfolio
+      console.log('⚡ Utilisation de la méthode d\'enrichissement optimisée');
+      
+      // Requête groupée pour compter les portfolios (une seule requête au lieu de N)
+      const { data: portfolioCounts } = await supabase
+        .from('provider_portfolio')
+        .select('profile_id')
+        .in('profile_id', providerIds);
+      
+      // Créer un map pour accès rapide O(1)
+      const portfolioCountMap = new Map<string, number>();
+      portfolioCounts?.forEach((item) => {
+        const count = portfolioCountMap.get(item.profile_id) || 0;
+        portfolioCountMap.set(item.profile_id, count + 1);
+      });
+
+      // Enrichir les prestataires avec les données déjà chargées via jointures
+      enrichedProviders = providers.map((provider) => {
+        // Extraire les cultures depuis la jointure
+        const cultures = (provider.provider_cultures as any[])?.map((c: any) => c.culture_id) || [];
+        
+        // Extraire les zones depuis la jointure
+        const zones = (provider.provider_zones as any[])?.map((z: any) => z.zone_id) || [];
+        
+        // Récupérer le portfolio_count depuis le map
+        const portfolio_count = portfolioCountMap.get(provider.id) || 0;
+        
+        // Extraire les données de rating
+        const publicProfile = Array.isArray(provider.prestataire_public_profiles) 
+          ? provider.prestataire_public_profiles[0] 
+          : provider.prestataire_public_profiles;
+        
         return {
           ...provider,
-          cultures: cultures?.map((c) => c.culture_id) || [],
-          zones: zones?.map((z) => z.zone_id) || [],
-          portfolio_count: portfolioCount || 0,
-          average_rating: provider.prestataire_public_profiles?.[0]?.rating || 0,
-          review_count: provider.prestataire_public_profiles?.[0]?.total_reviews || 0,
+          cultures,
+          zones,
+          portfolio_count,
+          average_rating: publicProfile?.rating || 0,
+          review_count: publicProfile?.total_reviews || 0,
         };
-      })
-    );
+      });
+    }
 
     // ÉTAPE 3 : CALCULER LES SCORES
     const scoredProviders = enrichedProviders.map((provider) => {
@@ -288,11 +415,14 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // ÉTAPE 4 : TRIER ET SÉLECTIONNER TOP 3
+    // ÉTAPE 4 : TRIER ET SÉLECTIONNER RÉSULTATS
+    // Par défaut, on retourne les top 3, mais on garde tous les résultats triés pour pagination future
     const sortedProviders = scoredProviders
       .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
       .map((p, index) => ({ ...p, rank: index + 1 }));
+    
+    // Sélectionner les top 3 pour l'affichage initial
+    const topMatches = sortedProviders.slice(0, 3);
 
     // ÉTAPE 5 : SAUVEGARDER DANS MATCHING_HISTORY
     // matching_history.couple_id référence maintenant couples(id) directement
@@ -303,17 +433,19 @@ export async function POST(request: NextRequest) {
         conversation_id,
         service_type: search_criteria.service_type,
         search_criteria,
-        results: sortedProviders,
+        results: sortedProviders, // Sauvegarder tous les résultats pour pagination
       });
 
     if (historyError) {
       console.error('Erreur sauvegarde historique:', historyError);
     }
 
-    console.log(`🎯 Top 3 scores: ${sortedProviders.map(p => p.score).join(', ')}`);
+    console.log(`🎯 Top 3 scores: ${topMatches.map(p => p.score).join(', ')}`);
+    console.log(`📊 Total résultats disponibles: ${sortedProviders.length}`);
 
     return NextResponse.json({
-      matches: sortedProviders,
+      matches: topMatches, // Retourner les top 3 pour compatibilité UI
+      all_matches: sortedProviders, // Tous les résultats pour pagination future
       total_candidates: providers.length,
       search_criteria,
       created_at: new Date().toISOString(),

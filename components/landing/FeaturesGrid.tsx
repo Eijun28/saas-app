@@ -62,11 +62,15 @@ const SkeletonMatching = () => {
                 <div className={`flex items-start space-x-2 max-w-[85%] ${
                   msg.from === "ai" ? "flex-row-reverse space-x-reverse" : ""
                 }`}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ background: 'linear-gradient(to right, #c081e3, #823F91)' }}>
                     {msg.avatar === "couple" ? (
                       <Users className="w-4 h-4 text-white" />
                     ) : (
-                      <Sparkles className="w-4 h-4 text-white" />
+                      <img
+                        src="/images/ai-assistant-avatar-3d.png"
+                        alt="Assistant IA"
+                        className="w-full h-full object-cover object-center"
+                      />
                     )}
                   </div>
                   <div className={`rounded-2xl p-3 ${

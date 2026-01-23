@@ -54,6 +54,19 @@ export interface MatchingResult {
   conversation_id?: string;
   search_criteria: SearchCriteria;
   matches: ProviderMatch[];
+  all_matches?: ProviderMatch[]; // Tous les résultats pour pagination future
   total_candidates: number;
   created_at: string;
+  suggestions?: {
+    message: string;
+    alternative_providers?: Array<{
+      id: string;
+      nom_entreprise: string;
+      service_type: string;
+      budget_min?: number;
+      budget_max?: number;
+    }>;
+    total_providers_for_service: number;
+    service_type: string;
+  };
 }

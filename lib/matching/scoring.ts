@@ -36,6 +36,7 @@ export function calculateCulturalScore(
 
 /**
  * Calcule le score de budget (/20 points)
+ * Amélioration : vérifie d'abord le chevauchement des fourchettes avant de calculer la proximité
  */
 export function calculateBudgetScore(
   coupleBudgetMin: number | undefined,
@@ -44,25 +45,57 @@ export function calculateBudgetScore(
   providerBudgetMax: number | undefined,
   flexibility: string = 'somewhat_flexible'
 ): number {
-  // Si pas de budget défini, score neutre
-  if (!coupleBudgetMax || !providerBudgetMin) {
+  // Si pas de budget défini côté couple, score neutre
+  if (!coupleBudgetMax) {
     return 10; // Score neutre
   }
 
-  const coupleAvg = ((coupleBudgetMin || 0) + coupleBudgetMax) / 2;
-  const providerAvg = ((providerBudgetMin || 0) + (providerBudgetMax || providerBudgetMin)) / 2;
-
-  // Dans la fourchette parfaite
-  if (
-    providerAvg >= (coupleBudgetMin || 0) &&
-    providerAvg <= coupleBudgetMax
-  ) {
-    return 20;
+  // Si pas de budget défini côté prestataire, score minimal
+  if (!providerBudgetMin) {
+    return 5; // Score minimal car on ne peut pas vérifier la compatibilité
   }
 
-  // Calcul de l'écart
+  const coupleMin = coupleBudgetMin || 0;
+  const providerMax = providerBudgetMax || providerBudgetMin * 2; // Estimation si pas de max
+
+  // VÉRIFICATION 1 : Chevauchement des fourchettes
+  // Les fourchettes se chevauchent si : couple_min <= provider_max ET provider_min <= couple_max
+  const rangesOverlap = coupleMin <= providerMax && providerBudgetMin <= coupleBudgetMax;
+
+  if (rangesOverlap) {
+    // Les fourchettes se chevauchent - score de base élevé
+    let baseScore = 15;
+
+    // Calculer le chevauchement relatif pour affiner le score
+    const overlapStart = Math.max(coupleMin, providerBudgetMin);
+    const overlapEnd = Math.min(coupleBudgetMax, providerMax);
+    const overlapSize = Math.max(0, overlapEnd - overlapStart);
+    const coupleRangeSize = coupleBudgetMax - coupleMin;
+    
+    if (coupleRangeSize > 0) {
+      const overlapPercentage = overlapSize / coupleRangeSize;
+      // Bonus si le chevauchement est important (plus de 50% de la fourchette du couple)
+      if (overlapPercentage > 0.5) {
+        baseScore = 20; // Score parfait
+      } else if (overlapPercentage > 0.3) {
+        baseScore = 18; // Très bon chevauchement
+      }
+    }
+
+    // Vérifier si le prix moyen du prestataire est dans la fourchette du couple
+    const providerAvg = (providerBudgetMin + providerMax) / 2;
+    if (providerAvg >= coupleMin && providerAvg <= coupleBudgetMax) {
+      return 20; // Prix moyen parfaitement dans la fourchette
+    }
+
+    return Math.round(baseScore);
+  }
+
+  // Les fourchettes ne se chevauchent pas - calculer la distance
+  const coupleAvg = (coupleMin + coupleBudgetMax) / 2;
+  const providerAvg = (providerBudgetMin + providerMax) / 2;
   const diff = Math.abs(coupleAvg - providerAvg);
-  const diffPercentage = diff / coupleAvg;
+  const diffPercentage = coupleAvg > 0 ? diff / coupleAvg : 1;
 
   // Pénalité selon flexibilité
   const penalties = {
@@ -72,7 +105,10 @@ export function calculateBudgetScore(
   };
 
   const penalty = penalties[flexibility as keyof typeof penalties] || 0.5;
-  const score = Math.max(0, 20 - diffPercentage * 100 * penalty);
+  
+  // Score décroissant selon l'écart, avec pénalité selon flexibilité
+  // Plus l'écart est grand, plus le score est faible
+  const score = Math.max(0, 15 - diffPercentage * 100 * penalty);
 
   return Math.round(score);
 }

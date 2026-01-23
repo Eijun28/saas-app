@@ -192,14 +192,27 @@ const SkeletonMatchingFullWidth = () => {
         >
           {displayedMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 bg-gray-100">
-                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 bg-gray-100 overflow-hidden">
+                <img
+                  src="/images/ai-assistant-avatar-3d.png"
+                  alt="Assistant IA"
+                  className="w-full h-full object-cover object-center"
+                  onError={(e) => {
+                    // Fallback vers l'icône Sparkles si l'image ne charge pas
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.sparkles-fallback')) {
+                      const sparkles = document.createElement('div');
+                      sparkles.className = 'sparkles-fallback';
+                      sparkles.innerHTML = '<svg class="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>';
+                      parent.appendChild(sparkles.firstChild!);
+                    }
+                  }}
+                />
               </div>
               <p className="text-sm sm:text-base font-medium mb-1 text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
                 Commencez votre recherche
-              </p>
-              <p className="text-xs sm:text-sm text-gray-500 px-4 text-center" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
-                Ex: Traiteur halal libanais, 120 invités, Paris
               </p>
             </div>
           ) : (
@@ -207,11 +220,33 @@ const SkeletonMatchingFullWidth = () => {
               {displayedMessages.map((msg, i) => (
                 <div
                   key={`msg-${i}-${msg.from}`}
-                  className={`flex ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full mb-1`}
+                  className={`flex items-start gap-2 sm:gap-3 ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full mb-1`}
                 >
+                  {/* Avatar pour les messages de l'IA */}
+                  {msg.from === "ai" && (
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <img
+                        src="/images/ai-assistant-avatar-3d.png"
+                        alt="Assistant IA"
+                        className="w-full h-full object-cover object-center"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.sparkles-fallback')) {
+                            const sparkles = document.createElement('div');
+                            sparkles.className = 'sparkles-fallback';
+                            sparkles.innerHTML = '<svg class="w-4 h-4 text-[#823F91]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>';
+                            parent.appendChild(sparkles.firstChild!);
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   <div 
                     className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] ${
-                      msg.from === "ai" ? "ml-auto" : "mr-auto"
+                      msg.from === "ai" ? "" : ""
                     }`}
                   >
                     <div 
@@ -222,15 +257,17 @@ const SkeletonMatchingFullWidth = () => {
                       }`}
                       style={msg.from === "ai" ? { 
                         backgroundColor: '#823F91',
+                        color: '#ffffff'
                       } : {}}
                     >
                       <p 
                         className={`text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words ${
                           msg.button ? 'mb-2' : ''
-                        }`}
+                        } ${msg.from === "ai" ? 'text-white' : ''}`}
                         style={{ 
                           fontFamily: msg.from === "ai" ? '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' : '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                          fontWeight: 400
+                          fontWeight: 400,
+                          color: msg.from === "ai" ? '#ffffff' : undefined
                         }}
                       >
                         {msg.text}
@@ -247,6 +284,13 @@ const SkeletonMatchingFullWidth = () => {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Avatar pour les messages du couple */}
+                  {msg.from === "couple" && (
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <Users className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </div>
               ))}
             </>
@@ -285,7 +329,7 @@ const SkeletonMatchingFullWidth = () => {
                     {!typedText && !isTyping && (
                       <div className="absolute inset-0 flex items-center pointer-events-none">
                         <span className="text-gray-400 text-sm sm:text-[15px]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
-                          Ex: Traiteur halal libanais, 120 invités, Paris
+                          Tapez votre demande...
                         </span>
                       </div>
                     )}
