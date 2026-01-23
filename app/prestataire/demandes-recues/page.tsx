@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
 import { createMissingConversations } from '@/lib/supabase/fix-conversations'
+import { extractSupabaseError } from '@/lib/utils'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
@@ -113,8 +114,19 @@ export default function DemandesRecuesPage() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      const errorMsg = error.message || error.code || 'Erreur inconnue'
-      console.error('Erreur Supabase:', { code: error.code, message: error.message })
+      const errorDetails = extractSupabaseError(error)
+      const errorMsg = errorDetails.message || errorDetails.code || 'Erreur inconnue'
+      
+      // Log détaillé pour le débogage
+      console.error('Erreur chargement demandes:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      
       toast.error(`Erreur: ${errorMsg}`)
       setUiState({ loading: 'error', error: errorMsg })
       return
@@ -137,7 +149,17 @@ export default function DemandesRecuesPage() {
         .in('user_id', coupleUserIds)
       
       if (couplesError) {
-        console.error('Erreur récupération couples:', couplesError)
+        const errorDetails = extractSupabaseError(couplesError)
+        console.error('Erreur récupération couples:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
+        // Ne pas bloquer le flux si la récupération des couples échoue
+        // On utilisera le fallback avec profiles
       }
       
       if (couplesData) {
@@ -199,7 +221,20 @@ export default function DemandesRecuesPage() {
       .single()
 
     if (fetchError || !requestData) {
-      toast.error(`Erreur: ${fetchError?.message || 'Demande introuvable'}`)
+      if (fetchError) {
+        const errorDetails = extractSupabaseError(fetchError)
+        console.error('Erreur récupération demande:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
+        toast.error(`Erreur: ${errorDetails.message || 'Demande introuvable'}`)
+      } else {
+        toast.error('Demande introuvable')
+      }
       return
     }
 
@@ -211,7 +246,16 @@ export default function DemandesRecuesPage() {
       .eq('provider_id', user.id)
 
     if (updateError) {
-      toast.error(`Erreur: ${updateError.message}`)
+      const errorDetails = extractSupabaseError(updateError)
+      console.error('Erreur mise à jour demande:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur lors de la mise à jour'}`)
       return
     }
 
@@ -233,9 +277,17 @@ export default function DemandesRecuesPage() {
         })
 
       if (convError) {
-        console.error('Erreur création conversation:', convError)
+        const errorDetails = extractSupabaseError(convError)
+        console.error('Erreur création conversation:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
         // Ne pas bloquer l'acceptation si la conversation existe déjà ou si c'est une erreur de contrainte
-        if (convError.code !== '23505') {
+        if (errorDetails.code !== '23505') {
           toast.error('Demande acceptée mais erreur lors de la création de la conversation')
         }
       }
@@ -256,7 +308,16 @@ export default function DemandesRecuesPage() {
       .eq('provider_id', user.id) // Sécurité supplémentaire
 
     if (error) {
-      toast.error(`Erreur: ${error.message}`)
+      const errorDetails = extractSupabaseError(error)
+      console.error('Erreur rejet demande:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur lors du rejet'}`)
       return
     }
 
@@ -275,8 +336,17 @@ export default function DemandesRecuesPage() {
       } else {
         toast.error(`Erreur: ${result.error?.message || 'Erreur inconnue'}`)
       }
-    } catch (error: any) {
-      toast.error(`Erreur: ${error.message || 'Erreur inconnue'}`)
+    } catch (error: unknown) {
+      const errorDetails = extractSupabaseError(error)
+      console.error('Erreur vérification conversations:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur inconnue'}`)
     } finally {
       setIsFixingConversations(false)
     }
