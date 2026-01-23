@@ -33,7 +33,7 @@ export function extractSupabaseError(error: unknown): {
     const allProps = Object.getOwnPropertyNames(error)
     allProps.forEach((prop) => {
       try {
-        const value = (error as Record<string, unknown>)[prop]
+        const value = (error as unknown as Record<string, unknown>)[prop]
         // Éviter les références circulaires
         if (typeof value !== 'object' || value === null) {
           errorObj[prop] = value
@@ -46,7 +46,7 @@ export function extractSupabaseError(error: unknown): {
     })
 
     // Extraire les propriétés spécifiques à Supabase si elles existent
-    const supabaseError = error as Record<string, unknown>
+    const supabaseError = error as unknown as Record<string, unknown>
     if (supabaseError.code) errorObj.code = supabaseError.code
     if (supabaseError.details) errorObj.details = supabaseError.details
     if (supabaseError.hint) errorObj.hint = supabaseError.hint

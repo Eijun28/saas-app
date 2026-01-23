@@ -64,6 +64,25 @@ const nextConfig: NextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  webpack: (config, { isServer }) => {
+    // Forcer la résolution correcte des modules avec l'alias @/
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname),
+    };
+    
+    // S'assurer que les extensions sont résolues correctement
+    config.resolve.extensions = [
+      '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
+      '.json',
+      ...(config.resolve.extensions || []),
+    ];
+    
+    return config;
+  },
 };
 
 export default nextConfig;
