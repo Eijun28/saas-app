@@ -11,7 +11,8 @@ import {
   TrendingUp,
   ArrowRight,
   FileText,
-  Search
+  Search,
+  Info
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import Link from 'next/link'
@@ -19,6 +20,11 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { fadeInUp, counterAnimation } from '@/lib/animations'
 import { cn } from '@/lib/utils'
+import { SkeletonCard } from '@/components/dashboard/SkeletonCard'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
+import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
+import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
 
 export default function CoupleDashboardPage() {
   const router = useRouter()
@@ -32,6 +38,7 @@ export default function CoupleDashboardPage() {
   const [coupleProfile, setCoupleProfile] = useState<any>(null)
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
+  const [statsLoading, setStatsLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
@@ -104,6 +111,7 @@ export default function CoupleDashboardPage() {
             messagesNonLus,
           })
         }
+        setStatsLoading(false)
       } catch (error: any) {
         // Améliorer l'affichage de l'erreur avec toutes ses propriétés
         console.error('Erreur chargement dashboard:', {
@@ -114,6 +122,7 @@ export default function CoupleDashboardPage() {
           fullError: error
         })
         // Ne pas bloquer l'UI, les stats resteront à leurs valeurs par défaut
+        setStatsLoading(false)
       }
     }
 
@@ -185,48 +194,55 @@ export default function CoupleDashboardPage() {
       <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
         {/* Statistiques rapides - Style prestataire optimisé */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 w-full items-stretch">
-          {[
-            {
-              icon: TrendingUp,
-              label: "Prestataires trouvés",
-              value: stats.prestatairesTrouves,
-              subtitle: "Dans vos favoris",
-              description: stats.prestatairesTrouves > 0
-                ? `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegardé${stats.prestatairesTrouves > 1 ? 's' : ''}`
-                : "Aucun prestataire sauvegardé pour le moment",
-              onClick: () => router.push('/couple/recherche'),
-              actionLabel: "Rechercher des prestataires",
-              delay: 0.1,
-            },
-            {
-              icon: Wallet,
-              label: "Budget alloué",
-              value: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} €`,
-              subtitle: "Budget total",
-              description: stats.budgetAlloue > 0
-                ? `${stats.budgetAlloue.toLocaleString('fr-FR')} € alloués à votre mariage`
-                : "Aucun budget défini pour le moment",
-              onClick: () => router.push('/couple/budget'),
-              actionLabel: "Gérer mon budget",
-              delay: 0.2,
-            },
-            {
-              icon: Calendar,
-              label: "Jours restants",
-              value: stats.joursRestants !== null ? stats.joursRestants : '-',
-              subtitle: "Avant le mariage",
-              description: stats.joursRestants !== null && stats.joursRestants > 0
-                ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} avant votre mariage`
-                : stats.joursRestants === null
-                ? "Date de mariage non définie"
-                : "Votre mariage est aujourd'hui !",
-              onClick: () => router.push('/couple/profil'),
-              actionLabel: "Modifier la date",
-              delay: 0.3,
-            },
-          ].map((card, index) => {
-            const Icon = card.icon
-            return (
+          {statsLoading ? (
+            <>
+              <SkeletonCard delay={0.1} />
+              <SkeletonCard delay={0.2} />
+              <SkeletonCard delay={0.3} />
+            </>
+          ) : (
+            [
+              {
+                icon: TrendingUp,
+                label: "Prestataires trouvés",
+                value: stats.prestatairesTrouves,
+                subtitle: "Dans vos favoris",
+                description: stats.prestatairesTrouves > 0
+                  ? `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegardé${stats.prestatairesTrouves > 1 ? 's' : ''}`
+                  : "Aucun prestataire sauvegardé pour le moment",
+                onClick: () => router.push('/couple/recherche'),
+                actionLabel: "Rechercher des prestataires",
+                delay: 0.1,
+              },
+              {
+                icon: Wallet,
+                label: "Budget alloué",
+                value: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} €`,
+                subtitle: "Budget total",
+                description: stats.budgetAlloue > 0
+                  ? `${stats.budgetAlloue.toLocaleString('fr-FR')} € alloués à votre mariage`
+                  : "Aucun budget défini pour le moment",
+                onClick: () => router.push('/couple/budget'),
+                actionLabel: "Gérer mon budget",
+                delay: 0.2,
+              },
+              {
+                icon: Calendar,
+                label: "Jours restants",
+                value: stats.joursRestants !== null ? stats.joursRestants : '-',
+                subtitle: "Avant le mariage",
+                description: stats.joursRestants !== null && stats.joursRestants > 0
+                  ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} avant votre mariage`
+                  : stats.joursRestants === null
+                  ? "Date de mariage non définie"
+                  : "Votre mariage est aujourd'hui !",
+                onClick: () => router.push('/couple/profil'),
+                actionLabel: "Modifier la date",
+                delay: 0.3,
+              },
+            ].map((card, index) => {
+              const Icon = card.icon
+              return (
               <motion.div
                 key={card.label}
                 initial={{ opacity: 0, y: 20 }}
@@ -239,13 +255,20 @@ export default function CoupleDashboardPage() {
                   {/* Header: Icon + Label */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <motion.div 
-                        className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
-                        whileHover={{ scale: 1.05, rotate: -2 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                      </motion.div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <motion.div 
+                            className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300 cursor-help"
+                            whileHover={{ scale: 1.05, rotate: -2 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                          </motion.div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-gray-900 text-white border-gray-700">
+                          <p className="text-xs">{card.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">
                           {card.label}
@@ -262,9 +285,20 @@ export default function CoupleDashboardPage() {
                       transition={{ delay: card.delay + 0.1 }}
                       className="flex items-baseline gap-2 flex-wrap"
                     >
-                      <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
-                        {card.value}
-                      </p>
+                      {typeof card.value === 'number' ? (
+                        <motion.p 
+                          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: card.delay + 0.2 }}
+                        >
+                          {card.value}
+                        </motion.p>
+                      ) : (
+                        <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
+                          {card.value}
+                        </p>
+                      )}
                     </motion.div>
                     
                     {/* Subtitle */}
@@ -297,7 +331,8 @@ export default function CoupleDashboardPage() {
                 </div>
               </motion.div>
             )
-          })}
+          })
+          )}
         </div>
 
         {/* Sections principales - Style prestataire optimisé */}
@@ -373,6 +408,15 @@ export default function CoupleDashboardPage() {
             )
           })}
         </motion.div>
+
+        {/* Grille 2 colonnes pour Tâches et Activité */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+          <UpcomingTasksCouple />
+          <RecentActivityCouple />
+        </div>
+
+        {/* Actions rapides */}
+        <QuickActionsCouple />
       </div>
     </div>
   )
