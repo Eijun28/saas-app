@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bell, Calendar, MessageSquare, TrendingUp } from 'lucide-react'
+import { Bell, Calendar, MessageSquare, TrendingUp, Search, X } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
@@ -11,6 +11,10 @@ import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { ActivityItem } from '@/components/dashboard/ActivityItem'
+import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
+import { PendingRequests } from '@/components/prestataire/dashboard/PendingRequests'
+import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPerformance'
 export default function DashboardPrestatairePage() {
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
@@ -30,6 +34,9 @@ export default function DashboardPrestatairePage() {
     loading: 'idle',
     error: null,
   })
+
+  const [recentActivities, setRecentActivities] = useState<any[]>([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
 
   // Vérifier le succès du paiement Stripe
   useEffect(() => {
@@ -239,6 +246,69 @@ export default function DashboardPrestatairePage() {
     fetchStats()
   }, [user])
 
+  // Fonction pour formater le temps relatif
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return "À l'instant"
+    if (diffMins < 60) return `Il y a ${diffMins} min`
+    if (diffHours < 24) return `Il y a ${diffHours}h`
+    if (diffDays === 1) return 'Hier'
+    if (diffDays < 7) return `Il y a ${diffDays} jours`
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+  }
+
+  // Charger les activités récentes
+  useEffect(() => {
+    if (!user) return
+
+    const fetchRecentActivities = async () => {
+      setActivitiesLoading(true)
+      try {
+        const supabase = createClient()
+        const activities: any[] = []
+
+        // Récupérer les dernières demandes (5 max)
+        const { data: recentRequests } = await supabase
+          .from('requests')
+          .select('id, created_at, status, couple_id, couples(partner_1_name)')
+          .eq('provider_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        if (recentRequests) {
+          recentRequests.forEach((req: any) => {
+            activities.push({
+              id: `request-${req.id}`,
+              type: 'request',
+              title: `Nouvelle demande de ${req.couples?.partner_1_name || 'un couple'}`,
+              time: formatRelativeTime(req.created_at),
+              createdAt: req.created_at, // Garder la date originale pour le tri
+              icon: Bell,
+              color: 'text-[#823F91]',
+              href: '/prestataire/demandes-recues',
+            })
+          })
+        }
+
+        // Trier par date de création (pas par time formaté)
+        activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        setRecentActivities(activities.slice(0, 5))
+      } catch (error) {
+        console.error('Erreur chargement activités:', error)
+      } finally {
+        setActivitiesLoading(false)
+      }
+    }
+
+    fetchRecentActivities()
+  }, [user])
+
   // Render loading state
   if (uiState.loading === 'loading') {
     return <LoadingSpinner size="lg" text="Chargement du dashboard..." />
@@ -261,26 +331,34 @@ export default function DashboardPrestatairePage() {
   return (
     <div className="w-full">
       <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
-      {/* Affichage de la recherche active */}
+      {/* Barre de recherche améliorée */}
       {searchQuery && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-xl backdrop-blur-sm shadow-md shadow-[#823F91]/5"
         >
-          <div className="flex items-center gap-2">
-            <span className="text-sm sm:text-base text-[#823F91] font-semibold">
-              Recherche : <strong className="text-[#6D3478]">{searchQuery}</strong>
-            </span>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="p-2 bg-[#823F91]/10 rounded-lg flex-shrink-0">
+              <Search className="h-4 w-4 text-[#823F91]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-600 mb-0.5">Recherche active</p>
+              <p className="text-sm sm:text-base text-[#823F91] font-semibold truncate">
+                {searchQuery}
+              </p>
+            </div>
           </div>
           <button
             onClick={() => {
               setSearchQuery('')
               sessionStorage.removeItem('prestataire_search_query')
             }}
-            className="text-sm font-semibold text-[#823F91] hover:text-[#6D3478] underline transition-colors active:scale-[0.98]"
+            className="p-2 hover:bg-[#823F91]/10 rounded-lg transition-colors active:scale-[0.98] flex-shrink-0"
+            title="Effacer la recherche"
           >
-            Effacer
+            <X className="h-4 w-4 text-[#823F91]" />
           </button>
         </motion.div>
       )}
@@ -392,6 +470,65 @@ export default function DashboardPrestatairePage() {
             />
           ))}
       </div>
+
+      {/* Activité récente */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Activité récente</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Dernières actions sur votre compte
+            </p>
+          </div>
+        </div>
+
+        {activitiesLoading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 animate-pulse">
+                <div className="h-10 w-10 rounded-lg bg-gray-200" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                  <div className="h-3 w-1/2 bg-gray-200 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : recentActivities.length === 0 ? (
+          <EmptyState
+            title="Aucune activité récente"
+            description="Vos dernières actions apparaîtront ici"
+          />
+        ) : (
+          <div className="space-y-3">
+            {recentActivities.map((activity, index) => (
+              <ActivityItem
+                key={activity.id}
+                icon={activity.icon}
+                title={activity.title}
+                time={activity.time}
+                color={activity.color}
+                onClick={activity.href ? () => window.location.href = activity.href : undefined}
+                delay={index * 0.05}
+              />
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Grille 2 colonnes pour Agenda et Demandes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+        <AgendaPreview />
+        <PendingRequests />
+      </div>
+
+      {/* Performance du mois */}
+      <MonthlyPerformance />
       </div>
     </div>
   )

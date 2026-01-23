@@ -29,6 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
+import type { ViewMode } from '@/components/calendar/types'
 
 interface Evenement {
   id: string
@@ -70,6 +71,7 @@ export default function AgendaPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -578,18 +580,28 @@ export default function AgendaPage() {
         </motion.div>
       </div>
 
-      {/* Calendrier */}
+      {/* Calendrier plein écran */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="mb-4 sm:mb-6"
+        className="mb-4 sm:mb-6 h-[calc(100vh-300px)] min-h-[600px]"
       >
         <CalendarDashboard
           events={calendarEvents}
           onEventCreate={handleCalendarEventCreate}
           showTime={true}
           loading={loading}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showSidebar={true}
+          enableMinimap={true}
+          eventColor={(event) => {
+            // Couleurs selon le status pour prestataire
+            if (event.status === 'confirmed') return 'bg-green-500'
+            if (event.status === 'pending') return 'bg-yellow-500'
+            return 'bg-[#823F91]'
+          }}
         />
       </motion.div>
 

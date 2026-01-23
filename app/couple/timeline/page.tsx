@@ -22,6 +22,8 @@ import {
 import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
+import { CountdownTimer } from '@/components/calendar/CountdownTimer'
+import type { ViewMode } from '@/components/calendar/types'
 
 interface Event {
   id: string
@@ -38,6 +40,7 @@ export default function TimelinePage() {
   const [events, setEvents] = useState<Event[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('agenda')
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -258,51 +261,47 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto space-y-8 p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="mb-8">
-            <p className="text-[#4A4A4A] mb-4 text-center">
-              Planifiez votre mariage étape par étape
-            </p>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full">
-              {/* Date du mariage - Version compacte */}
-              <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 flex-1 sm:flex-shrink-0">
-                <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
-                {dateMarriage ? (
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-[#0D0D0D] truncate">
-                      {(() => {
-                        const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                        return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                      })()}
-                    </p>
-                    <p className="text-xs text-[#6B7280] mt-1">
-                      {(() => {
-                        const date = new Date(dateMarriage)
-                        const today = new Date()
-                        const diff = date.getTime() - today.getTime()
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                        if (days > 0) {
-                          return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
-                        } else if (days === 0) {
-                          return "C'est aujourd'hui !"
-                        } else {
-                          return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                        }
-                      })()}
-                    </p>
-                  </div>
-                ) : (
+          {/* Hero section avec compte à rebours */}
+          {dateMarriage && (
+            <div className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-8 rounded-2xl mb-8 shadow-lg">
+              <div className="max-w-4xl mx-auto text-center">
+                <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+                  Votre Timeline de Mariage
+                </h1>
+                <div className="mt-6">
+                  <CountdownTimer targetDate={dateMarriage} />
+                </div>
+                <p className="mt-6 text-sm sm:text-base opacity-90">
+                  {(() => {
+                    const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                    return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                  })()}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Header avec date mariage si pas de hero */}
+          {!dateMarriage && (
+            <div className="mb-8">
+              <p className="text-[#4A4A4A] mb-4 text-center">
+                Planifiez votre mariage étape par étape
+              </p>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full">
+                <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 flex-1 sm:flex-shrink-0">
+                  <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs sm:text-sm text-[#4A4A4A]">
                       Aucune date de mariage renseignée.{' '}
@@ -311,26 +310,31 @@ export default function TimelinePage() {
                       </a>
                     </p>
                   </div>
-                )}
+                </div>
+                <Button
+                  onClick={() => setIsDialogOpen(true)}
+                  className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto flex-shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Créer un événement</span>
+                  <span className="sm:hidden">Ajouter</span>
+                </Button>
               </div>
-              <Button
-                onClick={() => setIsDialogOpen(true)}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto flex-shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Créer un événement</span>
-                <span className="sm:hidden">Ajouter</span>
-              </Button>
             </div>
-          </div>
+          )}
 
-          {/* Calendrier */}
-          <div className="mb-8">
+          {/* Calendrier plein écran */}
+          <div className="mb-8 h-[calc(100vh-400px)] min-h-[600px]">
             <CalendarDashboard
               events={calendarEvents}
               onEventCreate={handleCalendarEventCreate}
               showTime={false}
               loading={loading}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              showSidebar={true}
+              enableMinimap={true}
+              highlightDates={dateMarriage ? [new Date(dateMarriage)] : []}
             />
           </div>
 
