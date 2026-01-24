@@ -23,7 +23,6 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
 import { CountdownTimer } from '@/components/calendar/CountdownTimer'
-import type { ViewMode } from '@/components/calendar/types'
 
 interface Event {
   id: string
@@ -40,7 +39,6 @@ export default function TimelinePage() {
   const [events, setEvents] = useState<Event[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('agenda')
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -261,216 +259,153 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto space-y-8 p-6">
+    <div className="h-[calc(100vh-80px)] flex flex-col bg-white p-4 sm:p-6">
+      <div className="flex flex-col h-full space-y-4">
+        {/* Header avec compte à rebours */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex-shrink-0"
         >
-          {/* Hero section avec compte à rebours */}
-          {dateMarriage && (
-            <div className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-8 rounded-2xl mb-8 shadow-lg">
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-                  Votre Timeline de Mariage
-                </h1>
-                <div className="mt-6">
-                  <CountdownTimer targetDate={dateMarriage} />
-                </div>
-                <p className="mt-6 text-sm sm:text-base opacity-90">
-                  {(() => {
-                    const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
-                    return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                  })()}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Header avec date mariage si pas de hero */}
-          {!dateMarriage && (
-            <div className="mb-8">
-              <p className="text-[#4A4A4A] mb-4 text-center">
-                Planifiez votre mariage étape par étape
-              </p>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full">
-                <div className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 flex-1 sm:flex-shrink-0">
-                  <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm text-[#4A4A4A]">
-                      Aucune date de mariage renseignée.{' '}
-                      <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
-                        Définir dans le profil
-                      </a>
-                    </p>
+          <div className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-6 sm:p-8 rounded-2xl shadow-xl">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-2xl sm:text-4xl font-bold mb-4">Votre Timeline de Mariage</h1>
+              {dateMarriage ? (
+                <div className="space-y-2">
+                  <p className="text-lg sm:text-xl font-medium opacity-90">
+                    {(() => {
+                      const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                      return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                    })()}
+                  </p>
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full">
+                    <CalendarIcon className="h-5 w-5" />
+                    <span className="text-xl sm:text-2xl font-bold">
+                      {(() => {
+                        const date = new Date(dateMarriage)
+                        const today = new Date()
+                        const diff = date.getTime() - today.getTime()
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                        if (days > 0) {
+                          return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''} !`
+                        } else if (days === 0) {
+                          return "C'est aujourd'hui ! 🎉"
+                        } else {
+                          return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+                        }
+                      })()}
+                    </span>
                   </div>
                 </div>
-                <Button
-                  onClick={() => setIsDialogOpen(true)}
-                  className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto flex-shrink-0"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Créer un événement</span>
-                  <span className="sm:hidden">Ajouter</span>
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Calendrier plein écran */}
-          <div className="mb-8 h-[calc(100vh-400px)] min-h-[600px]">
-            <CalendarDashboard
-              events={calendarEvents}
-              onEventCreate={handleCalendarEventCreate}
-              showTime={false}
-              loading={loading}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              showSidebar={true}
-              enableMinimap={true}
-              highlightDates={dateMarriage ? [new Date(dateMarriage)] : []}
-            />
-          </div>
-
-          {/* Liste des événements */}
-          {events.length > 0 && (
-            <Card className="border-gray-200 mb-8">
-              <CardHeader>
-                <CardTitle>Événements planifiés</CardTitle>
-              </CardHeader>
-              <CardContent>
+              ) : (
                 <div className="space-y-4">
-                  {events.map((event) => (
-                    <div
-                      key={event.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-[#0D0D0D] mb-1">
-                            {event.title}
-                          </h3>
-                          {event.description && (
-                            <p className="text-sm text-[#4A4A4A] mb-2">
-                              {event.description}
-                            </p>
-                          )}
-                          <p className="text-xs text-[#6B7280]">
-                            {(() => {
-                              const dateStr = new Date(event.event_date).toLocaleDateString('fr-FR', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })
-                              return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                            })()}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditEvent(event)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteEvent(event.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-lg opacity-90">
+                    Aucune date de mariage renseignée
+                  </p>
+                  <a
+                    href="/couple/profil"
+                    className="inline-block bg-white text-[#823F91] px-6 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
+                  >
+                    Définir la date dans le profil
+                  </a>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
+              )}
+            </div>
+          </div>
         </motion.div>
 
-        {/* Dialog de création d'événement */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent size="sm" className="sm:max-w-[450px]">
-            <DialogHeader>
-              <DialogTitle>{editingEvent ? 'Modifier l\'événement' : 'Créer un événement'}</DialogTitle>
-              <DialogDescription>
-                {editingEvent ? 'Modifiez les détails de votre événement' : 'Ajoutez un événement à votre timeline de mariage'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <motion.div
-              className="space-y-4 py-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="event-title">Titre de l'événement *</Label>
-                <Input
-                  id="event-title"
-                  value={eventForm.title}
-                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  placeholder="Ex: Essayage robe, Dégustation menu..."
-                  autoFocus
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="event-date">Date *</Label>
-                <DatePicker
-                  value={eventForm.event_date || undefined}
-                  onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
-                  placeholder="Sélectionner une date"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="event-description">Description (optionnel)</Label>
-                <Textarea
-                  id="event-description"
-                  value={eventForm.description}
-                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                  placeholder="Ajoutez des détails sur cet événement..."
-                  className="min-h-[80px] resize-none"
-                  rows={3}
-                />
-              </div>
-            </motion.div>
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false)
-                  resetForm()
-                }}
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleCreateOrUpdateEvent}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white"
-                disabled={!eventForm.title || !eventForm.event_date}
-              >
-                {editingEvent ? 'Modifier' : 'Créer l\'événement'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Calendrier plein écran */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+        >
+          <CalendarDashboard
+            events={calendarEvents}
+            onEventCreate={handleCalendarEventCreate}
+            showTime={false}
+            loading={loading}
+            defaultView="agenda"
+          />
+        </motion.div>
       </div>
+
+      {/* Dialog de création/modification d'événement */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent size="sm" className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>{editingEvent ? 'Modifier l\'événement' : 'Créer un événement'}</DialogTitle>
+            <DialogDescription>
+              {editingEvent ? 'Modifiez les détails de votre événement' : 'Ajoutez un événement à votre timeline de mariage'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <motion.div
+            className="space-y-4 py-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="event-title">Titre de l'événement *</Label>
+              <Input
+                id="event-title"
+                value={eventForm.title}
+                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                placeholder="Ex: Essayage robe, Dégustation menu..."
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-date">Date *</Label>
+              <DatePicker
+                value={eventForm.event_date || undefined}
+                onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
+                placeholder="Sélectionner une date"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-description">Description (optionnel)</Label>
+              <Textarea
+                id="event-description"
+                value={eventForm.description}
+                onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                placeholder="Ajoutez des détails sur cet événement..."
+                className="min-h-[80px] resize-none"
+                rows={3}
+              />
+            </div>
+          </motion.div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDialogOpen(false)
+                resetForm()
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleCreateOrUpdateEvent}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+              disabled={!eventForm.title || !eventForm.event_date}
+            >
+              {editingEvent ? 'Modifier' : 'Créer l\'événement'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

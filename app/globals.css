@@ -726,3 +726,27 @@ nav[class*="fixed"] {
     bottom: 24px !important;
   }
 }
+
+/* Scrollbar personnalisée pour le calendrier */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #d1b3d9 #f3f4f6;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1b3d9;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #c19dcc;
+}

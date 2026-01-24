@@ -1,9 +1,12 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/client'
 import { Send, UserRound } from 'lucide-react'
+import { useUser } from '@/hooks/use-user'
 
 export const revalidate = 0
 
@@ -18,15 +21,44 @@ type RequestRow = {
   created_at: string
   cancelled_at: string | null
   responded_at: string | null
+  type_prestation?: string | null
+  wedding_date?: string | null
+  date_mariage?: string | null
 }
 
 type ProviderProfile = {
   id: string
+  user_id?: string
   prenom: string | null
   nom: string | null
   nom_entreprise: string | null
   avatar_url: string | null
   service_type: string | null
+  type_prestation?: string | null
+}
+
+type DevisRow = {
+  id: string
+  demande_id: string
+  prestataire_id: string
+  provider_id?: string
+  couple_id: string
+  amount: number
+  details: string
+  validity_date?: string | null
+  status: 'pending' | 'accepted' | 'rejected' | 'negotiating'
+  created_at: string
+  updated_at: string
+  type_prestation?: string | null
+}
+
+type FavoriRow = {
+  id: string
+  couple_id: string
+  prestataire_id: string
+  provider_id?: string
+  created_at: string
+  type_prestation?: string | null
 }
 
 const STATUS_LABEL: Record<RequestStatus, string> = {
@@ -50,45 +82,292 @@ function getProviderDisplayName(p?: ProviderProfile): string {
   return full || 'Prestataire'
 }
 
-export default async function DemandesPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export default function DemandesPage() {
+  const { user } = useUser()
+  const [demandes, setDemandes] = useState<RequestRow[]>([])
+  const [devis, setDevis] = useState<DevisRow[]>([])
+  const [favoris, setFavoris] = useState<FavoriRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Le layout couple redirige déjà si non connecté, mais on reste safe
-  if (!user) return null
+  // Fonction optimisée pour charger les demandes
+  async function loadDemandes() {
+    if (!user?.id) return
 
-  async function cancelRequest(formData: FormData) {
-    'use server'
-    const requestId = String(formData.get('requestId') || '')
-    if (!requestId) return
+    const supabase = createClient()
+    
+    // Récupérer toutes les demandes en une seule requête
+    const { data: demandesData, error: demandesError } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at, type_prestation, wedding_date, date_mariage')
+      .eq('couple_id', user.id)
+      .order('created_at', { ascending: false })
 
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) return
+    if (demandesError) {
+      console.error('Erreur chargement demandes:', demandesError)
+      setError(`Erreur: ${demandesError.message}`)
+      return
+    }
 
+    if (!demandesData || demandesData.length === 0) {
+      setDemandes([])
+      return
+    }
+
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      demandesData.map(d => d.provider_id || (d as any).prestataire_id).filter(Boolean)
+    )]
+
+    if (prestataireIds.length === 0) {
+      setDemandes(demandesData as RequestRow[])
+      return
+    }
+
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
+
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
+
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
+    // Transformer les données avec les informations des prestataires
+    const transformedData = demandesData.map(demande => {
+      const prestataireId = demande.provider_id || (demande as any).prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...demande,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || demande.type_prestation || null,
+        wedding_date: demande.wedding_date || demande.date_mariage || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as RequestRow & { prestataire?: ProviderProfile }
+    })
+
+    setDemandes(transformedData as RequestRow[])
+  }
+
+  // Fonction optimisée pour charger les devis
+  async function loadDevis() {
+    if (!user?.id) return
+
+    const supabase = createClient()
+    
+    // Récupérer tous les devis en une seule requête
+    const { data: devisData, error: devisError } = await supabase
+      .from('devis')
+      .select('id, demande_id, prestataire_id, provider_id, couple_id, amount, details, validity_date, status, created_at, updated_at, type_prestation')
+      .eq('couple_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (devisError) {
+      console.error('Erreur chargement devis:', devisError)
+      // Ne pas bloquer si la table devis n'existe pas encore
+      if (devisError.code !== '42P01') {
+        setError(`Erreur devis: ${devisError.message}`)
+      }
+      return
+    }
+
+    if (!devisData || devisData.length === 0) {
+      setDevis([])
+      return
+    }
+
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      devisData.map(d => d.provider_id || d.prestataire_id).filter(Boolean)
+    )]
+
+    if (prestataireIds.length === 0) {
+      setDevis(devisData as DevisRow[])
+      return
+    }
+
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
+
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
+
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
+    // Transformer les données avec les informations des prestataires
+    const transformedData = devisData.map(devis => {
+      const prestataireId = devis.provider_id || devis.prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...devis,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || devis.type_prestation || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as DevisRow & { prestataire?: ProviderProfile }
+    })
+
+    setDevis(transformedData as DevisRow[])
+  }
+
+  // Fonction optimisée pour charger les favoris
+  async function loadFavoris() {
+    if (!user?.id) return
+
+    const supabase = createClient()
+    
+    // Récupérer tous les favoris en une seule requête
+    const { data: favorisData, error: favorisError } = await supabase
+      .from('favoris')
+      .select('id, couple_id, prestataire_id, provider_id, created_at, type_prestation')
+      .eq('couple_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (favorisError) {
+      console.error('Erreur chargement favoris:', favorisError)
+      // Ne pas bloquer si la table favoris n'existe pas encore
+      if (favorisError.code !== '42P01') {
+        setError(`Erreur favoris: ${favorisError.message}`)
+      }
+      return
+    }
+
+    if (!favorisData || favorisData.length === 0) {
+      setFavoris([])
+      return
+    }
+
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      favorisData.map(f => f.provider_id || f.prestataire_id).filter(Boolean)
+    )]
+
+    if (prestataireIds.length === 0) {
+      setFavoris(favorisData as FavoriRow[])
+      return
+    }
+
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
+
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
+
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
+    // Transformer les données avec les informations des prestataires
+    const transformedData = favorisData.map(favori => {
+      const prestataireId = favori.provider_id || favori.prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...favori,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || favori.type_prestation || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as FavoriRow & { prestataire?: ProviderProfile }
+    })
+
+    setFavoris(transformedData as FavoriRow[])
+  }
+
+  // Charger toutes les données au montage
+  useEffect(() => {
+    if (user?.id) {
+      setLoading(true)
+      Promise.all([
+        loadDemandes(),
+        loadDevis(),
+        loadFavoris()
+      ]).finally(() => {
+        setLoading(false)
+      })
+    }
+  }, [user?.id])
+
+  async function cancelRequest(requestId: string) {
+    if (!user?.id) return
+
+    const supabase = createClient()
+    
     // RLS + trigger garantissent la sécurité (pending only)
-    await supabase
+    const { error } = await supabase
       .from('requests')
       .update({ status: 'cancelled' })
       .eq('id', requestId)
       .eq('couple_id', user.id)
       .eq('status', 'pending')
 
-    revalidatePath('/couple/demandes')
+    if (error) {
+      console.error('Erreur annulation demande:', error)
+      setError(`Erreur: ${error.message}`)
+      return
+    }
+
+    // Recharger les demandes
+    await loadDemandes()
   }
 
-  const { data: requests, error } = await supabase
-    .from('requests')
-    .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at')
-    .eq('couple_id', user.id)
-    .order('created_at', { ascending: false })
-    .returns<RequestRow[]>()
+  if (loading) {
+    return (
+      <div className="w-full">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <Card className="border-gray-200">
+            <CardContent className="pt-12 pb-12 text-center">
+              <p className="text-gray-500">Chargement...</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
-  if (error) {
+  if (error && demandes.length === 0) {
     return (
       <Card className="border-gray-200">
         <CardHeader>
@@ -97,36 +376,33 @@ export default async function DemandesPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600">
-            Détail technique : <code className="text-xs">{error.message}</code>
+            Détail technique : <code className="text-xs">{error}</code>
           </p>
         </CardContent>
       </Card>
     )
   }
 
-  const providerIds = Array.from(new Set((requests || []).map((r) => r.provider_id)))
+  // Créer un Map pour associer rapidement les profils aux demandes
   const providerById = new Map<string, ProviderProfile>()
-
-  if (providerIds.length > 0) {
-    const { data: providers } = await supabase
-      .from('profiles')
-      .select('id, prenom, nom, nom_entreprise, avatar_url, service_type')
-      .in('id', providerIds)
-      .returns<ProviderProfile[]>()
-
-    for (const p of providers || []) providerById.set(p.id, p)
-  }
+  
+  // Remplir le Map avec les données des demandes
+  demandes.forEach(d => {
+    if (d.provider_id && (d as any).prestataire) {
+      providerById.set(d.provider_id, (d as any).prestataire)
+    }
+  })
 
   return (
     <div className="w-full">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <p className="text-[#6B7280]">
-            Vos demandes sont envoyées à des prestataires. Le chat s’active uniquement quand une demande est acceptée.
+            Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée.
           </p>
         </div>
 
-        {!requests || requests.length === 0 ? (
+        {!demandes || demandes.length === 0 ? (
           <Card className="border-gray-200">
             <CardContent className="pt-12 pb-12 text-center">
               <Send className="h-16 w-16 mx-auto mb-4 text-gray-300" />
@@ -136,8 +412,8 @@ export default async function DemandesPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {requests.map((r) => {
-              const provider = providerById.get(r.provider_id)
+            {demandes.map((r) => {
+              const provider = providerById.get(r.provider_id) || (r as any).prestataire
               const name = getProviderDisplayName(provider)
 
               return (
@@ -176,9 +452,11 @@ export default async function DemandesPage() {
                     <p className="text-sm text-gray-700 whitespace-pre-wrap">{r.initial_message}</p>
 
                     {r.status === 'pending' ? (
-                      <form action={cancelRequest} className="flex justify-end">
-                        <input type="hidden" name="requestId" value={r.id} />
-                        <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                      <form onSubmit={(e) => {
+                        e.preventDefault()
+                        cancelRequest(r.id)
+                      }} className="flex justify-end">
+                        <Button type="submit" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
                           Annuler la demande
                         </Button>
                       </form>
@@ -193,4 +471,3 @@ export default async function DemandesPage() {
     </div>
   )
 }
-

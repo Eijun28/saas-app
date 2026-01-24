@@ -29,7 +29,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
-import type { ViewMode } from '@/components/calendar/types'
 
 interface Evenement {
   id: string
@@ -71,7 +70,6 @@ export default function AgendaPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('week')
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -394,46 +392,60 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6">
+    <div className="h-[calc(100vh-80px)] flex flex-col">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex-1 min-w-0"
-        >
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 sm:mb-2 break-words">
-            Agenda
-          </h1>
-          <p className="text-[#823F91]/70 text-sm sm:text-base lg:text-lg break-words">
-            Gérez votre disponibilité et vos événements
-          </p>
-        </motion.div>
-        
-        {/* Bouton Ajouter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex-shrink-0"
-        >
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300 w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base"
-              onClick={() => {
-                form.reset()
-                if (selectedDate) {
-                  form.setValue('date', selectedDate)
-                }
-              }}
-            >
-              <Plus className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Ajouter un événement</span>
-              <span className="sm:hidden">Ajouter</span>
-            </Button>
-          </DialogTrigger>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-6"
+      >
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+          Agenda
+        </h1>
+        <p className="text-[#823F91]/70 text-base sm:text-lg">
+          Gérez votre disponibilité et vos événements
+        </p>
+      </motion.div>
+
+      {/* Calendrier plein écran */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+      >
+        <CalendarDashboard
+          events={calendarEvents}
+          onEventCreate={handleCalendarEventCreate}
+          showTime={true}
+          loading={loading}
+          defaultView="week"
+          eventColor={(event) => {
+            // Couleurs selon le status pour prestataire
+            if (event.status === 'confirmed') return 'bg-green-500'
+            if (event.status === 'pending') return 'bg-yellow-500'
+            return 'bg-[#823F91]'
+          }}
+        />
+      </motion.div>
+
+      {/* Dialog de création d'événement */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            className="fixed bottom-6 right-6 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300 h-12 w-12 sm:h-auto sm:w-auto rounded-full sm:rounded-lg z-50"
+            onClick={() => {
+              form.reset()
+              if (selectedDate) {
+                form.setValue('date', selectedDate)
+              }
+            }}
+          >
+            <Plus className="h-5 w-5" />
+            <span className="hidden sm:inline">Ajouter un événement</span>
+          </Button>
+        </DialogTrigger>
           <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
             <DialogHeader>
               <DialogTitle className="text-lg sm:text-xl">Créer un événement</DialogTitle>
@@ -577,139 +589,6 @@ export default function AgendaPage() {
             </Form>
           </DialogContent>
         </Dialog>
-        </motion.div>
-      </div>
-
-      {/* Calendrier plein écran */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="mb-4 sm:mb-6 h-[calc(100vh-300px)] min-h-[600px]"
-      >
-        <CalendarDashboard
-          events={calendarEvents}
-          onEventCreate={handleCalendarEventCreate}
-          showTime={true}
-          loading={loading}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          showSidebar={true}
-          enableMinimap={true}
-          eventColor={(event) => {
-            // Couleurs selon le status pour prestataire
-            if (event.status === 'confirmed') return 'bg-green-500'
-            if (event.status === 'pending') return 'bg-yellow-500'
-            return 'bg-[#823F91]'
-          }}
-        />
-      </motion.div>
-
-      {/* Liste des événements */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="w-full"
-      >
-        <Card className="w-full border-[#823F91]/20 bg-background">
-          <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg lg:text-xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
-              <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] flex-shrink-0" />
-              <span>Événements à venir</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20">
-                    <Skeleton className="h-16 w-16 rounded-xl" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : evenements.length === 0 ? (
-              <EmptyState
-                icon={CalendarIcon}
-                title="Aucun événement à venir"
-                description="Vos événements confirmés et en attente apparaîtront ici"
-                action={{
-                  label: "Ajouter un événement",
-                  onClick: () => setIsDialogOpen(true)
-                }}
-              />
-            ) : (
-              <div className="space-y-2 sm:space-y-3">
-                {evenements.map((event, index) => (
-                  <motion.div
-                    key={event.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    whileHover={{ x: 2 }}
-                    className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border border-[#823F91]/20 bg-background hover:bg-[#823F91]/5 transition-all cursor-pointer hover:shadow-md hover:shadow-[#823F91]/10"
-                    onClick={() => handleEditEvent(event)}
-                  >
-                    <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex flex-col items-center justify-center text-white flex-shrink-0 shadow-md shadow-[#823F91]/20">
-                      <span className="text-lg sm:text-xl md:text-2xl font-bold">
-                        {event.date.getDate()}
-                      </span>
-                      <span className="text-[9px] sm:text-[10px] md:text-xs uppercase leading-tight">
-                        {event.date.toLocaleDateString('fr-FR', { month: 'short' })}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm sm:text-base text-gray-900 mb-1 break-words">
-                        {event.titre}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1 flex-shrink-0">
-                          <Clock className="h-3 w-3 flex-shrink-0" />
-                          <span className="whitespace-nowrap">{event.heure_debut}</span>
-                          {event.heure_fin && <span className="whitespace-nowrap"> - {event.heure_fin}</span>}
-                        </span>
-                        {event.lieu && (
-                          <span className="flex items-center gap-1 min-w-0">
-                            <MapPin className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{event.lieu}</span>
-                          </span>
-                        )}
-                      </div>
-                      {event.notes && (
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-1 break-words">
-                          {event.notes}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="h-8 w-8 sm:h-9 sm:w-9 p-0"
-                        onClick={() => handleEditEvent(event)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 sm:h-9 sm:w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDeleteEvent(event.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Dialog Modifier */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
