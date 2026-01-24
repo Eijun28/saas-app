@@ -40,19 +40,19 @@ export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksC
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-xl p-4 sm:p-5 lg:p-6 border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)] transition-all duration-300"
+      className="bg-white rounded-xl p-4 sm:p-5 border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)] transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Tâches à venir</h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Tâches à venir</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
             {remainingCount} {remainingCount > 1 ? 'tâches' : 'tâche'} restante{remainingCount > 1 ? 's' : ''}
           </p>
         </div>
       </div>
 
       {/* Filtres */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         {(['all', 'high', 'medium', 'low'] as const).map((priority) => (
           <Button
             key={priority}
@@ -83,7 +83,7 @@ export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksC
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               className={cn(
-                "flex items-start gap-3 p-3 sm:p-4 rounded-xl transition-all border-0",
+                "flex items-start gap-2.5 p-3 rounded-xl transition-all border-0",
                 task.completed
                   ? "bg-gray-50/50 opacity-60 shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
                   : "bg-white shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12)]"

@@ -148,34 +148,8 @@ export default function CoupleDashboardPage() {
     return null
   }
 
+  // Sections principales - uniquement celles qui ne sont pas dans les actions rapides
   const sections = [
-    {
-      title: 'Rechercher des prestataires',
-      description: 'Trouvez des prestataires par métier, culture ou ville',
-      icon: Search,
-      href: '/couple/recherche',
-      badge: undefined,
-    },
-    {
-      title: 'Matching IA',
-      description: 'Trouvez les prestataires parfaits grâce à notre intelligence artificielle',
-      icon: Sparkles,
-      href: '/couple/matching',
-      badge: 'Nouveau',
-    },
-    {
-      title: 'Budget & Timeline',
-      description: 'Gérez votre budget et planifiez votre mariage',
-      icon: Wallet,
-      href: '/couple/budget',
-    },
-    {
-      title: 'Messagerie',
-      description: 'Communiquez avec tous vos prestataires',
-      icon: MessageSquare,
-      href: '/couple/messagerie',
-      badge: stats.messagesNonLus > 0 ? `${stats.messagesNonLus}` : undefined,
-    },
     {
       title: 'Demandes & Devis',
       description: 'Gérez vos demandes et devis reçus',
@@ -192,9 +166,9 @@ export default function CoupleDashboardPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
-        {/* Statistiques rapides - Style prestataire optimisé */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 w-full items-stretch">
+      <div className="w-full space-y-4 sm:space-y-5">
+        {/* Statistiques rapides - Compact */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full items-stretch">
           {statsLoading ? (
             <>
               <SkeletonCard delay={0.1} />
@@ -205,26 +179,22 @@ export default function CoupleDashboardPage() {
             [
               {
                 icon: TrendingUp,
-                label: "Prestataires trouvés",
+                label: "Prestataires",
                 value: stats.prestatairesTrouves,
                 subtitle: "Dans vos favoris",
-                description: stats.prestatairesTrouves > 0
-                  ? `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegardé${stats.prestatairesTrouves > 1 ? 's' : ''}`
-                  : "Aucun prestataire sauvegardé pour le moment",
+                description: `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegardé${stats.prestatairesTrouves > 1 ? 's' : ''}`,
                 onClick: () => router.push('/couple/recherche'),
-                actionLabel: "Rechercher des prestataires",
+                actionLabel: "Voir les favoris",
                 delay: 0.1,
               },
               {
                 icon: Wallet,
-                label: "Budget alloué",
+                label: "Budget",
                 value: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} €`,
                 subtitle: "Budget total",
-                description: stats.budgetAlloue > 0
-                  ? `${stats.budgetAlloue.toLocaleString('fr-FR')} € alloués à votre mariage`
-                  : "Aucun budget défini pour le moment",
+                description: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} € alloués`,
                 onClick: () => router.push('/couple/budget'),
-                actionLabel: "Gérer mon budget",
+                actionLabel: "Gérer",
                 delay: 0.2,
               },
               {
@@ -233,12 +203,10 @@ export default function CoupleDashboardPage() {
                 value: stats.joursRestants !== null ? stats.joursRestants : '-',
                 subtitle: "Avant le mariage",
                 description: stats.joursRestants !== null && stats.joursRestants > 0
-                  ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} avant votre mariage`
-                  : stats.joursRestants === null
-                  ? "Date de mariage non définie"
-                  : "Votre mariage est aujourd'hui !",
+                  ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} restant${stats.joursRestants > 1 ? 's' : ''}`
+                  : "Date non définie",
                 onClick: () => router.push('/couple/profil'),
-                actionLabel: "Modifier la date",
+                actionLabel: "Modifier",
                 delay: 0.3,
               },
             ].map((card, index) => {
@@ -252,34 +220,32 @@ export default function CoupleDashboardPage() {
                 className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]"
                 onClick={card.onClick}
               >
-                <div className="p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
+                <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
                   {/* Header: Icon + Label */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <motion.div 
-                            className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300 cursor-help"
-                            whileHover={{ scale: 1.05, rotate: -2 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                          </motion.div>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 text-white border-gray-700">
-                          <p className="text-xs">{card.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                          {card.label}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <motion.div 
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300 cursor-help"
+                          whileHover={{ scale: 1.05, rotate: -2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                        </motion.div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-gray-900 text-white border-gray-700">
+                        <p className="text-xs">{card.description}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        {card.label}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Main Value */}
-                  <div className="space-y-2">
+                  {/* Main Value + Subtitle */}
+                  <div className="space-y-1">
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -288,7 +254,7 @@ export default function CoupleDashboardPage() {
                     >
                       {typeof card.value === 'number' ? (
                         <motion.p 
-                          className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none"
+                          className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
                           initial={{ opacity: 0, scale: 0.5 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.5, delay: card.delay + 0.2 }}
@@ -296,7 +262,7 @@ export default function CoupleDashboardPage() {
                           {card.value}
                         </motion.p>
                       ) : (
-                        <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
+                        <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
                           {card.value}
                         </p>
                       )}
@@ -304,25 +270,16 @@ export default function CoupleDashboardPage() {
                     
                     {/* Subtitle */}
                     {card.subtitle && (
-                      <p className="text-sm sm:text-base text-gray-600 font-medium">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         {card.subtitle}
                       </p>
                     )}
                   </div>
 
-                  {/* Description */}
-                  <div className="pt-3 flex-1 flex flex-col">
-                    <div className="h-px bg-gradient-to-r from-transparent via-gray-200/50 to-transparent mb-3"></div>
-                    <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
-                      {card.description}
-                    </p>
-                  </div>
-
-                  {/* Action button */}
+                  {/* Action button - compact */}
                   {card.actionLabel && (
-                    <div className="pt-4">
-                      <div className="h-px bg-gradient-to-r from-transparent via-gray-200/50 to-transparent mb-4"></div>
-                      <button className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
+                    <div className="pt-2 mt-auto">
+                      <button className="w-full flex items-center justify-between text-xs font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
                         <span className="group-hover/btn:underline">{card.actionLabel}</span>
                         <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </button>
@@ -338,82 +295,63 @@ export default function CoupleDashboardPage() {
           )}
         </div>
 
-        {/* Sections principales - Style prestataire optimisé */}
-        <motion.div
-          variants={fadeInUp}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5"
-        >
-          {sections.map((section, index) => {
-            const Icon = section.icon
-            const isSearchSection = section.title === 'Rechercher des prestataires'
-            return (
-              <motion.div
-                key={section.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: index * 0.05,
-                  duration: 0.4,
-                  ease: [0.16, 1, 0.3, 1] as const,
-                }}
-              >
-                <Link href={section.href} className="block h-full">
-                  <div className={cn(
-                    "group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 min-h-[140px] flex flex-col h-full border-0",
-                    isSearchSection 
-                      ? "shadow-[0_2px_8px_rgba(130,63,145,0.12)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.18)]" 
-                      : "shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]"
-                  )}>
-                    <div className="flex items-start gap-3 sm:gap-4 flex-1 relative z-10">
-                      <motion.div 
-                        className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
-                        whileHover={{ scale: 1.05, rotate: -2 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                      </motion.div>
-                      <div className="flex-1 min-w-0 flex flex-col">
-                        <div className="flex items-start justify-between gap-2 mb-1.5">
-                          <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors">
+        {/* Sections principales - Compact et sans répétitions */}
+        {sections.length > 0 && (
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"
+          >
+            {sections.map((section, index) => {
+              const Icon = section.icon
+              return (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: index * 0.05,
+                    duration: 0.4,
+                    ease: [0.16, 1, 0.3, 1] as const,
+                  }}
+                >
+                  <Link href={section.href} className="block h-full">
+                    <div className="group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 flex flex-col h-full border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                      <div className="flex items-start gap-3 flex-1 relative z-10">
+                        <motion.div 
+                          className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
+                          whileHover={{ scale: 1.05, rotate: -2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Icon className="h-5 w-5 text-white" />
+                        </motion.div>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors mb-1">
                             {section.title}
                           </h3>
-                          {section.badge && (
-                            <motion.div
-                              animate={{ scale: [1, 1.05, 1] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            >
-                              <Badge 
-                                variant="secondary" 
-                                className="bg-[#E8D4EF] text-[#823F91] border-0 text-xs px-2.5 py-1 h-5 flex-shrink-0 rounded-full shadow-sm font-semibold"
-                              >
-                                {section.badge}
-                              </Badge>
-                            </motion.div>
-                          )}
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3 flex-1">
-                          {section.description}
-                        </p>
-                        <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity mt-auto">
-                          <span className="text-xs font-semibold">Accéder</span>
-                          <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                          <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                            {section.description}
+                          </p>
+                          <div className="flex items-center text-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity mt-3">
+                            <span className="text-xs font-semibold">Accéder</span>
+                            <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Hover effect overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
                     </div>
-                    
-                    {/* Hover effect overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
-                  </div>
-                </Link>
-              </motion.div>
-            )
-          })}
-        </motion.div>
+                  </Link>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        )}
 
         {/* Grille 2 colonnes pour Tâches et Activité */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           <UpcomingTasksCouple />
           <RecentActivityCouple />
         </div>
