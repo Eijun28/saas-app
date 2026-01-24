@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Upload, X, Loader2, Image as ImageIcon, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
@@ -21,6 +21,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [draggedImageId, setDraggedImageId] = useState<string | null>(null);
+  const [dragOverImageId, setDragOverImageId] = useState<string | null>(null);
 
   useEffect(() => {
     loadPortfolio();
@@ -188,7 +190,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
     setIsUploading(false);
   }
 
-  async function handleDelete(imageId: string, imagePath: string) {
+  async function handleDelete(imageId: string, imagePath: string, e: React.MouseEvent) {
+    e.stopPropagation();
     try {
       const supabase = createClient();
 
@@ -210,8 +213,25 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
         throw dbError;
       }
 
-      // Retirer de l'état
-      setImages(prev => prev.filter(img => img.id !== imageId));
+      // Retirer de l'état et réorganiser les ordres
+      const deletedImage = images.find(img => img.id === imageId);
+      const newImages = images.filter(img => img.id !== imageId);
+      
+      // Réorganiser les display_order
+      const updatedImages = newImages.map((img, index) => ({
+        ...img,
+        display_order: index
+      }));
+
+      // Mettre à jour les ordres en DB
+      for (const img of updatedImages) {
+        await supabase
+          .from('provider_portfolio')
+          .update({ display_order: img.display_order })
+          .eq('id', img.id);
+      }
+
+      setImages(updatedImages);
       toast.success('Succès', {
         description: 'Photo supprimée',
       });
@@ -225,25 +245,109 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
     }
   }
 
-  // Drag & Drop handlers
-  const handleDrag = useCallback((e: React.DragEvent) => {
+  // Drag and drop pour réorganiser les images
+  async function handleDragStart(e: React.DragEvent, imageId: string) {
+    setDraggedImageId(imageId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', imageId);
+  }
+
+  function handleDragOver(e: React.DragEvent, imageId: string) {
     e.preventDefault();
     e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedImageId && draggedImageId !== imageId) {
+      setDragOverImageId(imageId);
+    }
+  }
+
+  function handleDragLeave() {
+    setDragOverImageId(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, targetImageId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!draggedImageId || draggedImageId === targetImageId) {
+      setDraggedImageId(null);
+      setDragOverImageId(null);
+      return;
+    }
+
+    const draggedIndex = images.findIndex(img => img.id === draggedImageId);
+    const targetIndex = images.findIndex(img => img.id === targetImageId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedImageId(null);
+      setDragOverImageId(null);
+      return;
+    }
+
+    // Réorganiser les images localement
+    const newImages = [...images];
+    const [draggedImage] = newImages.splice(draggedIndex, 1);
+    newImages.splice(targetIndex, 0, draggedImage);
+
+    // Mettre à jour les display_order
+    const updatedImages = newImages.map((img, index) => ({
+      ...img,
+      display_order: index
+    }));
+
+    setImages(updatedImages);
+    setDraggedImageId(null);
+    setDragOverImageId(null);
+
+    // Mettre à jour en DB
+    try {
+      const supabase = createClient();
+      for (const img of updatedImages) {
+        const { error } = await supabase
+          .from('provider_portfolio')
+          .update({ display_order: img.display_order })
+          .eq('id', img.id);
+
+        if (error) throw error;
+      }
+      toast.success('Succès', {
+        description: 'Ordre des photos mis à jour',
+      });
+      onSave?.();
+    } catch (error: any) {
+      console.error('Reorder error:', error);
+      // Recharger en cas d'erreur
+      loadPortfolio();
+      toast.error('Erreur', {
+        description: 'Erreur lors de la réorganisation',
+      });
+    }
+  }
+
+  // Drag & Drop handlers pour l'upload de fichiers
+  function handleUploadDrag(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Ne pas activer si on drag une image existante
+    if (e.dataTransfer.types.includes('text/html')) {
+      return;
+    }
     if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
     } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
-  }, []);
+  }
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  function handleUploadDrop(e: React.DragEvent) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    // Vérifier si c'est un fichier (pas une réorganisation d'image)
+    if (e.dataTransfer.files && e.dataTransfer.files[0] && !e.dataTransfer.types.includes('text/html')) {
       handleFileUpload(e.dataTransfer.files);
     }
-  }, []);
+  }
 
   if (isLoading) {
     return (
@@ -254,79 +358,95 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
   }
 
   return (
-    <div className="space-y-4">
-      {/* Upload Zone */}
-      <div
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        className={`
-          relative border-0 border-dashed rounded-lg p-8 text-center transition-all
-          ${dragActive ? 'bg-purple-50/50 shadow-[0_2px_8px_rgba(130,63,145,0.2),0_0_0_2px_rgba(130,63,145,0.3)]' : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)]'}
-          ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:shadow-[0_2px_6px_rgba(130,63,145,0.15),0_0_0_1px_rgba(130,63,145,0.1)] hover:bg-purple-50/30'}
-        `}
-      >
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={(e) => handleFileUpload(e.target.files)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          disabled={isUploading || images.length >= maxImages}
-        />
-        <div className="flex flex-col items-center gap-2">
-          {isUploading ? (
-            <>
-              <Loader2 className="h-10 w-10 text-muted-foreground animate-spin" />
-              <p className="text-sm text-muted-foreground">Upload en cours...</p>
-            </>
-          ) : (
-            <>
-              <Upload className="h-10 w-10 text-muted-foreground" />
-              <p className="text-sm font-medium">
-                Glissez vos photos ici ou cliquez pour parcourir
-              </p>
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG jusqu'à 10MB • {images.length}/{maxImages} photos
-              </p>
-            </>
-          )}
+    <div className="space-y-6">
+      {/* Upload Zone - Réduite */}
+      {images.length < maxImages && (
+        <div
+          onDragEnter={handleUploadDrag}
+          onDragLeave={handleUploadDrag}
+          onDragOver={handleUploadDrag}
+          onDrop={handleUploadDrop}
+          className={`
+            relative border border-dashed border-[#823F91]/30 rounded-lg p-3 text-center transition-all bg-white/50
+            ${dragActive ? 'bg-purple-50/70 border-[#823F91] shadow-[0_2px_8px_rgba(130,63,145,0.2)]' : ''}
+            ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:bg-purple-50/40 hover:border-[#823F91]/50'}
+          `}
+        >
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => handleFileUpload(e.target.files)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            disabled={isUploading || images.length >= maxImages}
+          />
+          <div className="flex flex-col items-center gap-1">
+            {isUploading ? (
+              <>
+                <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                <p className="text-xs text-muted-foreground">Upload en cours...</p>
+              </>
+            ) : (
+              <>
+                <Upload className="h-5 w-5 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground">
+                  Glissez vos photos ici ou cliquez pour parcourir
+                </p>
+                <p className="text-xs text-muted-foreground/70">
+                  PNG, JPG jusqu'à 10MB • {images.length}/{maxImages} photos
+                </p>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Grid des images */}
+      {/* Galerie des images */}
       {images.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((image) => (
-            <motion.div
-              key={image.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <Card className="relative group overflow-hidden aspect-square">
-                <NextImage
-                  src={image.image_url}
-                  alt={image.title || 'Portfolio'}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(image.id, image.image_path)}
+        <div>
+          <h3 className="text-sm font-medium text-foreground mb-3">Galerie ({images.length} photo{images.length > 1 ? 's' : ''})</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((image, index) => (
+              <motion.div
+                key={image.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                draggable
+                onDragStart={(e) => handleDragStart(e, image.id)}
+                onDragOver={(e) => handleDragOver(e, image.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, image.id)}
+                className={`
+                  relative group cursor-move
+                  ${dragOverImageId === image.id ? 'ring-2 ring-[#823F91] ring-offset-2' : ''}
+                  ${draggedImageId === image.id ? 'opacity-50' : ''}
+                `}
+              >
+                <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
+                  <NextImage
+                    src={image.image_url}
+                    alt={image.title || 'Portfolio'}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  {/* Bouton de suppression avec croix */}
+                  <button
+                    onClick={(e) => handleDelete(image.id, image.image_path, e)}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100"
+                    aria-label="Supprimer la photo"
                   >
-                    <X className="h-4 w-4 mr-1" />
-                    Supprimer
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
+                    <X className="h-3.5 w-3.5 text-white" />
+                  </button>
+                  {/* Icône de drag */}
+                  <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
+                    <GripVertical className="h-3.5 w-3.5 text-white" />
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -22,10 +22,6 @@ import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { motion } from 'framer-motion'
-import Lightbox from 'yet-another-react-lightbox'
-import 'yet-another-react-lightbox/styles.css'
-import Zoom from 'yet-another-react-lightbox/plugins/zoom'
-import Masonry from 'react-masonry-css'
 import { triggerConfetti } from '@/lib/utils/confetti'
 import { cn } from '@/lib/utils'
 
@@ -57,7 +53,6 @@ export default function ProfilPublicPage() {
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
-  const [lightboxIndex, setLightboxIndex] = useState(-1)
   const [activeTab, setActiveTab] = useState('infos')
 
   useEffect(() => {
@@ -266,9 +261,9 @@ export default function ProfilPublicPage() {
       {/* Header Simple - Avatar à gauche, Nom/Métier, Bouton à droite */}
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+          <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
             {/* Avatar + Nom + Métier à gauche */}
-            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0 w-full xs:w-auto">
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
                 <AvatarUploader 
                   userId={user.id}
@@ -305,7 +300,7 @@ export default function ProfilPublicPage() {
             </div>
 
             {/* Bouton Aperçu à droite */}
-            <div className="w-full xs:w-auto flex-shrink-0">
+            <div className="flex-shrink-0">
               <ProfilePreviewDialog
                 userId={user.id}
                 profile={{
@@ -460,66 +455,6 @@ export default function ProfilPublicPage() {
                       <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
-                  
-                  {portfolio.length > 0 ? (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.2 }}
-                    >
-                      <Masonry
-                        breakpointCols={{ default: 3, 1024: 2, 768: 2, 640: 3 }}
-                        className="flex -ml-1 sm:-ml-2 lg:-ml-3 xl:-ml-4 w-auto"
-                        columnClassName="pl-1 sm:pl-2 lg:pl-3 xl:pl-4 bg-clip-padding"
-                      >
-                        {portfolio.map((img, idx) => (
-                          <motion.div
-                            key={img.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            whileHover={{ scale: 1.03 }}
-                            className="mb-1 sm:mb-2 lg:mb-3 xl:mb-4 cursor-pointer group relative overflow-hidden rounded-md sm:rounded-lg lg:rounded-xl"
-                            onClick={() => setLightboxIndex(idx)}
-                          >
-                            <img 
-                              src={img.image_url} 
-                              alt={img.title || `Portfolio ${idx + 1}`}
-                              className="w-full aspect-square object-cover rounded-md sm:rounded-lg lg:rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] sm:shadow-[0_2px_8px_rgba(0,0,0,0.1)] group-hover:shadow-[0_2px_8px_rgba(0,0,0,0.15)] sm:group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-all"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 sm:p-3 lg:p-4">
-                              <p className="text-white text-[10px] sm:text-xs lg:text-sm font-medium line-clamp-1">{img.title || `Photo ${idx + 1}`}</p>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </Masonry>
-
-                      <Lightbox
-                        open={lightboxIndex >= 0}
-                        close={() => setLightboxIndex(-1)}
-                        index={lightboxIndex}
-                        slides={portfolio.map(img => ({ src: img.image_url }))}
-                        plugins={[Zoom]}
-                      />
-                    </motion.div>
-                  ) : (
-                    <Card className="p-6 sm:p-8 lg:p-10 text-center shadow-[0_2px_8px_rgba(130,63,145,0.08)] bg-gradient-to-br from-purple-50/20 to-white">
-                      <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", stiffness: 200 }}
-                      >
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 lg:mb-5 rounded-full bg-gradient-to-br from-[#823F91]/8 to-[#9D5FA8]/8 flex items-center justify-center shadow-[0_2px_4px_rgba(130,63,145,0.1)]">
-                          <Camera className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-[#823F91]/50" />
-                        </div>
-                        <h3 className="text-base sm:text-lg lg:text-xl font-bold mb-1 sm:mb-1.5 lg:mb-2">Votre portfolio est vide</h3>
-                        <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-3 sm:mb-4 lg:mb-5 px-2">
-                          Ajoutez vos plus belles réalisations pour séduire les futurs mariés
-                        </p>
-                      </motion.div>
-                    </Card>
-                  )}
                 </motion.div>
               </TabsContent>
             </Tabs>

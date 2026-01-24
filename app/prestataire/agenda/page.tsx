@@ -7,12 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -432,20 +432,6 @@ export default function AgendaPage() {
 
       {/* Dialog de création d'événement */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
-          <Button 
-            className="fixed bottom-6 right-6 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300 h-12 w-12 sm:h-auto sm:w-auto rounded-full sm:rounded-lg z-50"
-            onClick={() => {
-              form.reset()
-              if (selectedDate) {
-                form.setValue('date', selectedDate)
-              }
-            }}
-          >
-            <Plus className="h-5 w-5" />
-            <span className="hidden sm:inline">Ajouter un événement</span>
-          </Button>
-        </DialogTrigger>
           <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
             <DialogHeader>
               <DialogTitle className="text-lg sm:text-xl">Créer un événement</DialogTitle>

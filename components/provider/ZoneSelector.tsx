@@ -131,6 +131,7 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-muted-foreground/60 font-light">Zone d'intervention</p>
       <div>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

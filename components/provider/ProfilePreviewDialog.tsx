@@ -230,7 +230,7 @@ export function ProfilePreviewDialog({
       {showTriggerButton && (
         <Button
           variant="outline"
-          size="lg"
+          size="default"
           onClick={() => setOpen(true)}
           className="gap-2"
         >
