@@ -185,18 +185,20 @@ export default function DemandesPage() {
     
     // Récupérer tous les devis en une seule requête
     // Note: devis.couple_id référence couples.id
+    // Utiliser valid_until au lieu de validity_date (nom de colonne dans la DB)
     const { data: devisData, error: devisError } = await supabase
       .from('devis')
-      .select('id, demande_id, prestataire_id, couple_id, amount, details, validity_date, status, created_at, updated_at')
+      .select('id, demande_id, prestataire_id, couple_id, amount, details, valid_until, status, created_at, updated_at')
       .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (devisError) {
       console.error('Erreur chargement devis:', devisError)
-      // Ne pas bloquer si la table devis n'existe pas encore
-      if (devisError.code !== '42P01') {
+      // Ne pas bloquer si la table devis n'existe pas encore ou si erreur 400 (colonne inexistante)
+      if (devisError.code !== '42P01' && devisError.code !== '42703') {
         setError(`Erreur devis: ${devisError.message}`)
       }
+      setDevis([])
       return
     }
 
@@ -241,6 +243,7 @@ export default function DemandesPage() {
         ...devis,
         prestataire_id: prestataireId,
         provider_id: prestataireId, // Pour compatibilité avec le type DevisRow
+        validity_date: devis.valid_until || null, // Mapper valid_until vers validity_date pour le type
         service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
@@ -273,10 +276,11 @@ export default function DemandesPage() {
 
     if (favorisError) {
       console.error('Erreur chargement favoris:', favorisError)
-      // Ne pas bloquer si la table favoris n'existe pas encore
-      if (favorisError.code !== '42P01') {
+      // Ne pas bloquer si la table favoris n'existe pas encore ou si erreur 400 (colonne inexistante)
+      if (favorisError.code !== '42P01' && favorisError.code !== '42703') {
         setError(`Erreur favoris: ${favorisError.message}`)
       }
+      setFavoris([])
       return
     }
 

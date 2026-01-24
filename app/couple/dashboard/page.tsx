@@ -89,10 +89,11 @@ export default function CoupleDashboardPage() {
           }
 
           // Compter les favoris (depuis la relation ou requête séparée si nécessaire)
+          // Note: favoris.couple_id référence couples.id, pas user.id
           const { count: favorisCount, error: favorisError } = await supabase
             .from('favoris')
             .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id)
+            .eq('couple_id', coupleData.id)
 
           if (favorisError) {
             console.error('Erreur lors du comptage des favoris:', favorisError)
