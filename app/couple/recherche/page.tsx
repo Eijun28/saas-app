@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -83,6 +84,7 @@ const CONTINENTS = [
 
 export default function RecherchePage() {
   const { user } = useUser()
+  const isMobile = useIsMobile()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedCulture, setSelectedCulture] = useState<string | null>(null)
@@ -428,7 +430,13 @@ export default function RecherchePage() {
                   <ChevronDown className="h-4 w-4 text-gray-400 ml-auto flex-shrink-0" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white" align="start" side="bottom">
+              <PopoverContent 
+                className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white" 
+                align="start" 
+                side="bottom"
+                collisionPadding={16}
+                avoidCollisions={true}
+              >
                 <div className="space-y-1">
                   {/* Métier */}
                   <Popover open={openSubDropdown === 'metier'} onOpenChange={(open) => setOpenSubDropdown(open ? 'metier' : null)}>
@@ -450,10 +458,12 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[320px] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
-                      side="right" 
+                      className="w-[calc(100vw-2rem)] sm:w-[320px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}
+                      collisionPadding={16}
+                      avoidCollisions={true}
                     >
                         <div className="space-y-1">
                           <button
@@ -519,10 +529,12 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
-                      side="right" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}
+                      collisionPadding={16}
+                      avoidCollisions={true}
                     >
                       <div className="space-y-1">
                         <button
@@ -570,10 +582,12 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
-                      side="right" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}
+                      collisionPadding={16}
+                      avoidCollisions={true}
                     >
                       <div className="space-y-1">
                         <button
