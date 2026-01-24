@@ -118,7 +118,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         className={cn(
           'p-0 flex flex-col',
           'h-screen sm:h-auto',
-          'sm:max-w-4xl sm:max-h-[90vh]',
+          'sm:max-w-4xl max-h-[70vh] sm:max-h-[85vh]',
           'rounded-none sm:rounded-xl'
         )}
         showCloseButton={false}

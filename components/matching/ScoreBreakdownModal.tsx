@@ -71,7 +71,7 @@ export default function ScoreBreakdownModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="max-h-[70vh] overflow-y-auto p-6">
+        <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto p-6">
           {/* Score Final */}
           <div className="text-center mb-6">
             <motion.div

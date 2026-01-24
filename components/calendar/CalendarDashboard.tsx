@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ChevronLeft, ChevronRight, Plus, Clock, Calendar as CalendarIcon, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DatePicker } from '@/components/ui/date-picker'
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, format, isBefore } from 'date-fns'
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, format, isBefore, startOfDay, isPast } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export interface CalendarEvent {
@@ -326,6 +326,7 @@ export function CalendarDashboard({
           {filteredDays.map((day, index) => {
             const isCurrentMonth = isSameMonth(day, currentDate)
             const isToday = isSameDay(day, new Date())
+            const isPastDay = isPast(startOfDay(day)) && !isToday
             const dayEvents = events.filter((event) =>
               isSameDay(new Date(event.date), day)
             )
@@ -342,7 +343,8 @@ export function CalendarDashboard({
                   'hover:bg-purple-50/30 transition-all duration-200 cursor-pointer',
                   'flex flex-col items-center justify-start min-h-0',
                   !isCurrentMonth && 'bg-gray-50/30',
-                  isCurrentMonth && 'bg-white'
+                  isCurrentMonth && 'bg-white',
+                  isPastDay && 'opacity-50'
                 )}
                 onClick={() => {
                   setSelectedDate(day)
@@ -359,8 +361,9 @@ export function CalendarDashboard({
                       'w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm md:text-base font-semibold transition-all',
                       isToday &&
                         'bg-[#823F91] text-white shadow-md',
-                      !isToday && isCurrentMonth && 'text-gray-900',
-                      !isCurrentMonth && 'text-gray-400'
+                      !isToday && isCurrentMonth && !isPastDay && 'text-gray-900',
+                      !isCurrentMonth && 'text-gray-400',
+                      isPastDay && isCurrentMonth && 'text-gray-400'
                     )}
                   >
                     {format(day, 'd')}
@@ -406,21 +409,23 @@ export function CalendarDashboard({
           <div className="text-center py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-gray-500 border-r border-gray-100">Heure</div>
           {weekDays.map((day, index) => {
             const isToday = isSameDay(day, new Date())
+            const isPastDay = isPast(startOfDay(day)) && !isToday
             return (
               <div
                 key={index}
                 className={cn(
                   'text-center py-2 sm:py-3 transition-all',
-                  isToday && 'bg-purple-50'
+                  isToday && 'bg-purple-50',
+                  isPastDay && 'opacity-50'
                 )}
               >
-                <div className={cn('text-[10px] sm:text-xs font-medium', isToday ? 'text-[#823F91]' : 'text-gray-600')}>
+                <div className={cn('text-[10px] sm:text-xs font-medium', isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-600')}>
                   {format(day, 'EEE', { locale: fr })}
                 </div>
                 <div
                   className={cn(
                     'text-sm sm:text-base md:text-lg font-semibold mt-0.5 sm:mt-1',
-                    isToday ? 'text-[#823F91]' : 'text-gray-900'
+                    isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-900'
                   )}
                 >
                   {format(day, 'd')}
@@ -448,6 +453,7 @@ export function CalendarDashboard({
             {/* Colonnes des jours */}
             {weekDays.map((day, dayIndex) => {
               const isToday = isSameDay(day, new Date())
+              const isPastDay = isPast(startOfDay(day)) && !isToday
               const dayEvents = events.filter((event) =>
                 isSameDay(new Date(event.date), day)
               )
@@ -457,7 +463,8 @@ export function CalendarDashboard({
                   key={dayIndex}
                   className={cn(
                     'relative',
-                    isToday && 'bg-purple-50/20'
+                    isToday && 'bg-purple-50/20',
+                    isPastDay && 'opacity-50'
                   )}
                 >
                   {hours.map((hour) => (
@@ -653,14 +660,19 @@ export function CalendarDashboard({
           const date = new Date(dateStr)
           const eventsForDate = groupedEvents[dateStr]
           const isTodayDate = isToday(date)
+          const isPastDate = isPast(startOfDay(date)) && !isTodayDate
 
           return (
             <div key={dateStr}>
               <div className={cn(
                 "flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2.5 xs:py-3 mb-2 xs:mb-3 rounded-lg sticky top-0 bg-white border-b border-gray-100 z-10",
-                isTodayDate && "bg-purple-50/50"
+                isTodayDate && "bg-purple-50/50",
+                isPastDate && "opacity-50"
               )}>
-                <div className="text-sm xs:text-base font-semibold text-gray-900">
+                <div className={cn(
+                  "text-sm xs:text-base font-semibold",
+                  isPastDate ? "text-gray-400" : "text-gray-900"
+                )}>
                   {date.toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     day: 'numeric',
@@ -668,7 +680,10 @@ export function CalendarDashboard({
                     year: 'numeric'
                   })}
                 </div>
-                <div className="text-xs xs:text-sm text-gray-500">
+                <div className={cn(
+                  "text-xs xs:text-sm",
+                  isPastDate ? "text-gray-400" : "text-gray-500"
+                )}>
                   {eventsForDate.length} événement{eventsForDate.length > 1 ? 's' : ''}
                 </div>
                 {isTodayDate && (
@@ -678,7 +693,10 @@ export function CalendarDashboard({
                 )}
               </div>
             
-              <div className="space-y-2 ml-2 xs:ml-4">
+              <div className={cn(
+                "space-y-2 ml-2 xs:ml-4",
+                isPastDate && "opacity-60"
+              )}>
                 {eventsForDate.map((event) => (
                   <div
                     key={event.id}
@@ -1107,7 +1125,7 @@ export function CalendarDashboard({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-xl xs:rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] xs:max-h-[80vh] overflow-hidden mx-2 xs:mx-4 relative z-[10000]"
+              className="bg-white rounded-xl xs:rounded-2xl shadow-2xl max-w-[calc(100vw-1rem)] sm:max-w-md w-full max-h-[60vh] sm:max-h-[70vh] overflow-hidden mx-2 xs:mx-4 relative z-[10000]"
             >
               {/* En-tête */}
               <div className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white p-3 xs:p-4 sm:p-6">

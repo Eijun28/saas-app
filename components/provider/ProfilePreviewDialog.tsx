@@ -241,7 +241,7 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent 
-          className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col"
+          className="max-w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[70vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col"
           showCloseButton={false}
           style={{
             animation: 'none',
