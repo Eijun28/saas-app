@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email/resend'
+import { sendConfirmationEmail } from '@/lib/email/confirmation'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
 import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
@@ -111,6 +112,17 @@ export async function signUp(
   }
 
   logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
+
+  // Envoyer l'email de confirmation personnalisé (si l'utilisateur n'est pas encore confirmé)
+  if (data.user && !data.user.email_confirmed_at) {
+    try {
+      await sendConfirmationEmail(data.user.id, email, profileData.prenom)
+      logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
+    } catch (emailError: any) {
+      // Ne pas bloquer l'inscription si l'email échoue
+      logger.warn('⚠️ Erreur envoi email confirmation personnalisé (non bloquant):', emailError)
+    }
+  }
 
   // Créer le profil utilisateur selon le rôle
   try {
