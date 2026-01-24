@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { getCouplesByUserIds, formatCoupleName } from '@/lib/supabase/queries/couples.queries'
 import { toast } from 'sonner'
 import { ActivityItem } from '@/components/dashboard/ActivityItem'
 import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
@@ -276,17 +277,28 @@ export default function DashboardPrestatairePage() {
         // Récupérer les dernières demandes (5 max)
         const { data: recentRequests } = await supabase
           .from('requests')
-          .select('id, created_at, status, couple_id, couples(partner_1_name)')
+          .select('id, couple_id, created_at, status')
           .eq('provider_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5)
 
-        if (recentRequests) {
+        if (recentRequests && recentRequests.length > 0) {
+          // Récupérer les informations des couples
+          const coupleUserIds = [...new Set(recentRequests.map(r => r.couple_id).filter(Boolean))]
+          const couplesMap = await getCouplesByUserIds(coupleUserIds, [
+            'user_id',
+            'partner_1_name',
+            'partner_2_name'
+          ])
+
+          // Transformer les données
           recentRequests.forEach((req: any) => {
+            const couple = couplesMap.get(req.couple_id)
+
             activities.push({
               id: `request-${req.id}`,
               type: 'request',
-              title: `Nouvelle demande de ${req.couples?.partner_1_name || 'un couple'}`,
+              title: `Nouvelle demande de ${formatCoupleName(couple)}`,
               time: formatRelativeTime(req.created_at),
               createdAt: req.created_at, // Garder la date originale pour le tri
               icon: Bell,
@@ -330,7 +342,7 @@ export default function DashboardPrestatairePage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-4 sm:space-y-6 md:space-y-8">
+      <div className="w-full space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 xl:space-y-8">
       {/* Barre de recherche améliorée */}
       {searchQuery && (
         <motion.div
@@ -364,7 +376,7 @@ export default function DashboardPrestatairePage() {
       )}
 
       {/* Stats Grid - Style Revolut/Stripe */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 w-full items-stretch">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 xl:gap-5 w-full items-stretch">
         {[
           {
             icon: Bell,
@@ -476,12 +488,12 @@ export default function DashboardPrestatairePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+        className="bg-white border border-gray-200/60 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Activité récente</h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900">Activité récente</h2>
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-0.5">
               Dernières actions sur votre compte
             </p>
           </div>
@@ -522,7 +534,7 @@ export default function DashboardPrestatairePage() {
       </motion.div>
 
       {/* Grille 2 colonnes pour Agenda et Demandes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6">
         <AgendaPreview />
         <PendingRequests />
       </div>

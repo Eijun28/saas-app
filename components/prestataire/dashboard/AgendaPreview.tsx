@@ -76,12 +76,12 @@ export function AgendaPreview() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.6 }}
-      className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      className="bg-white border border-gray-200/60 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Aperçu Agenda</h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900">Aperçu Agenda</h2>
+          <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-0.5">
             Prochains rendez-vous
           </p>
         </div>
@@ -112,14 +112,14 @@ export function AgendaPreview() {
           <p className="text-sm text-gray-500">Aucun événement à venir</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
           {evenements.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-white border border-gray-200/60 hover:border-[#823F91]/30 hover:shadow-sm transition-all cursor-pointer"
+              className="flex items-center gap-2 sm:gap-2.5 md:gap-3 p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-white border border-gray-200/60 hover:border-[#823F91]/30 hover:shadow-sm transition-all cursor-pointer"
               onClick={() => router.push('/prestataire/agenda')}
             >
               <div className="p-2 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 rounded-lg flex-shrink-0">

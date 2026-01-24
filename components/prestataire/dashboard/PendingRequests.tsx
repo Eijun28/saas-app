@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { getCouplesByUserIds, formatCoupleName } from '@/lib/supabase/queries/couples.queries'
 
 interface PendingRequest {
   id: string
@@ -29,14 +29,10 @@ export function PendingRequests() {
       try {
         const supabase = createClient()
         
-        const { data, error } = await supabase
+        // Récupérer les demandes en attente
+        const { data: requestsData, error } = await supabase
           .from('requests')
-          .select(`
-            id,
-            created_at,
-            event_date,
-            couples(partner_1_name)
-          `)
+          .select('id, couple_id, created_at')
           .eq('provider_id', user.id)
           .eq('status', 'pending')
           .order('created_at', { ascending: true })
@@ -50,15 +46,38 @@ export function PendingRequests() {
             code: error.code || 'Aucun code',
             fullError: error
           })
+          setLoading(false)
           return
         }
 
-        setRequests((data || []).map((req: any) => ({
-          id: req.id,
-          couple_name: req.couples?.partner_1_name || 'Un couple',
-          created_at: req.created_at,
-          event_date: req.event_date,
-        })))
+        if (!requestsData || requestsData.length === 0) {
+          setRequests([])
+          setLoading(false)
+          return
+        }
+
+        // Récupérer les informations des couples
+        const coupleUserIds = [...new Set(requestsData.map(r => r.couple_id).filter(Boolean))]
+        const couplesMap = await getCouplesByUserIds(coupleUserIds, [
+          'user_id',
+          'partner_1_name',
+          'partner_2_name',
+          'wedding_date'
+        ])
+
+        // Transformer les données
+        const formattedRequests = requestsData.map(req => {
+          const couple = couplesMap.get(req.couple_id)
+
+          return {
+            id: req.id,
+            couple_name: formatCoupleName(couple),
+            created_at: req.created_at,
+            event_date: couple?.wedding_date || undefined,
+          }
+        })
+
+        setRequests(formattedRequests)
       } catch (error) {
         console.error('Erreur lors du chargement des demandes:', {
           message: error instanceof Error ? error.message : 'Erreur inconnue',
@@ -107,12 +126,12 @@ export function PendingRequests() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.7 }}
-      className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      className="bg-white border border-gray-200/60 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Demandes en attente</h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900">Demandes en attente</h2>
+          <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-0.5">
             Nécessitent une action rapide
           </p>
         </div>
@@ -143,14 +162,14 @@ export function PendingRequests() {
           <p className="text-sm text-gray-500">Aucune demande en attente</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
           {requests.map((request, index) => (
             <motion.div
               key={request.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="p-3 sm:p-4 rounded-xl bg-white border border-gray-200/60 hover:border-[#823F91]/30 hover:shadow-sm transition-all"
+              className="p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl bg-white border border-gray-200/60 hover:border-[#823F91]/30 hover:shadow-sm transition-all"
             >
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">

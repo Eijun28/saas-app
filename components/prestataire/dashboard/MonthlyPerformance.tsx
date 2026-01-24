@@ -105,12 +105,12 @@ export function MonthlyPerformance() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.8 }}
-      className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      className="bg-white border border-gray-200/60 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Performance du mois</h2>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900">Performance du mois</h2>
+          <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-0.5">
             Taux de réponse et évolution
           </p>
         </div>
@@ -139,10 +139,10 @@ export function MonthlyPerformance() {
       ) : (
         <>
           {/* Taux de réponse */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Taux de réponse</span>
-              <span className="text-2xl font-bold text-[#823F91]">{responseRate}%</span>
+          <div className="mb-4 sm:mb-5 md:mb-6">
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">Taux de réponse</span>
+              <span className="text-lg sm:text-xl md:text-2xl font-bold text-[#823F91]">{responseRate}%</span>
             </div>
             <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
               <motion.div
@@ -155,8 +155,8 @@ export function MonthlyPerformance() {
           </div>
 
           {/* Graphique par semaine */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Demandes par semaine</h3>
+          <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-2.5 md:mb-3">Demandes par semaine</h3>
             {weekData.map((week, index) => (
               <div key={week.week} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">

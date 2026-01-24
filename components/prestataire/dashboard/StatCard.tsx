@@ -101,13 +101,13 @@ export function StatCard({
         {/* Accent line at top (style Revolut) */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        <CardContent className="relative p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
+        <CardContent className="relative p-3 sm:p-4 md:p-5 lg:p-6 space-y-2 sm:space-y-3 md:space-y-4 flex flex-col flex-1">
           {/* Header: Icon + Label */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-1.5 sm:gap-2 md:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 min-w-0">
               <motion.div 
                 className={cn(
-                  'h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0',
+                  'h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 lg:h-12 lg:w-12 rounded-lg sm:rounded-xl flex-shrink-0',
                   'bg-gradient-to-br from-[#823F91] to-[#9D5FA8]',
                   'flex items-center justify-center',
                   'shadow-sm shadow-[#823F91]/10',
@@ -117,11 +117,11 @@ export function StatCard({
                 whileHover={{ scale: 1.05, rotate: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 text-white" />
               </motion.div>
               
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-[9px] sm:text-[10px] md:text-xs lg:text-sm font-semibold text-gray-400 uppercase tracking-wider">
                   {label}
                 </p>
               </div>
@@ -134,7 +134,7 @@ export function StatCard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: delay + 0.2 }}
                 className={cn(
-                  "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold flex-shrink-0",
+                  "flex items-center gap-0.5 px-1.5 sm:px-2 md:px-2.5 py-0.5 rounded-md sm:rounded-lg text-[9px] sm:text-[10px] md:text-xs font-bold flex-shrink-0",
                   "backdrop-blur-sm",
                   change.positive 
                     ? "bg-green-50/80 text-green-700 border border-green-200/50" 
@@ -142,9 +142,9 @@ export function StatCard({
                 )}
               >
                 {change.positive ? (
-                  <ArrowUpRight className="h-3 w-3" />
+                  <ArrowUpRight className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3" />
                 ) : (
-                  <ArrowDownRight className="h-3 w-3" />
+                  <ArrowDownRight className="h-2 w-2 sm:h-2.5 sm:w-2.5 md:h-3 md:w-3" />
                 )}
                 <span>{Math.abs(change.value)}%</span>
               </motion.div>
@@ -152,32 +152,32 @@ export function StatCard({
           </div>
 
           {/* Main Value */}
-          <div className="space-y-2">
+          <div className="space-y-0.5 sm:space-y-1 md:space-y-2">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: delay + 0.1 }}
-              className="flex items-baseline gap-2 flex-wrap"
+              className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap"
             >
-              <p className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
+              <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold text-gray-900 tracking-tight leading-none">
                 {displayValue}
               </p>
               {typeof value === 'number' && value === 0 && (
-                <span className="text-xs sm:text-sm text-gray-400 font-medium">—</span>
+                <span className="text-[10px] sm:text-xs md:text-sm text-gray-400 font-medium">—</span>
               )}
             </motion.div>
             
             {/* Subtitle */}
             {subtitle && (
-              <p className="text-sm sm:text-base text-gray-600 font-medium">
+              <p className="text-[11px] sm:text-xs md:text-sm lg:text-base text-gray-600 font-medium">
                 {subtitle}
               </p>
             )}
           </div>
 
           {/* Description (style Revolut - toujours affichée même si vide) */}
-          <div className="pt-3 border-t border-gray-100/80 flex-1 flex flex-col">
-            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
+          <div className="pt-1.5 sm:pt-2 md:pt-3 border-t border-gray-100/80 flex-1 flex flex-col">
+            <p className="text-[10px] sm:text-[11px] md:text-xs lg:text-sm text-gray-500 leading-snug sm:leading-relaxed font-medium line-clamp-2 sm:line-clamp-none">
               {description || (
                 <span className="text-gray-400 italic">
                   Données en cours de chargement...
@@ -185,7 +185,7 @@ export function StatCard({
               )}
             </p>
             {change && (
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 mt-0.5">
                 {change.period}
               </p>
             )}
@@ -229,20 +229,20 @@ export function StatCard({
           {/* Action button (style Revolut) */}
           {actionLabel && onClick && (
             <motion.div
-              className="pt-4 border-t border-gray-100/80"
+              className="pt-1.5 sm:pt-2 md:pt-3 border-t border-gray-100/80"
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0.8 }}
               transition={{ duration: 0.2 }}
             >
               <button
-                className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn"
+                className="w-full flex items-center justify-between text-[10px] sm:text-[11px] md:text-xs lg:text-sm font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn"
                 onClick={(e) => {
                   e.stopPropagation()
                   onClick()
                 }}
               >
                 <span className="group-hover/btn:underline">{actionLabel}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
               </button>
             </motion.div>
           )}
