@@ -241,7 +241,7 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* En-têtes jours de la semaine */}
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-white">
+        <div className="grid grid-cols-7 border-b border-gray-100 bg-white">
           {weekDays.map((day) => (
             <div
               key={day}
@@ -333,8 +333,8 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* En-têtes des jours */}
-        <div className="grid border-b border-gray-200 bg-white flex-shrink-0" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
-          <div className="text-center py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-gray-500 border-r border-gray-200">Heure</div>
+        <div className="grid border-b border-gray-100 bg-white flex-shrink-0" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
+          <div className="text-center py-2 sm:py-3 text-[10px] sm:text-xs font-medium text-gray-500 border-r border-gray-100">Heure</div>
           {weekDays.map((day, index) => {
             const isToday = isSameDay(day, new Date())
             return (
@@ -365,7 +365,7 @@ export function CalendarDashboard({
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
           <div className="grid min-h-full" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
             {/* Colonne des heures */}
-            <div className="border-r border-gray-200 bg-gray-50/30">
+            <div className="border-r border-gray-100 bg-gray-50/30">
               {hours.map((hour) => (
                 <div
                   key={hour}
@@ -467,7 +467,7 @@ export function CalendarDashboard({
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
           <div className="grid min-h-full" style={{ gridTemplateColumns: '60px 1fr' }}>
             {/* Colonne des heures */}
-            <div className="border-r border-gray-200 bg-gray-50/50 sticky left-0 z-10">
+            <div className="border-r border-gray-100 bg-gray-50/50 sticky left-0 z-10">
               {hours.map((hour) => (
                 <div
                   key={hour}
@@ -580,7 +580,7 @@ export function CalendarDashboard({
           return (
             <div key={dateStr}>
               <div className={cn(
-                "flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2.5 xs:py-3 mb-2 xs:mb-3 rounded-lg sticky top-0 bg-white border-b border-gray-200 z-10",
+                "flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2.5 xs:py-3 mb-2 xs:mb-3 rounded-lg sticky top-0 bg-white border-b border-gray-100 z-10",
                 isTodayDate && "bg-purple-50/50"
               )}>
                 <div className="text-sm xs:text-base font-semibold text-gray-900">
@@ -638,7 +638,7 @@ export function CalendarDashboard({
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col gap-2 sm:gap-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 bg-white border-b">
+        <div className="flex-shrink-0 flex flex-col gap-2 sm:gap-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 bg-white border-b border-gray-100">
           {/* Mobile: Navigation compacte */}
           <div className="flex items-center justify-between sm:hidden">
             <div className="flex items-center gap-2 flex-1">

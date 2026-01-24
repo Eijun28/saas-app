@@ -259,83 +259,79 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col bg-white p-4 sm:p-6">
-      <div className="flex flex-col h-full space-y-4">
-        {/* Header avec compte à rebours */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="flex-shrink-0"
-        >
-          <div className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-6 sm:p-8 rounded-2xl shadow-xl">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-2xl sm:text-4xl font-bold mb-4">Votre Timeline de Mariage</h1>
-              {dateMarriage ? (
-                <div className="space-y-2">
-                  <p className="text-lg sm:text-xl font-medium opacity-90">
-                    {(() => {
-                      const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                      return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                    })()}
-                  </p>
-                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full">
-                    <CalendarIcon className="h-5 w-5" />
-                    <span className="text-xl sm:text-2xl font-bold">
-                      {(() => {
-                        const date = new Date(dateMarriage)
-                        const today = new Date()
-                        const diff = date.getTime() - today.getTime()
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                        if (days > 0) {
-                          return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''} !`
-                        } else if (days === 0) {
-                          return "C'est aujourd'hui ! 🎉"
-                        } else {
-                          return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                        }
-                      })()}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-lg opacity-90">
-                    Aucune date de mariage renseignée
-                  </p>
-                  <a
-                    href="/couple/profil"
-                    className="inline-block bg-white text-[#823F91] px-6 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
-                  >
-                    Définir la date dans le profil
-                  </a>
-                </div>
-              )}
-            </div>
+    <div className="h-[calc(100vh-80px)] flex flex-col">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-6"
+      >
+        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+          Timeline de Mariage
+        </h1>
+        <p className="text-[#823F91]/70 text-base sm:text-lg">
+          Gérez votre disponibilité et vos événements
+        </p>
+        {dateMarriage && (
+          <div className="mt-3 flex items-center gap-2 text-sm sm:text-base text-[#823F91]/80">
+            <CalendarIcon className="h-4 w-4" />
+            <span>
+              {(() => {
+                const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+                return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+              })()}
+            </span>
+            <span className="mx-2">•</span>
+            <span className="font-semibold">
+              {(() => {
+                const date = new Date(dateMarriage)
+                const today = new Date()
+                const diff = date.getTime() - today.getTime()
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                if (days > 0) {
+                  return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
+                } else if (days === 0) {
+                  return "C'est aujourd'hui ! 🎉"
+                } else {
+                  return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+                }
+              })()}
+            </span>
           </div>
-        </motion.div>
+        )}
+        {!dateMarriage && (
+          <div className="mt-3">
+            <a
+              href="/couple/profil"
+              className="inline-block text-sm text-[#823F91] hover:text-[#6D3478] underline"
+            >
+              Définir la date de mariage dans le profil
+            </a>
+          </div>
+        )}
+      </motion.div>
 
-        {/* Calendrier plein écran */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
-        >
-          <CalendarDashboard
-            events={calendarEvents}
-            onEventCreate={handleCalendarEventCreate}
-            showTime={false}
-            loading={loading}
-            defaultView="agenda"
-          />
-        </motion.div>
-      </div>
+      {/* Calendrier plein écran */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+      >
+        <CalendarDashboard
+          events={calendarEvents}
+          onEventCreate={handleCalendarEventCreate}
+          showTime={false}
+          loading={loading}
+          defaultView="agenda"
+        />
+      </motion.div>
 
       {/* Dialog de création/modification d'événement */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
