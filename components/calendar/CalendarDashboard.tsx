@@ -802,8 +802,8 @@ export function CalendarDashboard({
           </div>
 
           {/* Desktop: Navigation complète */}
-          <div className="hidden sm:flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-3 flex-1">
+          <div className="hidden sm:flex items-center justify-between gap-4">
+            <div className="flex items-center gap-1 flex-1">
               {showSidebar && (
                 <Button
                   variant="ghost"
@@ -824,7 +824,7 @@ export function CalendarDashboard({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               {/* Titre au centre */}
-              <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center">
+              <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-2">
                 {getPeriodTitle()}
               </h2>
               {/* Flèche droite */}
@@ -838,14 +838,14 @@ export function CalendarDashboard({
               </Button>
               <button
                 onClick={goToToday}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-purple-50"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-purple-50 ml-1"
               >
                 Aujourd'hui
               </button>
             </div>
 
             {/* Desktop: Sélecteur de vue */}
-            <div className="flex gap-1 sm:gap-2 bg-gray-100 rounded-lg p-1">
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
               {(['month', 'week', 'day', 'agenda'] as const).map((viewType) => {
                 const labels = {
                   month: 'Mois',

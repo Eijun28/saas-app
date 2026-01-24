@@ -331,6 +331,23 @@ export default function ProfilPublicPage() {
         </div>
       </div>
 
+      {/* Barre de progression du profil */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+              Profil prêt à {completionPercent}%
+            </span>
+            <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] transition-all duration-500 ease-out"
+                style={{ width: `${completionPercent}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Layout Centré - Sans sidebar */}
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
         <div className="max-w-4xl mx-auto">
