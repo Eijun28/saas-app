@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 
 import { motion } from 'framer-motion'
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { Button } from '@/components/ui/button'
 
@@ -723,244 +723,141 @@ export default function CoupleProfilPage() {
 
   return (
 
-    <div className="w-full">
+    <div className="min-h-screen bg-background">
 
-      <div className="w-full px-6 space-y-6">
-
-        {/* Header avec progression */}
-
-        <motion.div
-
-          initial={{ opacity: 0, y: -20 }}
-
-          animate={{ opacity: 1, y: 0 }}
-
-          className="space-y-4"
-
-        >
-
-          {/* Barre de progression */}
-
-          <Card className="border-gray-200 shadow-soft">
-
-            <CardContent className="pt-6">
-
-              <div className="space-y-4">
-
-                <div className="flex justify-between items-center">
-
-                  <div>
-
-                    <h3 className="text-lg font-semibold text-[#4A4A4A]">Complétion du profil</h3>
-
-                    <p className="text-xs text-[#6B7280] mt-1">
-
-                      {completion < 50 && 'Complétez votre profil pour obtenir de meilleures recommandations'}
-
-                      {completion >= 50 && completion < 80 && 'Bon début ! Ajoutez plus de détails pour affiner les résultats'}
-
-                      {completion >= 80 && 'Excellent ! Votre profil est presque complet'}
-
-                    </p>
-
-                  </div>
-
-                  <div className="text-right">
-
-                    <span className="text-2xl font-bold text-[#823F91]">{completion}%</span>
-
-                  </div>
-
-                </div>
-
-                
-
-                {/* Barre de progression principale avec style Nuply */}
-
-                <div className="space-y-2">
-
-                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-100">
-
-                    <div 
-
-                      className="h-full rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-[#823F91] to-[#6D3478]"
-
-                      style={{ width: `${completion}%` }}
-
-                    />
-
-                  </div>
-
-                  <div className="flex justify-between text-xs text-[#6B7280]">
-
-                    <span>0%</span>
-
-                    <span>100%</span>
-
-                  </div>
-
-                </div>
-
-
-
-                {/* Indicateurs visuels supplémentaires */}
-
-                <div className="flex items-center gap-2 pt-2">
-
-                  <div className="flex-1 flex items-center gap-2">
-
-                    <div className={`h-2 w-2 rounded-full ${completion >= 25 ? 'bg-[#823F91]' : 'bg-gray-300'}`} />
-
-                    <span className="text-xs text-[#6B7280]">Informations de base</span>
-
-                  </div>
-
-                  <div className="flex-1 flex items-center gap-2">
-
-                    <div className={`h-2 w-2 rounded-full ${completion >= 50 ? 'bg-[#823F91]' : 'bg-gray-300'}`} />
-
-                    <span className="text-xs text-[#6B7280]">Détails du mariage</span>
-
-                  </div>
-
-                  <div className="flex-1 flex items-center gap-2">
-
-                    <div className={`h-2 w-2 rounded-full ${completion >= 75 ? 'bg-[#823F91]' : 'bg-gray-300'}`} />
-
-                    <span className="text-xs text-[#6B7280]">Préférences</span>
-
-                  </div>
-
-                  <div className="flex-1 flex items-center gap-2">
-
-                    <div className={`h-2 w-2 rounded-full ${completion >= 100 ? 'bg-[#823F91]' : 'bg-gray-300'}`} />
-
-                    <span className="text-xs text-[#6B7280]">Complet</span>
-
-                  </div>
-
-                </div>
-
+      {/* Header Simple - Avatar à gauche, Nom, Bouton à droite */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+            {/* Avatar + Nom à gauche */}
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="relative flex-shrink-0">
+                {user && (
+                  <CoupleAvatarUploader
+                    userId={user.id}
+                    currentAvatarUrl={photoUrl}
+                    userName={`${formData.partner_1_name || ''} ${formData.partner_2_name || ''}`.trim() || user?.email || ''}
+                    size="lg"
+                    editable={true}
+                    showEnlarge={false}
+                    onAvatarUpdate={(url) => {
+                      loadProfile()
+                    }}
+                  />
+                )}
               </div>
+              
+              {/* Nom */}
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
+                  {formData.partner_1_name && formData.partner_2_name 
+                    ? `${formData.partner_1_name} & ${formData.partner_2_name}`
+                    : formData.partner_1_name || 'Mon Profil'}
+                </h1>
+                {formData.wedding_date && (
+                  <p className="text-[11px] xs:text-xs sm:text-sm text-muted-foreground truncate">
+                    Mariage prévu le {new Date(formData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                )}
+              </div>
+            </div>
 
-            </CardContent>
+            {/* Bouton Sauvegarder à droite */}
+            <div className="flex-shrink-0">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                size="sm"
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <span className="hidden sm:inline">Enregistrement...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Enregistrer</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          </Card>
+      {/* Barre de progression du profil */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+              Profil prêt à {completion}%
+            </span>
+            <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] transition-all duration-500 ease-out"
+                style={{ width: `${completion}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
-        </motion.div>
+      {/* Layout Centré */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Tabs */}
 
-        {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
+            <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+              <TabsTrigger 
+                value="base" 
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+              >
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                <span className="hidden sm:inline">Infos</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="mariage"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+              >
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                <span className="hidden sm:inline">Mariage</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="culture"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+              >
+                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                <span className="hidden sm:inline">Culture</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="style"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+              >
+                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                <span className="hidden sm:inline">Style</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+              >
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                <span className="hidden sm:inline">Services</span>
+              </TabsTrigger>
+            </TabsList>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto">
-
-            <TabsTrigger value="base" className="flex items-center gap-2">
-
-              <User className="h-4 w-4" />
-
-              <span className="hidden sm:inline">Infos de base</span>
-
-            </TabsTrigger>
-
-            <TabsTrigger value="mariage" className="flex items-center gap-2">
-
-              <Calendar className="h-4 w-4" />
-
-              <span className="hidden sm:inline">Mariage</span>
-
-            </TabsTrigger>
-
-            <TabsTrigger value="culture" className="flex items-center gap-2">
-
-              <Church className="h-4 w-4" />
-
-              <span className="hidden sm:inline">Culture</span>
-
-            </TabsTrigger>
-
-            <TabsTrigger value="style" className="flex items-center gap-2">
-
-              <Palette className="h-4 w-4" />
-
-              <span className="hidden sm:inline">Style</span>
-
-            </TabsTrigger>
-
-            <TabsTrigger value="services" className="flex items-center gap-2">
-
-              <Briefcase className="h-4 w-4" />
-
-              <span className="hidden sm:inline">Services</span>
-
-            </TabsTrigger>
-
-          </TabsList>
-
-          {/* TAB 1: Infos de base */}
-
-          <TabsContent value="base" className="space-y-6">
-
-            <Card className="border-gray-200">
-
-              <CardHeader>
-
-                <CardTitle>Informations personnelles</CardTitle>
-
-                <CardDescription>
-
-                  Vos informations de base
-
-                </CardDescription>
-
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-
-                {/* Avatar */}
-
-                <div className="flex items-center gap-6">
-
-                  {user && (
-
-                    <CoupleAvatarUploader
-
-                      userId={user.id}
-
-                      currentAvatarUrl={photoUrl}
-
-                      userName={`${formData.partner_1_name || ''} ${formData.partner_2_name || ''}`.trim() || user?.email || ''}
-
-                      size="xl"
-
-                      editable={true}
-
-                      onAvatarUpdate={(url) => {
-
-                        // ✅ Juste recharger depuis la DB
-                        loadProfile()
-
-                      }}
-
-                    />
-
-                  )}
-
-                  <div>
-
-                    <p className="text-lg font-semibold text-gray-900">
-
-                      {formData.partner_1_name} {formData.partner_2_name && `& ${formData.partner_2_name}`}
-
-                    </p>
-
-                    <p className="text-sm text-gray-500">{formData.email}</p>
-
-                  </div>
-
-                </div>
-
-                {/* Form Fields */}
+            {/* TAB 1: Infos de base */}
+            <TabsContent value="base" className="mt-3 xs:mt-4 sm:mt-6">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                    {/* Form Fields */}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1028,31 +925,21 @@ export default function CoupleProfilPage() {
 
                 </div>
 
-              </CardContent>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
 
-            </Card>
+            {/* TAB 2: Mariage */}
+            <TabsContent value="mariage" className="mt-3 xs:mt-4 sm:mt-6">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
 
-          </TabsContent>
-
-          {/* TAB 2: Mariage */}
-
-          <TabsContent value="mariage" className="space-y-6">
-
-            <Card className="border-gray-200">
-
-              <CardHeader>
-
-                <CardTitle>Détails du mariage</CardTitle>
-
-                <CardDescription>
-
-                  Informations sur votre événement
-
-                </CardDescription>
-
-              </CardHeader>
-
-              <CardContent className="space-y-6">
+                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1246,31 +1133,21 @@ export default function CoupleProfilPage() {
 
                 </div>
 
-              </CardContent>
-
-            </Card>
-
+                </CardContent>
+              </Card>
+            </motion.div>
           </TabsContent>
 
           {/* TAB 3: Culture */}
+          <TabsContent value="culture" className="mt-3 xs:mt-4 sm:mt-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
 
-          <TabsContent value="culture" className="space-y-6">
-
-            <Card className="border-gray-200">
-
-              <CardHeader>
-
-                <CardTitle>Préférences culturelles & religieuses</CardTitle>
-
-                <CardDescription>
-
-                  Aidez-nous à vous recommander des prestataires qui comprennent vos traditions
-
-                </CardDescription>
-
-              </CardHeader>
-
-              <CardContent className="space-y-6">
+                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
 
                 <div className="space-y-4">
 
@@ -1385,30 +1262,20 @@ export default function CoupleProfilPage() {
                 </div>
 
               </CardContent>
-
             </Card>
+          </motion.div>
+        </TabsContent>
 
-          </TabsContent>
+        {/* TAB 4: Style */}
+        <TabsContent value="style" className="mt-3 xs:mt-4 sm:mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
 
-          {/* TAB 4: Style */}
-
-          <TabsContent value="style" className="space-y-6">
-
-            <Card className="border-gray-200">
-
-              <CardHeader>
-
-                <CardTitle>Style et ambiance</CardTitle>
-
-                <CardDescription>
-
-                  Définissez l'atmosphère de votre mariage
-
-                </CardDescription>
-
-              </CardHeader>
-
-              <CardContent className="space-y-6">
+                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1504,31 +1371,21 @@ export default function CoupleProfilPage() {
 
                 </div>
 
-              </CardContent>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </TabsContent>
 
-            </Card>
+      {/* TAB 5: Services */}
+      <TabsContent value="services" className="mt-3 xs:mt-4 sm:mt-6">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
 
-          </TabsContent>
-
-          {/* TAB 5: Services */}
-
-          <TabsContent value="services" className="space-y-6">
-
-            <Card className="border-gray-200">
-
-              <CardHeader>
-
-                <CardTitle>Services recherchés</CardTitle>
-
-                <CardDescription>
-
-                  Sélectionnez les prestataires dont vous avez besoin
-
-                </CardDescription>
-
-              </CardHeader>
-
-              <CardContent className="space-y-6">
+                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
 
                 <div className="space-y-4">
 
@@ -1723,66 +1580,13 @@ export default function CoupleProfilPage() {
 
                 </div>
 
-              </CardContent>
-
-            </Card>
-
-          </TabsContent>
-
-        </Tabs>
-
-        {/* Bouton de sauvegarde fixe en bas */}
-
-        <motion.div
-
-          initial={{ opacity: 0 }}
-
-          animate={{ opacity: 1 }}
-
-          className="sticky bottom-4 flex justify-end"
-
-        >
-
-          <Button
-
-            onClick={handleSave}
-
-            disabled={saving}
-
-            size="lg"
-
-            className="bg-[#823F91] hover:bg-[#6D3478] shadow-lg"
-
-          >
-
-            {saving ? (
-
-              <>
-
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-
-                Enregistrement...
-
-              </>
-
-            ) : (
-
-              <>
-
-                <Check className="h-5 w-5 mr-2" />
-
-                Enregistrer les modifications
-
-              </>
-
-            )}
-
-          </Button>
-
+            </CardContent>
+          </Card>
         </motion.div>
-
+      </TabsContent>
+    </Tabs>
+        </div>
       </div>
-
     </div>
 
   )
