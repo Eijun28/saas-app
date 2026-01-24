@@ -400,10 +400,10 @@ export default function AgendaPage() {
         transition={{ duration: 0.6 }}
         className="mb-6"
       >
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+        <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 text-center">
           Agenda
         </h1>
-        <p className="text-[#823F91]/70 text-base sm:text-lg">
+        <p className="text-[#823F91]/70 text-sm sm:text-base text-center">
           Gérez votre disponibilité et vos événements
         </p>
       </motion.div>

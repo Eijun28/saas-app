@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ChevronLeft, ChevronRight, Plus, Clock, Calendar as CalendarIcon, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DatePicker } from '@/components/ui/date-picker'
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, format, isBefore } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -54,8 +55,9 @@ export function CalendarDashboard({
   const [isSidebarOpen, setIsSidebarOpen] = useState(showSidebar)
   const [showEventDialog, setShowEventDialog] = useState(false)
   const [newEvent, setNewEvent] = useState({
-    title: '',
+    date: null as Date | null,
     time: '',
+    title: '',
     description: '',
   })
 
@@ -118,14 +120,14 @@ export function CalendarDashboard({
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date)
-    setNewEvent({ title: '', time: '', description: '' })
+    setNewEvent({ date, time: '', title: '', description: '' })
     setIsDialogOpen(true)
   }
 
   const handleAddEvent = async () => {
-    if (!selectedDate || !newEvent.title) return
+    if (!newEvent.date || !newEvent.title) return
 
-    const dateKey = formatDateKey(selectedDate)
+    const dateKey = formatDateKey(newEvent.date)
 
     try {
       await onEventCreate({
@@ -135,7 +137,7 @@ export function CalendarDashboard({
         description: newEvent.description || undefined,
       })
 
-      setNewEvent({ title: '', time: '', description: '' })
+      setNewEvent({ date: null, time: '', title: '', description: '' })
       setIsDialogOpen(false)
       setSelectedDate(null)
     } catch (error) {
@@ -641,37 +643,25 @@ export function CalendarDashboard({
         <div className="flex-shrink-0 flex flex-col gap-2 sm:gap-0 px-2 sm:px-4 md:px-6 py-2 sm:py-4 bg-white border-b border-gray-100">
           {/* Mobile: Navigation compacte */}
           <div className="flex items-center justify-between sm:hidden">
-            <div className="flex items-center gap-2 flex-1">
-              {showSidebar && (
-                <button
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="p-1.5 text-gray-600 hover:text-gray-900"
-                >
-                  {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-                </button>
-              )}
-              <button 
-                onClick={previousPeriod}
-                className="p-1 text-gray-600 hover:text-gray-900"
+            {showSidebar && (
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-1.5 text-gray-600 hover:text-gray-900"
               >
-                <ChevronLeft className="w-5 h-5" />
+                {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
-              <h2 className="text-sm font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center truncate px-2">
-                {getPeriodTitle()}
-              </h2>
-              <button 
-                onClick={nextPeriod}
-                className="p-1 text-gray-600 hover:text-gray-900"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            )}
+            <h2 className="text-xs font-medium bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-2">
+              {getPeriodTitle()}
+            </h2>
             <button
               onClick={() => {
-                setSelectedDate(new Date())
+                const today = new Date()
+                setSelectedDate(today)
+                setNewEvent({ date: today, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
-              className="ml-2 p-1.5 text-[#823F91] hover:bg-purple-50 rounded-lg"
+              className="p-1.5 text-[#823F91] hover:bg-purple-50 rounded-lg"
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -706,7 +696,7 @@ export function CalendarDashboard({
 
           {/* Desktop: Navigation complète */}
           <div className="hidden sm:flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-3 flex-1">
               {showSidebar && (
                 <Button
                   variant="ghost"
@@ -717,15 +707,9 @@ export function CalendarDashboard({
                   {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
               )}
-              <Button variant="outline" size="icon" onClick={previousPeriod}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent min-w-[180px] sm:min-w-[220px] md:min-w-[250px] text-center">
+              <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center">
                 {getPeriodTitle()}
               </h2>
-              <Button variant="outline" size="icon" onClick={nextPeriod}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
               <button
                 onClick={goToToday}
                 className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-purple-50"
@@ -764,7 +748,9 @@ export function CalendarDashboard({
             {/* Desktop: Actions */}
             <Button
               onClick={() => {
-                setSelectedDate(new Date())
+                const today = new Date()
+                setSelectedDate(today)
+                setNewEvent({ date: today, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
               className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg"
@@ -812,18 +798,6 @@ export function CalendarDashboard({
         <DialogContent size="sm" className="sm:max-w-[450px]">
           <DialogHeader>
             <DialogTitle>Créer un événement</DialogTitle>
-            <DialogDescription>
-              {selectedDate && (
-                <span className="font-medium text-[#823F91]">
-                  {selectedDate.toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </span>
-              )}
-            </DialogDescription>
           </DialogHeader>
 
           <motion.div
@@ -832,6 +806,31 @@ export function CalendarDashboard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.3 }}
           >
+            {/* 1. Date */}
+            <div className="space-y-2">
+              <Label htmlFor="date">Date *</Label>
+              <DatePicker
+                value={newEvent.date || undefined}
+                onChange={(date) => setNewEvent({ ...newEvent, date: date || null })}
+                placeholder="Sélectionner une date"
+              />
+            </div>
+
+            {/* 2. Heure (si showTime est activé) */}
+            {showTime && (
+              <div className="space-y-2">
+                <Label htmlFor="time">Heure</Label>
+                <Input
+                  id="time"
+                  type="time"
+                  value={newEvent.time}
+                  onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                  placeholder="HH:MM"
+                />
+              </div>
+            )}
+
+            {/* 3. Titre */}
             <div className="space-y-2">
               <Label htmlFor="title">Titre de l'événement *</Label>
               <Input
@@ -843,18 +842,7 @@ export function CalendarDashboard({
               />
             </div>
 
-            {showTime && (
-              <div className="space-y-2">
-                <Label htmlFor="time">Heure</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={newEvent.time}
-                  onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-                />
-              </div>
-            )}
-
+            {/* 4. Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description (optionnel)</Label>
               <Textarea
@@ -873,7 +861,7 @@ export function CalendarDashboard({
               variant="outline"
               onClick={() => {
                 setIsDialogOpen(false)
-                setNewEvent({ title: '', time: '', description: '' })
+                setNewEvent({ date: null, time: '', title: '', description: '' })
                 setSelectedDate(null)
               }}
             >
@@ -882,7 +870,7 @@ export function CalendarDashboard({
             <Button
               onClick={handleAddEvent}
               className="bg-[#823F91] hover:bg-[#6D3478] text-white"
-              disabled={!newEvent.title || !selectedDate}
+              disabled={!newEvent.title || !newEvent.date}
             >
               Créer l'événement
             </Button>

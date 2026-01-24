@@ -42,6 +42,7 @@
     "@supabase/supabase-js": "^2.86.2",
     "@vercel/analytics": "^1.6.1",
     "ai": "^5.0.107",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -63,6 +64,7 @@
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.67.0",
+    "react-masonry-css": "^1.0.16",
     "react-resizable-panels": "^4.0.15",
     "recharts": "^3.5.1",
     "resend": "^4.8.0",
@@ -70,6 +72,7 @@
     "stripe": "^17.3.1",
     "tailwind-merge": "^3.4.0",
     "vaul": "^1.1.2",
+    "yet-another-react-lightbox": "^3.28.0",
     "zod": "^4.1.13",
     "zustand": "^5.0.8"
   },
