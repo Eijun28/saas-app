@@ -87,7 +87,13 @@ export function CalendarDashboard({
     } else if (viewMode === 'week') {
       setCurrentDate(new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000))
     } else if (viewMode === 'day') {
-      setCurrentDate(new Date(currentDate.getTime() - 24 * 60 * 60 * 1000))
+      // Pour la vue jour, utiliser selectedDate si défini, sinon currentDate
+      const dateToUse = selectedDate || currentDate
+      // Normaliser la date et soustraire un jour
+      const normalizedDate = normalizeDate(dateToUse)
+      const previousDay = new Date(normalizedDate.getTime() - 24 * 60 * 60 * 1000)
+      setCurrentDate(previousDay)
+      setSelectedDate(previousDay)
     }
   }
 
@@ -97,12 +103,20 @@ export function CalendarDashboard({
     } else if (viewMode === 'week') {
       setCurrentDate(new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000))
     } else if (viewMode === 'day') {
-      setCurrentDate(new Date(currentDate.getTime() + 24 * 60 * 60 * 1000))
+      // Pour la vue jour, utiliser selectedDate si défini, sinon currentDate
+      const dateToUse = selectedDate || currentDate
+      // Normaliser la date et ajouter un jour
+      const normalizedDate = normalizeDate(dateToUse)
+      const nextDay = new Date(normalizedDate.getTime() + 24 * 60 * 60 * 1000)
+      setCurrentDate(nextDay)
+      setSelectedDate(nextDay)
     }
   }
 
   const goToToday = () => {
-    setCurrentDate(new Date())
+    const today = new Date()
+    setCurrentDate(today)
+    setSelectedDate(today)
   }
 
   // Helpers
@@ -137,8 +151,9 @@ export function CalendarDashboard({
   }
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date)
-    setNewEvent({ date, time: '', title: '', description: '' })
+    const normalizedDate = normalizeDate(date)
+    setSelectedDate(normalizedDate)
+    setNewEvent({ date: normalizedDate, time: '', title: '', description: '' })
     setIsDialogOpen(true)
   }
 
@@ -362,8 +377,9 @@ export function CalendarDashboard({
                   isPastDay && 'opacity-50'
                 )}
                 onClick={() => {
-                  setSelectedDate(day)
-                  setCurrentDate(day)
+                  const normalizedDay = normalizeDate(day)
+                  setSelectedDate(normalizedDay)
+                  setCurrentDate(normalizedDay)
                   // Basculer automatiquement vers la vue jour
                   setViewMode('day')
                 }}
@@ -581,7 +597,7 @@ export function CalendarDashboard({
                   key={hour}
                   className="h-[72px] sm:h-20 md:h-24 border-b border-gray-100 hover:bg-purple-50/50 transition-colors cursor-pointer"
                   onClick={() => {
-                    const dateToUse = displayDate
+                    const dateToUse = normalizeDate(displayDate)
                     setSelectedDate(dateToUse)
                     // Ouvrir le dialog avec la date et l'heure pré-remplies
                     const timeString = `${hour.toString().padStart(2, '0')}:00`
@@ -787,7 +803,8 @@ export function CalendarDashboard({
             <button
               onClick={() => {
                 // Utiliser la date du jour affiché si on est en vue jour, sinon aujourd'hui
-                const dateToUse = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
+                const rawDate = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
+                const dateToUse = normalizeDate(rawDate)
                 setSelectedDate(dateToUse)
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
@@ -899,7 +916,8 @@ export function CalendarDashboard({
             <Button
               onClick={() => {
                 // Utiliser la date du jour affiché si on est en vue jour, sinon aujourd'hui
-                const dateToUse = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
+                const rawDate = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
+                const dateToUse = normalizeDate(rawDate)
                 setSelectedDate(dateToUse)
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
@@ -961,8 +979,12 @@ export function CalendarDashboard({
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="date" className="text-sm">Date *</Label>
               <DatePicker
-                value={newEvent.date || undefined}
-                onChange={(date) => setNewEvent({ ...newEvent, date: date || null })}
+                value={newEvent.date ? normalizeDate(newEvent.date) : undefined}
+                onChange={(date) => {
+                  // Normaliser la date dès la sélection
+                  const normalizedDate = date ? normalizeDate(date) : null
+                  setNewEvent({ ...newEvent, date: normalizedDate })
+                }}
                 placeholder="Sélectionner une date"
                 className="h-9 sm:h-10"
               />
@@ -1050,8 +1072,12 @@ export function CalendarDashboard({
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="edit-date" className="text-sm">Date *</Label>
               <DatePicker
-                value={editEvent.date || undefined}
-                onChange={(date) => setEditEvent({ ...editEvent, date: date || null })}
+                value={editEvent.date ? normalizeDate(editEvent.date) : undefined}
+                onChange={(date) => {
+                  // Normaliser la date dès la sélection
+                  const normalizedDate = date ? normalizeDate(date) : null
+                  setEditEvent({ ...editEvent, date: normalizedDate })
+                }}
                 placeholder="Sélectionner une date"
                 className="h-9 sm:h-10"
               />

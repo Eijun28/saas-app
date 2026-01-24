@@ -101,6 +101,14 @@ export default function AgendaPage() {
   }, [user])
 
 
+  // Fonction pour formater la date sans problème de fuseau horaire
+  const formatDateKey = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   const handleCreateEvent = async (values: EventFormValues) => {
     if (!user) return
 
@@ -113,7 +121,7 @@ export default function AgendaPage() {
         .insert({
           prestataire_id: user.id,
           titre: values.titre,
-          date: values.date.toISOString().split('T')[0],
+          date: formatDateKey(values.date),
           heure_debut: values.heure_debut,
           heure_fin: values.heure_fin || null,
           lieu: values.lieu || null,
@@ -125,10 +133,14 @@ export default function AgendaPage() {
       if (error) throw error
 
       // Ajouter à la liste locale
+      // Créer la date en utilisant les composants pour éviter les problèmes de fuseau horaire
+      const [year, month, day] = data.date.split('-').map(Number)
+      const eventDate = new Date(year, month - 1, day)
+      
       const newEvent: Evenement = {
         id: data.id,
         titre: data.titre,
-        date: new Date(data.date),
+        date: eventDate,
         heure_debut: data.heure_debut,
         heure_fin: data.heure_fin || undefined,
         lieu: data.lieu || undefined,
@@ -249,16 +261,22 @@ export default function AgendaPage() {
       }
 
       // Transformer les données de Supabase vers le format Evenement
-      const formattedEvents: Evenement[] = (data || []).map((e) => ({
-        id: e.id,
-        titre: e.titre,
-        date: new Date(e.date),
-        heure_debut: e.heure_debut,
-        heure_fin: e.heure_fin || undefined,
-        lieu: e.lieu || undefined,
-        notes: e.notes || undefined,
-        status: undefined, // Pas de colonne status dans la table
-      }))
+      const formattedEvents: Evenement[] = (data || []).map((e) => {
+        // Créer la date en utilisant les composants pour éviter les problèmes de fuseau horaire
+        const [year, month, day] = e.date.split('-').map(Number)
+        const eventDate = new Date(year, month - 1, day)
+        
+        return {
+          id: e.id,
+          titre: e.titre,
+          date: eventDate,
+          heure_debut: e.heure_debut,
+          heure_fin: e.heure_fin || undefined,
+          lieu: e.lieu || undefined,
+          notes: e.notes || undefined,
+          status: undefined, // Pas de colonne status dans la table
+        }
+      })
 
       setEvenements(formattedEvents)
     } catch (error: any) {
@@ -299,7 +317,7 @@ export default function AgendaPage() {
   const calendarEvents = evenements.map(event => ({
     id: event.id,
     title: event.titre,
-    date: event.date.toISOString().split('T')[0],
+    date: formatDateKey(event.date),
     time: event.heure_debut,
     description: event.notes || undefined,
   }))
@@ -328,7 +346,7 @@ export default function AgendaPage() {
         .from('evenements_prestataire')
         .update({
           titre: values.titre,
-          date: values.date.toISOString().split('T')[0],
+          date: formatDateKey(values.date),
           heure_debut: values.heure_debut,
           heure_fin: values.heure_fin || null,
           lieu: values.lieu || null,
