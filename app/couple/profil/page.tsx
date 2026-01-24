@@ -381,7 +381,7 @@ export default function CoupleProfilPage() {
 
         .eq('user_id', user.id)
 
-        .single()
+        .maybeSingle()
 
       if (coupleError) {
 
@@ -391,6 +391,11 @@ export default function CoupleProfilPage() {
 
         return
 
+      }
+
+      if (!coupleData) {
+        toast.error('Profil couple introuvable')
+        return
       }
 
       if (coupleData) {
@@ -597,24 +602,76 @@ export default function CoupleProfilPage() {
         }
       }
 
-      // Récupérer le couple_id
-      const { data: couple } = await supabase
-        .from('couples')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
+      // Vérifier que l'utilisateur est bien authentifié
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+      if (authError || !authUser) {
+        console.error('Erreur authentification:', authError)
+        toast.error('Erreur d\'authentification')
+        return
+      }
 
-      if (!couple) {
+      if (authUser.id !== user.id) {
+        console.error('ID utilisateur mismatch:', { authUserId: authUser.id, userId: user.id })
+        toast.error('Erreur: utilisateur non correspondant')
+        return
+      }
+
+      // Récupérer le couple_id avec toutes les informations nécessaires pour le débogage
+      const { data: couple, error: coupleFetchError } = await supabase
+        .from('couples')
+        .select('id, user_id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (coupleFetchError) {
+        console.error('Erreur récupération couple:', {
+          error: coupleFetchError,
+          user_id: user.id,
+          auth_uid: authUser.id,
+        })
+        toast.error('Erreur lors de la récupération du profil couple')
+        return
+      }
+
+      if (!couple || !couple.id) {
+        console.error('Couple introuvable:', {
+          user_id: user.id,
+          auth_uid: authUser.id,
+        })
         toast.error('Couple introuvable')
         return
       }
 
+      // Vérifier que le couple appartient bien à l'utilisateur
+      if (couple.user_id !== user.id) {
+        console.error('Couple n\'appartient pas à l\'utilisateur:', {
+          couple_user_id: couple.user_id,
+          user_id: user.id,
+          auth_uid: authUser.id,
+        })
+        toast.error('Erreur: le couple n\'appartient pas à l\'utilisateur')
+        return
+      }
+
+      console.log('Vérifications OK:', {
+        couple_id: couple.id,
+        couple_user_id: couple.user_id,
+        user_id: user.id,
+        auth_uid: authUser.id,
+      })
+
       // Vérifier si couple_preferences existe
-      const { data: existingPrefs } = await supabase
+      const { data: existingPrefs, error: checkError } = await supabase
         .from('couple_preferences')
         .select('id')
         .eq('couple_id', couple.id)
-        .single()
+        .maybeSingle()
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erreur vérification préférences:', checkError)
+        toast.error('Erreur lors de la vérification des préférences')
+        return
+      }
 
       if (existingPrefs) {
         // Mettre à jour couple_preferences
@@ -640,23 +697,46 @@ export default function CoupleProfilPage() {
         }
       } else {
         // Créer couple_preferences
-        const { error: prefsError } = await supabase
+        // Préparer les données avec toutes les valeurs nécessaires
+        const preferencesData = {
+          couple_id: couple.id,
+          languages: ['français'], // Colonne requise avec valeur par défaut
+          cultural_preferences: culturalPrefs && Object.keys(culturalPrefs).length > 0 ? culturalPrefs : {},
+          essential_services: Array.isArray(formData.services_needed) ? formData.services_needed : [],
+          optional_services: [], // Colonne manquante
+          service_priorities: servicePriorities && Object.keys(servicePriorities).length > 0 ? servicePriorities : {},
+          wedding_description: weddingDesc && weddingDesc.trim() ? weddingDesc.trim() : null,
+          budget_breakdown: budgetBreakdown && Object.keys(budgetBreakdown).length > 0 ? budgetBreakdown : {},
+          completion_percentage: typeof completion === 'number' ? completion : 0,
+          onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null) || 0,
+          profile_completed: (typeof completion === 'number' ? completion : 0) >= 80,
+        }
+
+        console.log('Données à insérer dans couple_preferences:', preferencesData)
+
+        const { data: insertedData, error: prefsError } = await supabase
           .from('couple_preferences')
-          .insert({
-            couple_id: couple.id,
-            cultural_preferences: culturalPrefs,
-            essential_services: formData.services_needed || [],
-            service_priorities: servicePriorities,
-            wedding_description: weddingDesc,
-            budget_breakdown: budgetBreakdown,
-            completion_percentage: completion,
-            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null),
-            profile_completed: completion >= 80,
-          })
+          .insert(preferencesData)
+          .select()
+          .single()
 
         if (prefsError) {
-          console.error('Erreur création préférences:', prefsError)
-          toast.error('Erreur lors de la création des préférences')
+          console.error('Erreur création préférences:', {
+            error: prefsError,
+            message: prefsError.message,
+            details: prefsError.details,
+            hint: prefsError.hint,
+            code: prefsError.code,
+            couple_id: couple.id,
+            data_tentative: preferencesData,
+          })
+          toast.error(`Erreur lors de la création des préférences: ${prefsError.message || prefsError.code || 'Erreur inconnue'}`)
+          return
+        }
+
+        if (!insertedData) {
+          console.error('Aucune donnée retournée après insertion couple_preferences')
+          toast.error('Erreur: aucune donnée retournée après création')
           return
         }
       }

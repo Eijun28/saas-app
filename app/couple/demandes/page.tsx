@@ -88,6 +88,18 @@ export default function DemandesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper pour obtenir le couple_id depuis user_id
+  async function getCoupleId(): Promise<string | null> {
+    if (!user?.id) return null
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+    return data?.id || null
+  }
+
   // Fonction optimisée pour charger les demandes
   async function loadDemandes() {
     if (!user?.id) return
@@ -95,9 +107,10 @@ export default function DemandesPage() {
     const supabase = createClient()
     
     // Récupérer toutes les demandes en une seule requête
+    // Note: requests.couple_id référence couples.user_id directement
     const { data: demandesData, error: demandesError } = await supabase
       .from('requests')
-      .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at, type_prestation, wedding_date, date_mariage')
+      .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at')
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -147,8 +160,8 @@ export default function DemandesPage() {
       return {
         ...demande,
         provider_id: prestataireId,
-        service_type: prestataireProfile?.type_prestation || demande.type_prestation || null,
-        wedding_date: demande.wedding_date || demande.date_mariage || null,
+        service_type: prestataireProfile?.type_prestation || null,
+        wedding_date: null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
           service_type: prestataireProfile.type_prestation || '',
@@ -167,12 +180,15 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
+    const coupleId = await getCoupleId()
+    if (!coupleId) return
     
     // Récupérer tous les devis en une seule requête
+    // Note: devis.couple_id référence couples.id
     const { data: devisData, error: devisError } = await supabase
       .from('devis')
-      .select('id, demande_id, prestataire_id, couple_id, amount, details, validity_date, status, created_at, updated_at, type_prestation')
-      .eq('couple_id', user.id)
+      .select('id, demande_id, prestataire_id, couple_id, amount, details, validity_date, status, created_at, updated_at')
+      .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (devisError) {
@@ -225,7 +241,7 @@ export default function DemandesPage() {
         ...devis,
         prestataire_id: prestataireId,
         provider_id: prestataireId, // Pour compatibilité avec le type DevisRow
-        service_type: prestataireProfile?.type_prestation || devis.type_prestation || null,
+        service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
           service_type: prestataireProfile.type_prestation || '',
@@ -244,12 +260,15 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
+    const coupleId = await getCoupleId()
+    if (!coupleId) return
     
     // Récupérer tous les favoris en une seule requête
+    // Note: favoris.couple_id référence couples.id
     const { data: favorisData, error: favorisError } = await supabase
       .from('favoris')
-      .select('id, couple_id, prestataire_id, provider_id, created_at, type_prestation')
-      .eq('couple_id', user.id)
+      .select('id, couple_id, prestataire_id, created_at')
+      .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (favorisError) {
@@ -268,7 +287,7 @@ export default function DemandesPage() {
 
     // Extraire tous les IDs de prestataires uniques
     const prestataireIds = [...new Set(
-      favorisData.map(f => f.provider_id || f.prestataire_id).filter(Boolean)
+      favorisData.map(f => f.prestataire_id).filter(Boolean)
     )]
 
     if (prestataireIds.length === 0) {
@@ -294,14 +313,14 @@ export default function DemandesPage() {
 
     // Transformer les données avec les informations des prestataires
     const transformedData = favorisData.map(favori => {
-      const prestataireId = favori.provider_id || favori.prestataire_id
+      const prestataireId = favori.prestataire_id
       const prestataireProfile = prestataireMap.get(prestataireId)
       const profile = profileMap.get(prestataireId)
 
       return {
         ...favori,
         provider_id: prestataireId,
-        service_type: prestataireProfile?.type_prestation || favori.type_prestation || null,
+        service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
           service_type: prestataireProfile.type_prestation || '',
