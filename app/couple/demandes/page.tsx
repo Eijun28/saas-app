@@ -171,7 +171,7 @@ export default function DemandesPage() {
     // Récupérer tous les devis en une seule requête
     const { data: devisData, error: devisError } = await supabase
       .from('devis')
-      .select('id, demande_id, prestataire_id, provider_id, couple_id, amount, details, validity_date, status, created_at, updated_at, type_prestation')
+      .select('id, demande_id, prestataire_id, couple_id, amount, details, validity_date, status, created_at, updated_at, type_prestation')
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -191,7 +191,7 @@ export default function DemandesPage() {
 
     // Extraire tous les IDs de prestataires uniques
     const prestataireIds = [...new Set(
-      devisData.map(d => d.provider_id || d.prestataire_id).filter(Boolean)
+      devisData.map(d => d.prestataire_id).filter(Boolean)
     )]
 
     if (prestataireIds.length === 0) {
@@ -217,13 +217,14 @@ export default function DemandesPage() {
 
     // Transformer les données avec les informations des prestataires
     const transformedData = devisData.map(devis => {
-      const prestataireId = devis.provider_id || devis.prestataire_id
+      const prestataireId = devis.prestataire_id
       const prestataireProfile = prestataireMap.get(prestataireId)
       const profile = profileMap.get(prestataireId)
 
       return {
         ...devis,
-        provider_id: prestataireId,
+        prestataire_id: prestataireId,
+        provider_id: prestataireId, // Pour compatibilité avec le type DevisRow
         service_type: prestataireProfile?.type_prestation || devis.type_prestation || null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
