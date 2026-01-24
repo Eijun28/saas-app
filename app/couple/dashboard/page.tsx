@@ -248,7 +248,7 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
-                className="relative border border-gray-200/60 bg-white rounded-xl hover:border-gray-300 hover:shadow-xl hover:shadow-gray-900/5 transition-all duration-300 ease-out overflow-hidden group cursor-pointer"
+                className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]"
                 onClick={card.onClick}
               >
                 <div className="p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
@@ -310,7 +310,8 @@ export default function CoupleDashboardPage() {
                   </div>
 
                   {/* Description */}
-                  <div className="pt-3 border-t border-gray-100/80 flex-1 flex flex-col">
+                  <div className="pt-3 flex-1 flex flex-col">
+                    <div className="h-px bg-gradient-to-r from-transparent via-gray-200/50 to-transparent mb-3"></div>
                     <p className="text-xs sm:text-sm text-gray-500 leading-relaxed font-medium">
                       {card.description}
                     </p>
@@ -318,7 +319,8 @@ export default function CoupleDashboardPage() {
 
                   {/* Action button */}
                   {card.actionLabel && (
-                    <div className="pt-4 border-t border-gray-100/80">
+                    <div className="pt-4">
+                      <div className="h-px bg-gradient-to-r from-transparent via-gray-200/50 to-transparent mb-4"></div>
                       <button className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
                         <span className="group-hover/btn:underline">{card.actionLabel}</span>
                         <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
@@ -358,10 +360,10 @@ export default function CoupleDashboardPage() {
               >
                 <Link href={section.href} className="block h-full">
                   <div className={cn(
-                    "group relative p-4 sm:p-5 rounded-xl bg-white border transition-all duration-300 min-h-[140px] flex flex-col h-full",
+                    "group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 min-h-[140px] flex flex-col h-full border-0",
                     isSearchSection 
-                      ? "border-[#823F91]/30 shadow-md shadow-[#823F91]/10 hover:shadow-xl hover:shadow-[#823F91]/15 hover:border-[#823F91]/50" 
-                      : "border-gray-200/60 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-900/5"
+                      ? "shadow-[0_2px_8px_rgba(130,63,145,0.12)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.18)]" 
+                      : "shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]"
                   )}>
                     <div className="flex items-start gap-3 sm:gap-4 flex-1 relative z-10">
                       <motion.div 

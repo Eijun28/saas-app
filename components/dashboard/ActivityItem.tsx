@@ -27,8 +27,8 @@ export function ActivityItem({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay }}
       className={cn(
-        "flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-white border border-gray-200/60",
-        "hover:border-gray-300 hover:shadow-md hover:shadow-gray-900/5 transition-all",
+        "flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-white border-0",
+        "shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12)] transition-all",
         onClick && "cursor-pointer"
       )}
       onClick={onClick}

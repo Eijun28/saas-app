@@ -223,7 +223,10 @@ export function PrestataireHeader() {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className='relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center cursor-pointer hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors'>
+              <button 
+                suppressHydrationWarning
+                className='relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center cursor-pointer hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors'
+              >
                 <Bell className='h-4 w-4 sm:h-5 sm:w-5 text-gray-700' />
                 {unreadCount > 0 && (
                   <span className='absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-[#823F91] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center'>
@@ -264,7 +267,10 @@ export function PrestataireHeader() {
           <div className="relative z-[103]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className='h-auto gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 flex items-center cursor-pointer hover:opacity-80 active:opacity-70 transition-opacity'>
+                <button 
+                  suppressHydrationWarning
+                  className='h-auto gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 flex items-center cursor-pointer hover:opacity-80 active:opacity-70 transition-opacity'
+                >
                   <Avatar className='h-8 w-8 sm:h-9 sm:w-9 rounded-xl ring-1 ring-gray-100'>
                     <AvatarImage 
                       src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined} 

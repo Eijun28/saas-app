@@ -19,7 +19,9 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#823F91] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
+      "flex h-10 w-full items-center justify-between rounded-md bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-all",
+      "border-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)]",
+      "focus:shadow-[0_2px_6px_rgba(130,63,145,0.15),0_0_0_2px_rgba(130,63,145,0.2)] focus:ring-0",
       className
     )}
     {...props}
@@ -77,7 +79,8 @@ const SelectContent = React.forwardRef<
       side="bottom"
       sideOffset={4}
       className={cn(
-        "relative z-[9996] min-w-[8rem] rounded-md border border-gray-200 bg-white text-gray-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
+        "relative z-[9996] min-w-[8rem] rounded-md bg-white text-gray-950 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
+        "border-0 shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1",
         className

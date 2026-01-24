@@ -219,7 +219,7 @@ export function ProfessionalInfoEditor({
           <SelectTrigger id="service-type" className="w-full">
             <SelectValue placeholder="Sélectionnez votre profession" />
           </SelectTrigger>
-          <SelectContent className="!bg-white !border-gray-200 shadow-lg max-h-[300px] z-50">
+          <SelectContent className="!bg-white !border-0 !shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)] max-h-[300px] z-50">
             {SERVICE_CATEGORIES.map((category) => (
               <SelectGroup key={category.id}>
                 <SelectLabel className="text-xs font-normal text-gray-700 px-2 py-1 !bg-gray-50 sticky top-0 z-10">

@@ -262,9 +262,9 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
         onDragOver={handleDrag}
         onDrop={handleDrop}
         className={`
-          relative border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${dragActive ? 'border-[#823F91] bg-purple-50/50' : 'border-gray-200'}
-          ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:border-[#823F91]/50 hover:bg-purple-50/30'}
+          relative border-0 border-dashed rounded-lg p-8 text-center transition-all
+          ${dragActive ? 'bg-purple-50/50 shadow-[0_2px_8px_rgba(130,63,145,0.2),0_0_0_2px_rgba(130,63,145,0.3)]' : 'shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)]'}
+          ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:shadow-[0_2px_6px_rgba(130,63,145,0.15),0_0_0_1px_rgba(130,63,145,0.1)] hover:bg-purple-50/30'}
         `}
       >
         <input

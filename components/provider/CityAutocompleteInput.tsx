@@ -90,7 +90,7 @@ export function CityAutocompleteInput({
         placeholder={placeholder}
       />
       {isOpen && cities.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white rounded-lg max-h-60 overflow-auto border-0 shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)]">
           <Command>
             <CommandList>
               {cities.map((city) => (

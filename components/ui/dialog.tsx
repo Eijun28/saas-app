@@ -75,7 +75,8 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background fixed grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl border p-4 sm:p-6 shadow-2xl shadow-black/20",
+          "bg-background fixed grid w-full max-w-[calc(100vw-2rem)] gap-4 rounded-xl p-4 sm:p-6",
+          "border-0 shadow-[0_8px_24px_rgba(130,63,145,0.15),0_0_0_1px_rgba(130,63,145,0.1)]",
           "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
           "max-h-[85vh] sm:max-h-[75vh] overflow-y-auto",
           "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent",

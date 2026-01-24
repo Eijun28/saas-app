@@ -37,9 +37,9 @@ export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: Upco
   const remainingCount = tasks.filter(t => !t.completed).length
 
   const priorityColors = {
-    high: 'bg-red-50 text-red-700 border-red-200',
-    medium: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-    low: 'bg-gray-50 text-gray-700 border-gray-200',
+    high: 'bg-red-50 text-red-700',
+    medium: 'bg-yellow-50 text-yellow-700',
+    low: 'bg-gray-50 text-gray-700',
   }
 
   return (
@@ -47,7 +47,7 @@ export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: Upco
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      className="bg-white rounded-xl p-4 sm:p-5 lg:p-6 border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)] transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -69,8 +69,8 @@ export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: Upco
             className={cn(
               "text-xs h-7",
               filter === priority 
-                ? "bg-[#823F91] text-white border-[#823F91] hover:bg-[#6D3478]" 
-                : "border-gray-200 hover:border-gray-300"
+                ? "bg-[#823F91] text-white border-0 hover:bg-[#6D3478] shadow-[0_2px_4px_rgba(130,63,145,0.2)]" 
+                : "border-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]"
             )}
           >
             {priority === 'all' ? 'Toutes' : priority === 'high' ? 'Urgent' : priority === 'medium' ? 'Moyen' : 'Faible'}
@@ -90,10 +90,10 @@ export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: Upco
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               className={cn(
-                "flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all",
+                "flex items-start gap-3 p-3 sm:p-4 rounded-xl transition-all border-0",
                 task.completed
-                  ? "bg-gray-50/50 border-gray-200/50 opacity-60"
-                  : "bg-white border-gray-200/60 hover:border-[#823F91]/30 hover:shadow-sm"
+                  ? "bg-gray-50/50 opacity-60 shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
+                  : "bg-white shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12)]"
               )}
             >
               <button 
@@ -121,8 +121,8 @@ export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: Upco
                   <Badge 
                     variant="outline"
                     className={cn(
-                      "text-xs px-2 py-0.5 h-5 border",
-                      priorityColors[task.priority]
+                      "text-xs px-2 py-0.5 h-5 border-0 shadow-[0_1px_2px_rgba(0,0,0,0.1)]",
+                      priorityColors[task.priority].replace('border-', 'shadow-[0_1px_2px_rgba(0,0,0,0.1)] ')
                     )}
                   >
                     {task.priority === "high" ? "Urgent" : task.priority === "medium" ? "Moyen" : "Faible"}

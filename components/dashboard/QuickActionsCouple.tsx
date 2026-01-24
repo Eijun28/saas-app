@@ -45,7 +45,7 @@ export function QuickActionsCouple() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.4 }}
-      className="bg-white border border-gray-200/60 rounded-xl p-5 sm:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+      className="bg-white rounded-xl p-4 sm:p-5 lg:p-6 border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)] transition-all duration-300"
     >
       <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-5">Actions rapides</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -62,7 +62,7 @@ export function QuickActionsCouple() {
             >
               <Link
                 href={action.href}
-                className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border border-gray-200/60 rounded-xl p-4 sm:p-5 hover:border-[#823F91]/30 hover:shadow-md hover:shadow-[#823F91]/10 transition-all duration-300 flex flex-col h-full"
+                className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50/50 rounded-xl p-4 sm:p-5 transition-all duration-300 flex flex-col h-full border-0 shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.15)]"
               >
                 <div className="inline-flex p-2.5 sm:p-3 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] rounded-xl mb-3 w-fit shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all">
                   <Icon className="text-white" size={18} />

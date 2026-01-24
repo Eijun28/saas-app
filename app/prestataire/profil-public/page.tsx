@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ChevronDown, ChevronUp, Check, AlertCircle } from 'lucide-react'
-import { Progress } from '@/components/ui/progress'
+import { useState, useEffect, Suspense } from 'react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { AvatarUploader } from '@/components/provider/AvatarUploader'
@@ -24,6 +21,13 @@ import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
+import { motion } from 'framer-motion'
+import Lightbox from 'yet-another-react-lightbox'
+import 'yet-another-react-lightbox/styles.css'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import Masonry from 'react-masonry-css'
+import { triggerConfetti } from '@/lib/utils/confetti'
+import { cn } from '@/lib/utils'
 
 export default function ProfilPublicPage() {
   const supabase = createClient()
@@ -53,14 +57,8 @@ export default function ProfilPublicPage() {
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
-
-  const [openSections, setOpenSections] = useState({
-    infos: true,
-    cultures: false,
-    zones: false,
-    portfolio: false,
-    reseaux: false,
-  })
+  const [lightboxIndex, setLightboxIndex] = useState(-1)
+  const [activeTab, setActiveTab] = useState('infos')
 
   useEffect(() => {
     async function getUser() {
@@ -77,15 +75,29 @@ export default function ProfilPublicPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Trigger confetti when completion reaches 100%
+  useEffect(() => {
+    const completionChecks = [
+      { complete: !!profile?.avatar_url, label: 'Photo de profil' },
+      { complete: !!profile?.nom_entreprise, label: "Nom d'entreprise" },
+      { complete: !!profile?.description_courte, label: 'Description' },
+      { complete: cultures.length > 0, label: 'Cultures' },
+      { complete: zones.length > 0, label: 'Zones' },
+      { complete: portfolio.length > 0, label: 'Portfolio' },
+    ]
+    const completedCount = completionChecks.filter(c => c.complete).length
+    const completionPercent = Math.round((completedCount / completionChecks.length) * 100)
+    
+    if (completionPercent === 100) {
+      triggerConfetti()
+    }
+  }, [profile, cultures, zones, portfolio])
+
   const reloadData = async () => {
     if (!user) return
 
-    // ✅ FIX: Réduire délai à 500ms pour un affichage plus rapide (Supabase commit généralement en <500ms)
     await new Promise(resolve => setTimeout(resolve, 500))
-
     await loadAllData(user.id, false)
-    
-    // Forcer le re-render en incrémentant refreshKey après le chargement
     setRefreshKey(prev => prev + 1)
   }
 
@@ -95,17 +107,14 @@ export default function ProfilPublicPage() {
     }
 
     try {
-      // Utiliser une nouvelle instance de supabase pour éviter les problèmes de cache
       const freshSupabase = createClient()
       
-      // Essayer d'abord avec toutes les colonnes (y compris réseaux sociaux)
       let { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
         .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
         .eq('id', userId)
         .maybeSingle()
 
-      // Si erreur 42703 (colonne n'existe pas), réessayer sans les colonnes problématiques
       if (profileError && profileError.code === '42703') {
         console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans réseaux sociaux')
         const { data, error } = await freshSupabase
@@ -117,7 +126,6 @@ export default function ProfilPublicPage() {
         profileError = error
       }
 
-      // Essayer de charger les réseaux sociaux séparément si la colonne existe
       let socialLinks = {
         instagram_url: null as string | null,
         facebook_url: null as string | null,
@@ -143,7 +151,6 @@ export default function ProfilPublicPage() {
           }
         }
       } catch (socialError: any) {
-        // Si les colonnes n'existent pas, on continue sans elles
         console.warn('⚠️ Colonnes réseaux sociaux non disponibles:', socialError?.message)
       }
 
@@ -184,8 +191,6 @@ export default function ProfilPublicPage() {
         title: p.title || undefined,
       }))
 
-      // Créer un nouvel objet pour forcer React à détecter le changement
-      // ✅ AJOUT : Ajouter un timestamp pour forcer React à détecter le changement
       const timestamp = Date.now()
       const newProfile = {
         nom_entreprise: profileData?.nom_entreprise || undefined,
@@ -205,22 +210,14 @@ export default function ProfilPublicPage() {
         website_url: socialLinks.website_url,
         linkedin_url: socialLinks.linkedin_url,
         tiktok_url: socialLinks.tiktok_url,
-        _timestamp: timestamp, // ✅ Force React à détecter le changement
+        _timestamp: timestamp,
       }
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Nouveau profil créé:', newProfile)
-        console.log('✅ Cultures:', mappedCultures)
-        console.log('✅ Zones:', mappedZones)
-        console.log('✅ Portfolio:', mappedPortfolio)
-      }
-      
-      // Mettre à jour tous les états en une seule fois pour forcer le re-render
       setProfile(newProfile)
       setCultures(mappedCultures)
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
-      setRefreshKey(prev => prev + 1) // Forcer le re-render des composants enfants
+      setRefreshKey(prev => prev + 1)
     } catch (error) {
       console.error('Error loading profile:', error)
     } finally {
@@ -228,10 +225,6 @@ export default function ProfilPublicPage() {
         setIsLoading(false)
       }
     }
-  }
-
-  const toggleSection = (section: string) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section as keyof typeof prev] }))
   }
 
   const completionChecks = [
@@ -249,9 +242,9 @@ export default function ProfilPublicPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Chargement...</p>
+        <div className="text-center space-y-4">
+          <Skeleton className="h-12 w-12 rounded-full bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer mx-auto" />
+          <Skeleton className="h-4 w-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer mx-auto" />
         </div>
       </div>
     )
@@ -270,299 +263,267 @@ export default function ProfilPublicPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-background">
-        <div className="container max-w-7xl">
-          <div className="flex items-center justify-between h-20">
-            <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">Profil public</h1>
-              <p className="text-sm text-[#823F91]/70 mt-0.5">
-                Complétez votre profil pour attirer plus de clients
-              </p>
+      {/* Header Simple - Avatar à gauche, Nom/Métier, Bouton à droite */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+            {/* Avatar + Nom + Métier à gauche */}
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0 w-full xs:w-auto">
+              <div className="relative flex-shrink-0">
+                <AvatarUploader 
+                  userId={user.id}
+                  currentAvatarUrl={profile?.avatar_url}
+                  userName={profile?.nom_entreprise || 'Utilisateur'}
+                  size="lg"
+                  editable={true}
+                  showEnlarge={false}
+                  onAvatarUpdate={(url) => {
+                    if (user) reloadData()
+                  }}
+                />
+                {profile?.is_early_adopter && (
+                  <div className={cn(
+                    "absolute -top-1 -right-1 w-5 h-5 rounded-full shadow-[0_2px_4px_rgba(130,63,145,0.3)]",
+                    "bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center z-10"
+                  )}>
+                    <Sparkles className="h-2.5 w-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+              
+              {/* Nom et Métier */}
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
+                  {profile?.nom_entreprise || 'Mon Entreprise'}
+                </h1>
+                {profile?.service_type && (
+                  <p className="text-[11px] xs:text-xs sm:text-sm text-muted-foreground truncate">
+                    {getServiceTypeLabel(profile.service_type)}
+                  </p>
+                )}
+              </div>
             </div>
-            <ProfilePreviewDialog
-              userId={user.id}
-              profile={{
-                nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
-                service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
-                avatar_url: profile?.avatar_url || undefined,
-                prenom: profile?.prenom,
-                nom: profile?.nom,
-                description_courte: profile?.description_courte,
-                bio: profile?.bio,
-                budget_min: profile?.budget_min,
-                budget_max: profile?.budget_max,
-                annees_experience: profile?.annees_experience,
-                ville_principale: profile?.ville_principale,
-                is_early_adopter: profile?.is_early_adopter || false,
-                instagram_url: profile?.instagram_url,
-                facebook_url: profile?.facebook_url,
-                website_url: profile?.website_url,
-                linkedin_url: profile?.linkedin_url,
-                tiktok_url: profile?.tiktok_url,
-              }}
-              cultures={cultures}
-              zones={zones}
-              portfolio={portfolio}
-            />
+
+            {/* Bouton Aperçu à droite */}
+            <div className="w-full xs:w-auto flex-shrink-0">
+              <ProfilePreviewDialog
+                userId={user.id}
+                profile={{
+                  nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
+                  service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
+                  avatar_url: profile?.avatar_url || undefined,
+                  prenom: profile?.prenom,
+                  nom: profile?.nom,
+                  description_courte: profile?.description_courte,
+                  bio: profile?.bio,
+                  budget_min: profile?.budget_min,
+                  budget_max: profile?.budget_max,
+                  annees_experience: profile?.annees_experience,
+                  ville_principale: profile?.ville_principale,
+                  is_early_adopter: profile?.is_early_adopter || false,
+                  instagram_url: profile?.instagram_url,
+                  facebook_url: profile?.facebook_url,
+                  website_url: profile?.website_url,
+                  linkedin_url: profile?.linkedin_url,
+                  tiktok_url: profile?.tiktok_url,
+                }}
+                cultures={cultures}
+                zones={zones}
+                portfolio={portfolio}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container max-w-7xl py-4 sm:py-6 md:py-8">
-        <Card className="p-3 sm:p-4 mb-4 sm:mb-5 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border-[#823F91]/20">
-          <div className="flex items-center justify-between gap-2 sm:gap-3 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <h3 className="font-semibold text-sm sm:text-base text-[#823F91] whitespace-nowrap">
-                  Profil à {completionPercent}%
-                </h3>
-                {completionPercent === 100 && (
-                  <Badge className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-sm text-xs px-2 py-0.5 h-5 flex items-center">
-                    <Check className="h-2.5 w-2.5 mr-1" />
-                    Complet
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-[#823F91]/80 mt-0.5">
-                {completedCount} sur {completionChecks.length} sections complétées
-              </p>
-            </div>
-          </div>
-          <Progress 
-            value={completionPercent} 
-            className="h-1.5 sm:h-2 bg-[#823F91]/20 [&>div]:bg-gradient-to-r [&>div]:from-[#823F91] [&>div]:to-[#9D5FA8]" 
-          />
-        </Card>
+      {/* Layout Centré - Sans sidebar */}
+      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
+        <div className="max-w-4xl mx-auto">
+          {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
+          <main>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
+                <TabsList className="grid grid-cols-4 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                <TabsTrigger 
+                  value="infos" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                >
+                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                  <span className="hidden sm:inline">Infos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="cultures"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                >
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                  <span className="hidden sm:inline">Cultures</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="zones"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                >
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                  <span className="hidden sm:inline">Zones</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="portfolio"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                >
+                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
+                  <span className="hidden sm:inline">Portfolio</span>
+                </TabsTrigger>
+              </TabsList>
 
-        {completionPercent < 100 && (
-          <Card className="p-3 sm:p-4 mb-4 sm:mb-5 border-[#823F91]/30 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10">
-            <div className="flex gap-2 sm:gap-3">
-              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-xs sm:text-sm mb-1.5 sm:mb-2 text-[#823F91]">
-                  Pour compléter votre profil :
-                </h4>
-                <ul className="text-xs sm:text-sm space-y-0.5 sm:space-y-1">
-                  {completionChecks
-                    .filter(c => !c.complete)
-                    .map((check, i) => (
-                      <li key={i} className="text-[#823F91]">
-                        • {check.label}
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </div>
-          </Card>
-        )}
+              <TabsContent value="infos" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                      <BusinessNameEditor
+                        key={`business-name-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentName={profile?.nom_entreprise}
+                        onSave={reloadData}
+                      />
+                      <ProfileDescriptionEditor
+                        key={`profile-desc-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentDescription={profile?.description_courte}
+                        onSave={reloadData}
+                      />
+                      <ProfessionalInfoEditor
+                        key={`professional-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentBudgetMin={profile?.budget_min}
+                        currentBudgetMax={profile?.budget_max}
+                        currentExperience={profile?.annees_experience}
+                        currentVille={profile?.ville_principale}
+                        currentServiceType={profile?.service_type}
+                        onSave={reloadData}
+                      />
+                      <SocialLinksEditor
+                        key={`social-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentLinks={{
+                          instagram_url: profile?.instagram_url,
+                          facebook_url: profile?.facebook_url,
+                          website_url: profile?.website_url,
+                          linkedin_url: profile?.linkedin_url,
+                          tiktok_url: profile?.tiktok_url,
+                        }}
+                        onSave={reloadData}
+                      />
+                    </div>
+                  </Card>
+                </motion.div>
+              </TabsContent>
 
-        <div className="space-y-2 sm:space-y-3">
-          <Collapsible
-            open={openSections.infos}
-            onOpenChange={() => toggleSection('infos')}
-          >
-            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <div className="flex-shrink-0">
-                    {profile?.avatar_url && profile?.nom_entreprise && profile?.description_courte ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                    ) : (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
-                    )}
-                  </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
-                      Informations de base
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
-                      Photo de profil, nom et description
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 ml-2">
-                  {openSections.infos ? (
-                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+              <TabsContent value="cultures" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
+                    </div>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="zones" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
+                    </div>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="portfolio" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-5"
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
+                    </div>
+                  </Card>
+                  
+                  {portfolio.length > 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <Masonry
+                        breakpointCols={{ default: 3, 1024: 2, 768: 2, 640: 3 }}
+                        className="flex -ml-1 sm:-ml-2 lg:-ml-3 xl:-ml-4 w-auto"
+                        columnClassName="pl-1 sm:pl-2 lg:pl-3 xl:pl-4 bg-clip-padding"
+                      >
+                        {portfolio.map((img, idx) => (
+                          <motion.div
+                            key={img.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            whileHover={{ scale: 1.03 }}
+                            className="mb-1 sm:mb-2 lg:mb-3 xl:mb-4 cursor-pointer group relative overflow-hidden rounded-md sm:rounded-lg lg:rounded-xl"
+                            onClick={() => setLightboxIndex(idx)}
+                          >
+                            <img 
+                              src={img.image_url} 
+                              alt={img.title || `Portfolio ${idx + 1}`}
+                              className="w-full aspect-square object-cover rounded-md sm:rounded-lg lg:rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] sm:shadow-[0_2px_8px_rgba(0,0,0,0.1)] group-hover:shadow-[0_2px_8px_rgba(0,0,0,0.15)] sm:group-hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-all"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 sm:p-3 lg:p-4">
+                              <p className="text-white text-[10px] sm:text-xs lg:text-sm font-medium line-clamp-1">{img.title || `Photo ${idx + 1}`}</p>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </Masonry>
+
+                      <Lightbox
+                        open={lightboxIndex >= 0}
+                        close={() => setLightboxIndex(-1)}
+                        index={lightboxIndex}
+                        slides={portfolio.map(img => ({ src: img.image_url }))}
+                        plugins={[Zoom]}
+                      />
+                    </motion.div>
                   ) : (
-                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                    <Card className="p-6 sm:p-8 lg:p-10 text-center shadow-[0_2px_8px_rgba(130,63,145,0.08)] bg-gradient-to-br from-purple-50/20 to-white">
+                      <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                      >
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 lg:mb-5 rounded-full bg-gradient-to-br from-[#823F91]/8 to-[#9D5FA8]/8 flex items-center justify-center shadow-[0_2px_4px_rgba(130,63,145,0.1)]">
+                          <Camera className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-[#823F91]/50" />
+                        </div>
+                        <h3 className="text-base sm:text-lg lg:text-xl font-bold mb-1 sm:mb-1.5 lg:mb-2">Votre portfolio est vide</h3>
+                        <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-3 sm:mb-4 lg:mb-5 px-2">
+                          Ajoutez vos plus belles réalisations pour séduire les futurs mariés
+                        </p>
+                      </motion.div>
+                    </Card>
                   )}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-4 sm:space-y-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
-                  <AvatarUploader
-                    userId={user.id}
-                    currentAvatarUrl={profile?.avatar_url}
-                    userName={profile?.nom_entreprise || 'Utilisateur'}
-                    size="xl"
-                    editable={true}
-                    showEnlarge={false}
-                    onAvatarUpdate={(url) => {
-                      // ✅ Juste recharger depuis la DB
-                      if (user) reloadData()
-                    }}
-                  />
-                  <BusinessNameEditor
-                    key={`business-name-${profile?._timestamp || 0}`}
-                    userId={user.id}
-                    currentName={profile?.nom_entreprise}
-                    onSave={reloadData}
-                  />
-                  <ProfileDescriptionEditor
-                    key={`profile-desc-${profile?._timestamp || 0}`}
-                    userId={user.id}
-                    currentDescription={profile?.description_courte}
-                    onSave={reloadData}
-                  />
-                  <ProfessionalInfoEditor
-                    key={`professional-${profile?._timestamp || 0}`}
-                    userId={user.id}
-                    currentBudgetMin={profile?.budget_min}
-                    currentBudgetMax={profile?.budget_max}
-                    currentExperience={profile?.annees_experience}
-                    currentVille={profile?.ville_principale}
-                    currentServiceType={profile?.service_type}
-                    onSave={reloadData}
-                  />
-                  <SocialLinksEditor
-                    key={`social-${profile?._timestamp || 0}`}
-                    userId={user.id}
-                    currentLinks={{
-                      instagram_url: profile?.instagram_url,
-                      facebook_url: profile?.facebook_url,
-                      website_url: profile?.website_url,
-                      linkedin_url: profile?.linkedin_url,
-                      tiktok_url: profile?.tiktok_url,
-                    }}
-                    onSave={reloadData}
-                  />
-                </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-
-          <Collapsible
-            open={openSections.cultures}
-            onOpenChange={() => toggleSection('cultures')}
-          >
-            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <div className="flex-shrink-0">
-                    {cultures.length > 0 ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                    ) : (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
-                    )}
-                  </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
-                      Cultures maîtrisées
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
-                      {cultures.length > 0
-                        ? `${cultures.length} culture${cultures.length > 1 ? 's' : ''} sélectionnée${cultures.length > 1 ? 's' : ''}`
-                        : 'Aucune culture sélectionnée'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 ml-2">
-                  {openSections.cultures ? (
-                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  )}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
-                  <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
-                </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-
-          <Collapsible
-            open={openSections.zones}
-            onOpenChange={() => toggleSection('zones')}
-          >
-            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <div className="flex-shrink-0">
-                    {zones.length > 0 ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                    ) : (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
-                    )}
-                  </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
-                      Zones d'intervention
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
-                      {zones.length > 0
-                        ? `${zones.length} département${zones.length > 1 ? 's' : ''}`
-                        : 'Aucune zone sélectionnée'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 ml-2">
-                  {openSections.zones ? (
-                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  )}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
-                  <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
-                </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
-
-          <Collapsible
-            open={openSections.portfolio}
-            onOpenChange={() => toggleSection('portfolio')}
-          >
-            <Card className="border-[#823F91]/20 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <CollapsibleTrigger className="w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center justify-between bg-background hover:bg-gray-50/50 transition-colors">
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <div className="flex-shrink-0">
-                    {portfolio.length > 0 ? (
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                    ) : (
-                      <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border-2 border-[#823F91]/40" />
-                    )}
-                  </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm sm:text-base text-[#823F91] truncate">
-                      Portfolio
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#823F91]/70 truncate">
-                      {portfolio.length > 0
-                        ? `${portfolio.length} photo${portfolio.length > 1 ? 's' : ''}`
-                        : 'Aucune photo ajoutée'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex-shrink-0 ml-2">
-                  {openSections.portfolio ? (
-                    <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
-                  )}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 border-t border-[#823F91]/20 pt-4 sm:pt-6 bg-background">
-                  <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
-                </div>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+                </motion.div>
+              </TabsContent>
+            </Tabs>
+          </main>
         </div>
       </div>
     </div>
