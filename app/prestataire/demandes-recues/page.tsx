@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
 import { createMissingConversations } from '@/lib/supabase/fix-conversations'
 import { extractSupabaseError } from '@/lib/utils'
+import { getCouplesByUserIds } from '@/lib/supabase/queries/couples.queries'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
@@ -140,32 +141,12 @@ export default function DemandesRecuesPage() {
 
     // Récupérer les couples via couples.user_id = requests.couple_id
     const coupleUserIds = [...new Set(requestsData.map((r: any) => r.couple_id).filter(Boolean))]
-    let couplesMap = new Map()
-    
-    if (coupleUserIds.length > 0) {
-      const { data: couplesData, error: couplesError } = await supabase
-        .from('couples')
-        .select('user_id, partner_1_name, partner_2_name, wedding_date')
-        .in('user_id', coupleUserIds)
-      
-      if (couplesError) {
-        const errorDetails = extractSupabaseError(couplesError)
-        console.error('Erreur récupération couples:', {
-          message: errorDetails.message,
-          code: errorDetails.code,
-          details: errorDetails.details,
-          hint: errorDetails.hint,
-          statusCode: errorDetails.statusCode,
-          fullError: errorDetails,
-        })
-        // Ne pas bloquer le flux si la récupération des couples échoue
-        // On utilisera des valeurs par défaut pour les couples non trouvés
-      }
-      
-      if (couplesData && couplesData.length > 0) {
-        couplesMap = new Map(couplesData.map((c: any) => [c.user_id, c]))
-      }
-    }
+    const couplesMap = await getCouplesByUserIds(coupleUserIds, [
+      'user_id',
+      'partner_1_name',
+      'partner_2_name',
+      'wedding_date'
+    ])
 
     // Fusionner les données
     const data = requestsData.map((request: any) => ({

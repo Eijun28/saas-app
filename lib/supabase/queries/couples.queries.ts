@@ -197,3 +197,58 @@ export async function getCouplePreferences(coupleId: string): Promise<CouplePref
 
   return data as CouplePreferences
 }
+
+/**
+ * Récupère plusieurs couples par leurs user_ids
+ * Utile pour charger les informations de couples associés à des requests, conversations, etc.
+ * Retourne une Map pour un accès rapide par user_id
+ */
+export async function getCouplesByUserIds(
+  userIds: string[],
+  fields: string[] = ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date']
+): Promise<Map<string, Partial<Couple>>> {
+  const supabase = createClient()
+  
+  if (!userIds || userIds.length === 0) {
+    return new Map()
+  }
+
+  const { data, error } = await supabase
+    .from('couples')
+    .select(fields.join(', '))
+    .in('user_id', userIds)
+
+  if (error) {
+    console.error('Error fetching couples by user_ids:', error)
+    return new Map()
+  }
+
+  if (!data || data.length === 0) {
+    return new Map()
+  }
+
+  // Créer une Map pour un accès rapide par user_id
+  // Type assertion nécessaire car Supabase retourne un type générique avec des champs dynamiques
+  return new Map((data as Partial<Couple>[]).map(couple => [couple.user_id!, couple]))
+}
+
+/**
+ * Formate le nom d'un couple à partir de ses données
+ * Retourne "Prénom1 & Prénom2" ou "Prénom1" ou "Couple" selon les données disponibles
+ */
+export function formatCoupleName(couple: Partial<Couple> | null | undefined): string {
+  if (!couple) return 'Un couple'
+  
+  const name1 = couple.partner_1_name?.trim() || ''
+  const name2 = couple.partner_2_name?.trim() || ''
+  
+  if (name1 && name2) {
+    return `${name1} & ${name2}`
+  } else if (name1) {
+    return name1
+  } else if (name2) {
+    return name2
+  }
+  
+  return 'Un couple'
+}
