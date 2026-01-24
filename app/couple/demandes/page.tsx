@@ -8,8 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Send, UserRound } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 
-export const revalidate = 0
-
 type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 
 type RequestRow = {

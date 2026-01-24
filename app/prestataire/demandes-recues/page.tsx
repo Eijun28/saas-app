@@ -159,30 +159,11 @@ export default function DemandesRecuesPage() {
           fullError: errorDetails,
         })
         // Ne pas bloquer le flux si la récupération des couples échoue
-        // On utilisera le fallback avec profiles
+        // On utilisera des valeurs par défaut pour les couples non trouvés
       }
       
-      if (couplesData) {
+      if (couplesData && couplesData.length > 0) {
         couplesMap = new Map(couplesData.map((c: any) => [c.user_id, c]))
-      }
-    }
-
-    // Si aucun couple trouvé, essayer de récupérer depuis profiles (fallback)
-    if (couplesMap.size === 0 && coupleUserIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, prenom, nom, nom_entreprise')
-        .in('id', coupleUserIds)
-      
-      if (profilesData) {
-        profilesData.forEach((p: any) => {
-          couplesMap.set(p.id, {
-            user_id: p.id,
-            partner_1_name: p.prenom || p.nom_entreprise || 'Utilisateur',
-            partner_2_name: p.nom || '',
-            wedding_date: null,
-          })
-        })
       }
     }
 
@@ -259,7 +240,11 @@ export default function DemandesRecuesPage() {
       return
     }
 
-    // Vérifier si une conversation existe déjà, sinon la créer
+    // Le trigger devrait créer automatiquement la conversation lors du changement de statut
+    // Attendre un court délai pour laisser le trigger s'exécuter
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Vérifier si une conversation existe déjà, sinon la créer manuellement
     const { data: existingConv } = await supabase
       .from('conversations')
       .select('id')
@@ -286,8 +271,9 @@ export default function DemandesRecuesPage() {
           statusCode: errorDetails.statusCode,
           fullError: errorDetails,
         })
-        // Ne pas bloquer l'acceptation si la conversation existe déjà ou si c'est une erreur de contrainte
-        if (errorDetails.code !== '23505') {
+        // Ne pas bloquer l'acceptation si la conversation existe déjà (code 23505 = violation contrainte unique)
+        // ou si c'est une erreur de permission RLS (code 42501)
+        if (errorDetails.code !== '23505' && errorDetails.code !== '42501') {
           toast.error('Demande acceptée mais erreur lors de la création de la conversation')
         }
       }

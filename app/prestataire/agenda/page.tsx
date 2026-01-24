@@ -366,6 +366,36 @@ export default function AgendaPage() {
     }
   }
 
+  const handleCalendarEventUpdate = async (event: CalendarEvent) => {
+    setIsSubmitting(true)
+    try {
+      const supabase = createClient()
+      
+      const { error } = await supabase
+        .from('evenements_prestataire')
+        .update({
+          titre: event.title,
+          date: event.date,
+          heure_debut: event.time || '09:00',
+          heure_fin: null,
+          lieu: null,
+          notes: event.description || null,
+        })
+        .eq('id', event.id)
+        .eq('prestataire_id', user?.id)
+
+      if (error) throw error
+
+      await loadEvenements()
+      toast.success('Événement modifié avec succès')
+    } catch (error: any) {
+      console.error('Erreur mise à jour événement:', error)
+      toast.error(`Erreur lors de la modification: ${error?.message || 'Erreur inconnue'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleDeleteEvent = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
 
@@ -418,6 +448,8 @@ export default function AgendaPage() {
         <CalendarDashboard
           events={calendarEvents}
           onEventCreate={handleCalendarEventCreate}
+          onEventUpdate={handleCalendarEventUpdate}
+          onEventDelete={handleDeleteEvent}
           showTime={true}
           loading={loading}
           defaultView="week"

@@ -246,13 +246,13 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
   }
 
   // Drag and drop pour réorganiser les images
-  async function handleDragStart(e: React.DragEvent, imageId: string) {
+  function handleDragStart(e: React.DragEvent<HTMLDivElement>, imageId: string) {
     setDraggedImageId(imageId);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', imageId);
   }
 
-  function handleDragOver(e: React.DragEvent, imageId: string) {
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>, imageId: string) {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
@@ -265,7 +265,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
     setDragOverImageId(null);
   }
 
-  async function handleDrop(e: React.DragEvent, targetImageId: string) {
+  async function handleDrop(e: React.DragEvent<HTMLDivElement>, targetImageId: string) {
     e.preventDefault();
     e.stopPropagation();
     
@@ -407,11 +407,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
           <h3 className="text-sm font-medium text-foreground mb-3">Galerie ({images.length} photo{images.length > 1 ? 's' : ''})</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((image, index) => (
-              <motion.div
+              <div
                 key={image.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
                 draggable
                 onDragStart={(e) => handleDragStart(e, image.id)}
                 onDragOver={(e) => handleDragOver(e, image.id)}
@@ -423,28 +420,34 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
                   ${draggedImageId === image.id ? 'opacity-50' : ''}
                 `}
               >
-                <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
-                  <NextImage
-                    src={image.image_url}
-                    alt={image.title || 'Portfolio'}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                  {/* Bouton de suppression avec croix */}
-                  <button
-                    onClick={(e) => handleDelete(image.id, image.image_path, e)}
-                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100"
-                    aria-label="Supprimer la photo"
-                  >
-                    <X className="h-3.5 w-3.5 text-white" />
-                  </button>
-                  {/* Icône de drag */}
-                  <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
-                    <GripVertical className="h-3.5 w-3.5 text-white" />
-                  </div>
-                </Card>
-              </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
+                    <NextImage
+                      src={image.image_url}
+                      alt={image.title || 'Portfolio'}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                    {/* Bouton de suppression avec croix */}
+                    <button
+                      onClick={(e) => handleDelete(image.id, image.image_path, e)}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100"
+                      aria-label="Supprimer la photo"
+                    >
+                      <X className="h-3.5 w-3.5 text-white" />
+                    </button>
+                    {/* Icône de drag */}
+                    <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
+                      <GripVertical className="h-3.5 w-3.5 text-white" />
+                    </div>
+                  </Card>
+                </motion.div>
+              </div>
             ))}
           </div>
         </div>

@@ -41,6 +41,8 @@ interface CalendarDashboardProps {
 export function CalendarDashboard({
   events,
   onEventCreate,
+  onEventUpdate,
+  onEventDelete,
   showTime = false,
   eventColor,
   loading = false,
@@ -54,7 +56,16 @@ export function CalendarDashboard({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(showSidebar)
   const [showEventDialog, setShowEventDialog] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [newEvent, setNewEvent] = useState({
+    date: null as Date | null,
+    time: '',
+    title: '',
+    description: '',
+  })
+  const [editEvent, setEditEvent] = useState({
     date: null as Date | null,
     time: '',
     title: '',
@@ -142,6 +153,62 @@ export function CalendarDashboard({
       setSelectedDate(null)
     } catch (error) {
       console.error('Erreur lors de la création de l\'événement:', error)
+    }
+  }
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event)
+    const eventDate = new Date(event.date)
+    setEditEvent({
+      date: eventDate,
+      time: event.time || '',
+      title: event.title,
+      description: event.description || '',
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!selectedEvent || !editEvent.date || !editEvent.title) return
+
+    try {
+      const updatedEvent: CalendarEvent = {
+        ...selectedEvent,
+        title: editEvent.title,
+        date: formatDateKey(editEvent.date),
+        time: showTime ? editEvent.time : selectedEvent.time,
+        description: editEvent.description || undefined,
+      }
+
+      if (onEventUpdate) {
+        await onEventUpdate(updatedEvent)
+      }
+
+      setIsEditDialogOpen(false)
+      setSelectedEvent(null)
+      setEditEvent({ date: null, time: '', title: '', description: '' })
+    } catch (error) {
+      console.error('Erreur lors de la modification de l\'événement:', error)
+    }
+  }
+
+  const handleDeleteEvent = async () => {
+    if (!selectedEvent || !onEventDelete) return
+
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await onEventDelete(selectedEvent.id)
+      setIsEditDialogOpen(false)
+      setSelectedEvent(null)
+      setEditEvent({ date: null, time: '', title: '', description: '' })
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'événement:', error)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -435,6 +502,10 @@ export function CalendarDashboard({
                         style={{ top: `${top}px`, height: `${height}px` }}
                         className="absolute left-0.5 right-0.5 sm:left-1 sm:right-1 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1 sm:p-1.5 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
                         title={event.title}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEventClick(event)
+                        }}
                       >
                         <div className="text-[9px] sm:text-[10px] font-bold truncate leading-tight">{event.title}</div>
                         <div className="text-[8px] sm:text-[9px] opacity-90 mt-0.5 leading-tight">
@@ -523,6 +594,10 @@ export function CalendarDashboard({
                     style={{ top: `${top}px`, height: `${height}px` }}
                     className="absolute left-1 right-1 sm:left-2 sm:right-2 md:left-3 md:right-3 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 sm:p-2 md:p-3 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer overflow-hidden"
                     title={event.title}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEventClick(event)
+                    }}
                   >
                     <div className="text-[10px] sm:text-xs md:text-sm font-bold truncate">{event.title}</div>
                     <div className="text-[9px] sm:text-[10px] opacity-90 mt-0.5">
@@ -608,6 +683,7 @@ export function CalendarDashboard({
                   <div
                     key={event.id}
                     className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-2.5 xs:p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 cursor-pointer transition-all"
+                    onClick={() => handleEventClick(event)}
                   >
                     {event.time && (
                       <div className="flex-shrink-0 w-full xs:w-16 text-xs xs:text-sm font-medium text-gray-600">
@@ -651,9 +727,22 @@ export function CalendarDashboard({
                 {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
             )}
+            {/* Flèches de navigation mobile */}
+            <button
+              onClick={previousPeriod}
+              className="p-1.5 text-[#823F91] hover:bg-purple-50 rounded-lg"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
             <h2 className="text-xs font-medium bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-2">
               {getPeriodTitle()}
             </h2>
+            <button
+              onClick={nextPeriod}
+              className="p-1.5 text-[#823F91] hover:bg-purple-50 rounded-lg"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
             <button
               onClick={() => {
                 const today = new Date()
@@ -707,9 +796,28 @@ export function CalendarDashboard({
                   {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
               )}
+              {/* Flèche gauche */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={previousPeriod}
+                className="h-8 w-8 text-[#823F91] hover:bg-purple-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {/* Titre au centre */}
               <h2 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center">
                 {getPeriodTitle()}
               </h2>
+              {/* Flèche droite */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={nextPeriod}
+                className="h-8 w-8 text-[#823F91] hover:bg-purple-50"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
               <button
                 onClick={goToToday}
                 className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-purple-50"
@@ -874,6 +982,102 @@ export function CalendarDashboard({
             >
               Créer l'événement
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Event edit/delete dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent size="sm" className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Modifier l'événement</DialogTitle>
+          </DialogHeader>
+
+          <motion.div
+            className="space-y-4 py-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            {/* 1. Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-date">Date *</Label>
+              <DatePicker
+                value={editEvent.date || undefined}
+                onChange={(date) => setEditEvent({ ...editEvent, date: date || null })}
+                placeholder="Sélectionner une date"
+              />
+            </div>
+
+            {/* 2. Heure (si showTime est activé) */}
+            {showTime && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-time">Heure</Label>
+                <Input
+                  id="edit-time"
+                  type="time"
+                  value={editEvent.time}
+                  onChange={(e) => setEditEvent({ ...editEvent, time: e.target.value })}
+                  placeholder="HH:MM"
+                />
+              </div>
+            )}
+
+            {/* 3. Titre */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Titre de l'événement *</Label>
+              <Input
+                id="edit-title"
+                placeholder="Ex: Essayage robe, Dégustation menu..."
+                value={editEvent.title}
+                onChange={(e) => setEditEvent({ ...editEvent, title: e.target.value })}
+                autoFocus
+              />
+            </div>
+
+            {/* 4. Description */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description (optionnel)</Label>
+              <Textarea
+                id="edit-description"
+                placeholder="Ajoutez des détails sur cet événement..."
+                value={editEvent.description}
+                onChange={(e) => setEditEvent({ ...editEvent, description: e.target.value })}
+                className="min-h-[80px] resize-none"
+                rows={3}
+              />
+            </div>
+          </motion.div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="destructive"
+              onClick={handleDeleteEvent}
+              disabled={isDeleting || !onEventDelete}
+              className="w-full sm:w-auto"
+            >
+              {isDeleting ? 'Suppression...' : 'Supprimer'}
+            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false)
+                  setSelectedEvent(null)
+                  setEditEvent({ date: null, time: '', title: '', description: '' })
+                }}
+                className="flex-1 sm:flex-none"
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleUpdateEvent}
+                disabled={!editEvent.title || !editEvent.date}
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white flex-1 sm:flex-none"
+              >
+                Enregistrer
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
