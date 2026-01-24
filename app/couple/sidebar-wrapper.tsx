@@ -74,7 +74,7 @@ export function CoupleSidebarWrapper() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-auto py-2 px-4 border-b border-[#E5E7EB] flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-[63px] py-2 px-4 border-b border-[#E5E7EB] flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         {/* Logo - visible quand sidebar ouverte */}
         <Link 
           href="/couple/dashboard" 

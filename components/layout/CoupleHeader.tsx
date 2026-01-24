@@ -73,7 +73,7 @@ export function CoupleHeader() {
   }
 
   return (
-    <header className='h-[4.5rem] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full shadow-md shadow-black/5 flex items-center'>
+    <header className='h-[63px] md:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full flex items-center'>
       <div className='w-full flex items-center justify-between gap-6 px-5 sm:px-6 relative z-[101]'>
         {/* ✅ Sidebar toggle button - MOBILE uniquement */}
         <div className='md:hidden'>
