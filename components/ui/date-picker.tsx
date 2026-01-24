@@ -20,7 +20,10 @@ export function DatePicker({ value, onChange, placeholder = "Sélectionner une d
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const dateValue = e.target.value
     if (dateValue) {
-      onChange?.(new Date(dateValue))
+      // Créer la date en utilisant les composants année/mois/jour pour éviter les problèmes de fuseau horaire
+      const [year, month, day] = dateValue.split('-').map(Number)
+      const date = new Date(year, month - 1, day)
+      onChange?.(date)
     } else {
       onChange?.(undefined)
     }
