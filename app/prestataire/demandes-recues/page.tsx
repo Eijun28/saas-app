@@ -5,7 +5,8 @@ import { motion } from 'framer-motion'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Search, RefreshCw } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { DemandeCard } from '@/components/prestataire/demandes/DemandeCard'
@@ -13,7 +14,8 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import type { Demande, UIState } from '@/lib/types/prestataire'
-import { getOrCreateConversation } from '@/lib/supabase/messages'
+import { createMissingConversations } from '@/lib/supabase/fix-conversations'
+import { extractSupabaseError } from '@/lib/utils'
 
 export default function DemandesRecuesPage() {
   const [demandes, setDemandes] = useState<{
@@ -31,20 +33,16 @@ export default function DemandesRecuesPage() {
     loading: 'idle',
     error: null,
   })
+  const [isFixingConversations, setIsFixingConversations] = useState(false)
 
   const { user } = useUser()
 
-  interface DemandeWithCouple {
+  interface RequestWithCouple {
     id: string
     couple_id: string
-    wedding_date?: string
-    date_mariage?: string // Alias pour compatibilité
-    budget_indicatif?: number
-    budget_min?: number // Alias pour compatibilité
-    budget_max?: number // Alias pour compatibilité
-    location?: string // N'existe plus dans le schéma
-    status: string
-    message?: string
+    provider_id: string
+    status: 'pending' | 'accepted' | 'rejected' | 'cancelled'
+    initial_message: string
     created_at: string
     couple?: {
       partner_1_name?: string
@@ -53,32 +51,40 @@ export default function DemandesRecuesPage() {
     } | null
   }
 
-  const formatAndGroupDemandes = (data: DemandeWithCouple[]): { nouvelles: Demande[], en_cours: Demande[], terminees: Demande[] } => {
+  const formatAndGroupDemandes = (data: RequestWithCouple[]): { nouvelles: Demande[], en_cours: Demande[], terminees: Demande[] } => {
     const nouvelles: Demande[] = []
     const en_cours: Demande[] = []
     const terminees: Demande[] = []
 
-    data.forEach((demande) => {
-      const coupleNom = demande.couple 
-        ? `${demande.couple.partner_1_name || ''} & ${demande.couple.partner_2_name || ''}`.trim() || 'Couple'
-        : 'Couple'
+    data.forEach((request) => {
+      let coupleNom = 'Couple'
+      
+      if (request.couple) {
+        const name1 = request.couple.partner_1_name?.trim() || ''
+        const name2 = request.couple.partner_2_name?.trim() || ''
+        if (name1 && name2) {
+          coupleNom = `${name1} & ${name2}`
+        } else if (name1) {
+          coupleNom = name1
+        } else if (name2) {
+          coupleNom = name2
+        }
+      }
 
       const demandeFormatted: Demande = {
-        id: demande.id,
-        couple_id: demande.couple_id,
+        id: request.id,
+        couple_id: request.couple_id,
         couple_nom: coupleNom,
-        date_evenement: demande.wedding_date || demande.couple?.wedding_date || demande.date_mariage || '',
-        budget_min: demande.budget_indicatif || demande.budget_min || 0,
-        budget_max: demande.budget_indicatif || demande.budget_max || 0,
-        lieu: demande.location || '', // Note: location n'existe plus dans le schéma
-        statut: demande.status === 'pending' ? 'nouvelle' 
-          : demande.status === 'viewed' ? 'nouvelle'
-          : demande.status === 'responded' ? 'en_cours'
-          : demande.status === 'accepted' ? 'en_cours'
-          : demande.status === 'rejected' ? 'terminee'
+        date_evenement: request.couple?.wedding_date || '',
+        budget_min: 0,
+        budget_max: 0,
+        lieu: '',
+        statut: request.status === 'pending' ? 'nouvelle' 
+          : request.status === 'accepted' ? 'en_cours'
+          : request.status === 'rejected' ? 'terminee'
           : 'nouvelle',
-        message: demande.message,
-        created_at: demande.created_at,
+        message: request.initial_message,
+        created_at: request.created_at,
       }
 
       if (demandeFormatted.statut === 'nouvelle') {
@@ -94,146 +100,241 @@ export default function DemandesRecuesPage() {
   }
 
   const fetchDemandes = async () => {
-    if (!user) return
+    if (!user?.id) return
 
     setUiState({ loading: 'loading', error: null })
     
-    try {
-      const supabase = createClient()
-      
-      // Récupérer les demandes avec les données du couple
-      const { data: demandesData, error } = await supabase
-        .from('demandes')
-        .select('*')
-        .eq('provider_id', user.id)
-        .order('created_at', { ascending: false })
+    const supabase = createClient()
+    
+    // Récupérer les requests depuis la nouvelle table
+    const { data: requestsData, error } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status, initial_message, created_at')
+      .eq('provider_id', user.id)
+      .order('created_at', { ascending: false })
 
-      if (error) throw error
-
-      // Enrichir avec les données de couples
-      const coupleIds = [...new Set((demandesData || []).map((d: any) => d.couple_id))]
+    if (error) {
+      const errorDetails = extractSupabaseError(error)
+      const errorMsg = errorDetails.message || errorDetails.code || 'Erreur inconnue'
       
-      let couplesData = null
-      if (coupleIds.length > 0) {
-        const { data, error: couplesError } = await supabase
-          .from('couples')
-          .select('user_id, partner_1_name, partner_2_name, wedding_date')
-          .in('user_id', coupleIds)
-        
-        if (couplesError) throw couplesError
-        couplesData = data
-      }
-
-      // Créer un mapping couple_id -> couple data
-      const couplesMap = new Map((couplesData || []).map((c: any) => [c.user_id, c]))
-      
-      // Fusionner les données
-      const data = (demandesData || []).map((demande: any) => ({
-        ...demande,
-        couple: couplesMap.get(demande.couple_id) || null
-      }))
-
-      setDemandes(formatAndGroupDemandes(data || []))
-      setUiState({ loading: 'success', error: null })
-    } catch (error) {
-      // Improved error logging for Supabase errors
-      const errorDetails = error instanceof Error 
-        ? error.message 
-        : typeof error === 'object' && error !== null
-        ? JSON.stringify(error, Object.getOwnPropertyNames(error))
-        : String(error)
-      
+      // Log détaillé pour le débogage
       console.error('Erreur chargement demandes:', {
-        error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        details: errorDetails
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
       })
       
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : typeof error === 'object' && error !== null && 'message' in error
-        ? String(error.message)
-        : 'Erreur de chargement'
-      
-      toast.error('Erreur lors du chargement des demandes')
-      setUiState({ loading: 'error', error: errorMessage })
+      toast.error(`Erreur: ${errorMsg}`)
+      setUiState({ loading: 'error', error: errorMsg })
+      return
     }
+
+    if (!requestsData || requestsData.length === 0) {
+      setDemandes({ nouvelles: [], en_cours: [], terminees: [] })
+      setUiState({ loading: 'success', error: null })
+      return
+    }
+
+    // Récupérer les couples via couples.user_id = requests.couple_id
+    const coupleUserIds = [...new Set(requestsData.map((r: any) => r.couple_id).filter(Boolean))]
+    let couplesMap = new Map()
+    
+    if (coupleUserIds.length > 0) {
+      const { data: couplesData, error: couplesError } = await supabase
+        .from('couples')
+        .select('user_id, partner_1_name, partner_2_name, wedding_date')
+        .in('user_id', coupleUserIds)
+      
+      if (couplesError) {
+        const errorDetails = extractSupabaseError(couplesError)
+        console.error('Erreur récupération couples:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
+        // Ne pas bloquer le flux si la récupération des couples échoue
+        // On utilisera des valeurs par défaut pour les couples non trouvés
+      }
+      
+      if (couplesData && couplesData.length > 0) {
+        couplesMap = new Map(couplesData.map((c: any) => [c.user_id, c]))
+      }
+    }
+
+    // Fusionner les données
+    const data = requestsData.map((request: any) => ({
+      ...request,
+      couple: couplesMap.get(request.couple_id) || {
+        user_id: request.couple_id,
+        partner_1_name: 'Couple',
+        partner_2_name: '',
+        wedding_date: null,
+      }
+    }))
+
+    setDemandes(formatAndGroupDemandes(data))
+    setUiState({ loading: 'success', error: null })
   }
 
   useEffect(() => {
-    fetchDemandes()
-  }, [user])
-
-  const handleAcceptDemande = async (demandeId: string) => {
-    if (!user) return
-
-    try {
-      const supabase = createClient()
-      
-      // 1. Récupérer les données de la demande avant de la mettre à jour
-      const { data: demandeData, error: fetchError } = await supabase
-        .from('demandes')
-        .select('couple_id, provider_id, service_type, wedding_date, guest_count, budget_indicatif')
-        .eq('id', demandeId)
-        .single()
-
-      if (fetchError) throw fetchError
-      if (!demandeData) {
-        throw new Error('Demande introuvable')
-      }
-
-      // 2. Mettre à jour le statut de la demande
-      const { error: updateError } = await supabase
-        .from('demandes')
-        .update({ status: 'accepted' })
-        .eq('id', demandeId)
-
-      if (updateError) throw updateError
-
-      // 3. Créer automatiquement une conversation (ou réutiliser si elle existe déjà)
-      try {
-        await getOrCreateConversation(
-          demandeData.couple_id,
-          demandeData.provider_id || user.id,
-          demandeId, // Lier la conversation à cette demande
-          demandeData.service_type || undefined,
-          undefined, // cultures - à récupérer si nécessaire
-          demandeData.wedding_date || undefined,
-          undefined, // eventLocation - à récupérer si nécessaire
-          demandeData.budget_indicatif || undefined,
-          demandeData.guest_count || undefined
-        )
-      } catch (conversationError) {
-        // Ne pas bloquer l'acceptation si la création de conversation échoue
-        console.warn('Erreur lors de la création de la conversation:', conversationError)
-        // On continue quand même, la conversation pourra être créée manuellement plus tard
-      }
-
-      toast.success('Demande acceptée - La conversation a été créée')
-      await fetchDemandes()
-    } catch (error) {
-      console.error('Erreur acceptation:', error)
-      toast.error('Erreur lors de l\'acceptation')
+    if (user?.id) {
+      fetchDemandes()
     }
+  }, [user?.id])
+
+  const handleAcceptDemande = async (requestId: string) => {
+    if (!user?.id) return
+
+    const supabase = createClient()
+    
+    // Récupérer d'abord la demande pour obtenir couple_id
+    const { data: requestData, error: fetchError } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status')
+      .eq('id', requestId)
+      .eq('provider_id', user.id)
+      .single()
+
+    if (fetchError || !requestData) {
+      if (fetchError) {
+        const errorDetails = extractSupabaseError(fetchError)
+        console.error('Erreur récupération demande:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
+        toast.error(`Erreur: ${errorDetails.message || 'Demande introuvable'}`)
+      } else {
+        toast.error('Demande introuvable')
+      }
+      return
+    }
+
+    // Mettre à jour le statut de la demande
+    const { error: updateError } = await supabase
+      .from('requests')
+      .update({ status: 'accepted' })
+      .eq('id', requestId)
+      .eq('provider_id', user.id)
+
+    if (updateError) {
+      const errorDetails = extractSupabaseError(updateError)
+      console.error('Erreur mise à jour demande:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur lors de la mise à jour'}`)
+      return
+    }
+
+    // Le trigger devrait créer automatiquement la conversation lors du changement de statut
+    // Attendre un court délai pour laisser le trigger s'exécuter
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Vérifier si une conversation existe déjà, sinon la créer manuellement
+    const { data: existingConv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('request_id', requestId)
+      .maybeSingle()
+
+    if (!existingConv) {
+      // Créer la conversation manuellement si le trigger ne l'a pas fait
+      const { error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          request_id: requestId,
+          couple_id: requestData.couple_id,
+          provider_id: requestData.provider_id,
+        })
+
+      if (convError) {
+        const errorDetails = extractSupabaseError(convError)
+        console.error('Erreur création conversation:', {
+          message: errorDetails.message,
+          code: errorDetails.code,
+          details: errorDetails.details,
+          hint: errorDetails.hint,
+          statusCode: errorDetails.statusCode,
+          fullError: errorDetails,
+        })
+        // Ne pas bloquer l'acceptation si la conversation existe déjà (code 23505 = violation contrainte unique)
+        // ou si c'est une erreur de permission RLS (code 42501)
+        if (errorDetails.code !== '23505' && errorDetails.code !== '42501') {
+          toast.error('Demande acceptée mais erreur lors de la création de la conversation')
+        }
+      }
+    }
+
+    toast.success('Demande acceptée - La conversation est maintenant disponible dans la messagerie')
+    fetchDemandes()
   }
 
-  const handleRejectDemande = async (demandeId: string) => {
-    if (!user) return
+  const handleRejectDemande = async (requestId: string) => {
+    if (!user?.id) return
 
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('requests')
+      .update({ status: 'rejected' })
+      .eq('id', requestId)
+      .eq('provider_id', user.id) // Sécurité supplémentaire
+
+    if (error) {
+      const errorDetails = extractSupabaseError(error)
+      console.error('Erreur rejet demande:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur lors du rejet'}`)
+      return
+    }
+
+    toast.success('Demande refusée')
+    fetchDemandes()
+  }
+
+  const handleFixConversations = async () => {
+    setIsFixingConversations(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('demandes')
-        .update({ status: 'rejected' })
-        .eq('id', demandeId)
-
-      if (error) throw error
-
-      toast.success('Demande refusée')
-      await fetchDemandes()
-    } catch (error) {
-      console.error('Erreur refus:', error)
-      toast.error('Erreur lors du refus')
+      const result = await createMissingConversations()
+      if (result.success) {
+        toast.success(result.message || 'Conversations vérifiées')
+        // Rafraîchir les demandes
+        fetchDemandes()
+      } else {
+        toast.error(`Erreur: ${result.error?.message || 'Erreur inconnue'}`)
+      }
+    } catch (error: unknown) {
+      const errorDetails = extractSupabaseError(error)
+      console.error('Erreur vérification conversations:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Erreur inconnue'}`)
+    } finally {
+      setIsFixingConversations(false)
     }
   }
 
@@ -242,65 +343,93 @@ export default function DemandesRecuesPage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="w-full max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
+        className="w-full"
       >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2 break-words">
           Demandes reçues
         </h1>
-        <p className="text-[#823F91]/70 text-lg">
+        <p className="text-[#823F91]/70 text-sm sm:text-base lg:text-lg break-words">
           Gérez toutes vos demandes de prestations
         </p>
       </motion.div>
 
-      {/* Search bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#823F91]/50" />
+      {/* Bouton pour créer les conversations manquantes */}
+      {demandes.en_cours.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-end"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFixConversations}
+            disabled={isFixingConversations}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFixingConversations ? 'animate-spin' : ''}`} />
+            {isFixingConversations ? 'Vérification...' : 'Vérifier les conversations'}
+          </Button>
+        </motion.div>
+      )}
+
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]/50 pointer-events-none" />
         <Input
           placeholder="Rechercher une demande..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20"
+          className="w-full pl-9 sm:pl-10 pr-4 h-10 sm:h-11 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20 text-sm sm:text-base"
         />
       </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="nouvelles" className="w-full">
-        <TabsList className="mb-8 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20">
-          <TabsTrigger value="nouvelles" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            Nouvelles
-            {demandes.nouvelles.length > 0 && (
-              <Badge className="bg-[#823F91] text-white shadow-md">
-                {demandes.nouvelles.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="en-cours" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            En cours
-            {demandes.en_cours.length > 0 && (
-              <Badge className="bg-[#823F91] text-white shadow-md">
-                {demandes.en_cours.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="terminees" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30">
-            Terminées
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+          <TabsList className="mb-6 sm:mb-8 w-full sm:w-auto bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 inline-flex min-w-full sm:min-w-0">
+            <TabsTrigger 
+              value="nouvelles" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              <span>Nouvelles</span>
+              {demandes.nouvelles.length > 0 && (
+                <Badge className="bg-[#823F91] text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center">
+                  {demandes.nouvelles.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="en-cours" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              <span>En cours</span>
+              {demandes.en_cours.length > 0 && (
+                <Badge className="bg-[#823F91] text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center">
+                  {demandes.en_cours.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="terminees" 
+              className="flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+            >
+              Terminées
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        {/* Tab Content - Nouvelles */}
-        <TabsContent value="nouvelles">
+        <TabsContent value="nouvelles" className="mt-0">
           {demandes.nouvelles.length === 0 ? (
             <EmptyState
               title="Aucune nouvelle demande"
               description="Les nouvelles demandes de couples apparaîtront ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.nouvelles
                 .filter((d) => 
                   !searchTerm || 
@@ -319,15 +448,14 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        {/* Tab Content - En cours */}
-        <TabsContent value="en-cours">
+        <TabsContent value="en-cours" className="mt-0">
           {demandes.en_cours.length === 0 ? (
             <EmptyState
               title="Aucune demande en cours"
               description="Les demandes acceptées apparaîtront ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.en_cours
                 .filter((d) => 
                   !searchTerm || 
@@ -341,15 +469,14 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        {/* Tab Content - Terminées */}
-        <TabsContent value="terminees">
+        <TabsContent value="terminees" className="mt-0">
           {demandes.terminees.length === 0 ? (
             <EmptyState
               title="Aucune demande terminée"
               description="L'historique de vos prestations apparaîtra ici"
             />
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 w-full">
               {demandes.terminees
                 .filter((d) => 
                   !searchTerm || 
@@ -366,4 +493,3 @@ export default function DemandesRecuesPage() {
     </div>
   )
 }
-

@@ -21,6 +21,7 @@ export interface PricingColumnProps {
   features: string[];
   variant?: "default" | "glow" | "glow-brand";
   className?: string;
+  comingSoon?: boolean;
 }
 
 export function PricingColumn({
@@ -34,6 +35,7 @@ export function PricingColumn({
   features,
   variant = "default",
   className,
+  comingSoon = false,
 }: PricingColumnProps) {
   const isGlow = variant === "glow" || variant === "glow-brand";
   const isGlowBrand = variant === "glow-brand";
@@ -41,7 +43,9 @@ export function PricingColumn({
   return (
     <div
       className={cn(
-        "relative flex flex-col h-full rounded-xl border bg-white p-6 shadow-sm transition-all hover:shadow-lg",
+        "relative flex flex-col h-full rounded-xl border bg-white p-6 shadow-sm transition-all",
+        !comingSoon && "hover:shadow-lg",
+        comingSoon && "opacity-60 pointer-events-none",
         isGlow &&
           "border-[#823F91]/20 bg-gradient-to-br from-white to-[#E8D4EF]/10",
         isGlowBrand &&
@@ -49,6 +53,36 @@ export function PricingColumn({
         className
       )}
     >
+      {/* Bandeau "À venir" en diagonale */}
+      {comingSoon && (
+        <div className="absolute inset-0 overflow-hidden rounded-xl z-10 pointer-events-none">
+          <div 
+            className="absolute"
+            style={{
+              top: '20px',
+              right: '-60px',
+              width: '200px',
+              height: '40px',
+              background: '#823F91',
+              transform: 'rotate(45deg)',
+              boxShadow: '0 2px 8px rgba(130, 63, 145, 0.3)',
+            }}
+          />
+          <div 
+            className="absolute top-6 right-4 z-20"
+            style={{
+              transform: 'rotate(45deg)',
+            }}
+          >
+            <span className="text-white font-bold text-xs sm:text-sm tracking-wider whitespace-nowrap">
+              À VENIR
+            </span>
+          </div>
+        </div>
+      )}
+      
+      {/* Contenu flouté */}
+      <div className={cn("relative", comingSoon && "blur-sm")}>
       {/* Header */}
       <div className="mb-4 flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -148,6 +182,7 @@ export function PricingColumn({
           </div>
         )
       ) : null}
+      </div>
     </div>
   );
 }

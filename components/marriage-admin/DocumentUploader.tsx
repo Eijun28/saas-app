@@ -86,7 +86,6 @@ export function DocumentUploader({
         throw new Error(result.error || 'Erreur upload')
       }
 
-      console.log('✅ Document uploadé:', result.data)
 
       setSuccess(true)
       setTimeout(() => {

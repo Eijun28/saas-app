@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@/hooks/use-user'
 
 interface ProfilePreviewDialogProps {
   userId: string
@@ -66,6 +67,7 @@ export function ProfilePreviewDialog({
   coupleId,
 }: ProfilePreviewDialogProps) {
   const router = useRouter()
+  const { user } = useUser()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = controlledOnOpenChange || setInternalOpen
@@ -126,8 +128,16 @@ export function ProfilePreviewDialog({
   }
 
   const handleCreateDemande = async () => {
-    if (!coupleId || !demandeMessage.trim()) {
+    // Utiliser l'ID de l'utilisateur connecté si coupleId n'est pas fourni
+    const currentCoupleId = coupleId || user?.id
+    
+    if (!currentCoupleId || !demandeMessage.trim()) {
       toast.error('Veuillez remplir le message')
+      return
+    }
+
+    if (!user) {
+      toast.error('Vous devez être connecté pour envoyer une demande')
       return
     }
 
@@ -135,21 +145,60 @@ export function ProfilePreviewDialog({
     const supabase = createClient()
 
     try {
+      // Vérifier si une demande existe déjà pour ce couple/prestataire
+      const { data: existingRequest } = await supabase
+        .from('requests')
+        .select('id, status')
+        .eq('couple_id', currentCoupleId)
+        .eq('provider_id', userId)
+        .maybeSingle()
+
+      if (existingRequest) {
+        if (existingRequest.status === 'pending') {
+          toast.error('Une demande est déjà en attente pour ce prestataire')
+          setIsCreatingDemande(false)
+          return
+        } else if (existingRequest.status === 'accepted') {
+          toast.error('Vous avez déjà une demande acceptée avec ce prestataire')
+          setIsCreatingDemande(false)
+          return
+        }
+      }
+
       const { data, error } = await supabase
-        .from('demandes')
+        .from('requests')
         .insert({
-          couple_id: coupleId,
-          provider_id: userId,
-          service_type: profile.service_type || null,
-          message: demandeMessage.trim(),
-          wedding_date: demandeDate || null,
-          budget_indicatif: demandeBudget ? parseFloat(demandeBudget) : null,
+          couple_id: currentCoupleId, // doit être auth.users.id (couples.user_id)
+          provider_id: userId, // userId = prestataire auth.users.id
+          initial_message: demandeMessage.trim(),
           status: 'pending',
         })
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Erreur Supabase détaillée:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          fullError: error,
+        })
+        
+        // Messages d'erreur plus spécifiques
+        if (error.code === '23505') {
+          // Violation de contrainte unique
+          toast.error('Une demande existe déjà pour ce prestataire')
+        } else if (error.code === '42501') {
+          // Permission refusée (RLS)
+          toast.error('Vous n\'avez pas la permission d\'envoyer cette demande')
+        } else if (error.message) {
+          toast.error(`Erreur: ${error.message}`)
+        } else {
+          toast.error('Erreur lors de l\'envoi de la demande. Veuillez réessayer.')
+        }
+        return
+      }
 
       toast.success('Demande envoyée avec succès !')
       setDemandeMessage('')
@@ -162,8 +211,15 @@ export function ProfilePreviewDialog({
         router.push('/couple/demandes')
       }, 500)
     } catch (error: any) {
-      console.error('Erreur création demande:', error)
-      toast.error(error.message || 'Erreur lors de l\'envoi de la demande')
+      console.error('Erreur création demande:', {
+        error,
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        stack: error?.stack,
+      })
+      toast.error(error?.message || 'Erreur lors de l\'envoi de la demande')
     } finally {
       setIsCreatingDemande(false)
     }
@@ -174,7 +230,7 @@ export function ProfilePreviewDialog({
       {showTriggerButton && (
         <Button
           variant="outline"
-          size="lg"
+          size="default"
           onClick={() => setOpen(true)}
           className="gap-2"
         >
@@ -185,7 +241,7 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent 
-          className="max-w-[95vw] sm:max-w-md max-h-[90vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col"
+          className="max-w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[70vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col"
           showCloseButton={false}
           style={{
             animation: 'none',
@@ -196,7 +252,7 @@ export function ProfilePreviewDialog({
           </DialogTitle>
 
           {/* HEADER FIXE - Sans background */}
-          <div className="relative p-4 md:p-6 pb-4 border-b border-[#6D3478] flex-shrink-0">
+          <div className="relative p-4 md:p-6 border-b border-[#6D3478] flex-shrink-0">
             {/* Close button */}
             <DialogClose asChild>
               <Button
@@ -263,7 +319,7 @@ export function ProfilePreviewDialog({
           </div>
 
           {/* TABS */}
-          <Tabs defaultValue={isCoupleView ? "contact" : "about"} className="flex-1 flex flex-col min-h-0">
+          <Tabs defaultValue={isCoupleView ? "contact" : "about"} className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <TabsList className="w-full rounded-none border-b border-[#6D3478] bg-background flex-shrink-0">
               <TabsTrigger value="about" className="flex-1 text-xs md:text-sm">
                 À propos
@@ -277,10 +333,10 @@ export function ProfilePreviewDialog({
             </TabsList>
 
             {/* CONTENT SCROLLABLE */}
-            <ScrollArea className="flex-1 overflow-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               <div className="p-4 md:p-5">
                 {/* TAB À PROPOS */}
-                <TabsContent value="about" className="mt-0 space-y-6">
+                <TabsContent value="about" className="mt-0 space-y-6 w-full">
                   {/* Description courte */}
                   {profile.description_courte && (
                     <div>
@@ -444,7 +500,7 @@ export function ProfilePreviewDialog({
                 </TabsContent>
 
                 {/* TAB PORTFOLIO */}
-                <TabsContent value="portfolio" className="mt-0">
+                <TabsContent value="portfolio" className="mt-0 w-full">
                   {portfolio && portfolio.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
                       {portfolio.map((image) => (
@@ -490,23 +546,11 @@ export function ProfilePreviewDialog({
                 </TabsContent>
 
                 {/* TAB CONTACT */}
-                <TabsContent value="contact" className="mt-0">
+                <TabsContent value="contact" className="mt-0 w-full">
                   {isCoupleView ? (
-                    <div className="space-y-4">
-                      <div className="text-center mb-6">
-                        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 mb-3">
-                          <Send className="h-6 w-6 text-[#823F91]" />
-                        </div>
-                        <h3 className="text-lg font-bold mb-2">
-                          Envoyer une demande personnalisée
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Partagez votre projet avec {profile.nom_entreprise}
-                        </p>
-                      </div>
-
-                      <Card className="p-5 md:p-6 border-2 border-[#823F91]/20 bg-gradient-to-br from-white to-purple-50/30">
-                        <div className="space-y-5">
+                    <div className="w-full">
+                      <Card className="p-5 md:p-6 border-2 border-[#823F91]/20 bg-gradient-to-br from-white to-purple-50/30 w-full">
+                        <div className="space-y-4">
                           {/* Message */}
                           <div className="space-y-2">
                             <Label htmlFor="demande-message" className="text-sm font-semibold flex items-center gap-2">
@@ -520,9 +564,6 @@ export function ProfilePreviewDialog({
                               onChange={(e) => setDemandeMessage(e.target.value)}
                               className="min-h-[120px] text-sm resize-none border-2 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
                             />
-                            <p className="text-xs text-muted-foreground">
-                              Plus vous êtes détaillé, mieux le prestataire pourra vous répondre
-                            </p>
                           </div>
 
                           {/* Date et Budget */}
@@ -557,39 +598,6 @@ export function ProfilePreviewDialog({
                               />
                             </div>
                           </div>
-
-                          {/* Boutons */}
-                          <div className="flex gap-3 pt-2">
-                            <Button
-                              variant="outline"
-                              className="flex-1 border-2 hover:bg-gray-50"
-                              onClick={() => {
-                                setDemandeMessage('')
-                                setDemandeDate('')
-                                setDemandeBudget('')
-                              }}
-                              disabled={isCreatingDemande}
-                            >
-                              Réinitialiser
-                            </Button>
-                            <Button
-                              className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg hover:shadow-xl transition-all gap-2"
-                              onClick={handleCreateDemande}
-                              disabled={isCreatingDemande || !demandeMessage.trim()}
-                            >
-                              {isCreatingDemande ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                  Envoi en cours...
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="h-4 w-4" />
-                                  Envoyer la demande
-                                </>
-                              )}
-                            </Button>
-                          </div>
                         </div>
                       </Card>
                     </div>
@@ -614,19 +622,44 @@ export function ProfilePreviewDialog({
                   )}
                 </TabsContent>
               </div>
-            </ScrollArea>
+            </div>
           </Tabs>
 
           {/* FOOTER FIXE */}
           <div className="border-t border-[#6D3478] bg-background p-3 md:p-4 flex-shrink-0">
             {isCoupleView ? (
-              <Button
-                variant="outline"
-                className="w-full text-xs md:text-sm h-9 md:h-10 border-2 hover:bg-gray-50"
-                onClick={() => setOpen(false)}
-              >
-                Fermer
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1 text-xs md:text-sm h-9 md:h-10 border-2 hover:bg-gray-50"
+                  onClick={() => {
+                    setDemandeMessage('')
+                    setDemandeDate('')
+                    setDemandeBudget('')
+                    setOpen(false)
+                  }}
+                  disabled={isCreatingDemande}
+                >
+                  Fermer
+                </Button>
+                <Button
+                  className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg hover:shadow-xl transition-all gap-2 text-xs md:text-sm h-9 md:h-10"
+                  onClick={handleCreateDemande}
+                  disabled={isCreatingDemande || !demandeMessage.trim()}
+                >
+                  {isCreatingDemande ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                      Envoi...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Envoyer
+                    </>
+                  )}
+                </Button>
+              </div>
             ) : (
               <div className="flex gap-2 md:gap-3">
                 <Button

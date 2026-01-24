@@ -277,17 +277,27 @@ button, .button, .btn {
   color: hsl(var(--foreground)) !important;
 }
 
-/* Inputs dans les modals - fond blanc et texte sombre avec bordures fines */
+/* Inputs dans les modals - fond blanc et texte sombre avec ombres subtiles */
 [data-slot="dialog-content"] input,
 [data-slot="dialog-content"] textarea,
 [data-slot="dialog-content"] select {
   background-color: white !important;
   color: hsl(var(--foreground)) !important;
-  border-color: hsl(var(--border)) !important;
-  border-width: 1px !important;
+  border-width: 0 !important;
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(130,63,145,0.05) !important;
 }
 
-/* Bordures fines pour tous les inputs et champs de formulaire */
+[data-slot="dialog-content"] input:focus,
+[data-slot="dialog-content"] input:focus-visible,
+[data-slot="dialog-content"] textarea:focus,
+[data-slot="dialog-content"] textarea:focus-visible,
+[data-slot="dialog-content"] select:focus,
+[data-slot="dialog-content"] select:focus-visible {
+  box-shadow: 0 2px 6px rgba(130,63,145,0.15), 0 0 0 2px rgba(130,63,145,0.2) !important;
+}
+
+/* Supprimer toutes les bordures des inputs et champs de formulaire */
 input[type="text"],
 input[type="email"],
 input[type="tel"],
@@ -298,7 +308,6 @@ input[type="time"],
 input[type="password"],
 input[type="search"],
 input[type="url"],
-input[type="url"],
 textarea,
 select,
 input,
@@ -307,27 +316,72 @@ input,
 button[role="combobox"],
 [role="combobox"],
 [data-radix-select-trigger],
-[data-radix-select-trigger] *,
 button[data-radix-select-trigger],
-[data-slot="select-trigger"],
+[data-slot="select-trigger"] {
+  border-width: 0 !important;
+  border: none !important;
+}
+
+/* Focus avec ombres plus prononcées */
+input[type="text"]:focus,
+input[type="text"]:focus-visible,
+input[type="email"]:focus,
+input[type="email"]:focus-visible,
+input[type="tel"]:focus,
+input[type="tel"]:focus-visible,
+input[type="number"]:focus,
+input[type="number"]:focus-visible,
+input[type="date"]:focus,
+input[type="date"]:focus-visible,
+input[type="password"]:focus,
+input[type="password"]:focus-visible,
+input[type="search"]:focus,
+input[type="search"]:focus-visible,
+input[type="url"]:focus,
+input[type="url"]:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+input:focus,
+input:focus-visible,
+[data-slot="input"]:focus,
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus,
+[data-slot="textarea"]:focus-visible,
+button[role="combobox"]:focus,
+button[role="combobox"]:focus-visible,
+[role="combobox"]:focus,
+[role="combobox"]:focus-visible,
+[data-radix-select-trigger]:focus,
+[data-radix-select-trigger]:focus-visible,
+[data-slot="select-trigger"]:focus,
+[data-slot="select-trigger"]:focus-visible {
+  box-shadow: 0 2px 6px rgba(130,63,145,0.15), 0 0 0 2px rgba(130,63,145,0.2) !important;
+  border: none !important;
+}
+
+/* Ombres pour les contenus de dropdowns et selects */
 [data-slot="select-content"],
 .rdp-button,
 .rdp-day,
 .rdp-day_button {
-  border-width: 1px !important;
+  border-width: 0 !important;
+  border: none !important;
 }
 
-/* S'assurer que les composants Select et Popover ont aussi des bordures fines */
+/* S'assurer que les composants Select et Popover n'ont pas de bordures */
 [data-radix-select-trigger],
 [data-radix-popper-content-wrapper] select,
 [data-slot="select-trigger"],
 [data-slot="select-content"],
 [data-radix-popover-trigger],
 [data-radix-popover-content] {
-  border-width: 1px !important;
+  border-width: 0 !important;
+  border: none !important;
 }
 
-/* Forcer les bordures fines même si border-2 ou d'autres classes sont utilisées */
+/* Supprimer les bordures même si border-2 ou d'autres classes sont utilisées */
 .border-2[data-slot="input"],
 .border-2[data-slot="textarea"],
 .border-2[role="combobox"],
@@ -336,7 +390,8 @@ textarea.border-2,
 select.border-2,
 button.border-2[role="combobox"],
 [role="combobox"].border-2 {
-  border-width: 1px !important;
+  border-width: 0 !important;
+  border: none !important;
 }
 
 /* Boutons dans les modals - garder les couleurs d'origine sauf pour les boutons violets */
@@ -725,4 +780,28 @@ nav[class*="fixed"] {
     right: 24px !important;
     bottom: 24px !important;
   }
+}
+
+/* Scrollbar personnalisée pour le calendrier */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #d1b3d9 #f3f4f6;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1b3d9;
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #c19dcc;
 }

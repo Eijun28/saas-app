@@ -37,7 +37,7 @@ export function handleApiError(error: unknown): NextResponse {
     {
       status: apiError.statusCode,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         // Ajouter Retry-After pour les erreurs de rate limit
         ...(apiError.code === 'RATE_LIMIT_EXCEEDED' && apiError.details && typeof apiError.details === 'object' && 'retryAfter' in apiError.details
           ? { 'Retry-After': String(apiError.details.retryAfter) }

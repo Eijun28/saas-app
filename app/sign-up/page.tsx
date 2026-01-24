@@ -94,9 +94,6 @@ export default function SignUpPage() {
     setError(null)
 
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:98',message:'BEFORE signUp call',data:{email:data.email,role:data.role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-      // #endregion
       let result
       try {
         result = await signUp(data.email, data.password, data.role, {
@@ -104,21 +101,12 @@ export default function SignUpPage() {
           nom: data.nom,
           nomEntreprise: data.nomEntreprise,
         })
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:106',message:'AFTER signUp call - SUCCESS',data:{hasResult:!!result,resultType:result ? typeof result : 'null',hasError:result && 'error' in result ? !!result.error : false,hasSuccess:result && 'success' in result ? !!result.success : false,hasRedirectTo:result && 'redirectTo' in result ? !!result.redirectTo : false,resultKeys:result ? Object.keys(result) : [],resultStringified:result ? JSON.stringify(result) : 'null'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
       } catch (signUpError: any) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:109',message:'EXCEPTION in signUp call',data:{errorMessage:signUpError?.message,errorName:signUpError?.name,errorStack:signUpError?.stack?.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         throw signUpError
       }
 
       // Vérifier si result est null ou undefined (réponse inattendue)
       if (!result) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:113',message:'RESULT IS NULL/UNDEFINED',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
         return
       }
@@ -126,17 +114,14 @@ export default function SignUpPage() {
       if (result && 'error' in result && result.error) {
         setError(translateAuthError(result.error))
       } else if (result && 'success' in result && result.success) {
-        // Redirection vers la page spécifiée ou onboarding par défaut
+        // Redirection vers la page spécifiée ou confirmation par défaut
         if ('redirectTo' in result && result.redirectTo) {
           router.push(result.redirectTo)
         } else {
-          router.push('/onboarding')
+          router.push('/auth/confirm')
         }
       } else {
         // Cas où result existe mais n'a ni error ni success
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/sign-up/page.tsx:129',message:'RESULT HAS NO ERROR OR SUCCESS',data:{resultKeys:Object.keys(result),resultValue:JSON.stringify(result)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-        // #endregion
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {
@@ -190,13 +175,13 @@ export default function SignUpPage() {
       </div>
 
       <div 
-        className="min-h-screen flex items-center justify-center px-6 py-24 bg-background relative z-10"
+        className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10"
       >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-full sm:max-w-2xl"
       >
         <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
           {/* Reflets violets */}
@@ -214,9 +199,9 @@ export default function SignUpPage() {
                 Créez votre compte NUPLY
               </CardTitle>
             </motion.div>
-            <CardDescription className="text-base text-neutral-600 max-w-md mx-auto">
+            <CardDescription className="text-sm sm:text-base text-neutral-600 max-w-md mx-auto px-2">
               Rejoignez des milliers de couples qui organisent leur mariage de rêve avec sérénité. 
-              <span className="block mt-1 text-sm text-neutral-500">
+              <span className="block mt-1 text-xs sm:text-sm text-neutral-500">
                 Votre aventure commence ici, en quelques secondes.
               </span>
             </CardDescription>
@@ -229,14 +214,14 @@ export default function SignUpPage() {
               initial="hidden"
               animate="visible"
               onSubmit={handleSubmit(onSubmit)}
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
             >
               {/* Sélection du rôle */}
               <motion.div variants={itemVariants} className="space-y-3">
                 <Label className="text-sm font-medium text-neutral-700 text-center block">
                   Je suis
                 </Label>
-                <div className="flex justify-center gap-3">
+                <div className="flex justify-center gap-2 sm:gap-3">
                   <motion.button
                     type="button"
                     onClick={() => {
@@ -244,7 +229,7 @@ export default function SignUpPage() {
                     }}
                     whileTap={{ scale: 0.97 }}
                     className={cn(
-                      "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                      "px-5 sm:px-6 py-3 sm:py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] min-w-[100px]",
                       selectedRole === 'couple'
                         ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
                         : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -260,7 +245,7 @@ export default function SignUpPage() {
                     }}
                     whileTap={{ scale: 0.97 }}
                     className={cn(
-                      "px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200",
+                      "px-5 sm:px-6 py-3 sm:py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] min-w-[120px]",
                       selectedRole === 'prestataire'
                         ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
                         : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -276,7 +261,7 @@ export default function SignUpPage() {
               </motion.div>
 
               {/* Prénom et Nom */}
-              <motion.div variants={itemVariants} className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+              <motion.div variants={itemVariants} className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <LabelInputContainer className="flex-1">
                   <Label htmlFor="prenom" className="text-sm font-medium text-neutral-700">
                     Prénom <span className="text-red-500">*</span>
@@ -288,7 +273,7 @@ export default function SignUpPage() {
                     required
                     {...register('prenom')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                    className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                   />
                   {errors.prenom && (
                     <p className="text-xs text-red-500 mt-1">{errors.prenom.message}</p>
@@ -306,7 +291,7 @@ export default function SignUpPage() {
                     required
                     {...register('nom')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                    className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                   />
                   {errors.nom && (
                     <p className="text-xs text-red-500 mt-1">{errors.nom.message}</p>
@@ -339,7 +324,7 @@ export default function SignUpPage() {
                       required
                       {...register('nomEntreprise')}
                       disabled={isLoading}
-                      className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                      className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                     />
                     {errors.nomEntreprise && (
                       <p className="text-xs text-red-500 mt-1">{errors.nomEntreprise.message}</p>
@@ -365,7 +350,7 @@ export default function SignUpPage() {
                     required
                     {...register('email')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                    className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                   />
                   {errors.email && (
                     <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
@@ -386,14 +371,14 @@ export default function SignUpPage() {
                     required
                     {...register('password')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                    className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                   />
                   {errors.password && (
                     <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
                   )}
                   {/* Aide pour les prérequis du mot de passe */}
                   {password && (
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-2 space-y-1 hidden sm:block">
                       <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
                       <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
                         <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : ''}`}>
@@ -427,7 +412,7 @@ export default function SignUpPage() {
                     required
                     {...register('confirmPassword')}
                     disabled={isLoading}
-                    className="h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91]"
+                    className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                   />
                   {errors.confirmPassword && (
                     <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Bell } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 
 export const dynamic = 'force-dynamic'
@@ -24,37 +23,10 @@ export default function NotificationsPage() {
     if (!user) return
 
     setLoading(true)
-    const supabase = createClient()
-
-    // Pour l'instant, on récupère les messages non lus comme notifications
-    // À adapter selon votre système de notifications
-    const { data: conversations } = await supabase
-      .from('conversations')
-      .select(`
-        *,
-        messages:messages!inner(
-          id,
-          content,
-          read_at,
-          created_at
-        )
-      `)
-      .eq('couple_id', user.id)
-      .order('last_message_at', { ascending: false })
-      .limit(20)
-
-    if (conversations) {
-      const notifs = conversations
-        .filter((conv: any) => conv.messages?.some((msg: any) => msg.read_at === null))
-        .map((conv: any) => ({
-          id: conv.id,
-          type: 'message',
-          title: 'Nouveau message',
-          content: conv.messages?.[0]?.content || 'Vous avez un nouveau message',
-          date: conv.last_message_at,
-        }))
-      setNotifications(notifs)
-    }
+    
+    // Notifications désactivées temporairement
+    // Les notifications seront réactivées avec un nouveau système
+    setNotifications([])
     
     setLoading(false)
   }
@@ -67,6 +39,7 @@ export default function NotificationsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-2"
         >
+          <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
           <p className="text-[#4A4A4A]">
             Restez informé de toutes vos activités
           </p>
@@ -100,21 +73,9 @@ export default function NotificationsPage() {
                         <Bell className="h-5 w-5 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-[#0D0D0D] mb-1">
-                          {notif.title}
-                        </h3>
-                        <p className="text-sm text-[#4A4A4A] mb-2">
-                          {notif.content}
-                        </p>
-                        <p className="text-xs text-[#4A4A4A]">
-                          {new Date(notif.date).toLocaleString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
+                        <h3 className="font-semibold text-gray-900 mb-1">{notif.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{notif.content}</p>
+                        <p className="text-xs text-gray-400">{new Date(notif.date).toLocaleDateString('fr-FR')}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -127,4 +88,3 @@ export default function NotificationsPage() {
     </div>
   )
 }
-

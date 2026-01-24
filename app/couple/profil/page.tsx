@@ -232,6 +232,8 @@ interface CoupleProfile {
 
   profile_completion?: number
 
+  _timestamp?: number
+
 }
 
 export default function CoupleProfilPage() {
@@ -290,6 +292,69 @@ export default function CoupleProfilPage() {
 
   }, [user, userLoading, router])
 
+  // Fonctions utilitaires pour convertir les données
+  const extractWeddingStyle = (description: string | null): string => {
+    if (!description) return ''
+    const match = description.match(/Style: ([^|]+)/)
+    return match ? match[1].trim() : ''
+  }
+
+  const extractAmbiance = (description: string | null): string => {
+    if (!description) return ''
+    const match = description.match(/Ambiance: ([^|]+)/)
+    return match ? match[1].trim() : ''
+  }
+
+  const extractColorTheme = (description: string | null): string => {
+    if (!description) return ''
+    const match = description.match(/Couleurs: (.+)/)
+    return match ? match[1].trim() : ''
+  }
+
+  const buildWeddingDescription = (style: string, ambiance: string, colors: string): string | null => {
+    const parts: string[] = []
+    if (style) parts.push(`Style: ${style}`)
+    if (ambiance) parts.push(`Ambiance: ${ambiance}`)
+    if (colors) parts.push(`Couleurs: ${colors}`)
+    return parts.length > 0 ? parts.join(' | ') : null
+  }
+
+  const convertServicePrioritiesToArray = (priorities: any): string[] => {
+    if (!priorities || typeof priorities !== 'object') return []
+    return Object.keys(priorities)
+  }
+
+  const convertArrayToServicePriorities = (priorities: string[]): any => {
+    if (!priorities || !Array.isArray(priorities)) return {}
+    const result: any = {}
+    priorities.forEach(service => {
+      result[service] = 'medium' // valeur par défaut
+    })
+    return result
+  }
+
+  const mapOnboardingStepToPlanningStage = (step: number | null): string => {
+    if (step === null || step === undefined) return ''
+    const mapping: Record<number, string> = {
+      0: 'just_engaged',
+      1: 'planning_started',
+      2: 'almost_ready',
+      3: 'last_minute',
+    }
+    return mapping[step] || ''
+  }
+
+  const mapPlanningStageToOnboardingStep = (stage: string | null): number => {
+    if (!stage) return 0
+    const mapping: Record<string, number> = {
+      'just_engaged': 0,
+      'planning_started': 1,
+      'almost_ready': 2,
+      'last_minute': 3,
+    }
+    return mapping[stage] || 0
+  }
+
   const loadProfile = async () => {
 
     if (!user) return
@@ -304,19 +369,23 @@ export default function CoupleProfilPage() {
 
     try {
 
-      const { data, error } = await supabase
+      // Charger couples avec couple_preferences
+      const { data: coupleData, error: coupleError } = await supabase
 
         .from('couples')
 
-        .select('*')
+        .select(`
+          *,
+          preferences:couple_preferences(*)
+        `)
 
         .eq('user_id', user.id)
 
         .single()
 
-      if (error) {
+      if (coupleError) {
 
-        console.error('Erreur chargement profil:', error)
+        console.error('Erreur chargement profil:', coupleError)
 
         toast.error('Erreur lors du chargement du profil')
 
@@ -324,65 +393,68 @@ export default function CoupleProfilPage() {
 
       }
 
-      if (data) {
+      if (coupleData) {
+
+        // Extraire les données depuis couple_preferences
+        const prefs = coupleData.preferences || {} as any
+        const culturalPrefs = (prefs.cultural_preferences || {}) as any
+
+        // Extraire les données depuis wedding_description
+        const weddingDesc = prefs.wedding_description || ''
+        const weddingStyle = extractWeddingStyle(weddingDesc)
+        const ambiance = extractAmbiance(weddingDesc)
+        const colorTheme = extractColorTheme(weddingDesc)
 
         setFormData({
 
-          partner_1_name: data.partner_1_name || '',
+          partner_1_name: coupleData.partner_1_name || '',
 
-          partner_2_name: data.partner_2_name || '',
+          partner_2_name: coupleData.partner_2_name || '',
 
-          email: data.email || '',
+          email: coupleData.email || '',
 
-          wedding_date: data.wedding_date || '',
+          wedding_date: coupleData.wedding_date || '',
 
-          wedding_city: data.wedding_city || '',
+          wedding_city: coupleData.wedding_city || '',
 
-          wedding_region: data.wedding_region || '',
+          wedding_region: coupleData.wedding_region || '',
 
-          wedding_country: data.wedding_country || 'France',
+          wedding_country: coupleData.wedding_country || 'France',
 
-          guest_count: data.guest_count || undefined,
+          guest_count: coupleData.guest_count || undefined,
 
-          wedding_type: data.wedding_type || '',
+          wedding_type: coupleData.wedding_type || '',
 
-          cultures: data.cultures || [],
+          // Données depuis couple_preferences
+          cultures: culturalPrefs.cultures || [],
+          religions: culturalPrefs.religions || [],
+          cultural_requirements: culturalPrefs.cultural_requirements || '',
+          wedding_style: weddingStyle,
+          ambiance: ambiance,
+          color_theme: colorTheme,
+          services_needed: prefs.essential_services || [],
+          service_priorities: convertServicePrioritiesToArray(prefs.service_priorities),
+          budget_flexibility: prefs.budget_breakdown?.flexibility || '',
+          planning_stage: mapOnboardingStepToPlanningStage(prefs.onboarding_step),
+          profile_completion: prefs.completion_percentage || 0,
 
-          religions: data.religions || [],
+          other_services_text: coupleData.other_services_text || '',
 
-          cultural_requirements: data.cultural_requirements || '',
+          budget_min: coupleData.budget_min || undefined,
 
-          wedding_style: data.wedding_style || '',
+          budget_max: coupleData.budget_max || undefined,
 
-          ambiance: data.ambiance || '',
+          budget_total: coupleData.budget_total || undefined,
 
-          color_theme: data.color_theme || '',
-
-          services_needed: data.services_needed || [],
-
-          service_priorities: data.service_priorities || [],
-
-          other_services_text: data.other_services_text || '',
-
-          budget_min: data.budget_min || undefined,
-
-          budget_max: data.budget_max || undefined,
-
-          budget_total: data.budget_total || undefined,
-
-          budget_flexibility: data.budget_flexibility || '',
-
-          planning_stage: data.planning_stage || '',
-
-          profile_completion: data.profile_completion || 0,
+          _timestamp: Date.now(),
 
         })
 
         
 
-        if (data.avatar_url) {
+        if (coupleData.avatar_url) {
 
-          setPhotoUrl(data.avatar_url)
+          setPhotoUrl(coupleData.avatar_url)
 
         }
 
@@ -454,9 +526,8 @@ export default function CoupleProfilPage() {
 
       const completion = calculateCompletion(formData)
 
-      
-
-      const { error } = await supabase
+      // 1. Mettre à jour couples (données de base uniquement)
+      const { error: coupleError } = await supabase
 
         .from('couples')
 
@@ -478,22 +549,6 @@ export default function CoupleProfilPage() {
 
           wedding_type: formData.wedding_type || null,
 
-          cultures: formData.cultures || [],
-
-          religions: formData.religions || [],
-
-          cultural_requirements: formData.cultural_requirements || null,
-
-          wedding_style: formData.wedding_style || null,
-
-          ambiance: formData.ambiance || null,
-
-          color_theme: formData.color_theme || null,
-
-          services_needed: formData.services_needed || [],
-
-          service_priorities: formData.service_priorities || [],
-
           other_services_text: formData.other_services_text || null,
 
           budget_min: formData.budget_min || null,
@@ -502,21 +557,15 @@ export default function CoupleProfilPage() {
 
           budget_total: formData.budget_total || null,
 
-          budget_flexibility: formData.budget_flexibility || null,
-
-          planning_stage: formData.planning_stage || null,
-
-          profile_completion: completion,
-
           updated_at: new Date().toISOString(),
 
         })
 
         .eq('user_id', user.id)
 
-      if (error) {
+      if (coupleError) {
 
-        console.error('Erreur sauvegarde:', error)
+        console.error('Erreur sauvegarde couple:', coupleError)
 
         toast.error('Erreur lors de la sauvegarde')
 
@@ -524,10 +573,98 @@ export default function CoupleProfilPage() {
 
       }
 
+      // 2. Préparer les données pour couple_preferences
+      const culturalPrefs = {
+        cultures: formData.cultures || [],
+        religions: formData.religions || [],
+        cultural_requirements: formData.cultural_requirements || null,
+        religious_ceremony: formData.religions?.[0] || null,
+      }
+
+      const weddingDesc = buildWeddingDescription(
+        formData.wedding_style || '',
+        formData.ambiance || '',
+        formData.color_theme || ''
+      )
+
+      const servicePriorities = convertArrayToServicePriorities(formData.service_priorities || [])
+
+      const budgetBreakdown = {
+        flexibility: formData.budget_flexibility || null,
+        total: {
+          min: formData.budget_min || 0,
+          max: formData.budget_max || 0,
+        }
+      }
+
+      // Récupérer le couple_id
+      const { data: couple } = await supabase
+        .from('couples')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!couple) {
+        toast.error('Couple introuvable')
+        return
+      }
+
+      // Vérifier si couple_preferences existe
+      const { data: existingPrefs } = await supabase
+        .from('couple_preferences')
+        .select('id')
+        .eq('couple_id', couple.id)
+        .single()
+
+      if (existingPrefs) {
+        // Mettre à jour couple_preferences
+        const { error: prefsError } = await supabase
+          .from('couple_preferences')
+          .update({
+            cultural_preferences: culturalPrefs,
+            essential_services: formData.services_needed || [],
+            service_priorities: servicePriorities,
+            wedding_description: weddingDesc,
+            budget_breakdown: budgetBreakdown,
+            completion_percentage: completion,
+            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null),
+            profile_completed: completion >= 80,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('couple_id', couple.id)
+
+        if (prefsError) {
+          console.error('Erreur sauvegarde préférences:', prefsError)
+          toast.error('Erreur lors de la sauvegarde des préférences')
+          return
+        }
+      } else {
+        // Créer couple_preferences
+        const { error: prefsError } = await supabase
+          .from('couple_preferences')
+          .insert({
+            couple_id: couple.id,
+            cultural_preferences: culturalPrefs,
+            essential_services: formData.services_needed || [],
+            service_priorities: servicePriorities,
+            wedding_description: weddingDesc,
+            budget_breakdown: budgetBreakdown,
+            completion_percentage: completion,
+            onboarding_step: mapPlanningStageToOnboardingStep(formData.planning_stage || null),
+            profile_completed: completion >= 80,
+          })
+
+        if (prefsError) {
+          console.error('Erreur création préférences:', prefsError)
+          toast.error('Erreur lors de la création des préférences')
+          return
+        }
+      }
+
       toast.success('Profil mis à jour avec succès')
 
-      // Attendre suffisamment longtemps pour s'assurer que la transaction DB est commitée
-      await new Promise(resolve => setTimeout(resolve, 600))
+      // ✅ FIX: Augmenter délai à 1500ms au lieu de 600ms
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
       // Recharger le profil depuis la DB
       loadProfile()
@@ -800,8 +937,7 @@ export default function CoupleProfilPage() {
 
                       onAvatarUpdate={(url) => {
 
-                        setPhotoUrl(url)
-
+                        // ✅ Juste recharger depuis la DB
                         loadProfile()
 
                       }}

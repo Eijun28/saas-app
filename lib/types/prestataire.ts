@@ -1,3 +1,5 @@
+import type { Attachment } from '@/types/messages'
+
 // Types de base
 export interface Prestataire {
   id: string
@@ -61,6 +63,7 @@ export interface Message {
   contenu: string
   created_at: string
   lu: boolean
+  attachments?: Attachment[]
 }
 
 export interface Stats {

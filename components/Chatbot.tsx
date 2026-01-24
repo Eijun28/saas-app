@@ -11,8 +11,10 @@ import {
   getConversationStats,
   type Message,
 } from '@/lib/supabase/conversations';
+import { getCurrentCoupleProfile } from '@/lib/supabase/queries/couples.queries';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { ChatMessage as ChatbotChatMessage } from '@/types/chatbot';
 
 
 interface ChatMessage extends Message {
@@ -29,6 +31,8 @@ export default function Chatbot() {
   const [sessionId, setSessionId] = useState('');
   const [isOnline, setIsOnline] = useState(true);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'pending' | 'offline'>('synced');
+  const [serviceType, setServiceType] = useState<string | null>(null);
+  const [coupleProfile, setCoupleProfile] = useState<any>(null);
   const isMobile = useIsMobile();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,6 +46,9 @@ export default function Chatbot() {
     
     // Charger historique
     loadHistory(session);
+    
+    // Charger le profil couple si disponible
+    loadCoupleProfile();
     
     // Détecter online/offline
     const handleOnline = () => setIsOnline(true);
@@ -65,6 +72,25 @@ export default function Chatbot() {
       }
     };
   }, []);
+
+  const loadCoupleProfile = async () => {
+    try {
+      const profile = await getCurrentCoupleProfile();
+      if (profile) {
+        setCoupleProfile({
+          cultures: [], // Les cultures sont stockées comme IDs dans preferences, pas directement accessibles
+          wedding_date: profile.wedding_date,
+          wedding_location: profile.wedding_location || null,
+          budget_min: profile.budget_min,
+          budget_max: profile.budget_max,
+          guest_count: profile.guest_count,
+        });
+      }
+    } catch (error) {
+      // L'utilisateur n'est peut-être pas connecté ou n'est pas un couple
+      console.log('Profil couple non disponible');
+    }
+  };
   
   
   useEffect(() => {
@@ -178,12 +204,27 @@ export default function Chatbot() {
         setSyncStatus('pending');
       }
       
+      // Convertir les messages au format attendu par l'API
+      const apiMessages: ChatbotChatMessage[] = messages.map(msg => ({
+        role: msg.role === 'assistant' ? 'bot' : 'user',
+        content: msg.content,
+        timestamp: msg.timestamp.toISOString(),
+      }));
+      
+      // Ajouter le nouveau message
+      apiMessages.push({
+        role: 'user',
+        content: messageContent,
+        timestamp: new Date().toISOString(),
+      });
+      
       const response = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: messageContent,
-          sessionId,
+          messages: apiMessages,
+          service_type: serviceType || 'non spécifié',
+          couple_profile: coupleProfile,
         }),
       });
       
@@ -197,10 +238,18 @@ export default function Chatbot() {
         throw new Error(data.error);
       }
       
+      // La nouvelle API retourne { message, extracted_data, next_action }
+      const botResponse = data.message || data.response || "Désolé, je n'ai pas pu générer de réponse.";
+      
+      // Mettre à jour le service_type si extrait des données
+      if (data.extracted_data?.service_type && !serviceType) {
+        setServiceType(data.extracted_data.service_type);
+      }
+      
       const assistantMessage: ChatMessage = {
         session_id: sessionId,
         role: 'assistant',
-        content: data.response,
+        content: botResponse,
         timestamp: new Date(),
         synced: false,
       };
@@ -210,7 +259,7 @@ export default function Chatbot() {
       const assistantSaveResult = await saveMessage({
         session_id: sessionId,
         role: 'assistant',
-        content: data.response,
+        content: botResponse,
       });
       
       // Mettre à jour statut sync
@@ -218,7 +267,7 @@ export default function Chatbot() {
         setSyncStatus('synced');
         setMessages(prev =>
           prev.map(msg =>
-            msg.content === data.response && msg.role === 'assistant'
+            msg.content === botResponse && msg.role === 'assistant'
               ? { ...msg, synced: true }
               : msg
           )

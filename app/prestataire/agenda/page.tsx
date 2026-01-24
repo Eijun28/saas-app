@@ -7,12 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -366,6 +366,36 @@ export default function AgendaPage() {
     }
   }
 
+  const handleCalendarEventUpdate = async (event: CalendarEvent) => {
+    setIsSubmitting(true)
+    try {
+      const supabase = createClient()
+      
+      const { error } = await supabase
+        .from('evenements_prestataire')
+        .update({
+          titre: event.title,
+          date: event.date,
+          heure_debut: event.time || '09:00',
+          heure_fin: null,
+          lieu: null,
+          notes: event.description || null,
+        })
+        .eq('id', event.id)
+        .eq('prestataire_id', user?.id)
+
+      if (error) throw error
+
+      await loadEvenements()
+      toast.success('Événement modifié avec succès')
+    } catch (error: any) {
+      console.error('Erreur mise à jour événement:', error)
+      toast.error(`Erreur lors de la modification: ${error?.message || 'Erreur inconnue'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleDeleteEvent = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
 
@@ -392,56 +422,51 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="space-y-8">
+    <div className="h-[calc(100vh-80px)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-2">Agenda</h1>
-          <p className="text-[#823F91]/70 text-lg">
-            Gérez votre disponibilité et vos événements
-          </p>
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-6"
+      >
+        <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 text-center">
+          Agenda
+        </h1>
+        <p className="text-[#823F91]/70 text-sm sm:text-base text-center">
+          Gérez votre disponibilité et vos événements
+        </p>
+      </motion.div>
 
-      {/* Calendrier */}
+      {/* Calendrier plein écran */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="mb-8"
+        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
       >
         <CalendarDashboard
           events={calendarEvents}
           onEventCreate={handleCalendarEventCreate}
+          onEventUpdate={handleCalendarEventUpdate}
+          onEventDelete={handleDeleteEvent}
           showTime={true}
           loading={loading}
+          defaultView="week"
+          eventColor={(event) => {
+            // Couleurs selon le status pour prestataire
+            if (event.status === 'confirmed') return 'bg-green-500'
+            if (event.status === 'pending') return 'bg-yellow-500'
+            return 'bg-[#823F91]'
+          }}
         />
       </motion.div>
 
-      {/* Bouton Ajouter */}
-      <div className="flex justify-end mb-8">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg shadow-[#823F91]/30 gap-2 transition-all duration-300"
-              onClick={() => {
-                form.reset()
-                if (selectedDate) {
-                  form.setValue('date', selectedDate)
-                }
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter un événement
-            </Button>
-          </DialogTrigger>
-          <DialogContent size="sm" className="sm:max-w-[450px]">
+      {/* Dialog de création d'événement */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
             <DialogHeader>
-              <DialogTitle>Créer un événement</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">Créer un événement</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <motion.form
@@ -582,115 +607,10 @@ export default function AgendaPage() {
             </Form>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Liste des événements */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <Card className="border-[#823F91]/20 bg-background">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
-              <CalendarIcon className="h-5 w-5 text-[#823F91]" />
-              Événements à venir
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20">
-                    <Skeleton className="h-16 w-16 rounded-xl" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : evenements.length === 0 ? (
-              <EmptyState
-                icon={CalendarIcon}
-                title="Aucun événement à venir"
-                description="Vos événements confirmés et en attente apparaîtront ici"
-                action={{
-                  label: "Ajouter un événement",
-                  onClick: () => setIsDialogOpen(true)
-                }}
-              />
-            ) : (
-              <div className="space-y-3">
-                {evenements.map((event, index) => (
-                  <motion.div
-                    key={event.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    whileHover={{ x: 4 }}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-[#823F91]/20 bg-background hover:bg-[#823F91]/5 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#823F91]/20"
-                    onClick={() => handleEditEvent(event)}
-                  >
-                    <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex flex-col items-center justify-center text-white flex-shrink-0 shadow-lg shadow-[#823F91]/30">
-                      <span className="text-2xl font-bold">
-                        {event.date.getDate()}
-                      </span>
-                      <span className="text-xs uppercase">
-                        {event.date.toLocaleDateString('fr-FR', { month: 'short' })}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">
-                        {event.titre}
-                      </h4>
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {event.heure_debut}
-                          {event.heure_fin && ` - ${event.heure_fin}`}
-                        </span>
-                        {event.lieu && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {event.lieu}
-                          </span>
-                        )}
-                      </div>
-                      {event.notes && (
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
-                          {event.notes}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditEvent(event)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDeleteEvent(event.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Dialog Modifier */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent size="sm" className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-[450px] max-w-[calc(100vw-2rem)]">
           <DialogHeader>
             <DialogTitle>Modifier l'événement</DialogTitle>
           </DialogHeader>

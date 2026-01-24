@@ -1,69 +1,72 @@
-// /lib/matching/types.ts
+import type { SearchCriteria } from './chatbot';
 
-export interface SearchCriteria {
-  category: string;
-  wedding_date?: string; // ISO format
-  location: {
-    city: string;
-    region?: string;
+export interface MatchingRequest {
+  couple_id: string;
+  conversation_id?: string;
+  search_criteria: SearchCriteria;
+}
+
+export interface ProviderMatch {
+  provider_id: string;
+  provider: {
+    id: string;
+    nom_entreprise: string;
+    avatar_url?: string;
+    bio?: string;
+    description_courte?: string;
+    service_type: string;
+    budget_min?: number;
+    budget_max?: number;
+    ville_principale?: string;
+    annees_experience?: number;
+    languages?: string[];
+    cultures?: string[];
+    zones?: string[];
+    average_rating?: number;
+    review_count?: number;
+    response_rate?: number;
+    portfolio_count?: number;
   };
-  budget?: number;
-  guest_count?: number;
-  cultures: string[];
-  religions: string[];
-  dietary_requirements: string[];
-  style_preferences: string[];
+  score: number;
+  rank: number;
+  breakdown: ScoreBreakdown;
+  explanation: string;
 }
 
-export interface Provider {
-  id: string;
-  business_name: string;
-  category: string;
+export interface ScoreBreakdown {
+  // Scores algorithmiques (base /90)
+  cultural_match: number; // /30
+  budget_match: number; // /20
+  reputation: number; // /20
+  experience: number; // /10
+  location_match: number; // /10
   
-  // Localisation
-  service_locations: string[];
-  max_travel_distance_km: number;
+  // Bonus IA (futur)
+  ai_bonus?: number; // -10 à +10
+  ai_reasoning?: string;
   
-  // Prix
-  price_min: number;
-  price_avg: number;
-  price_max: number;
-  
-  // Capacité
-  guest_capacity_min: number;
-  guest_capacity_max: number;
-  
-  // Expertise
-  cultural_specialties: string[];
-  languages_spoken: string[];
-  ceremony_types: string[];
-  service_styles: string[];
-  dietary_accommodations: string[];
-  
-  // Disponibilité
-  blocked_dates: string[];
-  minimum_notice_days: number;
-  
-  // Réputation
-  average_rating: number;
-  review_count: number;
-  response_rate: number;
-  
-  // Metadata
-  portfolio_image_url?: string;
-  past_cultural_work: string[];
-  subscription_level: 'free' | 'basic' | 'premium' | 'enterprise';
+  // Total
+  total_algo: number; // /90
+  final_score: number; // /100
 }
 
-export interface MatchResult {
-  provider: Provider;
-  score: number; // 0-100
-  rank: number; // 1, 2, 3...
-  explanation: string; // "Expertise franco-algérienne • Budget adapté"
-  details: {
-    cultural_match: number;
-    budget_match: number;
-    location_match: number;
-    reputation: number;
+export interface MatchingResult {
+  conversation_id?: string;
+  search_criteria: SearchCriteria;
+  matches: ProviderMatch[];
+  all_matches?: ProviderMatch[]; // Tous les résultats pour pagination future
+  total_candidates: number;
+  created_at: string;
+  suggestions?: {
+    message: string;
+    alternative_providers?: Array<{
+      id: string;
+      nom_entreprise: string;
+      service_type: string;
+      budget_min?: number;
+      budget_max?: number;
+    }>;
+    total_providers_for_service: number;
+    service_type: string;
   };
 }

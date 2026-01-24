@@ -191,15 +191,15 @@ export async function updateWeddingInfo(weddingData: {
 
     // Vérifier si le profil couple existe
     const { data: existing } = await supabase
-      .from('couple_profiles')
-      .select('user_id')
+      .from('couples')
+      .select('id')
       .eq('user_id', user.id)
       .single()
 
     if (existing) {
       // Mise à jour
       const { error } = await supabase
-        .from('couple_profiles')
+        .from('couples')
         .update(updateData)
         .eq('user_id', user.id)
 
@@ -210,9 +210,11 @@ export async function updateWeddingInfo(weddingData: {
     } else {
       // Création
       const { error } = await supabase
-        .from('couple_profiles')
+        .from('couples')
         .insert({
+          id: crypto.randomUUID(),
           user_id: user.id,
+          email: user.email || '',
           ...updateData,
         })
 
@@ -256,17 +258,13 @@ export async function getProfileData() {
 
     // Récupérer le profil couple
     const { data: coupleProfile, error: coupleError } = await supabase
-      .from('couple_profiles')
+      .from('couples')
       .select('*')
       .eq('user_id', user.id)
       .single()
 
-    // Récupérer le budget
-    const { data: budget } = await supabase
-      .from('couple_budgets')
-      .select('budget_max')
-      .eq('user_id', user.id)
-      .single()
+    // Récupérer le budget depuis couples (budget_max ou budget_total)
+    const budgetMax = coupleProfile?.budget_max || coupleProfile?.budget_total || null
 
     return {
       profile: {
@@ -274,7 +272,7 @@ export async function getProfileData() {
         email: user.email,
       },
       coupleProfile: coupleProfile || null,
-      budgetMax: budget?.budget_max || null,
+      budgetMax: budgetMax,
     }
   } catch (error) {
     console.error('Error in getProfileData:', error)

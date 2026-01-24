@@ -1,212 +1,109 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { 
-  FileText, 
-  Heart, 
-  Send,
-  Loader2,
-  Euro,
-  Calendar,
-  Users,
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  ArrowRight
-} from 'lucide-react'
-import { useUser } from '@/hooks/use-user'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { toast } from 'sonner'
+import { Send, UserRound } from 'lucide-react'
+import { useUser } from '@/hooks/use-user'
 
-// Types adaptés à ta structure profiles
-interface Demande {
+type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
+
+type RequestRow = {
   id: string
   couple_id: string
-  prestataire_id?: string
-  provider_id?: string // Alias pour compatibilité
-  service_type?: string
-  type_prestation?: string // Nom réel dans la DB
-  message?: string
-  date_mariage?: string // Nom réel dans la DB
-  wedding_date?: string // Alias pour compatibilité
-  guest_count?: number
-  budget_min?: number
-  budget_max?: number
-  budget_indicatif?: number
-  location?: string
-  status: 'new' | 'in-progress' | 'accepted' | 'rejected' | 'completed' | 'pending' | 'viewed' | 'responded'
+  provider_id: string
+  status: RequestStatus
+  initial_message: string
   created_at: string
-  updated_at: string
-  viewed_at?: string
-  responded_at?: string
-  provider?: {
-    nom_entreprise: string
-    service_type: string
-    avatar_url?: string
-    prenom?: string
-    nom?: string
-  }
+  cancelled_at: string | null
+  responded_at: string | null
+  type_prestation?: string | null
+  wedding_date?: string | null
+  date_mariage?: string | null
 }
 
-interface Devis {
+type ProviderProfile = {
+  id: string
+  user_id?: string
+  prenom: string | null
+  nom: string | null
+  nom_entreprise: string | null
+  avatar_url: string | null
+  service_type: string | null
+  type_prestation?: string | null
+}
+
+type DevisRow = {
   id: string
   demande_id: string
-  provider_id: string
+  prestataire_id: string
+  provider_id?: string
   couple_id: string
-  title: string
-  description?: string
   amount: number
-  currency: string
-  included_services?: string[]
-  excluded_services?: string[]
-  conditions?: string
-  valid_until?: string
-  status: 'pending' | 'accepted' | 'rejected' | 'negotiating' | 'expired'
-  attachment_url?: string
+  details: string
+  validity_date?: string | null
+  status: 'pending' | 'accepted' | 'rejected' | 'negotiating'
   created_at: string
   updated_at: string
-  viewed_at?: string
-  accepted_at?: string
-  rejected_at?: string
-  provider?: {
-    nom_entreprise: string
-    service_type: string
-    avatar_url?: string
-  }
-  demande?: {
-    service_type: string
-    wedding_date?: string
-    message: string
-  }
+  type_prestation?: string | null
 }
 
-interface Favori {
+type FavoriRow = {
   id: string
   couple_id: string
-  prestataire_id?: string
-  provider_id?: string // Alias pour compatibilité
+  prestataire_id: string
+  provider_id?: string
   created_at: string
-  provider?: {
-    nom_entreprise: string
-    service_type: string
-    avatar_url?: string
-    ville_principale?: string
-    description_courte?: string
-  }
+  type_prestation?: string | null
 }
 
-const DEMANDE_STATUS_LABELS: Record<string, string> = {
+const STATUS_LABEL: Record<RequestStatus, string> = {
   pending: 'En attente',
-  viewed: 'Vue',
-  responded: 'Répondu',
   accepted: 'Acceptée',
   rejected: 'Refusée',
+  cancelled: 'Annulée',
 }
 
-const DEMANDE_STATUS_COLORS: Record<string, string> = {
-  pending: 'text-amber-50 border-transparent',
-  viewed: 'bg-blue-100 text-blue-800',
-  responded: 'bg-purple-100 text-purple-800',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+const STATUS_BADGE_CLASS: Record<RequestStatus, string> = {
+  pending: 'bg-amber-100 text-amber-800 border-amber-200',
+  accepted: 'bg-green-100 text-green-800 border-green-200',
+  rejected: 'bg-red-100 text-red-800 border-red-200',
+  cancelled: 'bg-gray-100 text-gray-800 border-gray-200',
 }
 
-const DEVIS_STATUS_LABELS: Record<string, string> = {
-  pending: 'En attente',
-  accepted: 'Accepté',
-  rejected: 'Refusé',
-  negotiating: 'En négociation',
-  expired: 'Expiré',
-}
-
-const DEVIS_STATUS_COLORS: Record<string, string> = {
-  pending: 'text-amber-50 border-transparent',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-  negotiating: 'bg-blue-100 text-blue-800',
-  expired: 'bg-gray-100 text-gray-800',
-}
-
-const getBadgeStyle = (status: string) => {
-  if (status === 'pending') {
-    return { backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }
-  }
-  return {}
-}
-
-const formatAmount = (amount: number, currency: string = 'EUR'): string => {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency,
-  }).format(amount)
-}
-
-const isDevisExpired = (devis: Devis): boolean => {
-  if (!devis.valid_until) return false
-  return new Date(devis.valid_until) < new Date()
-}
-
-const getDaysUntilExpiration = (validUntil: string): number => {
-  const today = new Date()
-  const expirationDate = new Date(validUntil)
-  const diffTime = expirationDate.getTime() - today.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays
+function getProviderDisplayName(p?: ProviderProfile): string {
+  if (!p) return 'Prestataire'
+  if (p.nom_entreprise) return p.nom_entreprise
+  const full = [p.prenom, p.nom].filter(Boolean).join(' ').trim()
+  return full || 'Prestataire'
 }
 
 export default function DemandesPage() {
-  const router = useRouter()
-  const { user, loading: userLoading } = useUser()
+  const { user } = useUser()
+  const [demandes, setDemandes] = useState<RequestRow[]>([])
+  const [devis, setDevis] = useState<DevisRow[]>([])
+  const [favoris, setFavoris] = useState<FavoriRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('demandes')
-  
-  const [demandes, setDemandes] = useState<Demande[]>([])
-  const [devis, setDevis] = useState<Devis[]>([])
-  const [favoris, setFavoris] = useState<Favori[]>([])
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.push('/sign-in')
-      return
-    }
-    if (user) {
-      loadAllData()
-    }
-  }, [user, userLoading, router])
-
-  const loadAllData = async () => {
-    setLoading(true)
-    await Promise.all([
-      loadDemandes(),
-      loadDevis(),
-      loadFavoris()
-    ])
-    setLoading(false)
-  }
-
-  const loadDemandes = async () => {
-    if (!user) return
+  // Fonction optimisée pour charger les demandes
+  async function loadDemandes() {
+    if (!user?.id) return
 
     const supabase = createClient()
     
-    // Charger les demandes
-    const { data: demandesData, error } = await supabase
-      .from('demandes')
-      .select('*')
+    // Récupérer toutes les demandes en une seule requête
+    const { data: demandesData, error: demandesError } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at, type_prestation, wedding_date, date_mariage')
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Erreur chargement demandes:', error)
-      toast.error('Erreur lors du chargement des demandes')
+    if (demandesError) {
+      console.error('Erreur chargement demandes:', demandesError)
+      setError(`Erreur: ${demandesError.message}`)
       return
     }
 
@@ -215,66 +112,75 @@ export default function DemandesPage() {
       return
     }
 
-    // Charger les profils prestataires et profiles pour chaque demande
-    const transformedData: Demande[] = await Promise.all(
-      demandesData.map(async (demande) => {
-        const prestataireId = demande.provider_id || demande.prestataire_id
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      demandesData.map(d => d.provider_id || (d as any).prestataire_id).filter(Boolean)
+    )]
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
+    if (prestataireIds.length === 0) {
+      setDemandes(demandesData as RequestRow[])
+      return
+    }
 
-        // Charger le profil de base pour l'avatar et le nom
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url, prenom, nom')
-          .eq('id', prestataireId)
-          .single()
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
 
-        return {
-          ...demande,
-          provider_id: prestataireId, // Alias pour compatibilité
-          service_type: prestataireProfile?.type_prestation || demande.type_prestation, // Alias pour compatibilité
-          wedding_date: demande.wedding_date || demande.date_mariage, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            prenom: profile?.prenom,
-            nom: profile?.nom
-          } : undefined
-        }
-      })
-    )
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
 
-    setDemandes(transformedData)
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
+    // Transformer les données avec les informations des prestataires
+    const transformedData = demandesData.map(demande => {
+      const prestataireId = demande.provider_id || (demande as any).prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...demande,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || demande.type_prestation || null,
+        wedding_date: demande.wedding_date || demande.date_mariage || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as RequestRow & { prestataire?: ProviderProfile }
+    })
+
+    setDemandes(transformedData as RequestRow[])
   }
 
-  const loadDevis = async () => {
-    if (!user) return
+  // Fonction optimisée pour charger les devis
+  async function loadDevis() {
+    if (!user?.id) return
 
     const supabase = createClient()
     
-    // Note: Si la table devis n'existe pas encore, cette requête échouera
-    // On gère l'erreur gracieusement
-    const { data: devisData, error } = await supabase
+    // Récupérer tous les devis en une seule requête
+    const { data: devisData, error: devisError } = await supabase
       .from('devis')
-      .select('*')
+      .select('id, demande_id, prestataire_id, provider_id, couple_id, amount, details, validity_date, status, created_at, updated_at, type_prestation')
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      // Si la table n'existe pas, on retourne un tableau vide
-      if (error.code === '42P01' || error.message.includes('does not exist')) {
-        console.warn('Table devis n\'existe pas encore')
-        setDevis([])
-        return
+    if (devisError) {
+      console.error('Erreur chargement devis:', devisError)
+      // Ne pas bloquer si la table devis n'existe pas encore
+      if (devisError.code !== '42P01') {
+        setError(`Erreur devis: ${devisError.message}`)
       }
-      console.error('Erreur chargement devis:', error)
-      toast.error('Erreur lors du chargement des devis')
       return
     }
 
@@ -283,70 +189,74 @@ export default function DemandesPage() {
       return
     }
 
-    // Charger les profils prestataires et demandes pour chaque devis
-    const transformedData: Devis[] = await Promise.all(
-      devisData.map(async (devis) => {
-        const prestataireId = devis.prestataire_id || devis.provider_id
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      devisData.map(d => d.provider_id || d.prestataire_id).filter(Boolean)
+    )]
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation')
-          .eq('user_id', prestataireId)
-          .single()
+    if (prestataireIds.length === 0) {
+      setDevis(devisData as DevisRow[])
+      return
+    }
 
-        // Charger le profil de base pour l'avatar
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', prestataireId)
-          .single()
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
 
-        // Charger la demande associée si elle existe
-        let demandeData = null
-        if (devis.demande_id) {
-          const { data: demande } = await supabase
-            .from('demandes')
-            .select('service_type, wedding_date, message')
-            .eq('id', devis.demande_id)
-            .single()
-          demandeData = demande
-        }
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
 
-        return {
-          ...devis,
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url
-          } : undefined,
-          demande: demandeData ? {
-            service_type: demandeData.service_type || '',
-            wedding_date: demandeData.wedding_date,
-            message: demandeData.message
-          } : undefined
-        }
-      })
-    )
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
 
-    setDevis(transformedData)
+    // Transformer les données avec les informations des prestataires
+    const transformedData = devisData.map(devis => {
+      const prestataireId = devis.provider_id || devis.prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...devis,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || devis.type_prestation || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as DevisRow & { prestataire?: ProviderProfile }
+    })
+
+    setDevis(transformedData as DevisRow[])
   }
 
-  const loadFavoris = async () => {
-    if (!user) return
+  // Fonction optimisée pour charger les favoris
+  async function loadFavoris() {
+    if (!user?.id) return
 
     const supabase = createClient()
     
-    // Charger les favoris
-    const { data: favorisData, error } = await supabase
+    // Récupérer tous les favoris en une seule requête
+    const { data: favorisData, error: favorisError } = await supabase
       .from('favoris')
-      .select('*')
+      .select('id, couple_id, prestataire_id, provider_id, created_at, type_prestation')
       .eq('couple_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Erreur chargement favoris:', error)
-      toast.error('Erreur lors du chargement des favoris')
+    if (favorisError) {
+      console.error('Erreur chargement favoris:', favorisError)
+      // Ne pas bloquer si la table favoris n'existe pas encore
+      if (favorisError.code !== '42P01') {
+        setError(`Erreur favoris: ${favorisError.message}`)
+      }
       return
     }
 
@@ -355,463 +265,207 @@ export default function DemandesPage() {
       return
     }
 
-    // Charger les profils prestataires et profiles pour chaque favori
-    const transformedData: Favori[] = await Promise.all(
-      favorisData.map(async (favori) => {
-        const prestataireId = favori.prestataire_id
+    // Extraire tous les IDs de prestataires uniques
+    const prestataireIds = [...new Set(
+      favorisData.map(f => f.provider_id || f.prestataire_id).filter(Boolean)
+    )]
 
-        // Charger le profil prestataire
-        const { data: prestataireProfile } = await supabase
-          .from('prestataire_profiles')
-          .select('nom_entreprise, type_prestation, ville_exercice')
-          .eq('user_id', prestataireId)
-          .single()
-
-        // Charger le profil de base pour l'avatar
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', prestataireId)
-          .single()
-
-        return {
-          ...favori,
-          provider_id: prestataireId, // Alias pour compatibilité
-          provider: prestataireProfile ? {
-            nom_entreprise: prestataireProfile.nom_entreprise || '',
-            service_type: prestataireProfile.type_prestation || '',
-            avatar_url: profile?.avatar_url,
-            ville_principale: prestataireProfile.ville_exercice,
-            description_courte: undefined
-          } : undefined
-        }
-      })
-    )
-
-    setFavoris(transformedData)
-  }
-
-  const handleRemoveFavori = async (favoriId: string) => {
-    if (!user) return
-
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('favoris')
-      .delete()
-      .eq('id', favoriId)
-
-    if (error) {
-      console.error('Erreur suppression favori:', error)
-      toast.error('Erreur lors de la suppression')
+    if (prestataireIds.length === 0) {
+      setFavoris(favorisData as FavoriRow[])
       return
     }
 
-    toast.success('Retiré des favoris')
-    loadFavoris()
+    // Charger tous les profils prestataires en une seule requête
+    const { data: prestataireProfiles } = await supabase
+      .from('prestataire_profiles')
+      .select('user_id, nom_entreprise, type_prestation')
+      .in('user_id', prestataireIds)
+
+    // Charger tous les profils utilisateurs en une seule requête
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, avatar_url, prenom, nom')
+      .in('id', prestataireIds)
+
+    // Créer des Maps pour accès rapide
+    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+
+    // Transformer les données avec les informations des prestataires
+    const transformedData = favorisData.map(favori => {
+      const prestataireId = favori.provider_id || favori.prestataire_id
+      const prestataireProfile = prestataireMap.get(prestataireId)
+      const profile = profileMap.get(prestataireId)
+
+      return {
+        ...favori,
+        provider_id: prestataireId,
+        service_type: prestataireProfile?.type_prestation || favori.type_prestation || null,
+        prestataire: prestataireProfile ? {
+          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          service_type: prestataireProfile.type_prestation || '',
+          avatar_url: profile?.avatar_url || null,
+          prenom: profile?.prenom || null,
+          nom: profile?.nom || null,
+        } : undefined
+      } as FavoriRow & { prestataire?: ProviderProfile }
+    })
+
+    setFavoris(transformedData as FavoriRow[])
   }
 
-  const handleAcceptDevis = async (devisId: string) => {
-    if (!user) return
+  // Charger toutes les données au montage
+  useEffect(() => {
+    if (user?.id) {
+      setLoading(true)
+      Promise.all([
+        loadDemandes(),
+        loadDevis(),
+        loadFavoris()
+      ]).finally(() => {
+        setLoading(false)
+      })
+    }
+  }, [user?.id])
+
+  async function cancelRequest(requestId: string) {
+    if (!user?.id) return
 
     const supabase = createClient()
+    
+    // RLS + trigger garantissent la sécurité (pending only)
     const { error } = await supabase
-      .from('devis')
-      .update({ 
-        status: 'accepted',
-        accepted_at: new Date().toISOString()
-      })
-      .eq('id', devisId)
+      .from('requests')
+      .update({ status: 'cancelled' })
+      .eq('id', requestId)
+      .eq('couple_id', user.id)
+      .eq('status', 'pending')
 
     if (error) {
-      console.error('Erreur acceptation devis:', error)
-      toast.error('Erreur lors de l\'acceptation')
+      console.error('Erreur annulation demande:', error)
+      setError(`Erreur: ${error.message}`)
       return
     }
 
-    toast.success('Devis accepté !')
-    loadDevis()
+    // Recharger les demandes
+    await loadDemandes()
   }
 
-  const handleRejectDevis = async (devisId: string) => {
-    if (!user) return
-
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('devis')
-      .update({ 
-        status: 'rejected',
-        rejected_at: new Date().toISOString()
-      })
-      .eq('id', devisId)
-
-    if (error) {
-      console.error('Erreur rejet devis:', error)
-      toast.error('Erreur lors du rejet')
-      return
-    }
-
-    toast.success('Devis refusé')
-    loadDevis()
-  }
-
-  if (userLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
-        </motion.div>
+      <div className="w-full">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <Card className="border-gray-200">
+            <CardContent className="pt-12 pb-12 text-center">
+              <p className="text-gray-500">Chargement...</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
 
-  const demandesPending = demandes.filter(d => d.status === 'pending').length
-  const devisCount = devis.length
-  const favorisCount = favoris.length
+  if (error && demandes.length === 0) {
+    return (
+      <Card className="border-gray-200">
+        <CardHeader>
+          <CardTitle>Demandes</CardTitle>
+          <CardDescription>Impossible de charger vos demandes pour le moment.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">
+            Détail technique : <code className="text-xs">{error}</code>
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Créer un Map pour associer rapidement les profils aux demandes
+  const providerById = new Map<string, ProviderProfile>()
+  
+  // Remplir le Map avec les données des demandes
+  demandes.forEach(d => {
+    if (d.provider_id && (d as any).prestataire) {
+      providerById.set(d.provider_id, (d as any).prestataire)
+    }
+  })
 
   return (
     <div className="w-full">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <p className="text-[#6B7280] mt-1">Gérez vos demandes de devis et vos prestataires favoris</p>
-        </motion.div>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div>
+          <p className="text-[#6B7280]">
+            Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée.
+          </p>
+        </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="demandes" className="flex items-center gap-2">
-              <Send className="h-4 w-4" />
-              <span>Demandes</span>
-              {demandesPending > 0 && (
-                <Badge variant="secondary" className="ml-1 text-amber-50 border-transparent" style={{ backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }}>
-                  {demandesPending}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="devis" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              <span>Devis reçus</span>
-              {devisCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {devisCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="favoris" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              <span>Favoris</span>
-              {favorisCount > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {favorisCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
+        {!demandes || demandes.length === 0 ? (
+          <Card className="border-gray-200">
+            <CardContent className="pt-12 pb-12 text-center">
+              <Send className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande envoyée</h3>
+              <p className="text-gray-500">Quand vous contactez un prestataire, la demande apparaîtra ici.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {demandes.map((r) => {
+              const provider = providerById.get(r.provider_id) || (r as any).prestataire
+              const name = getProviderDisplayName(provider)
 
-          {/* TAB 1: DEMANDES */}
-          <TabsContent value="demandes" className="space-y-4">
-            {demandes.length === 0 ? (
-              <Card className="border-gray-200">
-                <CardContent className="pt-12 pb-12 text-center">
-                  <Send className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Aucune demande envoyée
-                  </h3>
-                  <p className="text-gray-500">
-                    Les demandes que vous envoyez aux prestataires apparaîtront ici
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {demandes.map((demande) => (
-                  <Card key={demande.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-4">
-                          {demande.provider?.avatar_url ? (
-                            <img
-                              src={demande.provider.avatar_url}
-                              alt={demande.provider.nom_entreprise}
-                              className="h-12 w-12 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                              <Users className="h-6 w-6 text-gray-400" />
-                            </div>
-                          )}
-                          <div>
-                            <CardTitle className="text-lg">
-                              {demande.provider?.nom_entreprise || 'Prestataire'}
-                            </CardTitle>
-                            <CardDescription>
-                              {demande.service_type} • {new Date(demande.created_at).toLocaleDateString('fr-FR')}
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge className={DEMANDE_STATUS_COLORS[demande.status]} style={getBadgeStyle(demande.status)}>
-                          {DEMANDE_STATUS_LABELS[demande.status]}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
-                          <p className="text-sm text-gray-700">{demande.message}</p>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          {(demande.wedding_date || demande.date_mariage) && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(demande.wedding_date || demande.date_mariage || '').toLocaleDateString('fr-FR')}
-                            </div>
-                          )}
-                          {demande.guest_count && (
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {demande.guest_count} invités
-                            </div>
-                          )}
-                          {demande.budget_indicatif && (
-                            <div className="flex items-center gap-1">
-                              <Euro className="h-4 w-4" />
-                              Budget: {formatAmount(demande.budget_indicatif)}
-                            </div>
-                          )}
-                        </div>
-
-                        {demande.status === 'viewed' && (
-                          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                            <Eye className="h-4 w-4" />
-                            Le prestataire a vu votre demande
-                          </div>
-                        )}
-
-                        {demande.status === 'responded' && (
-                          <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-sm text-green-700">
-                            <CheckCircle2 className="h-4 w-4" />
-                            Le prestataire a répondu ! Consultez vos devis
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 2: DEVIS - Identique au précédent, juste les noms changent */}
-          <TabsContent value="devis" className="space-y-4">
-            {devis.length === 0 ? (
-              <Card className="border-gray-200">
-                <CardContent className="pt-12 pb-12 text-center">
-                  <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Aucun devis reçu
-                  </h3>
-                  <p className="text-gray-500">
-                    Les devis des prestataires apparaîtront ici une fois qu'ils auront répondu à vos demandes
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {devis.map((devisItem) => {
-                  const expired = isDevisExpired(devisItem)
-                  const daysLeft = devisItem.valid_until ? getDaysUntilExpiration(devisItem.valid_until) : null
-                  
-                  return (
-                    <Card key={devisItem.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-4">
-                            {devisItem.provider?.avatar_url ? (
-                              <img
-                                src={devisItem.provider.avatar_url}
-                                alt={devisItem.provider.nom_entreprise}
-                                className="h-12 w-12 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                                <Users className="h-6 w-6 text-gray-400" />
-                              </div>
-                            )}
-                            <div>
-                              <CardTitle className="text-lg">{devisItem.title}</CardTitle>
-                              <CardDescription>
-                                {devisItem.provider?.nom_entreprise} • {new Date(devisItem.created_at).toLocaleDateString('fr-FR')}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <div className="text-right space-y-2">
-                            <Badge className={DEVIS_STATUS_COLORS[devisItem.status]} style={getBadgeStyle(devisItem.status)}>
-                              {DEVIS_STATUS_LABELS[devisItem.status]}
-                            </Badge>
-                            <div className="text-2xl font-bold text-[#823F91]">
-                              {formatAmount(devisItem.amount, devisItem.currency)}
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {devisItem.description && (
-                            <p className="text-sm text-gray-700">{devisItem.description}</p>
-                          )}
-
-                          {devisItem.included_services && devisItem.included_services.length > 0 && (
-                            <div>
-                              <h4 className="text-sm font-semibold mb-2">Services inclus :</h4>
-                              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                                {devisItem.included_services.map((service, i) => (
-                                  <li key={i}>{service}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {devisItem.valid_until && (
-                            <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
-                              expired 
-                                ? 'bg-red-50 text-red-700' 
-                                : daysLeft && daysLeft <= 7
-                                ? 'bg-orange-50 text-orange-700'
-                                : 'bg-gray-50 text-gray-700'
-                            }`}>
-                              <Clock className="h-4 w-4" />
-                              {expired ? (
-                                'Devis expiré'
-                              ) : daysLeft && daysLeft <= 7 ? (
-                                `Expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''}`
-                              ) : (
-                                `Valide jusqu'au ${new Date(devisItem.valid_until).toLocaleDateString('fr-FR')}`
-                              )}
-                            </div>
-                          )}
-
-                          {devisItem.status === 'pending' && !expired && (
-                            <div className="flex gap-3 pt-4 border-t">
-                              <Button
-                                onClick={() => handleAcceptDevis(devisItem.id)}
-                                className="flex-1 bg-green-600 hover:bg-green-700"
-                              >
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Accepter le devis
-                              </Button>
-                              <Button
-                                onClick={() => handleRejectDevis(devisItem.id)}
-                                variant="outline"
-                                className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Refuser
-                              </Button>
-                            </div>
-                          )}
-
-                          {devisItem.attachment_url && (
-                            <Button
-                              variant="outline"
-                              className="w-full"
-                              onClick={() => window.open(devisItem.attachment_url, '_blank')}
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Télécharger le devis PDF
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* TAB 3: FAVORIS */}
-          <TabsContent value="favoris" className="space-y-4">
-            {favoris.length === 0 ? (
-              <Card className="border-gray-200">
-                <CardContent className="pt-12 pb-12 text-center">
-                  <Heart className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Aucun favori
-                  </h3>
-                  <p className="text-gray-500">
-                    Enregistrez vos prestataires préférés pour les retrouver facilement
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {favoris.map((favori) => (
-                  <Card key={favori.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start gap-4">
-                        {favori.provider?.avatar_url ? (
+              return (
+                <Card key={r.id} className="border-gray-200">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {provider?.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={favori.provider.avatar_url}
-                            alt={favori.provider.nom_entreprise}
-                            className="h-16 w-16 rounded-lg object-cover"
+                            src={provider.avatar_url}
+                            alt={name}
+                            className="h-11 w-11 rounded-full object-cover border"
                           />
                         ) : (
-                          <div className="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center">
-                            <Users className="h-8 w-8 text-gray-400" />
+                          <div className="h-11 w-11 rounded-full bg-gray-100 border flex items-center justify-center">
+                            <UserRound className="h-5 w-5 text-gray-500" />
                           </div>
                         )}
-                        <div className="flex-1">
-                          <CardTitle className="text-lg mb-1">
-                            {favori.provider?.nom_entreprise || 'Prestataire'}
-                          </CardTitle>
-                          <CardDescription>
-                            {favori.provider?.service_type}
-                            {favori.provider?.ville_principale && ` • ${favori.provider.ville_principale}`}
+
+                        <div className="min-w-0">
+                          <CardTitle className="text-base truncate">{name}</CardTitle>
+                          <CardDescription className="text-sm">
+                            Envoyée le {new Date(r.created_at).toLocaleDateString('fr-FR')}
                           </CardDescription>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      {favori.provider?.description_courte && (
-                        <p className="text-sm text-gray-600 mb-4">
-                          {favori.provider.description_courte}
-                        </p>
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          className="flex-1 text-purple-600 hover:text-white hover:bg-purple-600 group"
-                          onClick={() => router.push(`/provider/${favori.provider_id || favori.prestataire_id}`)}
-                        >
-                          Voir le profil
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+
+                      <Badge variant="outline" className={STATUS_BADGE_CLASS[r.status]}>
+                        {STATUS_LABEL[r.status]}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="pt-0 space-y-3">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{r.initial_message}</p>
+
+                    {r.status === 'pending' ? (
+                      <form onSubmit={(e) => {
+                        e.preventDefault()
+                        cancelRequest(r.id)
+                      }} className="flex justify-end">
+                        <Button type="submit" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                          Annuler la demande
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleRemoveFavori(favori.id)}
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          <Heart className="h-4 w-4 fill-current" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                      </form>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
 }
-

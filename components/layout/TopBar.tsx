@@ -148,39 +148,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
 
     try {
       if (userRole === 'couple') {
-        // Notifications pour les couples
-        // Récupérer les 3 derniers messages reçus
-        const { data: conversations } = await supabase
-          .from('conversations')
-          .select('id, couple_id, last_message_at')
-          .eq('couple_id', user.id)
-          .order('last_message_at', { ascending: false })
-          .limit(3)
-
-        if (conversations && conversations.length > 0) {
-          for (const conv of conversations) {
-            const { data: messages } = await supabase
-              .from('messages')
-              .select('id, sender_id, content, created_at')
-              .eq('conversation_id', conv.id)
-              .neq('sender_id', user.id)
-              .eq('is_read', false)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle()
-
-            if (messages) {
-              allNotifications.push({
-                id: messages.id,
-                type: 'message',
-                title: 'Nouveau message',
-                description: messages.content?.substring(0, 50) || 'Nouveau message reçu',
-                time: new Date(messages.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-                href: '/couple/messagerie'
-              })
-            }
-          }
-        }
+        // Messages désactivés temporairement
 
         // Récupérer les 3 dernières dépenses créées/modifiées
         const { data: budgetItems } = await supabase
@@ -225,60 +193,29 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
         }
       } else if (userRole === 'prestataire') {
         // Notifications pour les prestataires
-        // Récupérer les nouvelles demandes
-        const { data: demandes } = await supabase
-          .from('demandes')
-          .select('id, titre, created_at, statut')
-          .eq('prestataire_id', user.id)
-          .eq('statut', 'nouvelle')
+        // Récupérer les nouvelles demandes (requests)
+        const { data: requests } = await supabase
+          .from('requests')
+          .select('id, initial_message, created_at, status')
+          .eq('provider_id', user.id)
+          .eq('status', 'pending')
           .order('created_at', { ascending: false })
           .limit(3)
 
-        if (demandes && demandes.length > 0) {
-          demandes.forEach((demande) => {
+        if (requests && requests.length > 0) {
+          requests.forEach((request) => {
             allNotifications.push({
-              id: demande.id,
+              id: request.id,
               type: 'message',
               title: 'Nouvelle demande',
-              description: demande.titre || 'Nouvelle demande reçue',
-              time: new Date(demande.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+              description: request.initial_message || 'Nouvelle demande reçue',
+              time: new Date(request.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
               href: '/prestataire/demandes-recues'
             })
           })
         }
 
-        // Récupérer les messages non lus pour les prestataires
-        const { data: conversations } = await supabase
-          .from('conversations')
-          .select('id, prestataire_id, last_message_at')
-          .eq('prestataire_id', user.id)
-          .order('last_message_at', { ascending: false })
-          .limit(3)
-
-        if (conversations && conversations.length > 0) {
-          for (const conv of conversations) {
-            const { data: messages } = await supabase
-              .from('messages')
-              .select('id, sender_id, content, created_at')
-              .eq('conversation_id', conv.id)
-              .neq('sender_id', user.id)
-              .eq('is_read', false)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle()
-
-            if (messages) {
-              allNotifications.push({
-                id: messages.id,
-                type: 'message',
-                title: 'Nouveau message',
-                description: messages.content?.substring(0, 50) || 'Nouveau message reçu',
-                time: new Date(messages.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-                href: '/prestataire/messagerie'
-              })
-            }
-          }
-        }
+        // Messages désactivés temporairement
       }
 
       // Trier par date et prendre les 3 plus récents

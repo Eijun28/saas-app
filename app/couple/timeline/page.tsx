@@ -22,6 +22,7 @@ import {
 import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
+import { CountdownTimer } from '@/components/calendar/CountdownTimer'
 
 interface Event {
   id: string
@@ -258,214 +259,149 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <div className="mb-8">
-            <p className="text-[#4A4A4A] mb-4 text-center">
-              Planifiez votre mariage étape par étape
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              {/* Date du mariage - Version compacte */}
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
-                <CalendarIcon className="h-5 w-5 text-[#823F91] flex-shrink-0" />
-                {dateMarriage ? (
-                  <div>
-                    <p className="text-sm font-medium text-[#0D0D0D] whitespace-nowrap">
-                      {(() => {
-                        const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })
-                        return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                      })()}
-                    </p>
-                    <p className="text-xs text-[#6B7280] mt-1 whitespace-nowrap">
-                      {(() => {
-                        const date = new Date(dateMarriage)
-                        const today = new Date()
-                        const diff = date.getTime() - today.getTime()
-                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                        if (days > 0) {
-                          return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
-                        } else if (days === 0) {
-                          return "C'est aujourd'hui !"
-                        } else {
-                          return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                        }
-                      })()}
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-sm text-[#4A4A4A] whitespace-nowrap">
-                      Aucune date de mariage renseignée.{' '}
-                      <a href="/couple/profil" className="text-[#823F91] hover:underline font-medium">
-                        Définir dans le profil
-                      </a>
-                    </p>
-                  </div>
-                )}
-              </div>
-              <Button
-                onClick={() => setIsDialogOpen(true)}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 flex-shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                Créer un événement
-              </Button>
-            </div>
+    <div className="h-[calc(100vh-80px)] flex flex-col">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="mb-6"
+      >
+        <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 text-center">
+          Timeline de Mariage
+        </h1>
+        <p className="text-[#823F91]/70 text-sm sm:text-base text-center">
+          Gérez votre disponibilité et vos événements
+        </p>
+        {dateMarriage && (
+          <div className="mt-3 flex items-center gap-2 text-sm sm:text-base text-[#823F91]/80">
+            <CalendarIcon className="h-4 w-4" />
+            <span>
+              {(() => {
+                const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })
+                return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+              })()}
+            </span>
+            <span className="mx-2">•</span>
+            <span className="font-semibold">
+              {(() => {
+                const date = new Date(dateMarriage)
+                const today = new Date()
+                const diff = date.getTime() - today.getTime()
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                if (days > 0) {
+                  return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
+                } else if (days === 0) {
+                  return "C'est aujourd'hui ! 🎉"
+                } else {
+                  return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+                }
+              })()}
+            </span>
           </div>
-
-          {/* Calendrier */}
-          <div className="mb-8">
-            <CalendarDashboard
-              events={calendarEvents}
-              onEventCreate={handleCalendarEventCreate}
-              showTime={false}
-              loading={loading}
-            />
-          </div>
-
-          {/* Liste des événements */}
-          {events.length > 0 && (
-            <Card className="border-gray-200 mb-8">
-              <CardHeader>
-                <CardTitle>Événements planifiés</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {events.map((event) => (
-                    <div
-                      key={event.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-[#0D0D0D] mb-1">
-                            {event.title}
-                          </h3>
-                          {event.description && (
-                            <p className="text-sm text-[#4A4A4A] mb-2">
-                              {event.description}
-                            </p>
-                          )}
-                          <p className="text-xs text-[#6B7280]">
-                            {(() => {
-                              const dateStr = new Date(event.event_date).toLocaleDateString('fr-FR', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })
-                              return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-                            })()}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditEvent(event)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteEvent(event.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-        </motion.div>
-
-        {/* Dialog de création d'événement */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent size="sm" className="sm:max-w-[450px]">
-            <DialogHeader>
-              <DialogTitle>{editingEvent ? 'Modifier l\'événement' : 'Créer un événement'}</DialogTitle>
-              <DialogDescription>
-                {editingEvent ? 'Modifiez les détails de votre événement' : 'Ajoutez un événement à votre timeline de mariage'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <motion.div
-              className="space-y-4 py-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
+        )}
+        {!dateMarriage && (
+          <div className="mt-3">
+            <a
+              href="/couple/profil"
+              className="inline-block text-sm text-[#823F91] hover:text-[#6D3478] underline"
             >
-              <div className="space-y-2">
-                <Label htmlFor="event-title">Titre de l'événement *</Label>
-                <Input
-                  id="event-title"
-                  value={eventForm.title}
-                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  placeholder="Ex: Essayage robe, Dégustation menu..."
-                  autoFocus
-                />
-              </div>
+              Définir la date de mariage dans le profil
+            </a>
+          </div>
+        )}
+      </motion.div>
 
-              <div className="space-y-2">
-                <Label htmlFor="event-date">Date *</Label>
-                <DatePicker
-                  value={eventForm.event_date || undefined}
-                  onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
-                  placeholder="Sélectionner une date"
-                />
-              </div>
+      {/* Calendrier plein écran */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+      >
+        <CalendarDashboard
+          events={calendarEvents}
+          onEventCreate={handleCalendarEventCreate}
+          showTime={false}
+          loading={loading}
+          defaultView="agenda"
+        />
+      </motion.div>
 
-              <div className="space-y-2">
-                <Label htmlFor="event-description">Description (optionnel)</Label>
-                <Textarea
-                  id="event-description"
-                  value={eventForm.description}
-                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                  placeholder="Ajoutez des détails sur cet événement..."
-                  className="min-h-[80px] resize-none"
-                  rows={3}
-                />
-              </div>
-            </motion.div>
+      {/* Dialog de création/modification d'événement */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent size="sm" className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>{editingEvent ? 'Modifier l\'événement' : 'Créer un événement'}</DialogTitle>
+            <DialogDescription>
+              {editingEvent ? 'Modifiez les détails de votre événement' : 'Ajoutez un événement à votre timeline de mariage'}
+            </DialogDescription>
+          </DialogHeader>
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsDialogOpen(false)
-                  resetForm()
-                }}
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleCreateOrUpdateEvent}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white"
-                disabled={!eventForm.title || !eventForm.event_date}
-              >
-                {editingEvent ? 'Modifier' : 'Créer l\'événement'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+          <motion.div
+            className="space-y-4 py-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="event-title">Titre de l'événement *</Label>
+              <Input
+                id="event-title"
+                value={eventForm.title}
+                onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                placeholder="Ex: Essayage robe, Dégustation menu..."
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-date">Date *</Label>
+              <DatePicker
+                value={eventForm.event_date || undefined}
+                onChange={(date) => setEventForm({ ...eventForm, event_date: date || null })}
+                placeholder="Sélectionner une date"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="event-description">Description (optionnel)</Label>
+              <Textarea
+                id="event-description"
+                value={eventForm.description}
+                onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                placeholder="Ajoutez des détails sur cet événement..."
+                className="min-h-[80px] resize-none"
+                rows={3}
+              />
+            </div>
+          </motion.div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDialogOpen(false)
+                resetForm()
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleCreateOrUpdateEvent}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+              disabled={!eventForm.title || !eventForm.event_date}
+            >
+              {editingEvent ? 'Modifier' : 'Créer l\'événement'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

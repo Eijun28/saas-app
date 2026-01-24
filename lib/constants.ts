@@ -23,7 +23,7 @@ export const TYPOGRAPHY = {
 // Copy
 export const COPY = {
   hero: {
-    headline: 'Nuply - Le mariage moderne',
+    headline: 'Nuply : Le mariage moderne',
     subheadline: 'Un matching intelligent entre couples et prestataires, pensé pour votre culture.',
     cta1: 'Commencer',
     cta2: 'Découvrir Nuply',

@@ -86,6 +86,26 @@ export function translateAuthError(errorMessage: string | null | undefined): str
     return 'Erreur lors de la création de votre compte couple. Veuillez réessayer.'
   }
 
+  // Erreurs de contrainte de clé étrangère
+  if (message.includes('foreign key') || message.includes('constraint') || message.includes('violates foreign key')) {
+    return 'Erreur de référence dans la base de données. Veuillez contacter le support technique.'
+  }
+
+  // Erreurs de contrainte unique
+  if (message.includes('unique constraint') || message.includes('duplicate key') || message.includes('already exists')) {
+    return 'Cette information est déjà utilisée. Veuillez vérifier vos données.'
+  }
+
+  // Erreurs de colonne manquante
+  if (message.includes('column') && (message.includes('does not exist') || message.includes('missing'))) {
+    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
+  }
+
+  // Erreurs de table manquante
+  if (message.includes('relation') && message.includes('does not exist')) {
+    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
+  }
+
   // Erreurs de callback
   if (message.includes('callback_error') || message.includes('callback')) {
     return 'Erreur lors de la confirmation de votre compte. Le lien de confirmation peut avoir expiré. Veuillez demander un nouveau lien ou réessayer de vous connecter.'
@@ -93,7 +113,31 @@ export function translateAuthError(errorMessage: string | null | undefined): str
 
   // Erreurs génériques Supabase
   if (message.includes('supabase') || message.includes('database')) {
+    // Si le message contient des détails spécifiques, les inclure
+    if (message.includes('Code:') || message.includes('hint:')) {
+      return `Erreur de base de données: ${message}`
+    }
     return 'Erreur de base de données. Veuillez réessayer dans quelques instants.'
+  }
+  
+  // Erreurs de contrainte de clé étrangère
+  if (message.includes('foreign key') || message.includes('constraint') || message.includes('violates foreign key')) {
+    return 'Erreur de référence dans la base de données. Veuillez contacter le support technique.'
+  }
+
+  // Erreurs de contrainte unique
+  if (message.includes('unique constraint') || message.includes('duplicate key') || message.includes('already exists')) {
+    return 'Cette information est déjà utilisée. Veuillez vérifier vos données.'
+  }
+
+  // Erreurs de colonne manquante
+  if (message.includes('column') && (message.includes('does not exist') || message.includes('missing'))) {
+    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
+  }
+
+  // Erreurs de table manquante
+  if (message.includes('relation') && message.includes('does not exist')) {
+    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
   }
 
   // Si aucun pattern ne correspond, retourner le message original avec un préfixe

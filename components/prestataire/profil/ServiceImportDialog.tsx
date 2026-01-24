@@ -162,7 +162,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[70vh] sm:max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Importer des services</DialogTitle>
         </DialogHeader>

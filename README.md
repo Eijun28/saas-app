@@ -1,4 +1,4 @@
-# 🎉 NUPLY - Le mariage moderne
+# 🎉 NUPLY : Le mariage moderne
 
 Plateforme premium de planification de mariage avec matching IA, gestion de budget, timeline et messagerie intégrée.
 

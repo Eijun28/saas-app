@@ -1,6 +1,6 @@
 import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 export default async function proxy(request: NextRequest) {
   const result = await updateSession(request) as UpdateSessionResult
@@ -19,52 +19,13 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
-  // Créer un client Supabase pour vérifier le profil
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.redirect(new URL('/sign-in', request.url));
-  }
-
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll() {
-          // Ne rien faire dans le proxy
-        },
-      },
-    }
-  )
-
   // Connecté + route auth = redirect vers dashboard
   if (user && isAuthRoute) {
-    // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (couple) {
-      return NextResponse.redirect(new URL('/couple/dashboard', request.url))
-    }
-
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .eq('role', 'prestataire')
-      .single()
-
-    if (profile && profile.role === 'prestataire') {
-      return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
+    const roleCheck = await getUserRoleServer(user.id)
+    
+    if (roleCheck.role) {
+      const dashboardUrl = getDashboardUrl(roleCheck.role)
+      return NextResponse.redirect(new URL(dashboardUrl, request.url))
     }
   }
 
@@ -72,15 +33,10 @@ export default async function proxy(request: NextRequest) {
   if (user && isProtectedRoute) {
     const isTryingToAccessCouple = request.nextUrl.pathname.startsWith('/couple')
     const isTryingToAccessPrestataire = request.nextUrl.pathname.startsWith('/prestataire')
-
-    // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (couple) {
+    
+    const roleCheck = await getUserRoleServer(user.id)
+    
+    if (roleCheck.role === 'couple') {
       // Couple essaie d'accéder à une route prestataire
       if (isTryingToAccessPrestataire) {
         return NextResponse.redirect(new URL('/couple/dashboard', request.url))
@@ -88,22 +44,19 @@ export default async function proxy(request: NextRequest) {
       // Sinon, c'est bon, le couple accède à ses routes
       return supabaseResponse
     }
-
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .eq('role', 'prestataire')
-      .single()
-
-    if (profile && profile.role === 'prestataire') {
+    
+    if (roleCheck.role === 'prestataire') {
       // Prestataire essaie d'accéder à une route couple
       if (isTryingToAccessCouple) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
       }
       // Sinon, c'est bon, le prestataire accède à ses routes
       return supabaseResponse
+    }
+    
+    // Si aucun rôle trouvé, rediriger vers sign-in
+    if (!roleCheck.role) {
+      return NextResponse.redirect(new URL('/sign-in', request.url))
     }
   }
 

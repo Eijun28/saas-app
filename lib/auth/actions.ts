@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email/resend'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
+import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 import { revalidatePath } from 'next/cache'
 
@@ -20,35 +21,23 @@ export async function signUp(
     nomEntreprise?: string
   }
 ) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:12',message:'signUp ENTRY',data:{email,role,hasPrenom:!!profileData.prenom,hasNom:!!profileData.nom},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
   
   // ✅ VALIDATION 1: Vérifier format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:27',message:'RETURN email invalid',data:{email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return { error: 'Email invalide' }
   }
 
   // ✅ VALIDATION 2: Vérifier userType autorisé
   const ALLOWED_USER_TYPES = ['couple', 'prestataire']
   if (!ALLOWED_USER_TYPES.includes(role)) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:33',message:'RETURN role invalid',data:{role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     return { error: 'Type utilisateur non autorisé' }
   }
 
   // ✅ VALIDATION 3: Pour couples, vérifier noms requis
   if (role === 'couple') {
     if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:39',message:'RETURN names required',data:{hasPrenom:!!profileData.prenom?.trim(),hasNom:!!profileData.nom?.trim()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       return { error: 'Les noms des partenaires sont requis' }
     }
 
@@ -57,16 +46,28 @@ export async function signUp(
     profileData.nom = profileData.nom.trim().substring(0, 100)
   }
 
-  // ✅ VALIDATION 4: Pour prestataires, vérifier nom entreprise si fourni
-  if (role === 'prestataire' && profileData.nomEntreprise) {
-    profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+  // ✅ VALIDATION 4: Pour prestataires, vérifier et sanitizer les données
+  if (role === 'prestataire') {
+    // Vérifier que prenom et nom sont fournis (requis pour prestataires aussi)
+    if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
+      return { error: 'Le prénom et le nom sont requis pour les prestataires' }
+    }
+    
+    // Sanitize les noms (protection XSS)
+    profileData.prenom = profileData.prenom.trim().substring(0, 100)
+    profileData.nom = profileData.nom.trim().substring(0, 100)
+    
+    // Sanitize nom entreprise si fourni
+    if (profileData.nomEntreprise) {
+      profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+    }
   }
 
+  logger.critical('🔧 Création client Supabase...', { email, role })
   const supabase = await createClient()
+  logger.critical('✅ Client Supabase créé', { email, role })
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:52',message:'BEFORE supabase.auth.signUp',data:{email,role},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
+  logger.critical('📧 Tentative signUp Supabase Auth...', { email, role })
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -81,36 +82,40 @@ export async function signUp(
     },
   })
 
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:69',message:'AFTER supabase.auth.signUp',data:{hasError:!!error,hasUser:!!data?.user,userId:data?.user?.id,errorMessage:error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
+  logger.critical('📧 Réponse signUp reçue', { 
+    email, 
+    role, 
+    hasUser: !!data?.user, 
+    hasError: !!error,
+    errorMessage: error?.message 
+  })
 
   // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
   if (error) {
+    logger.critical('⚠️ Erreur lors du signUp', { email, role, error: error.message, hasUser: !!data?.user })
     // Si l'utilisateur est créé mais l'email échoue, on continue quand même
     if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
     } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:75',message:'RETURN error from signUp',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
+      logger.critical('🚨 Erreur signUp - retour erreur', { email, role, error: error.message })
       return { error: translateAuthError(error.message) }
     }
   }
 
   // Vérifier que l'utilisateur a été créé
   if (!data?.user) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:82',message:'RETURN no user created',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
+    logger.critical('🚨 Aucun utilisateur créé après signUp', { email, role })
     logger.error('Aucun utilisateur créé après signUp')
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
 
+  logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
+
   // Créer le profil utilisateur selon le rôle
   try {
       if (role === 'couple') {
+        logger.critical('👥 Traitement inscription COUPLE', { userId: data.user.id })
         // Créer le client admin pour contourner les politiques RLS
         let adminClient
         try {
@@ -166,8 +171,6 @@ export async function signUp(
 
         if (!userExists) {
           // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:141',message:'RETURN user not found',data:{userId,email,maxRetries},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
           logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives', {
             userId,
             email,
@@ -176,6 +179,19 @@ export async function signUp(
           })
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
           return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
+        }
+
+        // ⚠️ PROTECTION: Supprimer tout profil créé par erreur dans profiles pour les couples
+        // (au cas où le trigger handle_new_user aurait créé un profil)
+        try {
+          await adminClient
+            .from('profiles')
+            .delete()
+            .eq('id', userId)
+          logger.critical('🧹 Nettoyage: Profil supprimé de profiles (si existait)', { userId })
+        } catch (cleanupError) {
+          // Ne pas bloquer si la suppression échoue (peut-être que le profil n'existe pas)
+          logger.warn('Nettoyage profil profiles (non bloquant):', cleanupError)
         }
 
         // Créer directement dans couples (pas de profil dans profiles pour les couples)
@@ -193,9 +209,6 @@ export async function signUp(
 
         // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:166',message:'RETURN couple error',data:{userId,email,errorMessage:coupleError.message,errorCode:coupleError.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-          // #endregion
           logger.critical('🚨 ÉCHEC: Erreur création couple', {
             userId,
             email,
@@ -230,14 +243,15 @@ export async function signUp(
           }
         }
       } else {
+        logger.critical('💼 Traitement inscription PRESTATAIRE', { userId: data.user.id, email })
         // Créer le client admin
         let adminClient
         try {
+          logger.critical('🔧 Création client admin...', { userId: data.user.id })
           adminClient = createAdminClient()
+          logger.critical('✅ Client admin créé avec succès', { userId: data.user.id })
         } catch (adminError: any) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:236',message:'RETURN admin client error prestataire',data:{errorMessage:adminError?.message,userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-          // #endregion
+          logger.critical('🚨 Erreur création client admin:', { userId: data.user.id, error: adminError })
           logger.error('Erreur création client admin:', adminError)
           // Essayer de supprimer l'utilisateur créé
           try {
@@ -300,33 +314,47 @@ export async function signUp(
         // Insérer ou mettre à jour dans la table profiles (prestataires)
         logger.critical('📝 Tentative création/mise à jour profil prestataire', { userId, email })
         
+        // Préparer les données du profil (déjà sanitizées dans les validations)
+        // Note: Le trigger peut avoir déjà créé un profil basique, l'upsert le complétera
+        const profileInsertData = {
+          id: userId,
+          email: email,
+          role: 'prestataire' as const,
+          prenom: profileData.prenom || null,
+          nom: profileData.nom || null,
+          nom_entreprise: profileData.nomEntreprise || null,
+        }
+        
         const { error: profileError } = await adminClient
           .from('profiles')
-          .upsert({
-            id: userId,
-            email: email,
-            role: 'prestataire',
-            prenom: profileData.prenom.trim().substring(0, 100),
-            nom: profileData.nom.trim().substring(0, 100),
-            nom_entreprise: profileData.nomEntreprise ? profileData.nomEntreprise.trim().substring(0, 200) : null,
-          }, {
+          .upsert(profileInsertData, {
             onConflict: 'id'
           })
 
         if (profileError) {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:231',message:'RETURN profile error',data:{userId,email,errorMessage:profileError.message,errorCode:profileError.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
-          // #endregion
+          // Logger toutes les informations de l'erreur pour debugging
           logger.critical('🚨 ÉCHEC: Erreur création profil prestataire', {
             userId,
             email,
             error: profileError.message,
             code: profileError.code,
-            details: profileError.details
+            details: profileError.details,
+            hint: profileError.hint,
+            fullError: JSON.stringify(profileError, null, 2)
           })
+          
+          // Créer un message d'erreur plus détaillé pour le développement
+          let errorMessage = profileError.message || 'Erreur inconnue'
+          if (profileError.hint) {
+            errorMessage += ` (${profileError.hint})`
+          }
+          if (profileError.code) {
+            errorMessage += ` [Code: ${profileError.code}]`
+          }
+          
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: translateAuthError(`Erreur création profil: ${profileError.message}`) }
+          return { error: translateAuthError(`Erreur création profil: ${errorMessage}`) }
         } else {
           logger.critical('✅ Profil prestataire créé avec succès', { userId })
         }
@@ -380,35 +408,88 @@ export async function signUp(
         }
       }
     } catch (err: any) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:294',message:'CATCH block in signUp',data:{errorMessage:err?.message,errorName:err?.name,isRLSError:err?.message?.includes('row-level security')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       logger.error('Erreur lors de la création du profil', err)
-      // Si c'est une erreur RLS mais que l'utilisateur est créé, on continue
+      const userId = data.user.id
+      
+      // Si c'est une erreur RLS, vérifier si le profil a quand même été créé
       if (err.message?.includes('row-level security')) {
-        logger.warn('Erreur RLS détectée mais utilisateur créé, continuation...')
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:298',message:'RLS error - continuing',data:{userId:data.user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
-        // IMPORTANT: Même en cas d'erreur RLS, on doit retourner un résultat valide
-        // L'utilisateur est créé, donc on considère que l'inscription est réussie
-        logger.critical('🎉 INSCRIPTION RÉUSSIE (malgré erreur RLS)', { email, role, userId: data.user.id })
-        const response = { success: true, redirectTo: '/auth/confirm' }
+        logger.warn('Erreur RLS détectée, vérification si le profil existe quand même...', { userId, role })
+        
+        // Vérifier si le profil a été créé malgré l'erreur RLS
         try {
-          revalidatePath('/', 'layout')
-        } catch (revalidateError: any) {
-          logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+          const adminClient = createAdminClient()
+          let profileExists = false
+          
+          if (role === 'couple') {
+            const { data: coupleCheck } = await adminClient
+              .from('couples')
+              .select('id')
+              .eq('user_id', userId)
+              .maybeSingle()
+            profileExists = !!coupleCheck
+          } else {
+            const { data: profileCheck } = await adminClient
+              .from('profiles')
+              .select('id')
+              .eq('id', userId)
+              .maybeSingle()
+            profileExists = !!profileCheck
+          }
+          
+          if (profileExists) {
+            // Le profil existe malgré l'erreur RLS, l'inscription est réussie
+            logger.critical('✅ Profil vérifié et existant malgré erreur RLS', { userId, role })
+            const response = { success: true, redirectTo: '/auth/confirm' }
+            try {
+              revalidatePath('/', 'layout')
+            } catch (revalidateError: any) {
+              logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+            }
+            return response
+          } else {
+            // Le profil n'existe pas, essayer de le créer avec le client admin
+            logger.warn('Profil non trouvé après erreur RLS, tentative de création avec client admin...', { userId, role })
+            
+            // La création avec adminClient a déjà été tentée dans le bloc try principal
+            // Si on arrive ici, c'est que ça a échoué
+            // Ne pas retourner succès si le profil n'existe pas
+            logger.critical('🚨 ÉCHEC: Profil non créé après erreur RLS', { userId, role, error: err.message })
+            
+            // Essayer de supprimer l'utilisateur créé pour éviter un compte orphelin
+            try {
+              await adminClient.auth.admin.deleteUser(userId)
+              logger.warn('Utilisateur supprimé car profil non créé', { userId })
+            } catch (deleteError) {
+              logger.error('Erreur lors de la suppression de l\'utilisateur orphelin:', deleteError)
+            }
+            
+            return { 
+              error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
+            }
+          }
+        } catch (checkError: any) {
+          // Erreur lors de la vérification, ne pas retourner succès
+          logger.error('Erreur lors de la vérification du profil après erreur RLS:', checkError)
+          
+          // Essayer de supprimer l'utilisateur créé
+          try {
+            const adminClient = createAdminClient()
+            await adminClient.auth.admin.deleteUser(userId)
+          } catch {}
+          
+          return { 
+            error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
+          }
         }
-        return response
       } else {
-        // Essayer de supprimer l'utilisateur créé en cas d'erreur
+        // Erreur non-RLS, essayer de supprimer l'utilisateur créé en cas d'erreur
         try {
           const adminClient = createAdminClient()
           await adminClient.auth.admin.deleteUser(data.user.id)
-        } catch {}
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:305',message:'RETURN error from catch',data:{errorMessage:err?.message || 'Erreur inconnue'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
+          logger.warn('Utilisateur supprimé après erreur non-RLS', { userId: data.user.id })
+        } catch (deleteError) {
+          logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
+        }
         return { error: translateAuthError(err.message || 'Erreur inconnue') }
       }
     }
@@ -438,9 +519,6 @@ export async function signUp(
     // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
     const response = { success: true, redirectTo: '/auth/confirm' }
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:332',message:'RETURN success - BEFORE revalidatePath',data:{email,role,userId:data.user.id,responseStringified:JSON.stringify(response)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     // Revalidate après avoir préparé la réponse
     try {
@@ -450,9 +528,6 @@ export async function signUp(
       logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
     }
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/a9efc206-455c-41d6-8eb0-b0fc75e830e1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'lib/auth/actions.ts:342',message:'RETURN success - AFTER revalidatePath',data:{responseStringified:JSON.stringify(response)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     
     return response
 }
@@ -470,32 +545,18 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Vérifier d'abord dans la table couples
-    const { data: couple } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .single()
-
-    if (couple) {
-      revalidatePath('/', 'layout')
-      return { success: true, redirectTo: '/couple/dashboard' }
-    }
-
-    // Sinon vérifier dans profiles (prestataires uniquement)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user.id)
-      .eq('role', 'prestataire')
-      .single()
-
+    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
+    const roleCheck = await getUserRoleServer(data.user.id)
+    
     revalidatePath('/', 'layout')
-
-    if (profile && profile.role === 'prestataire') {
-      return { success: true, redirectTo: '/prestataire/dashboard' }
+    
+    if (roleCheck.role) {
+      const dashboardUrl = getDashboardUrl(roleCheck.role)
+      return { success: true, redirectTo: dashboardUrl }
     }
 
+    // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
+    // (cas d'un compte auth créé mais profil non complété)
     return { success: true, redirectTo: '/' }
   }
 

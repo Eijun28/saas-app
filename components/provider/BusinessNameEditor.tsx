@@ -28,11 +28,8 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
     
     const newName = currentName || '';
     
-    console.log('🔄 BusinessNameEditor useEffect - currentName:', currentName, 'newName:', newName, 'initialName:', initialName, 'name:', name)
-    
     // Mettre à jour uniquement si la valeur a vraiment changé depuis la DB
     if (newName !== initialName) {
-      console.log('✅ Mise à jour BusinessNameEditor:', initialName, '->', newName)
       setName(newName);
       setInitialName(newName);
     }
@@ -100,9 +97,10 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
       })
       
       // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+      // Réduire à 300ms pour un affichage plus rapide
       setTimeout(() => {
         onSave?.()
-      }, 500)
+      }, 300)
     } else {
       // Mettre à jour quand même l'état local
       const savedName = name.trim()

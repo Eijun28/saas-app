@@ -6,6 +6,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { CityAutocompleteInput } from '@/components/provider/CityAutocompleteInput'
+import { getServiceTypeLabel, SERVICE_CATEGORIES, SERVICE_TYPES } from '@/lib/constants/service-types'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface ProfessionalInfoEditorProps {
   userId: string
@@ -13,6 +24,7 @@ interface ProfessionalInfoEditorProps {
   currentBudgetMax?: number
   currentExperience?: number
   currentVille?: string
+  currentServiceType?: string
   onSave?: () => void
 }
 
@@ -22,13 +34,15 @@ export function ProfessionalInfoEditor({
   currentBudgetMax,
   currentExperience,
   currentVille,
+  currentServiceType,
   onSave,
 }: ProfessionalInfoEditorProps) {
   const [budgetMin, setBudgetMin] = useState(currentBudgetMin?.toString() || '')
   const [budgetMax, setBudgetMax] = useState(currentBudgetMax?.toString() || '')
   const [experience, setExperience] = useState(currentExperience?.toString() || '')
   const [ville, setVille] = useState(currentVille || '')
-  const [initialData, setInitialData] = useState({ budgetMin: '', budgetMax: '', experience: '', ville: '' })
+  const [serviceType, setServiceType] = useState(currentServiceType || '')
+  const [initialData, setInitialData] = useState({ budgetMin: '', budgetMax: '', experience: '', ville: '', serviceType: '' })
   const [isSaving, setIsSaving] = useState(false)
   const isEditingRef = useRef(false)
 
@@ -43,6 +57,7 @@ export function ProfessionalInfoEditor({
       budgetMax: currentBudgetMax?.toString() || '',
       experience: currentExperience?.toString() || '',
       ville: currentVille || '',
+      serviceType: currentServiceType || '',
     }
     
     // Utiliser une fonction de mise à jour pour éviter les dépendances circulaires
@@ -52,7 +67,8 @@ export function ProfessionalInfoEditor({
         prev.budgetMin === newData.budgetMin &&
         prev.budgetMax === newData.budgetMax &&
         prev.experience === newData.experience &&
-        prev.ville === newData.ville
+        prev.ville === newData.ville &&
+        prev.serviceType === newData.serviceType
       ) {
         return prev
       }
@@ -70,16 +86,20 @@ export function ProfessionalInfoEditor({
       if (newData.ville !== prev.ville) {
         setVille(newData.ville)
       }
+      if (newData.serviceType !== prev.serviceType) {
+        setServiceType(newData.serviceType)
+      }
       
       return newData
     })
-  }, [currentBudgetMin, currentBudgetMax, currentExperience, currentVille, isSaving])
+  }, [currentBudgetMin, currentBudgetMax, currentExperience, currentVille, currentServiceType, isSaving])
 
   const hasChanges =
     budgetMin !== initialData.budgetMin ||
     budgetMax !== initialData.budgetMax ||
     experience !== initialData.experience ||
-    ville !== initialData.ville
+    ville !== initialData.ville ||
+    serviceType !== initialData.serviceType
 
   async function handleSave(e: React.MouseEvent) {
     e.preventDefault()
@@ -99,6 +119,8 @@ export function ProfessionalInfoEditor({
     setIsSaving(true)
     const supabase = createClient()
 
+    const serviceToSave = serviceType || null
+
     const { data, error } = await supabase
       .from('profiles')
       .update({
@@ -106,9 +128,10 @@ export function ProfessionalInfoEditor({
         budget_max: maxBudget,
         annees_experience: yearsExp,
         ville_principale: ville.trim() || null,
+        service_type: serviceToSave,
       })
       .eq('id', userId)
-      .select('budget_min, budget_max, annees_experience, ville_principale')
+      .select('budget_min, budget_max, annees_experience, ville_principale, service_type')
       .single()
 
     if (error) {
@@ -144,19 +167,22 @@ export function ProfessionalInfoEditor({
         budgetMax: data.budget_max?.toString() || '',
         experience: data.annees_experience?.toString() || '',
         ville: data.ville_principale || '',
+        serviceType: data.service_type || '',
       }
       setBudgetMin(savedData.budgetMin)
       setBudgetMax(savedData.budgetMax)
       setExperience(savedData.experience)
       setVille(savedData.ville)
+      setServiceType(savedData.serviceType)
       setInitialData(savedData)
     } else {
       // Fallback : utiliser les valeurs locales
-      const fallbackData = { budgetMin, budgetMax, experience, ville }
+      const fallbackData = { budgetMin, budgetMax, experience, ville, serviceType }
       setBudgetMin(fallbackData.budgetMin)
       setBudgetMax(fallbackData.budgetMax)
       setExperience(fallbackData.experience)
       setVille(fallbackData.ville)
+      setServiceType(fallbackData.serviceType)
       setInitialData(fallbackData)
     }
     
@@ -169,32 +195,64 @@ export function ProfessionalInfoEditor({
     setIsSaving(false)
     
     // Attendre un peu avant de recharger pour s'assurer que la DB est à jour
+    // Réduire à 300ms pour un affichage plus rapide
     setTimeout(() => {
       onSave?.()
-    }, 500)
+    }, 300)
   }
 
   return (
     <div className="space-y-6">
+      {/* Profession (service_type) - Modifiable */}
       <div className="space-y-2">
-        <Label htmlFor="ville">Ville principale</Label>
-        <p className="text-sm text-muted-foreground">Où êtes-vous basé(e) ?</p>
-        <Input
-          id="ville"
-          placeholder="Ex: Paris, Lyon, Marseille"
-          value={ville}
-          onChange={(e) => {
+        <Label htmlFor="service-type">Profession</Label>
+        <Select 
+          value={serviceType || ''}
+          onValueChange={(value) => {
             isEditingRef.current = true
-            setVille(e.target.value)
-          }}
-          onBlur={() => {
+            setServiceType(value)
             setTimeout(() => {
               isEditingRef.current = false
             }, 100)
           }}
-          onFocus={() => {
+        >
+          <SelectTrigger id="service-type" className="w-full">
+            <SelectValue placeholder="Sélectionnez votre profession" />
+          </SelectTrigger>
+          <SelectContent className="!bg-white !border-0 !shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)] max-h-[300px] z-50">
+            {SERVICE_CATEGORIES.map((category) => (
+              <SelectGroup key={category.id}>
+                <SelectLabel className="text-xs font-normal text-gray-700 px-2 py-1 !bg-gray-50 sticky top-0 z-10">
+                  {category.label}
+                </SelectLabel>
+                {category.services.map((service) => (
+                  <SelectItem 
+                    key={service.value} 
+                    value={service.value}
+                    className="py-1 px-2 text-sm font-normal cursor-pointer hover:!bg-gray-50 focus:!bg-gray-50 min-h-[32px]"
+                  >
+                    {service.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="ville">Ville principale</Label>
+        <p className="text-sm text-muted-foreground">Où êtes-vous basé(e) ?</p>
+        <CityAutocompleteInput
+          value={ville}
+          onChange={(value) => {
             isEditingRef.current = true
+            setVille(value)
+            setTimeout(() => {
+              isEditingRef.current = false
+            }, 100)
           }}
+          placeholder="Tapez votre ville..."
         />
       </div>
 
@@ -289,6 +347,7 @@ export function ProfessionalInfoEditor({
               setBudgetMax(initialData.budgetMax)
               setExperience(initialData.experience)
               setVille(initialData.ville)
+              setServiceType(initialData.serviceType)
             }}
             disabled={isSaving}
           >
