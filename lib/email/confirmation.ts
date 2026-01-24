@@ -24,8 +24,9 @@ export async function sendConfirmationEmail(
     const adminClient = createAdminClient()
     
     // Générer un lien de confirmation via l'API admin
+    // Utiliser 'magiclink' pour un utilisateur existant (pas 'signup' qui nécessite password)
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-      type: 'signup',
+      type: 'magiclink',
       email: email,
       options: {
         redirectTo: `${siteUrl}/auth/callback`,
