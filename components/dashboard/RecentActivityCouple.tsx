@@ -20,46 +20,7 @@ interface RecentActivityCoupleProps {
   limit?: number
 }
 
-const defaultActivities: Activity[] = [
-  { 
-    id: 1, 
-    type: "message", 
-    title: "Nouveau message de Traiteur Delice", 
-    time: "Il y a 2 heures",
-    icon: MessageSquare,
-    color: "text-[#823F91]",
-    href: "/couple/messagerie"
-  },
-  { 
-    id: 2, 
-    type: "favorite", 
-    title: "Photographe ajouté aux favoris", 
-    time: "Il y a 5 heures",
-    icon: Heart,
-    color: "text-pink-600",
-    href: "/couple/recherche"
-  },
-  { 
-    id: 3, 
-    type: "calendar", 
-    title: "RDV confirmé avec le fleuriste", 
-    time: "Hier",
-    icon: Calendar,
-    color: "text-[#823F91]",
-    href: "/couple/timeline"
-  },
-  { 
-    id: 4, 
-    type: "contact", 
-    title: "Nouveau prestataire contacté", 
-    time: "Il y a 2 jours",
-    icon: User,
-    color: "text-[#823F91]",
-    href: "/couple/messagerie"
-  },
-]
-
-export function RecentActivityCouple({ activities = defaultActivities, limit = 5 }: RecentActivityCoupleProps) {
+export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActivityCoupleProps) {
   const router = useRouter()
   const displayedActivities = activities.slice(0, limit)
 

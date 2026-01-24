@@ -20,14 +20,7 @@ interface UpcomingTasksCoupleProps {
   onTaskToggle?: (id: number) => void
 }
 
-const defaultTasks: Task[] = [
-  { id: 1, title: "Confirmer le traiteur", dueDate: "Dans 3 jours", completed: false, priority: "high" },
-  { id: 2, title: "Essayage robe", dueDate: "15 décembre", completed: false, priority: "medium" },
-  { id: 3, title: "Réserver la salle", dueDate: "20 décembre", completed: true, priority: "high" },
-  { id: 4, title: "Envoyer les faire-parts", dueDate: "1er janvier", completed: false, priority: "low" },
-]
-
-export function UpcomingTasksCouple({ tasks = defaultTasks, onTaskToggle }: UpcomingTasksCoupleProps) {
+export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksCoupleProps) {
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   
   const filteredTasks = filter === 'all' 
