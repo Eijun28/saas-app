@@ -28,7 +28,7 @@ export default function Footer() {
             </Link>
             <Separator orientation="vertical" className="h-4" />
             <Link 
-              href="https://instagram.com/nuply.fr?igsh=MTY2MDF1dW9yd2F2ZQ==" 
+              href="https://www.instagram.com/nuply.fr/" 
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#6B7280] hover:text-[#0B0E12] transition-colors duration-200 cursor-pointer p-2 rounded hover:bg-white/50"

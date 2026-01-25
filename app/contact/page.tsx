@@ -225,6 +225,22 @@ export default function ContactPage() {
               </div>
             </form>
 
+            {/* Lien Instagram */}
+            <div className="mt-6 text-center">
+              <p className="text-sm" style={{ color: 'hsl(var(--beige-700))' }}>
+                Contactez-nous sur{' '}
+                <a 
+                  href="https://www.instagram.com/nuply.fr/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold hover:underline"
+                  style={{ color: '#823F91' }}
+                >
+                  Instagram
+                </a>
+              </p>
+            </div>
+
             {/* Informations de contact */}
             <div className="mt-8 pt-8 border-t border-gray-200">
               <div className="flex items-center justify-center gap-2 text-sm" style={{ color: 'hsl(var(--beige-700))' }}>
