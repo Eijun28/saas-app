@@ -313,7 +313,7 @@ export default function BudgetPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl md:text-3xl font-bold text-[#823F91]">
-                  {totalSpent.toLocaleString('fr-FR')} €
+                  {totalSpent === 0 ? '0' : totalSpent.toLocaleString('fr-FR')} €
                 </p>
                 <p className="text-sm text-[#6B7280] mt-1">
                   {percentageUsed.toFixed(1)}% du budget utilisé

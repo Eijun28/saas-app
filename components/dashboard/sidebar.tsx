@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 
 const navigation = [
   { name: "Accueil", href: "/couple/dashboard", icon: Home },
-  { name: "Matching IA", href: "/couple/matching", icon: Sparkles },
+  { name: "Nuply Matching", href: "/couple/matching", icon: Sparkles },
   { name: "Calendrier", href: "/couple/timeline", icon: Calendar },
   { name: "Messages", href: "/couple/messagerie", icon: MessageSquare },
   { name: "Budget", href: "/couple/budget", icon: DollarSign },

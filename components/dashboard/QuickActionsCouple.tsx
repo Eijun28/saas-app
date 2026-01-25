@@ -20,7 +20,7 @@ const actions: Action[] = [
     icon: Search,
   },
   {
-    label: "Matching IA",
+    label: "Nuply Matching",
     description: "Parler à Nora IA",
     href: "/couple/matching",
     icon: Sparkles,

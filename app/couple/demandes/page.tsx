@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { createClient } from '@/lib/supabase/client'
 import { Send, UserRound } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
+import { extractSupabaseError } from '@/lib/utils'
 
 type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 
@@ -42,7 +43,8 @@ type DevisRow = {
   provider_id?: string
   couple_id: string
   amount: number
-  details: string
+  details?: string | null
+  description?: string | null
   validity_date?: string | null
   status: 'pending' | 'accepted' | 'rejected' | 'negotiating'
   created_at: string
@@ -115,8 +117,17 @@ export default function DemandesPage() {
       .order('created_at', { ascending: false })
 
     if (demandesError) {
-      console.error('Erreur chargement demandes:', demandesError)
-      setError(`Erreur: ${demandesError.message}`)
+      const errorDetails = extractSupabaseError(demandesError)
+      console.error('Erreur chargement demandes:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        userId: user.id,
+        fullError: errorDetails,
+      })
+      setError(`Erreur: ${errorDetails.message || 'Erreur inconnue'}`)
       return
     }
 
@@ -181,22 +192,41 @@ export default function DemandesPage() {
 
     const supabase = createClient()
     const coupleId = await getCoupleId()
-    if (!coupleId) return
+    if (!coupleId) {
+      console.warn('loadDevis: coupleId non trouvé pour user.id:', user.id)
+      setDevis([])
+      return
+    }
     
     // Récupérer tous les devis en une seule requête
     // Note: devis.couple_id référence couples.id
     // Utiliser valid_until au lieu de validity_date (nom de colonne dans la DB)
+    // Utiliser description au lieu de details (la colonne details peut ne pas exister)
     const { data: devisData, error: devisError } = await supabase
       .from('devis')
-      .select('id, demande_id, prestataire_id, couple_id, amount, details, valid_until, status, created_at, updated_at')
+      .select('id, demande_id, prestataire_id, couple_id, amount, description, valid_until, status, created_at, updated_at')
       .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (devisError) {
-      console.error('Erreur chargement devis:', devisError)
+      // Extraire toutes les propriétés de l'erreur pour un meilleur débogage
+      const errorDetails = extractSupabaseError(devisError)
+      
+      // Log détaillé pour comprendre l'erreur
+      console.error('Erreur chargement devis:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        coupleId,
+        userId: user.id,
+        fullError: errorDetails,
+      })
+      
       // Ne pas bloquer si la table devis n'existe pas encore ou si erreur 400 (colonne inexistante)
-      if (devisError.code !== '42P01' && devisError.code !== '42703') {
-        setError(`Erreur devis: ${devisError.message}`)
+      if (errorDetails.code !== '42P01' && errorDetails.code !== '42703') {
+        setError(`Erreur devis: ${errorDetails.message || 'Erreur inconnue'}`)
       }
       setDevis([])
       return
@@ -244,6 +274,7 @@ export default function DemandesPage() {
         prestataire_id: prestataireId,
         provider_id: prestataireId, // Pour compatibilité avec le type DevisRow
         validity_date: devis.valid_until || null, // Mapper valid_until vers validity_date pour le type
+        details: devis.description || null, // Mapper description vers details pour le type (compatibilité)
         service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
           nom_entreprise: prestataireProfile.nom_entreprise || '',
@@ -275,10 +306,20 @@ export default function DemandesPage() {
       .order('created_at', { ascending: false })
 
     if (favorisError) {
-      console.error('Erreur chargement favoris:', favorisError)
+      const errorDetails = extractSupabaseError(favorisError)
+      console.error('Erreur chargement favoris:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        coupleId,
+        userId: user.id,
+        fullError: errorDetails,
+      })
       // Ne pas bloquer si la table favoris n'existe pas encore ou si erreur 400 (colonne inexistante)
-      if (favorisError.code !== '42P01' && favorisError.code !== '42703') {
-        setError(`Erreur favoris: ${favorisError.message}`)
+      if (errorDetails.code !== '42P01' && errorDetails.code !== '42703') {
+        setError(`Erreur favoris: ${errorDetails.message || 'Erreur inconnue'}`)
       }
       setFavoris([])
       return

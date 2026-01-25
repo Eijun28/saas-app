@@ -129,7 +129,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
             <div className="p-2 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9333ea]">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Matching IA</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Nuply Matching</h2>
           </div>
           <button
             onClick={onClose}

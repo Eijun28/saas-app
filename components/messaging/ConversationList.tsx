@@ -24,8 +24,8 @@ export function ConversationList({ conversations, currentUserId, userType }: Con
     return (
       <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-12 sm:pt-16 md:pt-20">
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 sm:mb-6 rounded-full bg-gradient-to-br from-[#007AFF]/10 to-[#0051D5]/10 flex items-center justify-center">
-            <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-[#007AFF]" />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 sm:mb-6 rounded-full bg-gradient-to-br from-[#007AFF]/10 to-[#0051D5]/10 flex items-center justify-center text-[#D6D6D6]">
+            <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-[#9A18C9]" />
           </div>
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
             Aucune conversation

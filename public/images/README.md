@@ -4,7 +4,7 @@ Ce dossier contient les images statiques utilisées dans l'application.
 
 ## Avatar de l'assistant IA
 
-L'image `ai-assistant-avatar.png` est utilisée comme avatar du bot dans le matching IA.
+L'image `ai-assistant-avatar.png` est utilisée comme avatar du bot dans le Nuply Matching.
 
 **Emplacement requis :** `/public/images/ai-assistant-avatar.png`
 

@@ -450,7 +450,7 @@ function LandingView({ onStart, savedConversations, loadingConversations, onSele
             transition={{ delay: 0.2, duration: 0.4 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 px-2"
           >
-            Matching IA
+            Nuply Matching
           </motion.h1>
 
           <motion.p
@@ -676,7 +676,7 @@ function ChatView({
           </button>
 
           <div className="flex items-center justify-center flex-1">
-            <span className="font-semibold text-gray-900 text-sm sm:text-base whitespace-nowrap">Matching IA</span>
+            <span className="font-semibold text-gray-900 text-sm sm:text-base whitespace-nowrap">Nuply Matching</span>
           </div>
 
           {/* Dropdown menu pour les recherches sauvegardées */}

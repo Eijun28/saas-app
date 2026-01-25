@@ -15,7 +15,7 @@ const reviews: ReviewProps[] = [
     name: "Sofia & Amine",
     initials: "SA",
     culture: "Marocain",
-    body: "Notre mariage fusion marocain-français était un défi. NUPLY nous a aidés à trouver des prestataires spécialisés dans les traditions berbères et la cuisine marocaine authentique. Le matching IA a vraiment compris notre vision multiculturelle.",
+    body: "Notre mariage fusion marocain-français était un défi. NUPLY nous a aidés à trouver des prestataires spécialisés dans les traditions berbères et la cuisine marocaine authentique. Le Nuply Matching a vraiment compris notre vision multiculturelle.",
   },
   {
     name: "Priya & Lucas",

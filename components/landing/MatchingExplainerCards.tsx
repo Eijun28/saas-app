@@ -274,7 +274,7 @@ export default function MatchingExplainerCards() {
       description: 'Notre IA analyse vos envies, votre culture, votre budget et votre lieu pour vous connecter uniquement avec des prestataires qualifiés.',
       detailedParagraph: '',
       features: [
-        { icon: Sparkles, text: 'Matching IA basé sur culture, budget et localisation' },
+        { icon: Sparkles, text: 'Nuply Matching basé sur culture, budget et localisation' },
         { icon: MessageCircle, text: 'Messagerie sécurisée intégrée avec tous les prestataires' },
         { icon: PiggyBank, text: 'Gestion complète du budget par catégorie et prestataire' },
         { icon: Calendar, text: 'Timeline interactive avec rappels automatiques' },
@@ -295,7 +295,7 @@ export default function MatchingExplainerCards() {
       description: 'Nuply analyse les besoins des couples et vous envoie uniquement des projets alignés avec vos services, vos tarifs et vos conditions.',
       detailedParagraph: '',
       features: [
-        { icon: Sparkles, text: 'Matching IA qui vous envoie uniquement des couples qualifiés' },
+        { icon: Sparkles, text: 'Nuply Matching qui vous envoie uniquement des couples qualifiés' },
         { icon: Receipt, text: 'Création et gestions de vos devis & factures intégrées' },
         { icon: MessageCircle, text: 'Messagerie intégrée pour échanger directement' },
         { icon: FileText, text: 'Gestion centralisée de toutes vos demandes et contrats' },

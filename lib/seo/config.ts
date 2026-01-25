@@ -13,7 +13,7 @@ export const seoConfig = {
   siteName: siteConfig.name,
   siteUrl: siteConfig.url,
   defaultTitle: "NUPLY : Le mariage moderne",
-  defaultDescription: "Matching IA, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
+  defaultDescription: "Nuply Matching, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
   
   // Informations de l'entreprise
   company: {
@@ -72,7 +72,7 @@ export const seoConfig = {
   pages: {
     home: {
       title: "NUPLY : Le mariage moderne",
-      description: "Matching IA, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
+      description: "Nuply Matching, prestataires vérifiés, budget, timeline, messagerie. Tout le mariage au même endroit.",
       keywords: ["mariage", "mariage multiculturel", "prestataires mariage", "matching mariage", "organisation mariage"],
     },
     tarifs: {

@@ -14,7 +14,7 @@
 
  
 
-**NUPLY** est une plateforme SaaS premium de planification de mariage qui connecte les couples avec des prestataires via un système de matching IA. La plateforme offre une expérience complète de gestion de mariage avec budget, timeline, messagerie et collaborateurs.
+**NUPLY** est une plateforme SaaS premium de planification de mariage qui connecte les couples avec des prestataires via un système de Nuply Matching. La plateforme offre une expérience complète de gestion de mariage avec budget, timeline, messagerie et collaborateurs.
 
  
 
@@ -91,7 +91,7 @@ saas-app/
 
 │   │   ├── dashboard/            # Vue d'ensemble
 
-│   │   ├── matching/             # Matching IA prestataires
+│   │   ├── matching/             # Nuply Matching prestataires
 
 │   │   ├── recherche/            # Recherche prestataires
 
@@ -325,7 +325,7 @@ saas-app/
 
 │   ├── couples.types.ts
 
-│   ├── matching.ts               # Types matching IA
+│   ├── matching.ts               # Types Nuply Matching
 
 │   ├── messages.ts               # Types messagerie
 
@@ -683,7 +683,7 @@ Toutes les tables utilisent **Row Level Security (RLS)** activé avec des politi
 
 - `/couple/dashboard` - Vue d'ensemble
 
-- `/couple/matching` - Matching IA prestataires
+- `/couple/matching` - Nuply Matching prestataires
 
 - `/couple/recherche` - Recherche manuelle
 
@@ -757,7 +757,7 @@ Toutes les tables utilisent **Row Level Security (RLS)** activé avec des politi
 
  
 
-### Matching IA (`/couple/matching`)
+### Nuply Matching (`/couple/matching`)
 
  
 
@@ -1135,7 +1135,7 @@ UPDATE `messages.is_read`
 
  
 
-### 3. Matching IA
+### 3. Nuply Matching
 
  
 
@@ -1665,7 +1665,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 2. **Deux rôles**: Couples (clients) et Prestataires (fournisseurs)
 
-3. **Fonctionnalités clés**: Matching IA, Budget, Timeline, Messagerie, Agenda
+3. **Fonctionnalités clés**: Nuply Matching, Budget, Timeline, Messagerie, Agenda
 
 4. **Design**: TailwindCSS 4 + shadcn/ui + Geist font + Violet (#823F91)
 

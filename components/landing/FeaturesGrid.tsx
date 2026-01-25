@@ -6,7 +6,7 @@ import { Sparkles, MessageSquare, PiggyBank, Shield, Calendar, Users, Lock, Musi
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { FadeInOnScroll } from '@/components/landing/animations';
 
-// Skeleton Matching IA - Rotation conversation toutes les 10s
+// Skeleton Nuply Matching - Rotation conversation toutes les 10s
 const SkeletonMatching = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });

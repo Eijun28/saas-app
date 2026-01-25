@@ -553,5 +553,5 @@ GROUP BY p.id, pp.user_id, ppp.prestataire_id;
 - Table `subscriptions` pour les abonnements premium
 - Table `analytics` pour le suivi des performances
 - Table `tags` pour le système de tags des prestataires
-- Table `matching_scores` pour stocker les scores de matching IA
+- Table `matching_scores` pour stocker les scores de Nuply Matching
 

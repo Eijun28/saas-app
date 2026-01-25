@@ -37,7 +37,7 @@ export const COPY = {
         icon: 'clipboard',
       },
       {
-        title: 'Matching culturel + IA',
+        title: 'Nuply Matching',
         description: 'Notre IA trouve les prestataires parfaits pour votre vision',
         icon: 'sparkles',
       },

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button"
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
   { href: "/couple/recherche", icon: Search, label: "Rechercher" },
-  { href: "/couple/matching", icon: Sparkles, label: "Matching IA" },
+  { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
   { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
   { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },
   { href: "/couple/demandes", icon: FileText, label: "Demandes & Devis" },

@@ -6,7 +6,7 @@ import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User } from "lucid
 
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
-  { href: "/couple/matching", icon: Sparkles, label: "Matching IA" },
+  { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
   { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
   { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },
   { href: "/couple/budget", icon: DollarSign, label: "Budget" },

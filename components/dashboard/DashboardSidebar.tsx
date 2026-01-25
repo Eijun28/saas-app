@@ -34,7 +34,7 @@ interface DashboardSidebarProps {
 
 const defaultItems: SidebarItem[] = [
   { title: "Accueil", icon: Home, href: "/dashboard" },
-  { title: "Matching IA", icon: Sparkles, href: "/dashboard/matching", badge: "Nouveau" },
+  { title: "Nuply Matching", icon: Sparkles, href: "/dashboard/matching", badge: "Nouveau" },
   { title: "Calendrier", icon: Calendar, href: "/dashboard/calendrier" },
   { title: "Messages", icon: MessageSquare, href: "/dashboard/messages" },
   { title: "Demandes & Devis", icon: FileText, href: "/dashboard/demandes" },

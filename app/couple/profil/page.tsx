@@ -848,16 +848,16 @@ export default function CoupleProfilPage() {
                 onClick={handleSave}
                 disabled={saving}
                 size="sm"
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm"
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm h-8 px-3 text-xs"
               >
                 {saving ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                     <span className="hidden sm:inline">Enregistrement...</span>
                   </>
                 ) : (
                   <>
-                    <Check className="h-4 w-4 mr-2" />
+                    <Check className="h-3.5 w-3.5 mr-1.5" />
                     <span className="hidden sm:inline">Enregistrer</span>
                   </>
                 )}
@@ -893,35 +893,35 @@ export default function CoupleProfilPage() {
             <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
               <TabsTrigger 
                 value="base" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
               >
                 <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
                 <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Infos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="mariage"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
               >
                 <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
                 <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Mariage</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="culture"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
               >
                 <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
                 <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Culture</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="style"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
               >
                 <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
                 <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Style</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="services"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
               >
                 <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
                 <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Services</span>
@@ -1245,13 +1245,13 @@ export default function CoupleProfilPage() {
 
                           variant={formData.cultures?.includes(culture) ? 'default' : 'outline'}
 
-                          className={`cursor-pointer ${
+                          className={`cursor-pointer border-0 ${
 
                             formData.cultures?.includes(culture)
 
-                              ? 'bg-[#823F91] hover:bg-[#6D3478]'
+                              ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'hover:bg-gray-100'
+                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
 
                           }`}
 
@@ -1289,13 +1289,13 @@ export default function CoupleProfilPage() {
 
                           variant={formData.religions?.includes(religion) ? 'default' : 'outline'}
 
-                          className={`cursor-pointer ${
+                          className={`cursor-pointer border-0 ${
 
                             formData.religions?.includes(religion)
 
-                              ? 'bg-[#823F91] hover:bg-[#6D3478]'
+                              ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'hover:bg-gray-100'
+                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
 
                           }`}
 
@@ -1483,13 +1483,13 @@ export default function CoupleProfilPage() {
 
                           variant={formData.services_needed?.includes(service) ? 'default' : 'outline'}
 
-                          className={`cursor-pointer ${
+                          className={`cursor-pointer border-0 ${
 
                             formData.services_needed?.includes(service)
 
-                              ? 'bg-[#823F91] hover:bg-[#6D3478]'
+                              ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'hover:bg-gray-100'
+                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
 
                           }`}
 

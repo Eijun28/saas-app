@@ -79,7 +79,7 @@ const SelectContent = React.forwardRef<
       side="bottom"
       sideOffset={4}
       className={cn(
-        "relative z-[9996] min-w-[8rem] rounded-md bg-white text-gray-950 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
+        "relative z-[100000] min-w-[8rem] rounded-md bg-white text-gray-950 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
         "border-0 shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1",

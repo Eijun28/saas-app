@@ -1,6 +1,6 @@
 # 🎉 NUPLY : Le mariage moderne
 
-Plateforme premium de planification de mariage avec matching IA, gestion de budget, timeline et messagerie intégrée.
+Plateforme premium de planification de mariage avec Nuply Matching, gestion de budget, timeline et messagerie intégrée.
 
 ## 🚀 Technologies
 
@@ -46,7 +46,7 @@ app/
 ├── couple/
 │   ├── layout.tsx          # Layout avec sidebar couple
 │   ├── page.tsx            # Dashboard couple
-│   ├── matching/           # Matching IA
+│   ├── matching/           # Nuply Matching
 │   ├── budget/             # Gestion budget
 │   ├── timeline/           # Timeline planning
 │   ├── collaborateurs/     # Gestion collaborateurs
@@ -82,7 +82,7 @@ components/
 ### Pour les couples
 
 - **Dashboard**: Vue d'ensemble avec statistiques
-- **Matching IA**: Recherche et matching de prestataires
+- **Nuply Matching**: Recherche et matching de prestataires
 - **Budget**: Suivi des dépenses par catégorie
 - **Timeline**: Planning avec jalons et échéances
 - **Collaborateurs**: Gestion des invités et permissions

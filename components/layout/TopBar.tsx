@@ -44,7 +44,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
     
     // Titres automatiques selon le pathname
     if (pathname?.startsWith('/couple/dashboard')) return 'Accueil'
-    if (pathname?.startsWith('/couple/matching')) return 'Matching IA'
+    if (pathname?.startsWith('/couple/matching')) return 'Nuply Matching'
     if (pathname?.startsWith('/couple/messagerie')) return 'Messages'
     if (pathname?.startsWith('/couple/budget')) return 'Budget'
     if (pathname?.startsWith('/couple/profil')) return 'Profil'
