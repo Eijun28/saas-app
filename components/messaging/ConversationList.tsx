@@ -55,6 +55,8 @@ export function ConversationList({ conversations, currentUserId, userType }: Con
               .toUpperCase()
               .slice(0, 2) || '?'
 
+            const unreadCount = conversation.unread_count || 0
+
             return (
               <div
                 key={conversation.id}
@@ -73,12 +75,19 @@ export function ConversationList({ conversations, currentUserId, userType }: Con
                       <h3 className="font-semibold text-gray-900 truncate text-[15px] sm:text-[17px]">
                         {otherParty?.name || 'Utilisateur'}
                       </h3>
-                      <span className="text-[11px] sm:text-xs text-gray-400 flex-shrink-0 font-medium">
-                        {new Date(conversation.created_at).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                        })}
-                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {unreadCount > 0 && (
+                          <div className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#823F91] text-white text-xs font-semibold flex items-center justify-center">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </div>
+                        )}
+                        <span className="text-[11px] sm:text-xs text-gray-400 font-medium">
+                          {new Date(conversation.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                        </span>
+                      </div>
                     </div>
                     {conversation.request && (
                       <p className="text-[13px] sm:text-sm text-gray-500 truncate leading-snug">

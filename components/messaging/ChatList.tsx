@@ -70,10 +70,9 @@ export function ChatList({
     return false
   }
 
-  // Compter les messages non-lus (pour l'instant 0, à implémenter)
+  // Compter les messages non-lus
   const getUnreadCount = (conversation: Conversation) => {
-    // TODO: Compter les messages non-lus depuis conversation_participants
-    return 0
+    return conversation.unread_count || 0
   }
 
   // Vérifier si l'utilisateur est en ligne (pour l'instant false, à implémenter avec user_presence)
@@ -206,7 +205,7 @@ export function ChatList({
 
                   {/* Badge messages non-lus */}
                   {unreadCount > 0 && (
-                    <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-gray-900 text-white text-xs font-semibold flex items-center justify-center">
+                    <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-[#823F91] text-white text-xs font-semibold flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}
