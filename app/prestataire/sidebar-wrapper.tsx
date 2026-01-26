@@ -17,13 +17,15 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useNotifications } from "@/hooks/use-notifications"
+import { Badge } from "@/components/ui/badge"
 
 const prestataireNavItems = [
-  { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
-  { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes reçues" },
-  { href: "/prestataire/agenda", icon: Calendar, label: "Agenda" },
-  { href: "/prestataire/messagerie", icon: MessageCircle, label: "Messagerie" },
-  { href: "/prestataire/profil-public", icon: UserCircle, label: "Profil public" },
+  { href: "/prestataire/dashboard", icon: Home, label: "Dashboard", key: "dashboard" },
+  { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes reçues", key: "demandes" },
+  { href: "/prestataire/agenda", icon: Calendar, label: "Agenda", key: "agenda" },
+  { href: "/prestataire/messagerie", icon: MessageCircle, label: "Messagerie", key: "messagerie" },
+  { href: "/prestataire/profil-public", icon: UserCircle, label: "Profil public", key: "profil" },
 ]
 
 function SidebarToggleButton() {
@@ -68,6 +70,7 @@ function SidebarToggleButton() {
 
 export function PrestataireSidebarWrapper() {
   const pathname = usePathname()
+  const { counts } = useNotifications()
 
   return (
     <Sidebar collapsible="icon">
@@ -96,6 +99,7 @@ export function PrestataireSidebarWrapper() {
               {prestataireNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+                const notificationCount = item.key === 'demandes' ? counts.demandes : item.key === 'agenda' ? counts.agenda : 0
                 
                 return (
                   <SidebarMenuItem key={item.href}>
@@ -113,9 +117,14 @@ export function PrestataireSidebarWrapper() {
                           : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
-                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full">
+                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
                         <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
                         <span className="flex-1">{item.label}</span>
+                        {notificationCount > 0 && (
+                          <Badge className="ml-auto bg-[#823F91] text-white text-xs font-bold min-w-[20px] h-5 px-1.5 flex items-center justify-center group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1 group-data-[collapsible=icon]:-translate-y-1">
+                            {notificationCount > 99 ? '99+' : notificationCount}
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

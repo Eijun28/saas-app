@@ -17,16 +17,18 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useNotifications } from "@/hooks/use-notifications"
+import { Badge } from "@/components/ui/badge"
 
 const coupleNavItems = [
-  { href: "/couple/dashboard", icon: Home, label: "Accueil" },
-  { href: "/couple/recherche", icon: Search, label: "Rechercher" },
-  { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
-  { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
-  { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },
-  { href: "/couple/demandes", icon: FileText, label: "Demandes & Devis" },
-  { href: "/couple/budget", icon: DollarSign, label: "Budget" },
-  { href: "/couple/profil", icon: User, label: "Profil" },
+  { href: "/couple/dashboard", icon: Home, label: "Accueil", key: "dashboard" },
+  { href: "/couple/recherche", icon: Search, label: "Rechercher", key: "recherche" },
+  { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching", key: "matching" },
+  { href: "/couple/timeline", icon: Calendar, label: "Calendrier", key: "agenda" },
+  { href: "/couple/messagerie", icon: MessageSquare, label: "Messages", key: "messagerie" },
+  { href: "/couple/demandes", icon: FileText, label: "Demandes & Devis", key: "demandes" },
+  { href: "/couple/budget", icon: DollarSign, label: "Budget", key: "budget" },
+  { href: "/couple/profil", icon: User, label: "Profil", key: "profil" },
 ]
 
 function SidebarToggleButton() {
@@ -71,6 +73,7 @@ function SidebarToggleButton() {
 
 export function CoupleSidebarWrapper() {
   const pathname = usePathname()
+  const { counts } = useNotifications()
 
   return (
     <Sidebar collapsible="icon">
@@ -99,6 +102,7 @@ export function CoupleSidebarWrapper() {
               {coupleNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+                const notificationCount = item.key === 'demandes' ? counts.demandes : item.key === 'agenda' ? counts.agenda : 0
                 
                 return (
                   <SidebarMenuItem key={item.href}>
@@ -116,9 +120,14 @@ export function CoupleSidebarWrapper() {
                           : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
-                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full">
+                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
                         <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
                         <span className="flex-1">{item.label}</span>
+                        {notificationCount > 0 && (
+                          <Badge className="ml-auto bg-[#823F91] text-white text-xs font-bold min-w-[20px] h-5 px-1.5 flex items-center justify-center group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1 group-data-[collapsible=icon]:-translate-y-1">
+                            {notificationCount > 99 ? '99+' : notificationCount}
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
