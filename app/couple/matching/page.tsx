@@ -61,10 +61,16 @@ export default function MatchingPage() {
     coupleProfile
   );
 
+  // Ref pour vérifier si le composant est monté
+  const isMountedRef = useRef(true);
+
   // Fonction pour charger le profil couple
   const loadCoupleProfile = async () => {
     try {
       const profile = await getCurrentCoupleProfile();
+      // Vérifier que le composant est toujours monté avant de mettre à jour l'état
+      if (!isMountedRef.current) return;
+      
       if (profile) {
         setCoupleId(profile.id);
         const avatarUrl = (profile as any).avatar_url || null;
@@ -93,7 +99,12 @@ export default function MatchingPage() {
 
   // Charger le profil couple au montage
   useEffect(() => {
+    isMountedRef.current = true;
     loadCoupleProfile();
+    
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   // Charger les conversations sauvegardées au montage et quand coupleId change
@@ -101,6 +112,7 @@ export default function MatchingPage() {
     if (coupleId) {
       loadSavedConversations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coupleId]);
 
   // Auto-scroll vers le bas à chaque nouveau message
@@ -315,17 +327,23 @@ export default function MatchingPage() {
   };
 
   const loadSavedConversations = async () => {
-    if (!coupleId) return;
+    if (!coupleId || !isMountedRef.current) return;
     
     setLoadingConversations(true);
     try {
       const conversations = await getChatbotConversations(coupleId);
+      // Vérifier que le composant est toujours monté avant de mettre à jour l'état
+      if (!isMountedRef.current) return;
       setSavedConversations(conversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
-      toast.error('Erreur lors du chargement des conversations');
+      if (isMountedRef.current) {
+        toast.error('Erreur lors du chargement des conversations');
+      }
     } finally {
-      setLoadingConversations(false);
+      if (isMountedRef.current) {
+        setLoadingConversations(false);
+      }
     }
   };
 
@@ -617,10 +635,13 @@ function ChatView({
   const [botAvatarError, setBotAvatarError] = useState(false);
   // State pour gérer les erreurs de chargement d'image du couple
   const [coupleAvatarError, setCoupleAvatarError] = useState(false);
+  
+  // Ref pour vérifier si le composant est monté
+  const isMountedRef = useRef(true);
 
   // Auto-resize textarea amélioré
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && isMountedRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
       const maxHeight = 200;
@@ -630,15 +651,26 @@ function ChatView({
 
   // Auto-scroll vers le bas
   useEffect(() => {
-    if (hasMessages && messagesEndRef.current) {
+    if (hasMessages && messagesEndRef.current && isMountedRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, hasMessages]);
 
   // Réinitialiser les erreurs d'avatar quand le profil change
   useEffect(() => {
-    setCoupleAvatarError(false);
+    // S'assurer que le composant est monté avant de mettre à jour l'état
+    if (isMountedRef.current && coupleProfile?.avatar_url !== undefined) {
+      setCoupleAvatarError(false);
+    }
   }, [coupleProfile?.avatar_url]);
+  
+  // Nettoyer le ref au démontage
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Message de bienvenue personnalisé
   const getWelcomeMessage = () => {
@@ -778,44 +810,65 @@ function ChatView({
               </h1>
             </div>
 
-            {/* Input zone centrée */}
-            <div className="relative">
-              <textarea
-                ref={textareaRef}
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={onKeyPress}
-                placeholder="Quel type de prestataire recherchez-vous ?"
-                disabled={isLoading}
-                rows={1}
-                className={cn(
-                  'w-full bg-white border border-gray-300 rounded-xl sm:rounded-2xl',
-                  'p-3 sm:p-4 pr-12 sm:pr-14',
-                  'shadow-sm hover:shadow-md transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-[#823F91] focus:border-transparent',
-                  'disabled:bg-gray-100 disabled:cursor-not-allowed',
-                  'resize-none overflow-hidden',
-                  'min-h-[48px] sm:min-h-[56px] max-h-[200px]',
-                  'text-sm sm:text-base text-gray-900 placeholder:text-gray-500',
-                  'leading-tight'
+            {/* Input zone centrée améliorée */}
+            <div className="relative flex items-end gap-3">
+              {/* Avatar utilisateur */}
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
+                {coupleProfile?.avatar_url && !coupleAvatarError ? (
+                  <img
+                    src={coupleProfile.avatar_url}
+                    alt="Profil couple"
+                    className="w-full h-full object-cover"
+                    onError={() => setCoupleAvatarError(true)}
+                  />
+                ) : (
+                  <span className="text-sm sm:text-base font-semibold">
+                    {getUserInitials()}
+                  </span>
                 )}
-                style={{ height: 'auto' }}
-              />
-              <button
-                onClick={onSend}
-                disabled={!userInput.trim() || isLoading}
-                className={cn(
-                  'absolute right-3 bottom-3 w-10 h-10 rounded-full',
-                  'flex items-center justify-center transition-all',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  userInput.trim() && !isLoading
-                    ? 'bg-[#823F91] text-white hover:bg-[#9333ea] hover:scale-105'
-                    : 'bg-gray-200 text-gray-400'
-                )}
-                aria-label="Envoyer"
-              >
-                <ArrowUp size={20} />
-              </button>
+              </div>
+              
+              {/* Zone de texte */}
+              <div className="flex-1 relative">
+                <textarea
+                  ref={textareaRef}
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={onKeyPress}
+                  placeholder="Quel type de prestataire recherchez-vous ?"
+                  disabled={isLoading}
+                  rows={1}
+                  className={cn(
+                    'w-full bg-gray-50 border border-gray-200 rounded-2xl sm:rounded-3xl',
+                    'p-3 sm:p-4 pr-12 sm:pr-14',
+                    'shadow-sm hover:shadow-md focus:shadow-lg transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-[#823F91]/20 focus:border-[#823F91]/30',
+                    'disabled:bg-gray-100 disabled:cursor-not-allowed',
+                    'resize-none overflow-hidden',
+                    'min-h-[48px] sm:min-h-[56px] max-h-[200px]',
+                    'text-sm sm:text-base text-gray-900 placeholder:text-gray-400',
+                    'leading-relaxed'
+                  )}
+                  style={{ height: 'auto' }}
+                />
+                <button
+                  onClick={onSend}
+                  disabled={!userInput.trim() || isLoading}
+                  className={cn(
+                    'absolute right-2 sm:right-3 bottom-2 sm:bottom-3',
+                    'w-9 h-9 sm:w-10 sm:h-10 rounded-full',
+                    'flex items-center justify-center transition-all duration-200',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'shadow-md hover:shadow-lg active:scale-95',
+                    userInput.trim() && !isLoading
+                      ? 'bg-[#823F91] text-white hover:bg-[#9333ea] hover:scale-105'
+                      : 'bg-gray-200 text-gray-400'
+                  )}
+                  aria-label="Envoyer"
+                >
+                  <ArrowUp size={18} className="sm:w-5 sm:h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -825,9 +878,9 @@ function ChatView({
           {/* Zone messages scrollable */}
           <div
             ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6"
+            className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8"
           >
-            <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+            <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
               {messages.map((message: ChatMessage, index: number) => (
                 <motion.div
                   key={index}
@@ -855,20 +908,43 @@ function ChatView({
                     </div>
                   )}
 
-                  {/* Message bot - pas de bulle, texte direct */}
+                  {/* Message bot - avec style amélioré */}
                   {message.role === 'bot' && (
-                    <div className="flex-1 text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
-                      {message.content}
+                    <div className="flex-1 bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
+                      {(() => {
+                        // Fonction pour corriger les accents mal encodés
+                        let corrected = message.content;
+                        // Remplacer les patterns courants de mots français mal encodés
+                        const fixes: [RegExp, string][] = [
+                          [/r�sume/gi, 'résume'],
+                          [/r�sum�/gi, 'résumé'],
+                          [/alg�rien/gi, 'algérien'],
+                          [/sp�cifique/gi, 'spécifique'],
+                          [/allerg�nes/gi, 'allergènes'],
+                          [/r�gime/gi, 'régime'],
+                          [/v�g�tarien/gi, 'végétarien'],
+                          [/pr�ciser/gi, 'préciser'],
+                          [/pr�f�r�/gi, 'préféré'],
+                          [/d�j�/gi, 'déjà'],
+                          [/tr�s/gi, 'très'],
+                          [/apr�s/gi, 'après'],
+                          [/m�me/gi, 'même'],
+                        ];
+                        fixes.forEach(([pattern, replacement]) => {
+                          corrected = corrected.replace(pattern, replacement);
+                        });
+                        return corrected;
+                      })()}
                     </div>
                   )}
 
-                  {/* Message user - avec bulle */}
+                  {/* Message user - avec bulle améliorée */}
                   {message.role === 'user' && (
                     <>
-                      <div className="bg-gray-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 max-w-[80%] sm:max-w-[75%] text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+                      <div className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 max-w-[80%] sm:max-w-[75%] shadow-md hover:shadow-lg transition-shadow duration-200 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                         {message.content}
                       </div>
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md ring-2 ring-white">
                         {coupleProfile?.avatar_url && !coupleAvatarError ? (
                           <img
                             src={coupleProfile.avatar_url}
@@ -928,43 +1004,66 @@ function ChatView({
           </div>
 
           {/* Footer fixe avec input */}
-          <div className="border-t bg-white p-3 sm:p-4 flex-shrink-0">
+          <div className="border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 flex-shrink-0">
             <div className="max-w-3xl mx-auto relative">
-              <textarea
-                ref={textareaRef}
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={onKeyPress}
-                placeholder="Continuez la conversation..."
-                disabled={isLoading}
-                rows={1}
-                className={cn(
-                  'w-full bg-white border border-gray-300 rounded-xl sm:rounded-2xl',
-                  'p-3 sm:p-4 pr-12 sm:pr-14',
-                  'focus:outline-none focus:ring-2 focus:ring-[#823F91] focus:border-transparent',
-                  'transition-all resize-none overflow-hidden',
-                  'min-h-[48px] sm:min-h-[56px] max-h-[200px]',
-                  'text-sm sm:text-base text-gray-900 placeholder:text-gray-500',
-                  'leading-tight disabled:bg-gray-100 disabled:cursor-not-allowed'
-                )}
-                style={{ height: 'auto' }}
-              />
-              <button
-                onClick={onSend}
-                disabled={!userInput.trim() || isLoading}
-                className={cn(
-                  'absolute right-2 sm:right-3 bottom-2 sm:bottom-3',
-                  'w-8 h-8 sm:w-10 sm:h-10 rounded-full',
-                  'flex items-center justify-center transition-all',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                  userInput.trim() && !isLoading
-                    ? 'bg-[#823F91] text-white hover:bg-[#9333ea] hover:scale-105'
-                    : 'bg-gray-200 text-gray-400'
-                )}
-                aria-label="Envoyer"
-              >
-                <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
+              <div className="relative flex items-end gap-2 sm:gap-3">
+                {/* Avatar utilisateur à gauche */}
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                  {coupleProfile?.avatar_url && !coupleAvatarError ? (
+                    <img
+                      src={coupleProfile.avatar_url}
+                      alt="Profil couple"
+                      className="w-full h-full object-cover"
+                      onError={() => setCoupleAvatarError(true)}
+                    />
+                  ) : (
+                    <span className="text-xs sm:text-sm font-semibold">
+                      {getUserInitials()}
+                    </span>
+                  )}
+                </div>
+                
+                {/* Zone de texte avec bordure arrondie */}
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={textareaRef}
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={onKeyPress}
+                    placeholder="Continuez la conversation..."
+                    disabled={isLoading}
+                    rows={1}
+                    className={cn(
+                      'w-full bg-gray-50 border border-gray-200 rounded-2xl sm:rounded-3xl',
+                      'p-3 sm:p-4 pr-12 sm:pr-14',
+                      'shadow-sm hover:shadow-md focus:shadow-lg',
+                      'focus:outline-none focus:ring-2 focus:ring-[#823F91]/20 focus:border-[#823F91]/30',
+                      'transition-all duration-200 resize-none overflow-hidden',
+                      'min-h-[48px] sm:min-h-[56px] max-h-[200px]',
+                      'text-sm sm:text-base text-gray-900 placeholder:text-gray-400',
+                      'leading-relaxed disabled:bg-gray-100 disabled:cursor-not-allowed'
+                    )}
+                    style={{ height: 'auto' }}
+                  />
+                  <button
+                    onClick={onSend}
+                    disabled={!userInput.trim() || isLoading}
+                    className={cn(
+                      'absolute right-2 sm:right-3 bottom-2 sm:bottom-3',
+                      'w-9 h-9 sm:w-10 sm:h-10 rounded-full',
+                      'flex items-center justify-center transition-all duration-200',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                      'shadow-md hover:shadow-lg active:scale-95',
+                      userInput.trim() && !isLoading
+                        ? 'bg-[#823F91] text-white hover:bg-[#9333ea] hover:scale-105'
+                        : 'bg-gray-200 text-gray-400'
+                    )}
+                    aria-label="Envoyer"
+                  >
+                    <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </>

@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "280px"
-const SIDEBAR_WIDTH_MOBILE = "85%"
+const SIDEBAR_WIDTH_MOBILE = "75%"
 const SIDEBAR_WIDTH_ICON = "6rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
@@ -175,7 +175,7 @@ const Sidebar = React.forwardRef<
           />
           {/* Sidebar avec animation slide */}
           <div 
-            className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-white z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
+            className="fixed inset-y-0 left-0 w-[75%] max-w-sm bg-white z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
             style={{ zIndex: 99999 }}
           >
             <div className="flex h-full w-full flex-col p-4">

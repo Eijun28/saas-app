@@ -10,6 +10,77 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Fonction utilitaire pour corriger l'encodage UTF-8 des caractères accentués
+function fixUtf8Encoding(text: string): string {
+  if (!text || typeof text !== 'string') return text;
+  
+  try {
+    let fixed = text;
+    
+    // Décoder les séquences d'échappement Unicode (\uXXXX)
+    fixed = fixed.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
+      return String.fromCharCode(parseInt(code, 16));
+    });
+    
+    // Normaliser les caractères Unicode (NFC - Canonical Composition)
+    fixed = fixed.normalize('NFC');
+    
+    // Détecter et corriger les caractères mal encodés (remplacement par �)
+    // Pattern pour détecter les mots avec des caractères de remplacement suivis de lettres
+    const commonAccents: Record<string, string> = {
+      // é
+      '�': 'é', // Si suivi de certaines lettres communes
+      // è
+      '�': 'è',
+      // à
+      '�': 'à',
+      // ç
+      '�': 'ç',
+    };
+    
+    // Remplacer les patterns courants de mots français mal encodés
+    const wordReplacements: Record<string, string> = {
+      'r�sume': 'résume',
+      'r�sum�': 'résumé',
+      'alg�rien': 'algérien',
+      'sp�cifique': 'spécifique',
+      'allerg�nes': 'allergènes',
+      'r�gime': 'régime',
+      'v�g�tarien': 'végétarien',
+      'pr�ciser': 'préciser',
+      'pr�f�r�': 'préféré',
+      'pr�f�r�e': 'préférée',
+      'pr�f�r�es': 'préférées',
+      'pr�f�r�s': 'préférés',
+      'd�j�': 'déjà',
+      'tr�s': 'très',
+      'apr�s': 'après',
+      'm�me': 'même',
+      'c�r�monie': 'cérémonie',
+      'c�r�monies': 'cérémonies',
+    };
+    
+    // Remplacer les mots connus
+    for (const [wrong, correct] of Object.entries(wordReplacements)) {
+      const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      fixed = fixed.replace(regex, correct);
+    }
+    
+    // Si le texte contient encore des caractères de remplacement, logger pour déboguer
+    if (fixed.includes('�')) {
+      console.warn('Caractères de remplacement détectés après correction:', {
+        original: text.substring(0, 100),
+        fixed: fixed.substring(0, 100),
+      });
+    }
+    
+    return fixed;
+  } catch (error) {
+    console.error('Erreur lors de la correction UTF-8:', error);
+    return text; // Retourner le texte original en cas d'erreur
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
@@ -398,12 +469,16 @@ Exemple mauvais ton :
         }
       );
     }
+    
+    // Corriger l'encodage UTF-8 du contenu dès la réception
+    const fixedContent = fixUtf8Encoding(content);
 
     // Parser la réponse JSON avec gestion d'erreur améliorée
     let parsedResponse;
     try {
       // Nettoyer le contenu si nécessaire (enlever markdown code blocks, etc.)
-      let cleanedContent = content.trim();
+      // Utiliser le contenu corrigé
+      let cleanedContent = fixedContent.trim();
       
       // Si le contenu est entouré de markdown code blocks, les enlever
       if (cleanedContent.startsWith('```json')) {
@@ -412,7 +487,27 @@ Exemple mauvais ton :
         cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
       
+      // Normaliser les caractères Unicode avant le parsing
+      cleanedContent = cleanedContent.normalize('NFC');
+      
+      // Parser le JSON
       parsedResponse = JSON.parse(cleanedContent);
+      
+      // S'assurer que tous les strings dans la réponse sont correctement décodés
+      if (parsedResponse.message && typeof parsedResponse.message === 'string') {
+        // Corriger l'encodage UTF-8 du message
+        parsedResponse.message = fixUtf8Encoding(parsedResponse.message);
+      }
+      
+      // Corriger aussi les autres champs de texte si présents
+      if (parsedResponse.extracted_data) {
+        if (parsedResponse.extracted_data.vision_description && typeof parsedResponse.extracted_data.vision_description === 'string') {
+          parsedResponse.extracted_data.vision_description = fixUtf8Encoding(parsedResponse.extracted_data.vision_description);
+        }
+        if (parsedResponse.extracted_data.wedding_ambiance && typeof parsedResponse.extracted_data.wedding_ambiance === 'string') {
+          parsedResponse.extracted_data.wedding_ambiance = fixUtf8Encoding(parsedResponse.extracted_data.wedding_ambiance);
+        }
+      }
     } catch (parseError: any) {
       console.error('Erreur parsing réponse OpenAI:', {
         error: parseError?.message || parseError,
@@ -425,9 +520,9 @@ Exemple mauvais ton :
       let fallbackMessage = 'Je n\'ai pas pu traiter votre demande. Pouvez-vous reformuler ?';
       try {
         // Essayer d'extraire un message même si le JSON est invalide
-        const messageMatch = content.match(/"message"\s*:\s*"([^"]+)"/);
+        const messageMatch = fixedContent.match(/"message"\s*:\s*"([^"]+)"/);
         if (messageMatch && messageMatch[1]) {
-          fallbackMessage = messageMatch[1];
+          fallbackMessage = fixUtf8Encoding(messageMatch[1]);
         }
       } catch (e) {
         // Ignorer
@@ -471,6 +566,9 @@ Exemple mauvais ton :
     if (!parsedResponse.message || typeof parsedResponse.message !== 'string') {
       console.error('Réponse OpenAI invalide (pas de message):', parsedResponse);
       parsedResponse.message = 'Je n\'ai pas compris. Pouvez-vous reformuler ?';
+    } else {
+      // Normaliser les caractères UTF-8 pour garantir l'affichage correct des accents
+      parsedResponse.message = parsedResponse.message.normalize('NFC');
     }
 
     // S'assurer que next_action existe
@@ -575,11 +673,9 @@ Exemple mauvais ton :
       console.log(`Conversation longue (${questionCount} questions), l'IA devrait considérer la validation`);
     }
 
-    // Encoder correctement la réponse en UTF-8 avec Buffer pour garantir l'encodage
-    const responseBody = JSON.stringify(parsedResponse);
-    const buffer = Buffer.from(responseBody, 'utf-8');
-    
-    return new NextResponse(buffer, {
+    // Utiliser NextResponse.json() qui gère automatiquement UTF-8 correctement
+    // avec les headers appropriés
+    return NextResponse.json(parsedResponse, {
       status: 200,
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',

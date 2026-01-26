@@ -26,10 +26,13 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
   messagesRef.current = messages;
 
   const sendMessage = async (userMessage: string) => {
+    // Normaliser les caractères UTF-8 du message utilisateur
+    const normalizedUserMessage = userMessage.normalize('NFC').trim();
+    
     // Ajouter le message utilisateur
     const newUserMessage: ChatMessage = {
       role: 'user',
-      content: userMessage,
+      content: normalizedUserMessage,
       timestamp: new Date().toISOString(),
     };
     
@@ -57,12 +60,15 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
       };
 
       // Appeler l'API chatbot avec les messages mis à jour
+      // Encoder correctement le body en UTF-8
+      const bodyString = JSON.stringify(payload);
       const response = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json; charset=utf-8',
         },
-        body: JSON.stringify(payload),
+        body: bodyString,
       });
 
       if (!response.ok) {
@@ -122,7 +128,12 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
         throw error;
       }
 
-      const data = await response.json();
+      // S'assurer que la réponse est bien en UTF-8
+      // Utiliser response.text() puis JSON.parse pour avoir plus de contrôle sur l'encodage
+      const responseText = await response.text();
+      
+      // Parser le JSON - response.text() retourne déjà une string UTF-8
+      const data = JSON.parse(responseText);
 
       // Valider que la réponse contient un message
       if (!data || typeof data !== 'object') {
@@ -134,10 +145,16 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
         throw new Error('Le serveur n\'a pas retourné de message valide');
       }
 
+      // Normaliser les caractères UTF-8 pour garantir l'affichage correct des accents
+      // Utiliser NFC pour normaliser les caractères Unicode composés
+      const normalizedMessage = data.message
+        .normalize('NFC') // Normaliser les caractères Unicode
+        .trim();
+
       // Ajouter la réponse du bot
       const botMessage: ChatMessage = {
         role: 'bot',
-        content: data.message.trim(),
+        content: normalizedMessage,
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, botMessage]);
