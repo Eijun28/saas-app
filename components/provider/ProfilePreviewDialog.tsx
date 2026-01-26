@@ -200,6 +200,22 @@ export function ProfilePreviewDialog({
         return
       }
 
+      // Envoyer l'email de notification au prestataire (sans bloquer le flow)
+      if (data?.id) {
+        try {
+          const { sendNewRequestEmail } = await import('@/lib/email/notifications')
+          await sendNewRequestEmail(
+            userId,
+            currentCoupleId,
+            data.id,
+            demandeMessage.trim()
+          )
+        } catch (emailError) {
+          // Ne pas bloquer si l'email échoue
+          console.error('Erreur envoi email notification:', emailError)
+        }
+      }
+
       toast.success('Demande envoyée avec succès !')
       setDemandeMessage('')
       setDemandeDate('')

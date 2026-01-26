@@ -221,6 +221,19 @@ export default function DemandesRecuesPage() {
       return
     }
 
+    // Envoyer l'email de notification au couple (sans bloquer le flow)
+    try {
+      const { sendRequestAcceptedEmail } = await import('@/lib/email/notifications')
+      await sendRequestAcceptedEmail(
+        requestData.couple_id,
+        requestData.provider_id,
+        requestId
+      )
+    } catch (emailError) {
+      // Ne pas bloquer si l'email échoue
+      console.error('Erreur envoi email notification:', emailError)
+    }
+
     // Le trigger devrait créer automatiquement la conversation lors du changement de statut
     // Attendre un court délai pour laisser le trigger s'exécuter
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -268,6 +281,29 @@ export default function DemandesRecuesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
+    
+    // Récupérer d'abord la demande pour obtenir couple_id
+    const { data: requestData, error: fetchError } = await supabase
+      .from('requests')
+      .select('id, couple_id, provider_id, status')
+      .eq('id', requestId)
+      .eq('provider_id', user.id)
+      .single()
+
+    if (fetchError || !requestData) {
+      const errorDetails = extractSupabaseError(fetchError)
+      console.error('Erreur récupération demande:', {
+        message: errorDetails.message,
+        code: errorDetails.code,
+        details: errorDetails.details,
+        hint: errorDetails.hint,
+        statusCode: errorDetails.statusCode,
+        fullError: errorDetails,
+      })
+      toast.error(`Erreur: ${errorDetails.message || 'Demande introuvable'}`)
+      return
+    }
+
     const { error } = await supabase
       .from('requests')
       .update({ status: 'rejected' })
@@ -286,6 +322,19 @@ export default function DemandesRecuesPage() {
       })
       toast.error(`Erreur: ${errorDetails.message || 'Erreur lors du rejet'}`)
       return
+    }
+
+    // Envoyer l'email de notification au couple (sans bloquer le flow)
+    try {
+      const { sendRequestRejectedEmail } = await import('@/lib/email/notifications')
+      await sendRequestRejectedEmail(
+        requestData.couple_id,
+        requestData.provider_id,
+        requestId
+      )
+    } catch (emailError) {
+      // Ne pas bloquer si l'email échoue
+      console.error('Erreur envoi email notification:', emailError)
     }
 
     toast.success('Demande refusée')
