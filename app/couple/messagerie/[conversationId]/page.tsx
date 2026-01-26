@@ -1,9 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getMessagesServer, getConversationsServer } from '@/lib/supabase/messaging'
-import { ConversationHeader } from '@/components/messaging/ConversationHeader'
-import { MessageList } from '@/components/messaging/MessageList'
-import { MessageInput } from '@/components/messaging/MessageInput'
+import { MessagingLayout, ChatList, ChatHeader, ChatMessages, ChatInput } from '@/components/messaging'
 
 interface ConversationPageProps {
   params: Promise<{ conversationId: string }>
@@ -37,28 +35,45 @@ export default async function ConversationPage({ params }: ConversationPageProps
   // Déterminer l'autre partie
   const otherPartyId = conversation.couple_id === user.id ? conversation.provider_id : conversation.couple_id
 
+  // Récupérer toutes les conversations pour la liste
+  const allConversations = await getConversationsServer(user.id)
+
   return (
-    <div className="flex flex-col h-screen sm:h-[calc(100vh-64px)] bg-[#F5F5F7] overflow-hidden">
-      <ConversationHeader
-        conversation={{
-          id: conversation.id,
-          couple_id: conversation.couple_id,
-          provider_id: conversation.provider_id,
-          request_id: conversation.request_id,
-          created_at: conversation.created_at,
-        }}
-        otherParty={conversation.other_party || { id: otherPartyId, name: 'Utilisateur' }}
-        request={conversation.request || null}
-        userType="couple"
-      />
-      
-      <MessageList
-        conversationId={conversationId}
-        initialMessages={initialMessages}
-        currentUserId={user.id}
-      />
-      
-      <MessageInput conversationId={conversationId} senderId={user.id} />
-    </div>
+    <MessagingLayout
+      conversations={allConversations}
+      currentUserId={user.id}
+      userType="couple"
+      selectedConversationId={conversationId}
+      chatListComponent={
+        <ChatList
+          conversations={allConversations}
+          currentUserId={user.id}
+          userType="couple"
+          selectedConversationId={conversationId}
+        />
+      }
+    >
+      <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+        <ChatHeader
+          conversation={{
+            id: conversation.id,
+            couple_id: conversation.couple_id,
+            provider_id: conversation.provider_id,
+            request_id: conversation.request_id,
+            created_at: conversation.created_at,
+          }}
+          otherParty={conversation.other_party || { id: otherPartyId, name: 'Utilisateur' }}
+          userType="couple"
+        />
+
+        <ChatMessages
+          conversationId={conversationId}
+          initialMessages={initialMessages}
+          currentUserId={user.id}
+        />
+
+        <ChatInput conversationId={conversationId} senderId={user.id} />
+      </div>
+    </MessagingLayout>
   )
 }

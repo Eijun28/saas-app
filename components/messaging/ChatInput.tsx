@@ -1,0 +1,266 @@
+'use client'
+
+import { useState, FormEvent, useRef, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Send, Smile, Paperclip, Mic, Image, FileText, Camera } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+
+interface ChatInputProps {
+  conversationId: string
+  senderId: string
+  onMessageSent?: () => void
+}
+
+// Emojis populaires pour le picker simple
+const EMOJIS = [
+  '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂',
+  '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩',
+  '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪',
+  '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨',
+  '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+  '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕',
+  '❤️', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎',
+  '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👏',
+]
+
+export function ChatInput({
+  conversationId,
+  senderId,
+  onMessageSent,
+}: ChatInputProps) {
+  const [content, setContent] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const supabase = createClient()
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        120
+      )}px`
+    }
+  }, [content])
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+
+    if (!content.trim() || isSending) return
+
+    const messageContent = content.trim()
+    setIsSending(true)
+    setContent('')
+
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
+
+    try {
+      const { error } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        content: messageContent,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      onMessageSent?.()
+    } catch (error: any) {
+      console.error('Erreur envoi message:', error)
+      toast.error("Erreur lors de l'envoi du message")
+      setContent(messageContent) // Restore content on error
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit(e)
+    }
+  }
+
+  const handleEmojiSelect = (emoji: string) => {
+    setContent((prev) => prev + emoji)
+    setShowEmojiPicker(false)
+    textareaRef.current?.focus()
+  }
+
+  const handleFileSelect = (type: 'image' | 'document' | 'camera') => {
+    if (type === 'camera') {
+      // TODO: Ouvrir la caméra pour prendre une photo
+      toast.info('Fonctionnalité caméra à venir')
+      return
+    }
+
+    fileInputRef.current?.click()
+    // TODO: Gérer l'upload des fichiers vers Supabase Storage
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // TODO: Upload vers Supabase Storage et créer message avec media
+    toast.info('Fonctionnalité d\'upload à venir')
+    e.target.value = '' // Reset input
+  }
+
+  const handleVoiceRecord = () => {
+    if (isRecording) {
+      // Arrêter l'enregistrement
+      setIsRecording(false)
+      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
+      // TODO: Implémenter l'enregistrement vocal
+    } else {
+      // Démarrer l'enregistrement
+      setIsRecording(true)
+      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
+      // TODO: Implémenter l'enregistrement vocal
+    }
+  }
+
+  const hasContent = content.trim().length > 0
+
+  return (
+    <div className="bg-white border-t border-gray-200 safe-area-bottom">
+      <form onSubmit={handleSubmit} className="px-3 sm:px-4 py-3 sm:py-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-end gap-2 bg-gray-50 rounded-2xl px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-300 transition-all">
+            {/* Bouton emoji */}
+            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+              <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    aria-label="Emoji"
+                  >
+                    <Smile className="h-5 w-5 text-gray-500" />
+                  </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-3" align="start">
+                <div className="grid grid-cols-8 gap-1">
+                  {EMOJIS.map((emoji, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleEmojiSelect(emoji)}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#FBF8F3] active:bg-[#F5F0E8] transition-colors text-xl"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Textarea */}
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Message"
+              className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
+              rows={1}
+              disabled={isSending}
+            />
+
+            {/* Bouton pièce jointe */}
+            {!hasContent && (
+              <div className="flex-shrink-0 flex items-center gap-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/60 active:bg-white/80 transition-colors"
+                      aria-label="Pièces jointes"
+                    >
+                      <Paperclip className="h-5 w-5 text-[#8B7866]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => handleFileSelect('image')}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                      >
+                        <Image className="h-4 w-4" />
+                        Photo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFileSelect('document')}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Document
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFileSelect('camera')}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                      >
+                        <Camera className="h-4 w-4" />
+                        Caméra
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Input fichier caché */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*,.pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            )}
+
+            {/* Bouton microphone ou send */}
+            {hasContent ? (
+              <button
+                type="submit"
+                disabled={!content.trim() || isSending}
+                className="flex-shrink-0 bg-gray-900 text-white rounded-full w-9 h-9 hover:bg-gray-800 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Envoyer"
+              >
+                <Send className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleVoiceRecord}
+                className={`flex-shrink-0 rounded-full w-9 h-9 flex items-center justify-center transition-all duration-200 ${
+                  isRecording
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'hover:bg-gray-100 active:bg-gray-200'
+                }`}
+                aria-label="Enregistrer un message vocal"
+              >
+                <Mic className="h-5 w-5 text-gray-500" />
+              </button>
+            )}
+          </div>
+        </div>
+      </form>
+    </div>
+  )
+}

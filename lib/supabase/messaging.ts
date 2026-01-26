@@ -19,12 +19,24 @@ export interface Conversation {
   }
 }
 
+export interface MediaItem {
+  id: string
+  url: string
+  type: 'image' | 'video' | 'audio' | 'document'
+  thumbnail_url?: string
+  duration?: number
+  width?: number
+  height?: number
+}
+
 export interface Message {
   id: string
   conversation_id: string
   sender_id: string
   content: string
   created_at: string
+  read_at?: string | null
+  media?: MediaItem[]
 }
 
 /**

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getConversationsServer } from '@/lib/supabase/messaging'
-import { ConversationList } from '@/components/messaging/ConversationList'
+import { MessagingLayout, ChatList } from '@/components/messaging'
 
 export default async function PrestataireMessageriePage() {
   const supabase = await createClient()
@@ -14,5 +14,18 @@ export default async function PrestataireMessageriePage() {
   // Récupérer les conversations du prestataire
   const conversations = await getConversationsServer(user.id)
 
-  return <ConversationList conversations={conversations} currentUserId={user.id} userType="prestataire" />
+  return (
+    <MessagingLayout
+      conversations={conversations}
+      currentUserId={user.id}
+      userType="prestataire"
+      chatListComponent={
+        <ChatList
+          conversations={conversations}
+          currentUserId={user.id}
+          userType="prestataire"
+        />
+      }
+    />
+  )
 }
