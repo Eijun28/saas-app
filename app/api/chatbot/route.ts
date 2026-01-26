@@ -25,19 +25,6 @@ function fixUtf8Encoding(text: string): string {
     // Normaliser les caractères Unicode (NFC - Canonical Composition)
     fixed = fixed.normalize('NFC');
     
-    // Détecter et corriger les caractères mal encodés (remplacement par �)
-    // Pattern pour détecter les mots avec des caractères de remplacement suivis de lettres
-    const commonAccents: Record<string, string> = {
-      // é
-      '�': 'é', // Si suivi de certaines lettres communes
-      // è
-      '�': 'è',
-      // à
-      '�': 'à',
-      // ç
-      '�': 'ç',
-    };
-    
     // Remplacer les patterns courants de mots français mal encodés
     const wordReplacements: Record<string, string> = {
       'r�sume': 'résume',
