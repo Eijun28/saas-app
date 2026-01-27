@@ -1,5 +1,6 @@
 'use client'
 
+// Version actuelle - Déploiement forcé
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
