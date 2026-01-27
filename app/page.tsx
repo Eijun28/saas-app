@@ -10,28 +10,19 @@ import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
-// import Particles from '@/components/Particles' // Désactivé temporairement - nécessite 'ogl'
+import { Sparkles } from '@/components/ui/sparkles'
 
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Background de particules - Désactivé temporairement - nécessite 'ogl' */}
-      {/* <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-        <Particles
+      {/* Background de sparkles */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Sparkles
           particleCount={200}
-          particleSpread={10}
-          speed={0.24}
           particleColors={["#823F91","#c081e3","#823F91"]}
-          moveParticlesOnHover={false}
-          particleHoverFactor={1}
-          alphaParticles={false}
-          particleBaseSize={50}
-          sizeRandomness={0.5}
-          cameraDistance={20}
-          disableRotation={false}
-          className=""
+          speed={0.24}
         />
-      </div> */}
+      </div>
 
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
