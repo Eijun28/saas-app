@@ -261,16 +261,23 @@ export async function sendNewMessageEmail(
     const adminClient = createAdminClient()
 
     // Récupérer les informations du destinataire
-    const recipientTable = isRecipientCouple ? 'couples' : 'profiles'
-    const recipientSelect = isRecipientCouple
-      ? 'email, partner_1_name, partner_2_name'
-      : 'email, prenom, nom'
+    let recipient: { email: string; [key: string]: any } | null = null
     
-    const { data: recipient } = await adminClient
-      .from(recipientTable)
-      .select(recipientSelect)
-      .eq(isRecipientCouple ? 'user_id' : 'id', recipientId)
-      .single()
+    if (isRecipientCouple) {
+      const { data: coupleRecipient } = await adminClient
+        .from('couples')
+        .select('email, partner_1_name, partner_2_name')
+        .eq('user_id', recipientId)
+        .single()
+      recipient = coupleRecipient
+    } else {
+      const { data: profileRecipient } = await adminClient
+        .from('profiles')
+        .select('email, prenom, nom')
+        .eq('id', recipientId)
+        .single()
+      recipient = profileRecipient
+    }
 
     if (!recipient || !recipient.email) {
       logger.warn('Destinataire non trouvé ou email manquant', { recipientId })
@@ -278,24 +285,31 @@ export async function sendNewMessageEmail(
     }
 
     // Récupérer les informations de l'expéditeur
-    const senderTable = isRecipientCouple ? 'profiles' : 'couples'
-    const senderSelect = isRecipientCouple
-      ? 'nom_entreprise, prenom, nom'
-      : 'partner_1_name, partner_2_name'
+    let senderName: string
     
-    const { data: sender } = await adminClient
-      .from(senderTable)
-      .select(senderSelect)
-      .eq(isRecipientCouple ? 'id' : 'user_id', senderId)
-      .single()
-
-    const senderName = isRecipientCouple
-      ? (sender?.nom_entreprise || `${sender?.prenom || ''} ${sender?.nom || ''}`.trim() || 'le prestataire')
-      : (sender ? `${sender.partner_1_name}${sender.partner_2_name ? ` et ${sender.partner_2_name}` : ''}` : 'un couple')
+    if (isRecipientCouple) {
+      // L'expéditeur est un prestataire
+      const { data: sender } = await adminClient
+        .from('profiles')
+        .select('nom_entreprise, prenom, nom')
+        .eq('id', senderId)
+        .single()
+      
+      senderName = sender?.nom_entreprise || `${sender?.prenom || ''} ${sender?.nom || ''}`.trim() || 'le prestataire'
+    } else {
+      // L'expéditeur est un couple
+      const { data: sender } = await adminClient
+        .from('couples')
+        .select('partner_1_name, partner_2_name')
+        .eq('user_id', senderId)
+        .single()
+      
+      senderName = sender ? `${sender.partner_1_name}${sender.partner_2_name ? ` et ${sender.partner_2_name}` : ''}` : 'un couple'
+    }
 
     const recipientName = isRecipientCouple
-      ? `${recipient.partner_1_name}${recipient.partner_2_name ? ` et ${recipient.partner_2_name}` : ''}`
-      : (recipient.prenom || '')
+      ? `${(recipient as any).partner_1_name || ''}${(recipient as any).partner_2_name ? ` et ${(recipient as any).partner_2_name}` : ''}`
+      : ((recipient as any).prenom || '')
 
     const resend = new Resend(resendApiKey)
     const subject = `💬 Nouveau message de ${senderName}`
