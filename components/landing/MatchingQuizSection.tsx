@@ -13,16 +13,28 @@ const SkeletonMatchingFullWidth = () => {
   
   const conversationSets = [
     {
-      query: "Je cherche un traiteur marocain + français, halal, pour 150 personnes. Budget 6000-7000€",
-      result: "J'ai trouvé 3 traiteurs qui matchent ! Tous halal et bilingues. Budget : 6200-6800€. On les contacte ?"
+      query: "Traiteur marocain + français, halal, 150 pers, 6-7k€",
+      result: "3 traiteurs trouvés ! Halal, bilingues. 6200-6800€",
+      seeProviders: "Voir les prestataires les plus compatibles ?",
+      chooseMessage: "Dites-moi lequel prendre et je le contacte avec votre demande",
+      choice: "Le premier",
+      confirmation: "Parfait ! Je contacte le premier avec votre demande."
     },
     {
-      query: "Traiteur fusion indienne-française, végétarien, 80 personnes, max 4500€",
-      result: "4 traiteurs trouvés ! Spécialisés fusion végé. Budget : 4000-4400€. Ça te va ?"
+      query: "Fusion indienne-française végé, 80 pers, max 4.5k€",
+      result: "4 traiteurs dispo ! Fusion végé. 4000-4400€",
+      seeProviders: "Voir les prestataires les plus compatibles ?",
+      chooseMessage: "Dites-moi lequel prendre et je le contacte avec votre demande",
+      choice: "Le 2ème",
+      confirmation: "Ok ! Je contacte le 2ème avec votre demande."
     },
     {
-      query: "Traiteur libanais authentique, 200 invités, budget 8000€, région Marseille",
-      result: "2 traiteurs parfaits ! Expérience mariages mixtes. Budget : 7800-8200€. Je les contacte ?"
+      query: "Traiteur libanais, 200 pers, 8k€, Marseille",
+      result: "2 traiteurs top ! Expérience mariages mixtes. 7800-8200€",
+      seeProviders: "Voir les prestataires les plus compatibles ?",
+      chooseMessage: "Dites-moi lequel prendre et je le contacte avec votre demande",
+      choice: "Le premier",
+      confirmation: "Parfait ! Je contacte le premier avec votre demande."
     },
   ];
 
@@ -127,29 +139,56 @@ const SkeletonMatchingFullWidth = () => {
                     avatar: "ai"
                   }]);
                   
-                  // Après la réponse de l'IA, ajouter le message "oui" du couple
+                  // Après la réponse de l'IA, proposer de voir les prestataires
                   setTimeout(() => {
                     setDisplayedMessages(prev => [...prev, {
-                      from: "couple",
-                      text: "Oui",
-                      avatar: "couple"
+                      from: "ai",
+                      text: current.seeProviders,
+                      avatar: "ai"
                     }]);
                     
-                    // Puis la réponse finale de l'IA avec le bouton
-                    finalMessageTimeout = setTimeout(() => {
+                    // Le couple répond "Oui"
+                    setTimeout(() => {
                       setDisplayedMessages(prev => [...prev, {
-                        from: "ai",
-                        text: "Demandes envoyées !",
-                        avatar: "ai",
-                        button: true
+                        from: "couple",
+                        text: "Oui",
+                        avatar: "couple"
                       }]);
                       
-                      // Attendre 4 secondes après l'affichage du message avec bouton avant de redémarrer
-                      restartTimeout = setTimeout(() => {
-                        // Passer au prochain set de conversation
-                        setCurrentSet((prev) => (prev + 1) % conversationSets.length);
-                      }, 4000);
-                    }, 1500);
+                      // L'IA demande lequel choisir
+                      setTimeout(() => {
+                        setDisplayedMessages(prev => [...prev, {
+                          from: "ai",
+                          text: current.chooseMessage,
+                          avatar: "ai"
+                        }]);
+                        
+                        // Le couple fait son choix
+                        setTimeout(() => {
+                          setDisplayedMessages(prev => [...prev, {
+                            from: "couple",
+                            text: current.choice,
+                            avatar: "couple"
+                          }]);
+                          
+                          // L'IA confirme qu'elle va contacter
+                          finalMessageTimeout = setTimeout(() => {
+                            setDisplayedMessages(prev => [...prev, {
+                              from: "ai",
+                              text: current.confirmation,
+                              avatar: "ai",
+                              button: true
+                            }]);
+                            
+                            // Attendre 4 secondes après l'affichage du message avec bouton avant de redémarrer
+                            restartTimeout = setTimeout(() => {
+                              // Passer au prochain set de conversation
+                              setCurrentSet((prev) => (prev + 1) % conversationSets.length);
+                            }, 4000);
+                          }, 1500);
+                        }, 2000);
+                      }, 2000);
+                    }, 2000);
                   }, 2000);
                 }, 2000);
               }, 300);
