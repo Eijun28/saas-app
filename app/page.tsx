@@ -18,9 +18,9 @@ export default function HomePage() {
       {/* Background de sparkles */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Sparkles
-          particleCount={200}
+          particleCount={60}
           particleColors={["#823F91","#c081e3","#823F91"]}
-          speed={0.24}
+          speed={0.15}
         />
       </div>
 
