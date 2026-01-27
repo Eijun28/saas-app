@@ -64,6 +64,8 @@ const nextConfig: NextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  // Configuration Turbopack (requis pour Next.js 16)
+  turbopack: {},
   webpack: (config, { isServer }) => {
     // Forcer la résolution correcte des modules avec l'alias @/
     config.resolve.alias = {

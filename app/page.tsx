@@ -3,19 +3,20 @@
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
+import { HowItWorks } from '@/components/landing/HowItWorks'
 import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
 import MatchingExplainerCards from '@/components/landing/MatchingExplainerCards'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
-import Particles from '@/components/Particles'
+// import Particles from '@/components/Particles' // Désactivé temporairement - nécessite 'ogl'
 
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Background de particules - couvre toute la page */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+      {/* Background de particules - Désactivé temporairement - nécessite 'ogl' */}
+      {/* <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Particles
           particleCount={200}
           particleSpread={10}
@@ -30,13 +31,14 @@ export default function HomePage() {
           disableRotation={false}
           className=""
         />
-      </div>
+      </div> */}
 
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
           <Hero />
           <CulturesMarquee />
+          <HowItWorks />
           <MatchingQuizSection />
           <PrestatairesMarquee />
           <FeaturesGrid />

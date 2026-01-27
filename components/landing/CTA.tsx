@@ -5,9 +5,8 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import { Button, buttonVariants } from "@/components/ui/button";
-import Glow from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
-import LightRays from "@/components/LightRays";
+// import LightRays from "@/components/LightRays"; // Désactivé temporairement - nécessite 'ogl'
 
 interface CTAButtonProps {
   href: string;
@@ -74,8 +73,8 @@ export default function CTA({
           </div>
         )}
       </div>
-      {/* Light Rays - effet de rayons lumineux */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-transparent z-0" style={{ opacity: 0.6 }}>
+      {/* Light Rays - effet de rayons lumineux - Désactivé temporairement */}
+      {/* <div className="absolute inset-0 overflow-hidden pointer-events-none bg-transparent z-0" style={{ opacity: 0.6 }}>
         <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent' }}>
           <LightRays
             raysOrigin="top-center"
@@ -92,7 +91,7 @@ export default function CTA({
             distortion={0}
           />
         </div>
-      </div>
+      </div> */}
     </Section>
   );
 }

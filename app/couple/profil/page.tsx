@@ -888,43 +888,64 @@ export default function CoupleProfilPage() {
       <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
         <div className="max-w-4xl mx-auto">
           {/* Tabs */}
-
+          <style dangerouslySetInnerHTML={{__html: `
+            [data-slot="tabs-trigger"][data-state="inactive"] {
+              color: #823F91 !important;
+              background-color: white !important;
+            }
+            [data-slot="tabs-trigger"][data-state="inactive"] svg {
+              color: #823F91 !important;
+            }
+            [data-slot="tabs-trigger"][data-state="inactive"] span {
+              color: #823F91 !important;
+            }
+            [data-slot="tabs-trigger"][data-state="active"] {
+              color: white !important;
+              background: linear-gradient(to right, #823F91, #9D5FA8) !important;
+            }
+            [data-slot="tabs-trigger"][data-state="active"] svg {
+              color: white !important;
+            }
+            [data-slot="tabs-trigger"][data-state="active"] span {
+              color: white !important;
+            }
+          `}} />
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
-            <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-white backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
               <TabsTrigger 
                 value="base" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group bg-white"
               >
-                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Infos</span>
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 transition-colors" />
+                <span className="hidden sm:inline transition-colors">Infos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="mariage"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group bg-white"
               >
-                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Mariage</span>
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 transition-colors" />
+                <span className="hidden sm:inline transition-colors">Mariage</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="culture"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group bg-white"
               >
-                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Culture</span>
+                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 transition-colors" />
+                <span className="hidden sm:inline transition-colors">Culture</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="style"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group bg-white"
               >
-                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Style</span>
+                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 transition-colors" />
+                <span className="hidden sm:inline transition-colors">Style</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="services"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group bg-white"
               >
-                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Services</span>
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 transition-colors" />
+                <span className="hidden sm:inline transition-colors">Services</span>
               </TabsTrigger>
             </TabsList>
 

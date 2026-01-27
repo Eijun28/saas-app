@@ -13,16 +13,16 @@ const SkeletonMatchingFullWidth = () => {
   
   const conversationSets = [
     {
-      query: "Traiteur spécialisé cuisine marocaine traditionnelle (couscous, tajine) + menu français gastronomique • 150 invités • Budget 6000-7000€ • Halal certifié • Service à table avec personnel bilingue arabe-français • Région Île-de-France • Date : 15 juin 2026",
-      result: "3 traiteurs parfaitement matchés ! Tous certifiés halal, bilingues, expérience mariages mixtes. Budget : 6200-6800€. Voulez-vous les contacter ?"
+      query: "Je cherche un traiteur marocain + français, halal, pour 150 personnes. Budget 6000-7000€",
+      result: "J'ai trouvé 3 traiteurs qui matchent ! Tous halal et bilingues. Budget : 6200-6800€. On les contacte ?"
     },
     {
-      query: "Traiteur fusion indienne-française • Menu 100% végétarien avec options vegan • 80 personnes • Budget max 4500€ • Présentation moderne • Doit gérer allergies (gluten, lactose) • Dégustation gratuite avant mariage • Disponible août 2026 • Lyon et alentours",
-      result: "4 traiteurs experts trouvés ! Spécialistes fusion végé + gestion allergies. Tous proposent dégustation incluse. Budget : 4000-4400€. Voulez-vous les contacter ?"
+      query: "Traiteur fusion indienne-française, végétarien, 80 personnes, max 4500€",
+      result: "4 traiteurs trouvés ! Spécialisés fusion végé. Budget : 4000-4400€. Ça te va ?"
     },
     {
-      query: "Traiteur buffet libanais authentique (mezze, grillades) + desserts pâtisserie orientale française • 200 invités • Budget 8000€ • Service traiteur + location vaisselle orientale • Animation live cuisson pain • Mariage mixte libano-français • Marseille • Septembre 2026",
-      result: "2 traiteurs ultra-spécialisés ! Équipement animation live inclus, vaisselle orientale fournie. Expérience mariages mixtes confirmée. Budget : 7800-8200€. Voulez-vous les contacter ?"
+      query: "Traiteur libanais authentique, 200 invités, budget 8000€, région Marseille",
+      result: "2 traiteurs parfaits ! Expérience mariages mixtes. Budget : 7800-8200€. Je les contacte ?"
     },
   ];
 
