@@ -1,7 +1,8 @@
 'use client'
 
-// ⚠️ VERSION ACTUELLE - NE PAS UTILISER D'ANCIENNE VERSION ⚠️
-// Commit: a02a9f3 - Sparkles 60 particules, Toggle w-fit, Tous changements récents
+// ⚠️⚠️⚠️ VERSION ACTUELLE - COMMIT 08982e2 - NE PAS UTILISER ee92977 ⚠️⚠️⚠️
+// Tous les changements du jour sont dans ce commit
+// Sparkles 60 particules, Toggle w-fit, Conversation landing, HowItWorks, etc.
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
