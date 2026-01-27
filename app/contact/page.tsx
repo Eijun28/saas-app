@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import Particles from '@/components/Particles'
 import { toast } from 'sonner'
 import { Loader2, Mail, Send } from 'lucide-react'
 
@@ -59,6 +60,23 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative' }}>
+      {/* Background de particules - couvre toute la page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Particles
+          particleCount={200}
+          particleSpread={10}
+          speed={0.24}
+          particleColors={["#823F91","#c081e3","#823F91"]}
+          moveParticlesOnHover={false}
+          particleHoverFactor={1}
+          alphaParticles={false}
+          particleBaseSize={50}
+          sizeRandomness={0.5}
+          cameraDistance={20}
+          disableRotation={false}
+          className=""
+        />
+      </div>
 
       {/* Contenu principal */}
       <div className="relative z-10 pt-24 md:pt-32 pb-16 px-4 md:px-6">

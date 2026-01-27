@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Lock, Sparkles, Building2 } from 'lucide-react'
+import Particles from '@/components/Particles'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
@@ -155,6 +156,24 @@ export default function SignUpPage() {
 
   return (
     <>
+      {/* Background de particules - couvre toute la page */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+        <Particles
+          particleCount={200}
+          particleSpread={10}
+          speed={0.24}
+          particleColors={["#823F91","#c081e3","#823F91"]}
+          moveParticlesOnHover={false}
+          particleHoverFactor={1}
+          alphaParticles={false}
+          particleBaseSize={50}
+          sizeRandomness={0.5}
+          cameraDistance={20}
+          disableRotation={false}
+          className=""
+        />
+      </div>
+
       <div 
         className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10"
       >
