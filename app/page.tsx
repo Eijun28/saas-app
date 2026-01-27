@@ -15,7 +15,7 @@ import { Sparkles } from '@/components/ui/sparkles'
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Background de sparkles */}
+      {/* Background de sparkles - léger et animé */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Sparkles
           particleCount={60}
