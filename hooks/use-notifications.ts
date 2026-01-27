@@ -2,104 +2,142 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useUser } from './use-user'
+import { useUser } from '@/hooks/use-user'
 
 interface NotificationCounts {
   demandes: number
-  agenda: number
+  messages: number
 }
 
-export function useNotifications() {
+export function useNotifications(role: 'couple' | 'prestataire') {
   const { user } = useUser()
-  const [counts, setCounts] = useState<NotificationCounts>({ demandes: 0, agenda: 0 })
+  const [counts, setCounts] = useState<NotificationCounts>({
+    demandes: 0,
+    messages: 0,
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) {
-      setCounts({ demandes: 0, agenda: 0 })
       setLoading(false)
       return
     }
 
-    const fetchNotifications = async () => {
-      const supabase = createClient()
-      
+    const supabase = createClient()
+    let demandesChannel: any = null
+    let messagesChannel: any = null
+
+    const loadCounts = async () => {
       try {
-        // Vérifier si l'utilisateur est un prestataire ou un couple
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, service_type')
-          .eq('id', user.id)
-          .single()
-
-        const isPrestataire = profile?.service_type !== null
-
-        if (isPrestataire) {
-          // Pour prestataire : demandes reçues en attente
+        if (role === 'prestataire') {
+          // Compter les nouvelles demandes pour les prestataires
           const { count: demandesCount } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
-            .eq('status', 'pending')
-
-          // Pour prestataire : événements à venir
-          const { count: agendaCount } = await supabase
-            .from('evenements_prestataire')
-            .select('id', { count: 'exact', head: true })
+            .from('demandes')
+            .select('*', { count: 'exact', head: true })
             .eq('prestataire_id', user.id)
-            .gte('date', new Date().toISOString().split('T')[0])
+            .eq('statut', 'nouvelle')
 
-          setCounts({
+          setCounts((prev) => ({
+            ...prev,
             demandes: demandesCount || 0,
-            agenda: agendaCount || 0,
-          })
+          }))
+
+          // Compter les messages non lus pour les prestataires
+          const { data: conversations } = await supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .eq('prestataire_id', user.id)
+            .eq('status', 'active')
+
+          const messagesCount = (conversations || []).reduce(
+            (sum: number, conv: any) => sum + (conv.unread_count || 0),
+            0
+          )
+
+          setCounts((prev) => ({
+            ...prev,
+            messages: messagesCount,
+          }))
+
+          // Écouter les nouvelles demandes en temps réel
+          demandesChannel = supabase
+            .channel('prestataire-demandes')
+            .on(
+              'postgres_changes',
+              {
+                event: '*',
+                schema: 'public',
+                table: 'demandes',
+                filter: `prestataire_id=eq.${user.id}`,
+              },
+              () => {
+                loadCounts()
+              }
+            )
+            .subscribe()
         } else {
-          // Pour couple : récupérer le couple_id pour les événements
-          const { data: couple } = await supabase
-            .from('couples')
-            .select('id')
-            .eq('user_id', user.id)
-            .single()
-
-          // Pour couple : demandes envoyées en attente
-          // Note: requests.couple_id référence couples.user_id directement
-          const { count: demandesCount } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
+          // Pour les couples, compter les messages non lus
+          const { data: conversations } = await supabase
+            .from('conversations')
+            .select('id, unread_count')
             .eq('couple_id', user.id)
-            .eq('status', 'pending')
+            .eq('status', 'active')
 
-          let agendaCount = 0
-          if (couple) {
-            // Pour couple : événements à venir dans timeline
-            const { count } = await supabase
-              .from('timeline_events')
-              .select('id', { count: 'exact', head: true })
-              .eq('couple_id', couple.id)
-              .gte('event_date', new Date().toISOString().split('T')[0])
-            agendaCount = count || 0
-          }
+          const messagesCount = (conversations || []).reduce(
+            (sum: number, conv: any) => sum + (conv.unread_count || 0),
+            0
+          )
 
-          setCounts({
-            demandes: demandesCount || 0,
-            agenda: agendaCount,
-          })
+          setCounts((prev) => ({
+            ...prev,
+            messages: messagesCount,
+          }))
         }
+
+        // Écouter les nouveaux messages en temps réel
+        messagesChannel = supabase
+          .channel('user-messages')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'messages',
+            },
+            () => {
+              loadCounts()
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'conversations',
+            },
+            () => {
+              loadCounts()
+            }
+          )
+          .subscribe()
       } catch (error) {
-        console.error('Erreur lors du chargement des notifications:', error)
-        setCounts({ demandes: 0, agenda: 0 })
+        console.error('Erreur chargement notifications:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchNotifications()
+    loadCounts()
 
-    // Rafraîchir toutes les 30 secondes
-    const interval = setInterval(fetchNotifications, 30000)
-
-    return () => clearInterval(interval)
-  }, [user])
+    return () => {
+      if (demandesChannel) {
+        supabase.removeChannel(demandesChannel)
+      }
+      if (messagesChannel) {
+        supabase.removeChannel(messagesChannel)
+      }
+    }
+  }, [user, role])
 
   return { counts, loading }
 }
