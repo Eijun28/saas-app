@@ -1,6 +1,7 @@
 'use client'
 
-// Version actuelle - Déploiement forcé
+// ⚠️ VERSION ACTUELLE - NE PAS UTILISER D'ANCIENNE VERSION ⚠️
+// Commit: a02a9f3 - Sparkles 60 particules, Toggle w-fit, Tous changements récents
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
