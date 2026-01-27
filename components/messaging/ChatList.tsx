@@ -27,12 +27,12 @@ export function ChatList({
   const filteredConversations = useMemo(() => {
     if (!searchQuery.trim()) return conversations
 
-    const query = searchQuery.toLowerCase()
-    return conversations.filter((conv) => {
-      const name = conv.other_party?.name?.toLowerCase() || ''
-      const lastMessage = conv.request?.initial_message?.toLowerCase() || ''
-      return name.includes(query) || lastMessage.includes(query)
-    })
+      const query = searchQuery.toLowerCase()
+      return conversations.filter((conv) => {
+        const name = conv.other_party?.name?.toLowerCase() || ''
+        const lastMessage = (conv.last_message || conv.request?.initial_message || '').toLowerCase()
+        return name.includes(query) || lastMessage.includes(query)
+      })
   }, [conversations, searchQuery])
 
   const handleConversationClick = (conversationId: string) => {
@@ -58,10 +58,10 @@ export function ChatList({
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
 
-  // Récupérer le dernier message (pour l'instant on utilise initial_message, à remplacer par le vrai dernier message)
+  // Récupérer le dernier message
   const getLastMessage = (conversation: Conversation) => {
-    // TODO: Remplacer par le vrai dernier message depuis la table messages
-    return conversation.request?.initial_message || ''
+    // Utiliser le dernier message réel s'il existe, sinon fallback sur initial_message
+    return conversation.last_message || conversation.request?.initial_message || ''
   }
 
   // Vérifier si le message est lu (pour l'instant toujours false, à implémenter avec read_at)
@@ -178,7 +178,9 @@ export function ChatList({
                         {otherParty?.name || 'Utilisateur'}
                       </h3>
                       <span className="text-xs text-gray-500 flex-shrink-0 font-medium">
-                        {formatRelativeTime(conversation.created_at)}
+                        {conversation.last_message_at 
+                          ? formatRelativeTime(conversation.last_message_at)
+                          : formatRelativeTime(conversation.created_at)}
                       </span>
                     </div>
                     

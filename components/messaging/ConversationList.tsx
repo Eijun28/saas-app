@@ -89,9 +89,9 @@ export function ConversationList({ conversations, currentUserId, userType }: Con
                         </span>
                       </div>
                     </div>
-                    {conversation.request && (
+                    {(conversation.last_message || conversation.request?.initial_message) && (
                       <p className="text-[13px] sm:text-sm text-gray-500 truncate leading-snug">
-                        {conversation.request.initial_message}
+                        {conversation.last_message || conversation.request?.initial_message}
                       </p>
                     )}
                   </div>
