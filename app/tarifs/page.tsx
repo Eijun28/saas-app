@@ -6,7 +6,6 @@ import { User, Users, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PricingColumn, PricingColumnProps } from '@/components/ui/pricing-column';
 import { Section } from '@/components/ui/section';
-import Particles from '@/components/Particles';
 import { CheckoutButton } from '@/components/stripe/CheckoutButton';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
@@ -139,23 +138,6 @@ export default function PricingSection() {
 
   return (
     <>
-      {/* Background de particules - couvre toute la page */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-        <Particles
-          particleCount={200}
-          particleSpread={10}
-          speed={0.24}
-          particleColors={["#823F91","#c081e3","#823F91"]}
-          moveParticlesOnHover={false}
-          particleHoverFactor={1}
-          alphaParticles={false}
-          particleBaseSize={50}
-          sizeRandomness={0.5}
-          cameraDistance={20}
-          disableRotation={false}
-          className=""
-        />
-      </div>
 
       <Section 
         className="min-h-screen bg-background relative z-10"

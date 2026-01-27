@@ -2,7 +2,6 @@
 
 'use client';
 
-import Particles from '@/components/Particles'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -10,23 +9,6 @@ export default function ConfirmEmail() {
 
   return (
     <>
-      {/* Background de particules - couvre toute la page */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-        <Particles
-          particleCount={200}
-          particleSpread={10}
-          speed={0.24}
-          particleColors={["#823F91","#c081e3","#823F91"]}
-          moveParticlesOnHover={false}
-          particleHoverFactor={1}
-          alphaParticles={false}
-          particleBaseSize={50}
-          sizeRandomness={0.5}
-          cameraDistance={20}
-          disableRotation={false}
-          className=""
-        />
-      </div>
 
       <div className="flex min-h-screen items-center justify-center relative z-10">
 
