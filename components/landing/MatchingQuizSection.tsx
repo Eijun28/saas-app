@@ -226,7 +226,7 @@ const SkeletonMatchingFullWidth = () => {
         {/* Conversation - messages qui apparaissent au-dessus du champ de saisie */}
         <div 
           ref={messagesContainerRef}
-          className="flex flex-col space-y-1 pt-2 sm:pt-3 flex-1 min-h-0 overflow-y-auto scroll-smooth px-2 sm:px-3 bg-white"
+          className="flex flex-col space-y-2 sm:space-y-3 pt-2 sm:pt-3 flex-1 min-h-0 overflow-y-auto scroll-smooth px-2 sm:px-3 bg-white"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {displayedMessages.length === 0 ? (
@@ -259,7 +259,7 @@ const SkeletonMatchingFullWidth = () => {
               {displayedMessages.map((msg, i) => (
                 <div
                   key={`msg-${i}-${msg.from}`}
-                  className={`flex items-start gap-2 sm:gap-3 ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full mb-1`}
+                  className={`flex items-start gap-2 sm:gap-3 ${msg.from === "couple" ? "justify-start" : "justify-end"} w-full mb-2 sm:mb-3`}
                 >
                   {/* Avatar pour les messages de l'IA */}
                   {msg.from === "ai" && (
