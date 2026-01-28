@@ -33,6 +33,7 @@ export default function HomePage() {
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
+          <p>Git reconnected OK</p>
           <Hero />
           <CulturesMarquee />
           <HowItWorks />
