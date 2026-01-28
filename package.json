@@ -13,7 +13,7 @@
     "test:compatibility": "tsx scripts/test-compatibility.ts"
   },
   "_vercel": {
-    "deployTrigger": "force-new-deployment"
+    "deployTrigger": "deploy-2026-01-28-fixes"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.77",
