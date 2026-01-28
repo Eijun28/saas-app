@@ -51,21 +51,24 @@ export async function GET(request: Request) {
           
           if (userRole === 'couple') {
             // Essayer de créer le profil couple manquant
+            // ✅ FIX: Stocker le prénom et nom dans partner_1_name uniquement
+            const fullName = `${user.user_metadata?.prenom || ''} ${user.user_metadata?.nom || ''}`.trim()
+            
             const { error: coupleError } = await adminClient
               .from('couples')
               .insert({
                 id: user.id,
                 user_id: user.id,
                 email: user.email || '',
-                partner_1_name: user.user_metadata?.prenom || '',
-                partner_2_name: user.user_metadata?.nom || '',
+                partner_1_name: fullName || null,
+                partner_2_name: null, // Sera complété dans le profil
               })
             
             if (!coupleError) {
               logger.info('✅ Profil couple récupéré avec succès', { userId: user.id })
               // Créer aussi les préférences vides
               try {
-                await adminClient
+                const { error: prefError, data: prefData } = await adminClient
                   .from('couple_preferences')
                   .insert({
                     couple_id: user.id,
@@ -79,9 +82,27 @@ export async function GET(request: Request) {
                     completion_percentage: 0,
                     onboarding_step: 0,
                   })
-              } catch (prefError) {
-                // Ne pas bloquer si les préférences échouent
-                logger.warn('Erreur création préférences (non bloquant):', prefError)
+                  .select()
+                  .single()
+                
+                if (prefError) {
+                  logger.error('Erreur création préférences couple (callback):', {
+                    userId: user.id,
+                    error: prefError.message,
+                    code: prefError.code,
+                    details: prefError.details
+                  })
+                } else {
+                  logger.info('✅ Préférences couple créées avec succès (callback)', { 
+                    userId: user.id,
+                    preferencesId: prefData?.id 
+                  })
+                }
+              } catch (prefError: any) {
+                logger.error('Erreur inattendue création préférences (callback, non bloquant):', {
+                  userId: user.id,
+                  error: prefError?.message || String(prefError)
+                })
               }
               
               return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)

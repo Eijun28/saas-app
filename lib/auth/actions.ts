@@ -209,14 +209,18 @@ export async function signUp(
         // Créer directement dans couples (pas de profil dans profiles pour les couples)
         logger.critical('📝 Tentative création enregistrement couple', { userId, email })
         
+        // ✅ FIX: Stocker le prénom et nom dans partner_1_name uniquement
+        // Le partner_2_name sera complété plus tard dans le profil
+        const fullName = `${profileData.prenom || ''} ${profileData.nom || ''}`.trim()
+        
         const { error: coupleError } = await adminClient
           .from('couples')
           .insert({
             id: userId,
             user_id: userId, // ✅ Utiliser user_id - référence auth.users(id)
             email: email,
-            partner_1_name: profileData.prenom || null,
-            partner_2_name: profileData.nom || null,
+            partner_1_name: fullName || null,
+            partner_2_name: null, // Sera complété dans le profil
           })
 
         // ✅ NE PAS ignorer les erreurs silencieusement
@@ -235,7 +239,7 @@ export async function signUp(
           logger.critical('✅ Couple créé avec succès', { userId })
           // Créer les préférences vides pour le nouveau couple
           try {
-            await adminClient
+            const { error: prefError, data: prefData } = await adminClient
               .from('couple_preferences')
               .insert({
                 couple_id: data.user.id,
@@ -249,9 +253,32 @@ export async function signUp(
                 completion_percentage: 0,
                 onboarding_step: 0,
               })
-          } catch (prefError) {
-            // Ne pas bloquer l'inscription si les préférences échouent
-            logger.warn('Erreur création préférences (non bloquant):', prefError)
+              .select()
+              .single()
+            
+            if (prefError) {
+              logger.error('Erreur création préférences couple:', {
+                userId,
+                error: prefError.message,
+                code: prefError.code,
+                details: prefError.details,
+                hint: prefError.hint
+              })
+              // Ne pas bloquer l'inscription, mais logger l'erreur pour suivi
+            } else {
+              logger.critical('✅ Préférences couple créées avec succès', { 
+                userId, 
+                preferencesId: prefData?.id 
+              })
+            }
+          } catch (prefError: any) {
+            // Erreur inattendue lors de la création des préférences
+            logger.error('Erreur inattendue création préférences (non bloquant):', {
+              userId,
+              error: prefError?.message || String(prefError),
+              stack: prefError?.stack
+            })
+            // Ne pas bloquer l'inscription, les préférences pourront être créées plus tard
           }
         }
       } else {
