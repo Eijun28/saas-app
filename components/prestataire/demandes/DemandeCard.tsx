@@ -76,7 +76,7 @@ export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
             <div className="flex-1 min-w-0">
               <CardTitle className="text-base sm:text-lg font-semibold mb-2 break-words pr-2">
-                {demande.couple_nom}
+                Demande reçue de {demande.couple_nom}
               </CardTitle>
               <Badge 
                 className={`${getStatusColor(demande.statut)} text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 inline-flex items-center`} 

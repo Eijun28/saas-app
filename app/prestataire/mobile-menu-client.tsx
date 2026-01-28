@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { MobileMenu } from "@/components/layout/MobileMenu"
-import { LayoutDashboard, Store, CalendarCheck, MessageSquare, Settings } from "lucide-react"
+import { LayoutDashboard, Store, CalendarCheck, MessageSquare, Settings, FileText } from "lucide-react"
 
 const prestataireNavItems = [
   { href: "/prestataire/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/prestataire/demandes-recues", icon: Store, label: "Demandes reçues" },
   { href: "/prestataire/agenda", icon: CalendarCheck, label: "Agenda" },
   { href: "/prestataire/messagerie", icon: MessageSquare, label: "Messagerie" },
+  { href: "/prestataire/devis-factures", icon: FileText, label: "Devis & Factures" },
   { href: "/prestataire/profil-public", icon: Settings, label: "Profil public" },
 ]
 

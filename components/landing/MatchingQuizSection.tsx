@@ -13,16 +13,40 @@ const SkeletonMatchingFullWidth = () => {
   
   const conversationSets = [
     {
-      query: "Traiteur spécialisé cuisine marocaine traditionnelle (couscous, tajine) + menu français gastronomique • 150 invités • Budget 6000-7000€ • Halal certifié • Service à table avec personnel bilingue arabe-français • Région Île-de-France • Date : 15 juin 2026",
-      result: "3 traiteurs parfaitement matchés ! Tous certifiés halal, bilingues, expérience mariages mixtes. Budget : 6200-6800€. Voulez-vous les contacter ?"
+      query: "Je cherche un traiteur pour un mariage mixte maroco-français",
+      aiQuestion1: "Parfait ! Pour respecter les deux cultures, avez-vous besoin d'un menu halal ?",
+      coupleAnswer1: "Oui, absolument",
+      aiQuestion2: "Super ! Combien d'invités prévoyez-vous ?",
+      coupleAnswer2: "150 personnes",
+      aiQuestion3: "Quel budget avez-vous prévu pour honorer ces deux traditions ?",
+      coupleAnswer3: "6000-7000€",
+      result: "3 prestataires remplissent à 99% vos demandes, lequel voulez-vous contacter ?",
+      coupleChoice: "Le 1",
+      finalResult: "Votre demande a été envoyée !"
     },
     {
-      query: "Traiteur fusion indienne-française • Menu 100% végétarien avec options vegan • 80 personnes • Budget max 4500€ • Présentation moderne • Doit gérer allergies (gluten, lactose) • Dégustation gratuite avant mariage • Disponible août 2026 • Lyon et alentours",
-      result: "4 traiteurs experts trouvés ! Spécialistes fusion végé + gestion allergies. Tous proposent dégustation incluse. Budget : 4000-4400€. Voulez-vous les contacter ?"
+      query: "Je cherche un traiteur indien",
+      aiQuestion1: "Excellent ! C'est pour un mariage traditionnel indien ou une fusion culturelle ?",
+      coupleAnswer1: "Fusion indo-française",
+      aiQuestion2: "Parfait ! Besoin d'un menu végétarien pour respecter certaines traditions ?",
+      coupleAnswer2: "Oui, 100% végétarien",
+      aiQuestion3: "Combien de personnes et quel budget ?",
+      coupleAnswer3: "80 personnes, max 4500€",
+      result: "3 prestataires remplissent à 99% vos demandes, lequel voulez-vous contacter ?",
+      coupleChoice: "Le 2",
+      finalResult: "Votre demande a été envoyée !"
     },
     {
-      query: "Traiteur buffet libanais authentique (mezze, grillades) + desserts pâtisserie orientale française • 200 invités • Budget 8000€ • Service traiteur + location vaisselle orientale • Animation live cuisson pain • Mariage mixte libano-français • Marseille • Septembre 2026",
-      result: "2 traiteurs ultra-spécialisés ! Équipement animation live inclus, vaisselle orientale fournie. Expérience mariages mixtes confirmée. Budget : 7800-8200€. Voulez-vous les contacter ?"
+      query: "Je cherche un traiteur libanais",
+      aiQuestion1: "Génial ! C'est pour un mariage libano-français ?",
+      coupleAnswer1: "Oui exactement",
+      aiQuestion2: "Parfait ! Souhaitez-vous une animation culturelle comme la cuisson du pain traditionnel ?",
+      coupleAnswer2: "Oui, ce serait parfait",
+      aiQuestion3: "Combien d'invités et quel budget pour célébrer cette union culturelle ?",
+      coupleAnswer3: "200 personnes, 8000€",
+      result: "3 prestataires remplissent à 99% vos demandes, lequel voulez-vous contacter ?",
+      coupleChoice: "Le 3",
+      finalResult: "Votre demande a été envoyée !"
     },
   ];
 
@@ -52,12 +76,14 @@ const SkeletonMatchingFullWidth = () => {
   useEffect(() => {
     if (!isInView) return;
     
-    let typingTimeout: ReturnType<typeof setTimeout> | null = null;
-    let responseTimeout: ReturnType<typeof setTimeout> | null = null;
-    let coupleMessageTimeout: ReturnType<typeof setTimeout> | null = null;
-    let sendTimeout: ReturnType<typeof setTimeout> | null = null;
-    let finalMessageTimeout: ReturnType<typeof setTimeout> | null = null;
-    let restartTimeout: ReturnType<typeof setTimeout> | null = null;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    
+    // Helper pour créer des timeouts et les stocker
+    const createTimeout = (callback: () => void, delay: number) => {
+      const timeout = setTimeout(callback, delay);
+      timeouts.push(timeout);
+      return timeout;
+    };
     
     const startCycle = () => {
       const current = conversationSets[currentSet];
@@ -67,110 +93,155 @@ const SkeletonMatchingFullWidth = () => {
       setIsTyping(false);
       setShowSendButton(false);
       setIsSending(false);
-      // Vider les messages pour recommencer avec une nouvelle conversation (4 messages : couple -> IA -> couple -> IA)
       setDisplayedMessages([]);
-      
-      // D'abord commencer à taper le message du couple dans la zone de frappe
-      setIsTyping(true);
-      let index = 0;
       
       // Fonction pour obtenir la vitesse de frappe (variable selon le caractère)
       const getTypingSpeed = (char: string, nextChar?: string) => {
-        if (char === ' ') return 15; // Espaces plus rapides
-        if (char === '•') return 40; // Pause après les puces
-        if (nextChar === ' ') return 20; // Avant un espace
-        return 20 + Math.random() * 15; // Variation naturelle (plus rapide)
+        if (char === ' ') return 15;
+        if (nextChar === ' ') return 20;
+        return 20 + Math.random() * 15;
       };
       
-      // Simuler la frappe du message du couple avec vitesse variable
-      const typeNextChar = () => {
-        if (index < current.query.length) {
-          const char = current.query[index];
-          const nextChar = index < current.query.length - 1 ? current.query[index + 1] : undefined;
-          setTypedText(current.query.slice(0, index + 1));
-          index++;
+      // Fonction pour taper et envoyer un message
+      const typeAndSendMessage = (text: string, delay: number, callback: () => void) => {
+        createTimeout(() => {
+          setIsTyping(true);
+          let index = 0;
           
-          const speed = getTypingSpeed(char, nextChar);
-          typingTimeout = setTimeout(typeNextChar, speed);
-        } else {
-          // Fin de la frappe
-          setIsTyping(false);
-          setShowSendButton(true);
-          
-          // Attendre un peu puis animer l'envoi
-          sendTimeout = setTimeout(() => {
-            setIsSending(true);
-            setShowSendButton(false);
-            
-            // Animation d'envoi puis afficher le message dans la conversation
-            setTimeout(() => {
-              setIsSending(false);
+          const typeNextChar = () => {
+            if (index < text.length) {
+              const char = text[index];
+              const nextChar = index < text.length - 1 ? text[index + 1] : undefined;
+              setTypedText(text.slice(0, index + 1));
+              index++;
               
-              // Afficher le message du couple dans la conversation avec animation
-              coupleMessageTimeout = setTimeout(() => {
+              const speed = getTypingSpeed(char, nextChar);
+              createTimeout(typeNextChar, speed);
+            } else {
+              setIsTyping(false);
+              setShowSendButton(true);
+              
+              createTimeout(() => {
+                setIsSending(true);
+                setShowSendButton(false);
+                
+                createTimeout(() => {
+                  setIsSending(false);
+                  setTypedText("");
+                  callback();
+                }, 400);
+              }, 800);
+            }
+          };
+          
+          typeNextChar();
+        }, delay);
+      };
+      
+      // Séquence complète de la conversation
+      // Étape 1: Message initial du couple
+      typeAndSendMessage(current.query, 500, () => {
+        setDisplayedMessages(prev => [...prev, {
+          from: "couple",
+          text: current.query,
+          avatar: "couple"
+        }]);
+        
+        // Étape 2: Première question de l'IA
+        createTimeout(() => {
+          setDisplayedMessages(prev => [...prev, {
+            from: "ai",
+            text: current.aiQuestion1,
+            avatar: "ai"
+          }]);
+          
+          // Étape 3: Réponse du couple
+          typeAndSendMessage(current.coupleAnswer1, 1500, () => {
+            setDisplayedMessages(prev => [...prev, {
+              from: "couple",
+              text: current.coupleAnswer1,
+              avatar: "couple"
+            }]);
+            
+            // Étape 4: Deuxième question de l'IA
+            createTimeout(() => {
+              setDisplayedMessages(prev => [...prev, {
+                from: "ai",
+                text: current.aiQuestion2,
+                avatar: "ai"
+              }]);
+              
+              // Étape 5: Réponse du couple
+              typeAndSendMessage(current.coupleAnswer2, 1500, () => {
                 setDisplayedMessages(prev => [...prev, {
                   from: "couple",
-                  text: current.query,
+                  text: current.coupleAnswer2,
                   avatar: "couple"
                 }]);
                 
-                // Vider la zone de frappe après l'affichage du message
-                setTimeout(() => {
-                  setTypedText("");
-                }, 200);
-                
-                // Ensuite afficher la réponse de l'IA après un délai
-                responseTimeout = setTimeout(() => {
+                // Étape 6: Troisième question de l'IA
+                createTimeout(() => {
                   setDisplayedMessages(prev => [...prev, {
                     from: "ai",
-                    text: current.result,
+                    text: current.aiQuestion3,
                     avatar: "ai"
                   }]);
                   
-                  // Après la réponse de l'IA, ajouter le message "oui" du couple
-                  setTimeout(() => {
+                  // Étape 7: Réponse du couple
+                  typeAndSendMessage(current.coupleAnswer3, 1500, () => {
                     setDisplayedMessages(prev => [...prev, {
                       from: "couple",
-                      text: "Oui",
+                      text: current.coupleAnswer3,
                       avatar: "couple"
                     }]);
                     
-                    // Puis la réponse finale de l'IA avec le bouton
-                    finalMessageTimeout = setTimeout(() => {
+                    // Étape 8: Résultat avec sélection
+                    createTimeout(() => {
                       setDisplayedMessages(prev => [...prev, {
                         from: "ai",
-                        text: "Demandes envoyées !",
-                        avatar: "ai",
-                        button: true
+                        text: current.result,
+                        avatar: "ai"
                       }]);
                       
-                      // Attendre 4 secondes après l'affichage du message avec bouton avant de redémarrer
-                      restartTimeout = setTimeout(() => {
-                        // Passer au prochain set de conversation
-                        setCurrentSet((prev) => (prev + 1) % conversationSets.length);
-                      }, 4000);
-                    }, 1500);
-                  }, 2000);
+                      // Étape 9: Choix du couple (le 1, le 2 ou le 3)
+                      typeAndSendMessage(current.coupleChoice, 2000, () => {
+                        setDisplayedMessages(prev => [...prev, {
+                          from: "couple",
+                          text: current.coupleChoice,
+                          avatar: "couple"
+                        }]);
+                        
+                        // Étape 10: Confirmation finale
+                        createTimeout(() => {
+                          setDisplayedMessages(prev => [...prev, {
+                            from: "ai",
+                            text: current.finalResult,
+                            avatar: "ai",
+                            button: true
+                          }]);
+                          
+                          // Redémarrer après 4 secondes
+                          createTimeout(() => {
+                            setCurrentSet((prev) => (prev + 1) % conversationSets.length);
+                          }, 4000);
+                        }, 1500);
+                      });
+                    }, 2000);
+                  });
                 }, 2000);
-              }, 300);
-            }, 400);
-          }, 800);
-        }
-      };
-      
-      typeNextChar();
+              });
+            }, 2000);
+          });
+        }, 2000);
+      });
     };
     
     // Démarrer le cycle initial
     startCycle();
 
     return () => {
-      if (typingTimeout) clearTimeout(typingTimeout);
-      if (responseTimeout) clearTimeout(responseTimeout);
-      if (coupleMessageTimeout) clearTimeout(coupleMessageTimeout);
-      if (sendTimeout) clearTimeout(sendTimeout);
-      if (finalMessageTimeout) clearTimeout(finalMessageTimeout);
-      if (restartTimeout) clearTimeout(restartTimeout);
+      timeouts.forEach(timeout => clearTimeout(timeout));
+      timeouts.length = 0;
     };
   }, [isInView, currentSet]);
 

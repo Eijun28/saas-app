@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useNotifications } from "@/hooks/use-notifications"
 
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
@@ -71,6 +72,7 @@ function SidebarToggleButton() {
 
 export function CoupleSidebarWrapper() {
   const pathname = usePathname()
+  const { counts } = useNotifications()
 
   return (
     <Sidebar collapsible="icon">
@@ -100,6 +102,14 @@ export function CoupleSidebarWrapper() {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
                 
+                // Déterminer le badge à afficher
+                let badgeCount = 0
+                if (item.href === '/couple/messagerie') {
+                  badgeCount = counts.unreadMessages
+                } else if (item.href === '/couple/demandes') {
+                  badgeCount = counts.newRequests
+                }
+                
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
@@ -116,9 +126,14 @@ export function CoupleSidebarWrapper() {
                           : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
-                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full">
+                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
                         <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
                         <span className="flex-1">{item.label}</span>
+                        {badgeCount > 0 && (
+                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shadow-sm group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1/2 group-data-[collapsible=icon]:-translate-y-1/2">
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

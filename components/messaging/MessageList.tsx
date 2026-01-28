@@ -126,16 +126,18 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
                       <div
                         className={`relative rounded-3xl px-4 py-2.5 transition-all duration-200 ${
                           isOwn
-                            ? 'bg-[#007AFF] text-white rounded-br-sm'
+                            ? 'bg-[#823F91] text-white rounded-br-sm'
                             : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                         }`}
                         style={{
                           boxShadow: isOwn 
-                            ? '0 1px 2px rgba(0, 122, 255, 0.4), 0 0 1px rgba(0, 122, 255, 0.3)' 
+                            ? '0 1px 2px rgba(130, 63, 145, 0.4), 0 0 1px rgba(130, 63, 145, 0.3)' 
                             : '0 1px 2px rgba(0, 0, 0, 0.08)'
                         }}
                       >
-                        <p className="text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal">
+                        <p className={`text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
+                          isOwn ? 'text-white' : 'text-gray-900'
+                        }`}>
                           {message.content}
                         </p>
                       </div>

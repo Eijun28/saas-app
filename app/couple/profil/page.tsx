@@ -893,38 +893,38 @@ export default function CoupleProfilPage() {
             <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
               <TabsTrigger 
                 value="base" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
               >
-                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Infos</span>
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Infos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="mariage"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
               >
-                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Mariage</span>
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Mariage</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="culture"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
               >
-                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Culture</span>
+                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Culture</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="style"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
               >
-                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Style</span>
+                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Style</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="services"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm group !text-[#823F91] data-[state=active]:!text-white"
+                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
               >
-                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                <span className="hidden sm:inline text-[#823F91] group-data-[state=active]:text-white transition-colors">Services</span>
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Services</span>
               </TabsTrigger>
             </TabsList>
 

@@ -27,14 +27,14 @@ export function MessagingLayout({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      setIsMobile(window.innerWidth < 1024) // lg breakpoint pour tablette
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Mobile: afficher soit la liste soit la conversation
+  // Mobile/Tablette: afficher soit la liste soit la conversation
   if (isMobile) {
     return (
       <div className="flex flex-col h-screen bg-gray-50">
@@ -48,11 +48,11 @@ export function MessagingLayout({
   if (conversations.length === 0) {
     return (
       <div className="flex h-screen bg-gray-50">
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-md w-full text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -65,10 +65,10 @@ export function MessagingLayout({
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
               Aucune conversation
             </h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500 px-2">
               {userType === 'couple'
                 ? 'Vos conversations avec les prestataires apparaîtront ici une fois qu\'une demande aura été acceptée.'
                 : 'Vos conversations avec les couples apparaîtront ici une fois que vous aurez accepté une demande.'}
@@ -81,19 +81,19 @@ export function MessagingLayout({
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Liste des conversations - 380px fixe */}
-      <div className="w-[380px] border-r border-gray-200 bg-white flex flex-col overflow-hidden">
+      {/* Liste des conversations - responsive width */}
+      <div className="w-full lg:w-[380px] xl:w-[420px] border-r border-gray-200 bg-white flex flex-col overflow-hidden">
         {chatListComponent}
       </div>
       
       {/* Zone de conversation */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {children || (
-          <div className="flex-1 flex items-center justify-center bg-gray-50 p-6">
-            <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-md w-full text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <svg
-                  className="w-8 h-8 text-gray-400"
+                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -106,10 +106,10 @@ export function MessagingLayout({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Sélectionnez une conversation
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500 px-2">
                 Choisissez une conversation dans la liste pour commencer à discuter
               </p>
             </div>

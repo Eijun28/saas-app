@@ -138,28 +138,28 @@ export function ChatInput({
 
   return (
     <div className="bg-white border-t border-gray-200 safe-area-bottom">
-      <form onSubmit={handleSubmit} className="px-3 sm:px-4 py-3 sm:py-4">
+      <form onSubmit={handleSubmit} className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2 bg-gray-50 rounded-2xl px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-300 transition-all">
+          <div className="flex items-end gap-1.5 sm:gap-2 bg-gray-50 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-300 transition-all">
             {/* Bouton emoji */}
             <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
               <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
                     aria-label="Emoji"
                   >
-                    <Smile className="h-5 w-5 text-gray-500" />
+                    <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                   </button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-3" align="start">
-                <div className="grid grid-cols-8 gap-1">
+              <PopoverContent className="w-[280px] sm:w-80 p-2 sm:p-3" align="start">
+                <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
                   {EMOJIS.map((emoji, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => handleEmojiSelect(emoji)}
-                      className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#FBF8F3] active:bg-[#F5F0E8] transition-colors text-xl"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:bg-[#FBF8F3] active:bg-[#F5F0E8] transition-colors text-lg sm:text-xl"
                     >
                       {emoji}
                     </button>
@@ -175,48 +175,48 @@ export function ChatInput({
               onChange={(e) => setContent(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Message"
-              className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
+              className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] md:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[20px] sm:min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
               rows={1}
               disabled={isSending}
             />
 
             {/* Bouton pièce jointe */}
             {!hasContent && (
-              <div className="flex-shrink-0 flex items-center gap-1">
+              <div className="flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/60 active:bg-white/80 transition-colors"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/60 active:bg-white/80 transition-colors"
                       aria-label="Pièces jointes"
                     >
-                      <Paperclip className="h-5 w-5 text-[#8B7866]" />
+                      <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-[#8B7866]" />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-48 p-2" align="end">
+                  <PopoverContent className="w-44 sm:w-48 p-2" align="end">
                     <div className="space-y-1">
                       <button
                         type="button"
                         onClick={() => handleFileSelect('image')}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                        className="w-full flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-xs sm:text-sm text-[#2C1810]"
                       >
-                        <Image className="h-4 w-4" />
+                        <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Photo
                       </button>
                       <button
                         type="button"
                         onClick={() => handleFileSelect('document')}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                        className="w-full flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-xs sm:text-sm text-[#2C1810]"
                       >
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Document
                       </button>
                       <button
                         type="button"
                         onClick={() => handleFileSelect('camera')}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-sm text-[#2C1810]"
+                        className="w-full flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-[#FBF8F3] transition-colors text-xs sm:text-sm text-[#2C1810]"
                       >
-                        <Camera className="h-4 w-4" />
+                        <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Caméra
                       </button>
                     </div>
@@ -239,23 +239,23 @@ export function ChatInput({
               <button
                 type="submit"
                 disabled={!content.trim() || isSending}
-                className="flex-shrink-0 bg-gray-900 text-white rounded-full w-9 h-9 hover:bg-gray-800 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-shrink-0 bg-gray-900 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-800 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Envoyer"
               >
-                <Send className="h-4 w-4" strokeWidth={2.5} />
+                <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleVoiceRecord}
-                className={`flex-shrink-0 rounded-full w-9 h-9 flex items-center justify-center transition-all duration-200 ${
+                className={`flex-shrink-0 rounded-full w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center transition-all duration-200 ${
                   isRecording
                     ? 'bg-red-500 text-white hover:bg-red-600'
                     : 'hover:bg-gray-100 active:bg-gray-200'
                 }`}
                 aria-label="Enregistrer un message vocal"
               >
-                <Mic className="h-5 w-5 text-gray-500" />
+                <Mic className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
               </button>
             )}
           </div>

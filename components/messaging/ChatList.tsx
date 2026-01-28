@@ -58,22 +58,24 @@ export function ChatList({
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
 
-  // Récupérer le dernier message (pour l'instant on utilise initial_message, à remplacer par le vrai dernier message)
+  // Récupérer le dernier message réel ou le message initial de la demande
   const getLastMessage = (conversation: Conversation) => {
-    // TODO: Remplacer par le vrai dernier message depuis la table messages
+    if (conversation.last_message?.content) {
+      return conversation.last_message.content
+    }
     return conversation.request?.initial_message || ''
   }
 
-  // Vérifier si le message est lu (pour l'instant toujours false, à implémenter avec read_at)
+  // Vérifier si le dernier message est lu
   const isMessageRead = (conversation: Conversation) => {
-    // TODO: Vérifier read_at du dernier message
-    return false
+    if (!conversation.last_message) return true
+    // Si le dernier message est de l'utilisateur actuel, il est considéré comme lu
+    return conversation.last_message.sender_id === currentUserId
   }
 
-  // Compter les messages non-lus (pour l'instant 0, à implémenter)
+  // Compter les messages non-lus
   const getUnreadCount = (conversation: Conversation) => {
-    // TODO: Compter les messages non-lus depuis conversation_participants
-    return 0
+    return conversation.unread_count || 0
   }
 
   // Vérifier si l'utilisateur est en ligne (pour l'instant false, à implémenter avec user_presence)
@@ -117,8 +119,8 @@ export function ChatList({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* En-tête avec titre et recherche */}
-      <div className="p-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900 mb-3">Messagerie</h1>
+      <div className="p-3 sm:p-4 border-b border-gray-200">
+        <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Messagerie</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -126,14 +128,14 @@ export function ChatList({
             placeholder="Rechercher..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-gray-50 border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
+            className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-gray-50 border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
           />
         </div>
       </div>
 
       {/* Liste des conversations */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <div className="space-y-2">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-3">
+        <div className="space-y-1.5 sm:space-y-2">
           {filteredConversations.map((conversation) => {
             const otherParty = conversation.other_party
             const initials = otherParty?.name
@@ -154,48 +156,54 @@ export function ChatList({
                 key={conversation.id}
                 onClick={() => handleConversationClick(conversation.id)}
                 className={`
-                  bg-white rounded-xl p-3 cursor-pointer transition-all
+                  bg-white rounded-xl p-2.5 sm:p-3 cursor-pointer transition-all active:scale-[0.98]
                   ${isSelected ? 'ring-2 ring-gray-300 shadow-sm' : 'hover:shadow-sm border border-gray-100'}
                 `}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   {/* Avatar avec indicateur online */}
                   <div className="relative flex-shrink-0">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                       <AvatarImage src={otherParty?.avatar_url || undefined} alt={otherParty?.name} />
-                      <AvatarFallback className="bg-gray-200 text-gray-600 text-sm font-semibold">
+                      <AvatarFallback className="bg-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     {online && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full" />
                     )}
                   </div>
 
                   {/* Contenu */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate text-[15px]">
+                    <div className="flex items-center justify-between gap-2 mb-0.5 sm:mb-1">
+                      <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-[15px]">
                         {otherParty?.name || 'Utilisateur'}
                       </h3>
-                      <span className="text-xs text-gray-500 flex-shrink-0 font-medium">
-                        {formatRelativeTime(conversation.created_at)}
+                      <span className="text-[10px] sm:text-xs text-gray-500 flex-shrink-0 font-medium">
+                        {conversation.last_message?.created_at 
+                          ? formatRelativeTime(conversation.last_message.created_at)
+                          : formatRelativeTime(conversation.created_at)}
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                       {lastMessage && (
                         <>
-                          <p className="text-sm text-gray-500 truncate flex-1">
+                          <p className={`text-xs sm:text-sm truncate flex-1 ${
+                            unreadCount > 0 
+                              ? 'text-gray-900 font-medium' 
+                              : 'text-gray-500'
+                          }`}>
                             {lastMessage}
                           </p>
                           {/* Checkmarks pour les messages envoyés */}
-                          {conversation.couple_id === currentUserId && (
+                          {conversation.last_message?.sender_id === currentUserId && (
                             <div className="flex-shrink-0">
                               {isRead ? (
-                                <CheckCheck className="h-4 w-4 text-gray-400" />
+                                <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
                               ) : (
-                                <Check className="h-4 w-4 text-gray-400" />
+                                <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                               )}
                             </div>
                           )}
@@ -204,9 +212,9 @@ export function ChatList({
                     </div>
                   </div>
 
-                  {/* Badge messages non-lus */}
+                  {/* Badge messages non-lus style iPhone */}
                   {unreadCount > 0 && (
-                    <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full bg-gray-900 text-white text-xs font-semibold flex items-center justify-center">
+                    <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-[#007AFF] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center shadow-sm">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}

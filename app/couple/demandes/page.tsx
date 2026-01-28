@@ -458,68 +458,70 @@ export default function DemandesPage() {
 
   return (
     <div className="w-full">
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-4 md:px-6">
         <div>
-          <p className="text-[#6B7280]">
+          <p className="text-xs sm:text-sm text-[#6B7280]">
             Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée.
           </p>
         </div>
 
         {!demandes || demandes.length === 0 ? (
           <Card className="border-gray-200">
-            <CardContent className="pt-12 pb-12 text-center">
-              <Send className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande envoyée</h3>
-              <p className="text-gray-500">Quand vous contactez un prestataire, la demande apparaîtra ici.</p>
+            <CardContent className="pt-8 sm:pt-12 pb-8 sm:pb-12 text-center px-4 sm:px-6">
+              <Send className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-gray-300" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Aucune demande envoyée</h3>
+              <p className="text-xs sm:text-sm text-gray-500">Quand vous contactez un prestataire, la demande apparaîtra ici.</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {demandes.map((r) => {
               const provider = providerById.get(r.provider_id) || (r as any).prestataire
               const name = getProviderDisplayName(provider)
 
               return (
                 <Card key={r.id} className="border-gray-200">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
+                  <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         {provider?.avatar_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={provider.avatar_url}
                             alt={name}
-                            className="h-11 w-11 rounded-full object-cover border"
+                            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover border flex-shrink-0"
                           />
                         ) : (
-                          <div className="h-11 w-11 rounded-full bg-gray-100 border flex items-center justify-center">
-                            <UserRound className="h-5 w-5 text-gray-500" />
+                          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gray-100 border flex items-center justify-center flex-shrink-0">
+                            <UserRound className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                           </div>
                         )}
 
-                        <div className="min-w-0">
-                          <CardTitle className="text-base truncate">{name}</CardTitle>
-                          <CardDescription className="text-sm">
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-sm sm:text-base truncate">
+                            Demande envoyée à {name}
+                          </CardTitle>
+                          <CardDescription className="text-xs sm:text-sm">
                             Envoyée le {new Date(r.created_at).toLocaleDateString('fr-FR')}
                           </CardDescription>
                         </div>
                       </div>
 
-                      <Badge variant="outline" className={STATUS_BADGE_CLASS[r.status]}>
+                      <Badge variant="outline" className={`${STATUS_BADGE_CLASS[r.status]} text-xs sm:text-sm flex-shrink-0 self-start sm:self-auto`}>
                         {STATUS_LABEL[r.status]}
                       </Badge>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="pt-0 space-y-3">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{r.initial_message}</p>
+                  <CardContent className="pt-0 space-y-2 sm:space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
+                    <p className="text-xs sm:text-sm text-gray-700 whitespace-pre-wrap break-words">{r.initial_message}</p>
 
                     {r.status === 'pending' ? (
                       <form onSubmit={(e) => {
                         e.preventDefault()
                         cancelRequest(r.id)
                       }} className="flex justify-end">
-                        <Button type="submit" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+                        <Button type="submit" variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm h-8 sm:h-9">
                           Annuler la demande
                         </Button>
                       </form>

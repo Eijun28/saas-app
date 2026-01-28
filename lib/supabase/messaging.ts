@@ -17,6 +17,12 @@ export interface Conversation {
     name: string
     avatar_url?: string | null
   }
+  last_message?: {
+    content: string
+    created_at: string
+    sender_id: string
+  } | null
+  unread_count?: number
 }
 
 export interface MediaItem {
@@ -61,7 +67,7 @@ export async function getConversationsClient(userId: string): Promise<Conversati
     return []
   }
 
-  // Enrichir avec les requests et les profils de l'autre partie
+  // Enrichir avec les requests, les profils de l'autre partie, le dernier message et le nombre de messages non lus
   const enrichedConversations = await Promise.all(
     conversations.map(async (conv) => {
       // Récupérer la request associée
@@ -112,6 +118,23 @@ export async function getConversationsClient(userId: string): Promise<Conversati
         }
       }
 
+      // Récupérer le dernier message de la conversation
+      const { data: lastMessageData } = await supabase
+        .from('messages')
+        .select('content, created_at, sender_id')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      // Compter les messages non lus (messages où read_at est null et sender_id n'est pas l'utilisateur actuel)
+      const { count: unreadCount } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('conversation_id', conv.id)
+        .neq('sender_id', userId)
+        .is('read_at', null)
+
       return {
         ...conv,
         request: request || undefined,
@@ -120,6 +143,12 @@ export async function getConversationsClient(userId: string): Promise<Conversati
           name: otherPartyName,
           avatar_url: otherPartyAvatar,
         },
+        last_message: lastMessageData ? {
+          content: lastMessageData.content,
+          created_at: lastMessageData.created_at,
+          sender_id: lastMessageData.sender_id,
+        } : null,
+        unread_count: unreadCount || 0,
       }
     })
   )
@@ -148,7 +177,7 @@ export async function getConversationsServer(userId: string): Promise<Conversati
     return []
   }
 
-  // Enrichir avec les requests et les profils
+  // Enrichir avec les requests, les profils, le dernier message et le nombre de messages non lus
   const enrichedConversations = await Promise.all(
     conversations.map(async (conv) => {
       const { data: request } = await supabase
@@ -194,6 +223,23 @@ export async function getConversationsServer(userId: string): Promise<Conversati
         }
       }
 
+      // Récupérer le dernier message de la conversation
+      const { data: lastMessageData } = await supabase
+        .from('messages')
+        .select('content, created_at, sender_id')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      // Compter les messages non lus (messages où read_at est null et sender_id n'est pas l'utilisateur actuel)
+      const { count: unreadCount } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('conversation_id', conv.id)
+        .neq('sender_id', userId)
+        .is('read_at', null)
+
       return {
         ...conv,
         request: request || undefined,
@@ -202,6 +248,12 @@ export async function getConversationsServer(userId: string): Promise<Conversati
           name: otherPartyName,
           avatar_url: otherPartyAvatar,
         },
+        last_message: lastMessageData ? {
+          content: lastMessageData.content,
+          created_at: lastMessageData.created_at,
+          sender_id: lastMessageData.sender_id,
+        } : null,
+        unread_count: unreadCount || 0,
       }
     })
   )

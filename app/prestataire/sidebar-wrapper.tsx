@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Inbox, Calendar, MessageCircle, UserCircle, PanelLeftClose, PanelLeft } from "lucide-react"
+import { Home, Inbox, Calendar, MessageCircle, UserCircle, PanelLeftClose, PanelLeft, FileText } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -17,12 +17,14 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useNotifications } from "@/hooks/use-notifications"
 
 const prestataireNavItems = [
   { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
   { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes reçues" },
   { href: "/prestataire/agenda", icon: Calendar, label: "Agenda" },
   { href: "/prestataire/messagerie", icon: MessageCircle, label: "Messagerie" },
+  { href: "/prestataire/devis-factures", icon: FileText, label: "Devis & Factures" },
   { href: "/prestataire/profil-public", icon: UserCircle, label: "Profil public" },
 ]
 
@@ -68,6 +70,7 @@ function SidebarToggleButton() {
 
 export function PrestataireSidebarWrapper() {
   const pathname = usePathname()
+  const { counts } = useNotifications()
 
   return (
     <Sidebar collapsible="icon">
@@ -97,6 +100,14 @@ export function PrestataireSidebarWrapper() {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
                 
+                // Déterminer le badge à afficher
+                let badgeCount = 0
+                if (item.href === '/prestataire/messagerie') {
+                  badgeCount = counts.unreadMessages
+                } else if (item.href === '/prestataire/demandes-recues') {
+                  badgeCount = counts.newRequests
+                }
+                
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
@@ -113,9 +124,14 @@ export function PrestataireSidebarWrapper() {
                           : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
-                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full">
+                      <Link href={item.href} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
                         <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
                         <span className="flex-1">{item.label}</span>
+                        {badgeCount > 0 && (
+                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shadow-sm group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1/2 group-data-[collapsible=icon]:-translate-y-1/2">
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

@@ -7,12 +7,12 @@ Cette documentation décrit la structure et l'utilisation des composants de la l
 ```
 components/landing/
 ├── Hero.tsx                    # Section hero avec headline et CTA
-├── TrustLogos.tsx             # Logos des partenaires (optionnel)
-├── HowItWorks.tsx              # Section "Comment ça marche" (3 étapes)
-├── FeatureBlock.tsx            # Section large avec texte/visuel
-├── AlternatingSections.tsx    # Sections alternées (couples/prestataires)
-├── Pricing.tsx                 # Section tarifs avec switcher
-├── FinalCTA.tsx                # Appel à l'action final
+├── MatchingQuizSection.tsx     # Section matching avec chat interactif
+├── MatchingExplainerCards.tsx  # Cartes explicatives du matching
+├── FeaturesGrid.tsx            # Grille de fonctionnalités
+├── CTA.tsx                     # Appel à l'action
+├── CulturesMarquee.tsx         # Marquee des cultures
+├── PrestatairesMarquee.tsx     # Marquee des prestataires
 └── SmoothScrollProvider.tsx    # Provider pour Lenis smooth scroll
 ```
 
@@ -59,20 +59,24 @@ Toutes les animations respectent `prefers-reduced-motion` pour l'accessibilité.
 La page principale (`app/page.tsx`) importe et utilise tous les composants dans l'ordre :
 
 ```tsx
-import { Hero } from '@/components/landing/Hero'
-import { TrustLogos } from '@/components/landing/TrustLogos'
-// ... autres imports
+import Hero from '@/components/landing/Hero'
+import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
+import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
+import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
+import MatchingExplainerCards from '@/components/landing/MatchingExplainerCards'
+import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
+import CTA from '@/components/landing/CTA'
+import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
       <Hero />
-      <TrustLogos />
-      <HowItWorks />
-      <FeatureBlock />
-      <AlternatingSections />
-      <Pricing />
-      <FinalCTA />
+      <CulturesMarquee />
+      <MatchingQuizSection />
+      <PrestatairesMarquee />
+      <FeaturesGrid />
+      <CTA />
     </SmoothScrollProvider>
   )
 }

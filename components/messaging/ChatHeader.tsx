@@ -86,86 +86,86 @@ export function ChatHeader({
 
   return (
     <div className="bg-white border-b border-gray-200 safe-area-top">
-      <div className="px-4 py-3">
-        <div className="flex items-center gap-3">
-          {/* Bouton retour (mobile only) */}
+      <div className="px-3 sm:px-4 py-2.5 sm:py-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Bouton retour (mobile/tablette only) */}
           <button
             onClick={handleBack}
-            className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors md:hidden"
+            className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors lg:hidden"
             aria-label="Retour"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-700" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
           </button>
 
           {/* Avatar avec status online */}
           <div className="relative flex-shrink-0">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
               <AvatarImage src={otherParty.avatar_url || undefined} alt={otherParty.name} />
-              <AvatarFallback className="bg-gray-200 text-gray-600 text-sm font-semibold">
+              <AvatarFallback className="bg-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             {isOnline && (
-              <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full" />
             )}
           </div>
 
           {/* Nom et statut */}
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-gray-900 truncate text-[17px]">
+            <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
               {otherParty.name}
             </h2>
-            <p className="text-xs text-gray-500 truncate font-medium">
+            <p className="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
               {isOnline ? 'En ligne' : 'Hors ligne'}
             </p>
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             {/* Bouton appel vidéo */}
             <button
               onClick={handleVideoCall}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Appel vidéo"
             >
-              <Video className="h-5 w-5 text-gray-700" />
+              <Video className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
             </button>
 
             {/* Bouton appel vocal */}
             <button
               onClick={handleVoiceCall}
-              className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Appel vocal"
             >
-              <Phone className="h-5 w-5 text-gray-700" />
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
             </button>
 
             {/* Menu dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
                   aria-label="Menu"
                 >
-                  <MoreVertical className="h-5 w-5 text-gray-700" />
+                  <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleViewProfile}>
-                  <User className="h-4 w-4 mr-2" />
+              <DropdownMenuContent align="end" className="w-44 sm:w-48">
+                <DropdownMenuItem onClick={handleViewProfile} className="text-sm">
+                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                   Voir le profil
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleMute}>
-                  <BellOff className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={handleMute} className="text-sm">
+                  <BellOff className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                   {isMuted ? 'Activer les notifications' : 'Mettre en sourdine'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleReport} variant="destructive">
-                  <Flag className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={handleReport} variant="destructive" className="text-sm">
+                  <Flag className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                   Signaler
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={handleDelete} variant="destructive" className="text-sm">
+                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                   Supprimer
                 </DropdownMenuItem>
               </DropdownMenuContent>

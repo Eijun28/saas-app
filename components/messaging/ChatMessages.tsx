@@ -219,7 +219,7 @@ export function ChatMessages({
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto bg-gray-50 px-3 sm:px-4 py-3 sm:py-4 scroll-smooth"
+      className="flex-1 overflow-y-auto bg-gray-50 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
       style={{
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent',
@@ -256,20 +256,20 @@ export function ChatMessages({
                     }`}
                   >
                     <div
-                      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[75%] md:max-w-[70%]`}
+                      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]`}
                     >
                       <div className="relative group">
                         <div
-                          className={`relative rounded-2xl px-4 py-2.5 transition-all duration-200 ${
+                          className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                             isOwn
                               ? 'bg-[#823F91] text-white rounded-br-sm'
-                              : 'bg-white text-[#823F91] rounded-bl-sm border border-[#823F91]/20 shadow-sm'
+                              : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm'
                           }`}
                         >
                           {/* Contenu texte */}
                           {message.content && (
-                            <p className={`text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                              isOwn ? 'text-white' : 'text-[#823F91]'
+                            <p className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
+                              isOwn ? 'text-white' : 'text-gray-900'
                             }`}>
                               {message.content}
                             </p>
@@ -285,7 +285,7 @@ export function ChatMessages({
                                 className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
                                   isOwn
                                     ? 'bg-white/20 hover:bg-white/30 text-white'
-                                    : 'bg-[#823F91]/10 hover:bg-[#823F91]/20 text-[#823F91]'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                                 }`}
                                 aria-label="Menu message"
                               >
@@ -313,16 +313,16 @@ export function ChatMessages({
 
                       {/* Timestamp et checkmarks */}
                       {showTime && (
-                        <div className="flex items-center gap-1 mt-0.5 px-1.5">
-                          <span className="text-[11px] text-gray-400">
+                        <div className="flex items-center gap-1 mt-0.5 px-1 sm:px-1.5">
+                          <span className="text-[10px] sm:text-[11px] text-gray-400">
                             {formatTime(message.created_at)}
                           </span>
                           {isOwn && (
                             <div className="flex-shrink-0">
                               {isRead ? (
-                                <CheckCheck className="h-3.5 w-3.5 text-gray-400" />
+                                <CheckCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
                               ) : (
-                                <Check className="h-3.5 w-3.5 text-gray-400" />
+                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
                               )}
                             </div>
                           )}
@@ -337,11 +337,11 @@ export function ChatMessages({
         ))}
 
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] sm:min-h-[calc(100vh-250px)] px-4 pt-12 sm:pt-16">
-            <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] sm:min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-250px)] px-3 sm:px-4 pt-8 sm:pt-12 md:pt-16">
+            <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-sm w-full text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <svg
-                  className="w-8 h-8 text-gray-400"
+                  className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -354,10 +354,10 @@ export function ChatMessages({
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
                 Aucun message
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500 px-2">
                 Envoyez le premier message pour commencer la conversation
               </p>
             </div>

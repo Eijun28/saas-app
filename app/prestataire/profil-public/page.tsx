@@ -357,31 +357,31 @@ export default function ProfilPublicPage() {
                 <TabsList className="grid grid-cols-4 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
                 <TabsTrigger 
                   value="infos" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
-                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                  <span className="hidden sm:inline">Infos</span>
+                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Infos</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="cultures"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                  <span className="hidden sm:inline">Cultures</span>
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Cultures</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="zones"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
-                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                  <span className="hidden sm:inline">Zones</span>
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Zones</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="portfolio"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-sm text-xs sm:text-sm text-[#823F91] data-[state=active]:text-white group"
+                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
-                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 text-[#823F91] group-data-[state=active]:text-white transition-colors" />
-                  <span className="hidden sm:inline">Portfolio</span>
+                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Portfolio</span>
                 </TabsTrigger>
               </TabsList>
 
