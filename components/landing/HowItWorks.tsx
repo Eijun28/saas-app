@@ -90,8 +90,6 @@ function Timeline({ steps }: TimelineProps) {
         <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#823F91] via-[#c081e3] to-[#823F91]/20" />
         
         {steps.map((step, index) => {
-          const Icon = step.icon;
-
           return (
             <div
               key={`step-${step.number}`}
@@ -133,7 +131,6 @@ function Timeline({ steps }: TimelineProps) {
           <div className="absolute top-[13rem] md:top-[15rem] left-[25%] right-[25%] h-0.5 md:h-1 bg-gradient-to-r from-[#823F91] via-[#c081e3] to-[#823F91] z-0" />
           
           {steps.map((step, index) => {
-            const Icon = step.icon;
             const isFirstRow = index < 2;
             const isLeftColumn = index % 2 === 0;
 
@@ -172,8 +169,6 @@ function Timeline({ steps }: TimelineProps) {
         {/* Container pour les étapes */}
         <div className="relative grid grid-cols-4 gap-6 xl:gap-8">
           {steps.map((step, index) => {
-            const Icon = step.icon;
-
             return (
               <div
                 key={`step-${step.number}`}

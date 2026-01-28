@@ -25,7 +25,7 @@ export default function HomePage() {
       {/* Background de sparkles - léger et animé - Version actuelle */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Sparkles
-          particleCount={60}
+          particleCount={30}
           particleColors={["#823F91","#c081e3","#823F91"]}
           speed={0.15}
         />
@@ -34,7 +34,6 @@ export default function HomePage() {
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
-          <p className="text-center py-2 text-sm text-green-600 font-semibold">✅ Git reconnected OK - Deploy: {new Date().toISOString().split('T')[0]}</p>
           <Hero />
           <CulturesMarquee />
           <HowItWorks />
