@@ -3,17 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, MapPin, Euro, MessageSquare, Check, X } from 'lucide-react'
+import { Calendar, MapPin, Euro, MessageSquare, Check, X, ArrowRight } from 'lucide-react'
 import type { Demande } from '@/lib/types/prestataire'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 interface DemandeCardProps {
   demande: Demande
   onAccept?: (id: string) => void
   onReject?: (id: string) => void
+  conversationId?: string | null
 }
 
-export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
+export function DemandeCard({ demande, onAccept, onReject, conversationId }: DemandeCardProps) {
+  const router = useRouter()
   const getStatusColor = (statut: Demande['statut']) => {
     switch (statut) {
       case 'nouvelle':
@@ -145,6 +148,20 @@ export function DemandeCard({ demande, onAccept, onReject }: DemandeCardProps) {
               >
                 <X className="h-4 w-4 mr-2 flex-shrink-0" />
                 <span>Refuser</span>
+              </Button>
+            </div>
+          )}
+
+          {(demande.statut === 'en_cours' || demande.statut === 'terminee') && conversationId && (
+            <div className="pt-2 sm:pt-3 border-t border-gray-100">
+              <Button
+                onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
+                className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white h-10 sm:h-9 text-sm font-medium"
+                size="sm"
+              >
+                <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span>Voir la conversation</span>
+                <ArrowRight className="h-4 w-4 ml-2 flex-shrink-0" />
               </Button>
             </div>
           )}

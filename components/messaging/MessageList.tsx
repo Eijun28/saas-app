@@ -129,15 +129,19 @@ export function MessageList({ conversationId, initialMessages, currentUserId }: 
                             ? 'bg-[#823F91] text-white rounded-br-sm'
                             : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                         }`}
-                        style={{
-                          boxShadow: isOwn 
-                            ? '0 1px 2px rgba(130, 63, 145, 0.4), 0 0 1px rgba(130, 63, 145, 0.3)' 
-                            : '0 1px 2px rgba(0, 0, 0, 0.08)'
+                        style={isOwn ? {
+                          backgroundColor: '#823F91',
+                          boxShadow: '0 1px 2px rgba(130, 63, 145, 0.4), 0 0 1px rgba(130, 63, 145, 0.3)'
+                        } : {
+                          boxShadow: '0 1px 2px rgba(0, 0, 0, 0.08)'
                         }}
                       >
-                        <p className={`text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                          isOwn ? 'text-white' : 'text-gray-900'
-                        }`}>
+                        <p 
+                          className={`text-[15px] sm:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
+                            isOwn ? 'text-white' : 'text-gray-900'
+                          }`}
+                          style={isOwn ? { color: '#FFFFFF' } : {}}
+                        >
                           {message.content}
                         </p>
                       </div>

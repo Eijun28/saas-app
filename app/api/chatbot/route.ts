@@ -5,6 +5,7 @@ import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/api-error-handler';
 import { getServiceSpecificPrompt, shouldAskQuestion } from '@/lib/chatbot/service-prompts';
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
+import { logger } from '@/lib/logger';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch (parseError) {
-      console.error('Erreur parsing JSON:', parseError);
+      logger.error('Erreur parsing JSON:', parseError);
       return NextResponse.json(
         { error: 'Format de requête invalide', details: 'Le body JSON est invalide' },
         { 
@@ -423,7 +424,7 @@ Exemple mauvais ton :
         response_format: { type: 'json_object' },
       });
     } catch (openaiError: any) {
-      console.error('Erreur OpenAI API:', openaiError);
+      logger.error('Erreur OpenAI API:', openaiError);
       const errorMessage = openaiError?.message || 'Erreur lors de l\'appel à l\'API OpenAI';
       return NextResponse.json(
         { 
@@ -442,7 +443,7 @@ Exemple mauvais ton :
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      console.error('Réponse OpenAI vide:', response);
+      logger.error('Réponse OpenAI vide:', response);
       return NextResponse.json(
         { 
           error: 'Réponse vide du service IA',
@@ -496,7 +497,7 @@ Exemple mauvais ton :
         }
       }
     } catch (parseError: any) {
-      console.error('Erreur parsing réponse OpenAI:', {
+      logger.error('Erreur parsing réponse OpenAI:', {
         error: parseError?.message || parseError,
         contentLength: content?.length,
         contentPreview: content?.substring(0, 200),
@@ -532,7 +533,7 @@ Exemple mauvais ton :
 
     // Validation de la structure de réponse
     if (!parsedResponse || typeof parsedResponse !== 'object') {
-      console.error('Réponse OpenAI invalide (pas un objet):', parsedResponse);
+      logger.error('Réponse OpenAI invalide (pas un objet):', parsedResponse);
       return NextResponse.json(
         { 
           error: 'Format de réponse invalide',
@@ -551,7 +552,7 @@ Exemple mauvais ton :
 
     // S'assurer que le message existe et est une chaîne
     if (!parsedResponse.message || typeof parsedResponse.message !== 'string') {
-      console.error('Réponse OpenAI invalide (pas de message):', parsedResponse);
+      logger.error('Réponse OpenAI invalide (pas de message):', parsedResponse);
       parsedResponse.message = 'Je n\'ai pas compris. Pouvez-vous reformuler ?';
     } else {
       // Normaliser les caractères UTF-8 pour garantir l'affichage correct des accents
@@ -618,7 +619,7 @@ Exemple mauvais ton :
 
     // Si la réponse est trop longue, la tronquer
     if (parsedResponse.message && parsedResponse.message.length > 200) {
-      console.warn('Message IA trop long, troncature...');
+      logger.warn('Message IA trop long, troncature...');
       parsedResponse.message = parsedResponse.message.substring(0, 197) + '...';
     }
 
@@ -645,7 +646,7 @@ Exemple mauvais ton :
     
     // Si l'utilisateur confirme ET que le bot demandait confirmation, forcer la validation
     if (isConfirmation && botAskedConfirmation && parsedResponse.next_action !== 'validate') {
-      console.log('Détection confirmation utilisateur, passage en validation');
+      logger.info('Détection confirmation utilisateur, passage en validation');
       parsedResponse.next_action = 'validate';
       // Message court de confirmation
       if (!parsedResponse.message || parsedResponse.message.length < 20) {
@@ -657,7 +658,7 @@ Exemple mauvais ton :
     // (mais on ne force pas, on laisse l'IA décider si elle a assez d'infos)
     if (questionCount >= 8 && parsedResponse.next_action === 'continue') {
       // On suggère seulement, mais on ne force pas
-      console.log(`Conversation longue (${questionCount} questions), l'IA devrait considérer la validation`);
+      logger.debug(`Conversation longue (${questionCount} questions), l'IA devrait considérer la validation`);
     }
 
     // Utiliser NextResponse.json() qui gère automatiquement UTF-8 correctement
@@ -669,8 +670,8 @@ Exemple mauvais ton :
         'Content-Type': 'application/json; charset=utf-8',
       },
     });
-  } catch (error: any) {
-    console.error('Chatbot API error:', error);
+  } catch (error: unknown) {
+    logger.error('Chatbot API error:', error);
     return handleApiError(error);
   }
 }

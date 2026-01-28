@@ -77,7 +77,9 @@ const STATUS_BADGE_CLASS: Record<RequestStatus, string> = {
 
 function getProviderDisplayName(p?: ProviderProfile): string {
   if (!p) return 'Prestataire'
-  if (p.nom_entreprise) return p.nom_entreprise
+  // Priorité au nom de l'entreprise s'il existe et n'est pas vide
+  if (p.nom_entreprise && p.nom_entreprise.trim()) return p.nom_entreprise.trim()
+  // Sinon, utiliser le nom complet (prénom + nom)
   const full = [p.prenom, p.nom].filter(Boolean).join(' ').trim()
   return full || 'Prestataire'
 }
@@ -174,7 +176,7 @@ export default function DemandesPage() {
         service_type: prestataireProfile?.type_prestation || null,
         wedding_date: null,
         prestataire: prestataireProfile ? {
-          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          nom_entreprise: prestataireProfile.nom_entreprise || null,
           service_type: prestataireProfile.type_prestation || '',
           avatar_url: profile?.avatar_url || null,
           prenom: profile?.prenom || null,
@@ -277,7 +279,7 @@ export default function DemandesPage() {
         details: devis.description || null, // Mapper description vers details pour le type (compatibilité)
         service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
-          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          nom_entreprise: prestataireProfile.nom_entreprise || null,
           service_type: prestataireProfile.type_prestation || '',
           avatar_url: profile?.avatar_url || null,
           prenom: profile?.prenom || null,
@@ -367,7 +369,7 @@ export default function DemandesPage() {
         provider_id: prestataireId,
         service_type: prestataireProfile?.type_prestation || null,
         prestataire: prestataireProfile ? {
-          nom_entreprise: prestataireProfile.nom_entreprise || '',
+          nom_entreprise: prestataireProfile.nom_entreprise || null,
           service_type: prestataireProfile.type_prestation || '',
           avatar_url: profile?.avatar_url || null,
           prenom: profile?.prenom || null,

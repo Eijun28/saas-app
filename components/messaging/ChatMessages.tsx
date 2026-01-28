@@ -265,12 +265,16 @@ export function ChatMessages({
                               ? 'bg-[#823F91] text-white rounded-br-sm'
                               : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm'
                           }`}
+                          style={isOwn ? { backgroundColor: '#823F91' } : {}}
                         >
                           {/* Contenu texte */}
                           {message.content && (
-                            <p className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                              isOwn ? 'text-white' : 'text-gray-900'
-                            }`}>
+                            <p 
+                              className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
+                                isOwn ? 'text-white' : 'text-gray-900'
+                              }`}
+                              style={isOwn ? { color: '#FFFFFF' } : {}}
+                            >
                               {message.content}
                             </p>
                           )}

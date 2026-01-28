@@ -28,6 +28,7 @@ export default function DemandesRecuesPage() {
     en_cours: [],
     terminees: [],
   })
+  const [conversationIdsMap, setConversationIdsMap] = useState<Map<string, string>>(new Map())
 
   const [searchTerm, setSearchTerm] = useState('')
   const [uiState, setUiState] = useState<UIState>({
@@ -140,7 +141,19 @@ export default function DemandesRecuesPage() {
     }
 
     // Récupérer les couples via couples.user_id = requests.couple_id
-    const coupleUserIds = [...new Set(requestsData.map((r: any) => r.couple_id).filter(Boolean))]
+    interface RequestRow {
+      id: string;
+      couple_id: string;
+      provider_id: string;
+      status: string;
+      initial_message?: string | null;
+      created_at?: string | null;
+      responded_at?: string | null;
+      cancelled_at?: string | null;
+      [key: string]: unknown;
+    }
+    
+    const coupleUserIds = [...new Set(requestsData.map((r: RequestRow) => r.couple_id).filter(Boolean))]
     const couplesMap = await getCouplesByUserIds(coupleUserIds, [
       'user_id',
       'partner_1_name',
@@ -149,16 +162,51 @@ export default function DemandesRecuesPage() {
     ])
 
     // Fusionner les données
-    const data = requestsData.map((request: any) => ({
-      ...request,
-      couple: couplesMap.get(request.couple_id) || {
-        user_id: request.couple_id,
-        partner_1_name: 'Couple',
-        partner_2_name: '',
-        wedding_date: null,
-      }
-    }))
+    const data: RequestWithCouple[] = requestsData.map((request: RequestRow) => {
+      const coupleData = couplesMap.get(request.couple_id);
+      return {
+        id: request.id,
+        couple_id: request.couple_id,
+        provider_id: request.provider_id,
+        status: (request.status || 'pending') as 'pending' | 'accepted' | 'rejected' | 'cancelled',
+        initial_message: request.initial_message || '',
+        created_at: request.created_at || new Date().toISOString(),
+        couple: coupleData ? {
+          partner_1_name: coupleData.partner_1_name || undefined,
+          partner_2_name: coupleData.partner_2_name || undefined,
+          wedding_date: coupleData.wedding_date || undefined,
+        } : {
+          partner_1_name: 'Couple',
+          partner_2_name: '',
+          wedding_date: undefined,
+        }
+      };
+    })
 
+    // Récupérer les IDs de conversation pour les demandes acceptées/en cours
+    const acceptedRequestIds = requestsData
+      .filter((r: RequestRow) => r.status === 'accepted')
+      .map((r: RequestRow) => r.id)
+    
+    const conversationIds = new Map<string, string>()
+    if (acceptedRequestIds.length > 0) {
+      const { data: conversations } = await supabase
+        .from('conversations')
+        .select('id, request_id')
+        .in('request_id', acceptedRequestIds)
+      
+      if (conversations) {
+        interface ConversationRow {
+          id: string;
+          request_id: string;
+        }
+        conversations.forEach((conv: ConversationRow) => {
+          conversationIds.set(conv.request_id, conv.id)
+        })
+      }
+    }
+
+    setConversationIdsMap(conversationIds)
     setDemandes(formatAndGroupDemandes(data))
     setUiState({ loading: 'success', error: null })
   }
@@ -424,7 +472,7 @@ export default function DemandesRecuesPage() {
           <TabsList className="mb-6 sm:mb-8 w-full sm:w-auto bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 inline-flex min-w-full sm:min-w-0">
             <TabsTrigger 
               value="nouvelles" 
-              className="bg-white text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
             >
               <span className="text-[#823F91] data-[state=active]:text-white transition-colors">Nouvelles</span>
               {demandes.nouvelles.length > 0 && (
@@ -435,7 +483,7 @@ export default function DemandesRecuesPage() {
             </TabsTrigger>
             <TabsTrigger 
               value="en-cours" 
-              className="bg-white text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
             >
               <span className="text-[#823F91] data-[state=active]:text-white transition-colors">En cours</span>
               {demandes.en_cours.length > 0 && (
@@ -446,7 +494,7 @@ export default function DemandesRecuesPage() {
             </TabsTrigger>
             <TabsTrigger 
               value="terminees" 
-              className="bg-white text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
             >
               <span className="text-[#823F91] data-[state=active]:text-white transition-colors">Terminées</span>
             </TabsTrigger>
@@ -494,7 +542,11 @@ export default function DemandesRecuesPage() {
                   d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .map((demande) => (
-                  <DemandeCard key={demande.id} demande={demande} />
+                  <DemandeCard 
+                    key={demande.id} 
+                    demande={demande} 
+                    conversationId={conversationIdsMap.get(demande.id) || null}
+                  />
                 ))}
             </div>
           )}
@@ -515,7 +567,11 @@ export default function DemandesRecuesPage() {
                   d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .map((demande) => (
-                  <DemandeCard key={demande.id} demande={demande} />
+                  <DemandeCard 
+                    key={demande.id} 
+                    demande={demande} 
+                    conversationId={conversationIdsMap.get(demande.id) || null}
+                  />
                 ))}
             </div>
           )}

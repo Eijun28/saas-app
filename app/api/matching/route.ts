@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { calculateTotalScore } from '@/lib/matching/scoring';
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
+import { logger } from '@/lib/logger';
 
 /**
  * Normalise le service_type extrait par le chatbot pour correspondre au format de la base
@@ -98,7 +99,7 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
   
   // Si pas de correspondance, retourner tel quel (normalisé en minuscules)
   // Le matching pourra quand même fonctionner si le service_type correspond exactement
-  console.warn(`⚠️ Service type non reconnu: "${serviceType}" -> "${normalized}"`);
+  logger.warn(`⚠️ Service type non reconnu: "${serviceType}" -> "${normalized}"`);
   return normalized;
 }
 
@@ -131,12 +132,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('🔍 Matching pour:', search_criteria.service_type);
-    console.log('📋 Critères de recherche:', JSON.stringify(search_criteria, null, 2));
+    logger.info('🔍 Matching pour:', search_criteria.service_type);
+    logger.debug('📋 Critères de recherche:', JSON.stringify(search_criteria, null, 2));
 
     // Normaliser le service_type pour correspondre au format de la base
     const normalizedServiceType = normalizeServiceType(search_criteria.service_type);
-    console.log('🔄 Service type normalisé:', normalizedServiceType);
+    logger.debug('🔄 Service type normalisé:', normalizedServiceType);
 
     // ÉTAPE 1 : FILTRES DURS avec jointures optimisées
     // Utilisation de jointures Supabase pour éviter les requêtes N+1
@@ -193,21 +194,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('🔎 Requête Supabase:', query);
+    logger.debug('🔎 Requête Supabase exécutée');
 
-    let providers: any[] = [];
+    let providers: Array<Record<string, unknown>> = [];
     let useFallbackEnrichment = false;
     
     const { data: providersData, error } = await query;
 
     if (error) {
-      console.error('❌ Erreur Supabase lors de la recherche:', error);
-      console.error('Détails:', JSON.stringify(error, null, 2));
+      logger.error('❌ Erreur Supabase lors de la recherche:', error);
+      logger.error('Détails:', JSON.stringify(error, null, 2));
       
       // Si l'erreur concerne les jointures (code 42703 = colonne inexistante ou relation non définie)
       // Essayer sans les jointures et charger les données séparément
       if (error.code === '42703' || error.message?.includes('relation') || error.message?.includes('foreign key')) {
-        console.warn('⚠️ Les jointures ne fonctionnent pas, utilisation du fallback');
+        logger.warn('⚠️ Les jointures ne fonctionnent pas, utilisation du fallback');
         useFallbackEnrichment = true;
         
         // Requête sans jointures
@@ -255,7 +256,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!providers || providers.length === 0) {
-      console.warn('⚠️ Aucun prestataire trouvé avec les critères:', {
+      logger.warn('⚠️ Aucun prestataire trouvé avec les critères:', {
         service_type: search_criteria.service_type,
         budget_min: search_criteria.budget_min,
         budget_max: search_criteria.budget_max,
@@ -269,10 +270,10 @@ export async function POST(request: NextRequest) {
         .eq('role', 'prestataire')
         .eq('service_type', normalizedServiceType);
       
-      console.log(`ℹ️ Total prestataires pour ${normalizedServiceType}:`, totalCount);
+      logger.info(`ℹ️ Total prestataires pour ${normalizedServiceType}:`, totalCount);
       
       // Rechercher des alternatives : prestataires du même service sans filtre budget
-      let alternativeProviders: any[] = [];
+      let alternativeProviders: Array<Record<string, unknown>> = [];
       if (totalCount && totalCount > 0) {
         const { data: alternatives } = await supabase
           .from('profiles')
@@ -299,24 +300,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`✅ ${providers.length} prestataires trouvés après filtres`);
-    console.log('📊 Prestataires:', providers.map(p => ({
-      id: p.id,
-      nom_entreprise: p.nom_entreprise,
-      service_type: p.service_type,
-      budget_min: p.budget_min,
-      budget_max: p.budget_max,
-    })));
+    logger.info(`✅ ${providers.length} prestataires trouvés après filtres`);
 
     // ÉTAPE 2 : ENRICHIR AVEC CULTURES, ZONES ET PORTFOLIO (optimisé)
     // Récupérer tous les IDs des prestataires
-    const providerIds = providers.map(p => p.id);
+    const providerIds = providers.map(p => {
+      const id = typeof p.id === 'string' ? p.id : String(p.id);
+      return id;
+    });
     
-    let enrichedProviders: any[];
+    let enrichedProviders: Array<Record<string, unknown>>;
     
     if (useFallbackEnrichment) {
       // Méthode fallback : requêtes séparées (ancienne méthode)
-      console.log('📦 Utilisation de la méthode d\'enrichissement fallback');
+      logger.debug('📦 Utilisation de la méthode d\'enrichissement fallback');
       enrichedProviders = await Promise.all(
         providers.map(async (provider) => {
           // Récupérer cultures
@@ -353,7 +350,7 @@ export async function POST(request: NextRequest) {
       );
     } else {
       // Méthode optimisée : jointures Supabase + requête groupée pour portfolio
-      console.log('⚡ Utilisation de la méthode d\'enrichissement optimisée');
+      logger.debug('⚡ Utilisation de la méthode d\'enrichissement optimisée');
       
       // Requête groupée pour compter les portfolios (une seule requête au lieu de N)
       const { data: portfolioCounts } = await supabase
@@ -370,14 +367,18 @@ export async function POST(request: NextRequest) {
 
       // Enrichir les prestataires avec les données déjà chargées via jointures
       enrichedProviders = providers.map((provider) => {
+        const providerId = typeof provider.id === 'string' ? provider.id : String(provider.id);
+        
         // Extraire les cultures depuis la jointure
-        const cultures = (provider.provider_cultures as any[])?.map((c: any) => c.culture_id) || [];
+        const providerCultures = (provider.provider_cultures as Array<{ culture_id: string }>) || [];
+        const cultures = providerCultures.map((c) => c.culture_id);
         
         // Extraire les zones depuis la jointure
-        const zones = (provider.provider_zones as any[])?.map((z: any) => z.zone_id) || [];
+        const providerZones = (provider.provider_zones as Array<{ zone_id: string }>) || [];
+        const zones = providerZones.map((z) => z.zone_id);
         
         // Récupérer le portfolio_count depuis le map
-        const portfolio_count = portfolioCountMap.get(provider.id) || 0;
+        const portfolio_count = portfolioCountMap.get(providerId) || 0;
         
         // Extraire les données de rating
         const publicProfile = Array.isArray(provider.prestataire_public_profiles) 
@@ -403,7 +404,11 @@ export async function POST(request: NextRequest) {
       );
 
       // Générer explication simple
-      const explanation = generateExplanation(breakdown, provider, search_criteria);
+      const providerForExplanation = {
+        average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
+        annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
+      };
+      const explanation = generateExplanation(breakdown, providerForExplanation, search_criteria);
 
       return {
         provider_id: provider.id,
@@ -437,11 +442,11 @@ export async function POST(request: NextRequest) {
       });
 
     if (historyError) {
-      console.error('Erreur sauvegarde historique:', historyError);
+      logger.error('Erreur sauvegarde historique:', historyError);
     }
 
-    console.log(`🎯 Top 3 scores: ${topMatches.map(p => p.score).join(', ')}`);
-    console.log(`📊 Total résultats disponibles: ${sortedProviders.length}`);
+    logger.info(`🎯 Top 3 scores: ${topMatches.map(p => p.score).join(', ')}`);
+    logger.info(`📊 Total résultats disponibles: ${sortedProviders.length}`);
 
     return NextResponse.json({
       matches: topMatches, // Retourner les top 3 pour compatibilité UI
@@ -450,16 +455,21 @@ export async function POST(request: NextRequest) {
       search_criteria,
       created_at: new Date().toISOString(),
     });
-  } catch (error: any) {
-    console.error('Erreur matching:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+    logger.error('Erreur matching:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur', details: errorMessage },
       { status: 500 }
     );
   }
 }
 
-function generateExplanation(breakdown: any, provider: any, criteria: any): string {
+function generateExplanation(
+  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number },
+  provider: { average_rating: number; annees_experience: number },
+  criteria: MatchingRequest['search_criteria']
+): string {
   const reasons = [];
 
   if (breakdown.cultural_match > 20) {

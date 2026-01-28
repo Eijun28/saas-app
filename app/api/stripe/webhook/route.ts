@@ -30,10 +30,11 @@ export async function POST(request: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     logger.error('Webhook signature verification failed', err)
     return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
+      { error: `Webhook Error: ${errorMessage}` },
       { status: 400 }
     )
   }
@@ -76,7 +77,13 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
 
-        const updateData: any = {
+        const updateData: {
+          status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+          current_period_start: string;
+          current_period_end: string;
+          cancel_at_period_end: boolean;
+          canceled_at?: string;
+        } = {
           status: subscription.status === 'active' ? 'active' :
                  subscription.status === 'canceled' ? 'canceled' :
                  subscription.status === 'past_due' ? 'past_due' :
@@ -136,10 +143,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ received: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Erreur traitement webhook', error)
     return NextResponse.json(
-      { error: 'Webhook handler failed' },
+      { error: 'Webhook handler failed', details: errorMessage },
       { status: 500 }
     )
   }
