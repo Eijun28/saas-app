@@ -1,11 +1,12 @@
 'use client'
 
-// 🚀 DEPLOYMENT MARKER - Commit 2ed59a4 - Date: 2026-01-27
+// 🚀 DEPLOYMENT MARKER - Commit 5dabfc9 - Date: 2026-01-27
 // ✅ Sparkles 60 particules, speed 0.15
 // ✅ Toggle HowItWorks w-fit
 // ✅ Conversation landing messages courts
 // ✅ Section HowItWorks complète
 // ✅ Profil couple couleurs corrigées
+// ✅ Fix cron job schedule pour plan Hobby
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
@@ -33,7 +34,7 @@ export default function HomePage() {
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
-          <p>Git reconnected OK</p>
+          <p className="text-center py-2 text-sm text-green-600 font-semibold">✅ Git reconnected OK - Deploy: {new Date().toISOString().split('T')[0]}</p>
           <Hero />
           <CulturesMarquee />
           <HowItWorks />
