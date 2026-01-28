@@ -1,3 +1,4 @@
+-- deploy test
 -- Migration: Ajouter les colonnes de localisation détaillée du mariage à la table couples
 -- Date: 2025-01-XX
 -- Description: Ajoute les colonnes wedding_city, wedding_region, wedding_country pour permettre un stockage plus précis de la localisation du mariage
