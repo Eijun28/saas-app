@@ -1,8 +1,11 @@
 'use client'
 
-// ⚠️⚠️⚠️ VERSION ACTUELLE - COMMIT 08982e2 - NE PAS UTILISER ee92977 ⚠️⚠️⚠️
-// Tous les changements du jour sont dans ce commit
-// Sparkles 60 particules, Toggle w-fit, Conversation landing, HowItWorks, etc.
+// 🚀 DEPLOYMENT MARKER - Commit 2ed59a4 - Date: 2026-01-27
+// ✅ Sparkles 60 particules, speed 0.15
+// ✅ Toggle HowItWorks w-fit
+// ✅ Conversation landing messages courts
+// ✅ Section HowItWorks complète
+// ✅ Profil couple couleurs corrigées
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
