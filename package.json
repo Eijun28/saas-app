@@ -1,6 +1,6 @@
 {
   "name": "nuply",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,9 @@
     "test": "jest",
     "test:api": "node scripts/test-api.sh",
     "test:compatibility": "tsx scripts/test-compatibility.ts"
+  },
+  "_vercel": {
+    "deployTrigger": "force-new-deployment"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.77",
