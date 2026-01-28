@@ -1,7 +1,7 @@
 "use client"
 
 import { Sidebar } from "@/components/layout/Sidebar"
-import { LayoutDashboard, Store, CalendarCheck, MessageSquare, Settings } from "lucide-react"
+import { LayoutDashboard, Store, CalendarCheck, MessageSquare, Settings, FileText } from "lucide-react"
 import { useNotifications } from "@/hooks/use-notifications"
 
 export function PrestataireSidebarWrapper() {
@@ -12,6 +12,7 @@ export function PrestataireSidebarWrapper() {
     { href: "/prestataire/demandes-recues", icon: Store, label: "Demandes reçues", badge: counts.demandes },
     { href: "/prestataire/agenda", icon: CalendarCheck, label: "Agenda" },
     { href: "/prestataire/messagerie", icon: MessageSquare, label: "Messagerie", badge: counts.messages },
+    { href: "/prestataire/devis-factures", icon: FileText, label: "Devis et Factures" },
     { href: "/prestataire/profil-public", icon: Settings, label: "Profil public" },
   ]
 
