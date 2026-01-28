@@ -12,6 +12,7 @@ interface SidebarItem {
   icon: LucideIcon
   label: string
   comingSoon?: boolean
+  badge?: number | null
 }
 
 interface SidebarProps {
@@ -44,7 +45,7 @@ export function Sidebar({ role, items }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-6 py-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {items.map((item) => (
             <NavItem
               key={item.href}
@@ -53,6 +54,7 @@ export function Sidebar({ role, items }: SidebarProps) {
               label={item.label}
               isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
               comingSoon={item.comingSoon}
+              badge={item.badge}
             />
           ))}
         </nav>

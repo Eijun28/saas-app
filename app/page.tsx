@@ -1,42 +1,43 @@
 'use client'
 
+// 🚀 DEPLOYMENT MARKER - Commit 5dabfc9 - Date: 2026-01-27
+// ✅ Sparkles 60 particules, speed 0.15
+// ✅ Toggle HowItWorks w-fit
+// ✅ Conversation landing messages courts
+// ✅ Section HowItWorks complète
+// ✅ Profil couple couleurs corrigées
+// ✅ Fix cron job schedule pour plan Hobby
 import Hero from '@/components/landing/Hero'
 import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
+import { HowItWorks } from '@/components/landing/HowItWorks'
 import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
 import MatchingExplainerCards from '@/components/landing/MatchingExplainerCards'
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
 import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
-import Particles from '@/components/Particles'
+import { Sparkles } from '@/components/ui/sparkles'
 
 export default function HomePage() {
   return (
     <SmoothScrollProvider>
-      {/* Background de particules - couvre toute la page */}
+      {/* Background de sparkles - léger et animé - Version actuelle */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-        <Particles
-          particleCount={200}
-          particleSpread={10}
-          speed={0.24}
+        <Sparkles
+          particleCount={60}
           particleColors={["#823F91","#c081e3","#823F91"]}
-          moveParticlesOnHover={false}
-          particleHoverFactor={1}
-          alphaParticles={false}
-          particleBaseSize={50}
-          sizeRandomness={0.5}
-          cameraDistance={20}
-          disableRotation={false}
-          className=""
+          speed={0.15}
         />
       </div>
 
       {/* Contenu principal */}
       <div className="min-h-screen overflow-x-hidden bg-background" style={{ position: 'relative', zIndex: 1 }}>
         <div>
+          <p className="text-center py-2 text-sm text-green-600 font-semibold">✅ Git reconnected OK - Deploy: {new Date().toISOString().split('T')[0]}</p>
           <Hero />
           <CulturesMarquee />
+          <HowItWorks />
           <MatchingQuizSection />
           <PrestatairesMarquee />
           <FeaturesGrid />

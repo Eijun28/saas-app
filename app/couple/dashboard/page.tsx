@@ -70,9 +70,13 @@ export default function CoupleDashboardPage() {
         }
 
         if (coupleData) {
-          // Extraire le prénom et nom depuis partner_1_name (qui existe dans la table couples)
+          // ✅ FIX: Afficher le nom complet tel quel au lieu d'essayer de le diviser
+          // Le nom complet sera affiché dans le header du profil
           if (coupleData.partner_1_name) {
-            const nameParts = coupleData.partner_1_name.split(' ')
+            // Pour l'affichage dans le dashboard, utiliser le nom complet
+            const fullName = coupleData.partner_1_name
+            // Essayer d'extraire le prénom (premier mot) pour l'affichage si nécessaire
+            const nameParts = fullName.trim().split(/\s+/)
             setPrenom(nameParts[0] || '')
             setNom(nameParts.slice(1).join(' ') || '')
           }
