@@ -545,7 +545,7 @@ export async function signUp(
       if (emailResult.success) {
         logger.info('✅ Email de bienvenue Resend envoyé avec succès')
       } else {
-        logger.warn('⚠️ Email de bienvenue Resend non envoyé:', emailResult.error)
+        logger.warn('⚠️ Email de bienvenue Resend non envoyé:', 'error' in emailResult ? emailResult.error : 'Erreur inconnue')
       }
     } catch (emailError) {
       // Ne pas bloquer l'inscription si l'email échoue

@@ -8,7 +8,6 @@ export interface Conversation {
   provider_id: string
   created_at: string
   unread_count?: number
-  last_message?: string | null
   last_message_at?: string | null
   request?: {
     id: string
@@ -25,7 +24,6 @@ export interface Conversation {
     created_at: string
     sender_id: string
   } | null
-  unread_count?: number
 }
 
 export interface MediaItem {
@@ -84,23 +82,6 @@ export async function getConversationsClient(userId: string): Promise<Conversati
       const otherPartyId = conv.couple_id === userId ? conv.provider_id : conv.couple_id
       const isCouple = conv.couple_id === userId
 
-      // Récupérer le dernier message de la conversation
-      const { data: lastMessageData } = await supabase
-        .from('messages')
-        .select('content, created_at')
-        .eq('conversation_id', conv.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      // Compter les messages non lus pour cet utilisateur
-      const { count: unreadCount } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('conversation_id', conv.id)
-        .neq('sender_id', userId)
-        .is('read_at', null)
-
       // Récupérer le profil de l'autre partie
       let otherPartyName = 'Utilisateur'
       let otherPartyAvatar: string | null = null
@@ -158,7 +139,6 @@ export async function getConversationsClient(userId: string): Promise<Conversati
       return {
         ...conv,
         unread_count: unreadCount || 0,
-        last_message: lastMessageData?.content || null,
         last_message_at: lastMessageData?.created_at || null,
         request: request || undefined,
         other_party: {
@@ -171,7 +151,6 @@ export async function getConversationsClient(userId: string): Promise<Conversati
           created_at: lastMessageData.created_at,
           sender_id: lastMessageData.sender_id,
         } : null,
-        unread_count: unreadCount || 0,
       }
     })
   )
@@ -211,23 +190,6 @@ export async function getConversationsServer(userId: string): Promise<Conversati
 
       const otherPartyId = conv.couple_id === userId ? conv.provider_id : conv.couple_id
       const isCouple = conv.couple_id === userId
-
-      // Récupérer le dernier message de la conversation
-      const { data: lastMessageData } = await supabase
-        .from('messages')
-        .select('content, created_at')
-        .eq('conversation_id', conv.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      // Compter les messages non lus pour cet utilisateur
-      const { count: unreadCount } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('conversation_id', conv.id)
-        .neq('sender_id', userId)
-        .is('read_at', null)
 
       let otherPartyName = 'Utilisateur'
       let otherPartyAvatar: string | null = null
@@ -283,7 +245,6 @@ export async function getConversationsServer(userId: string): Promise<Conversati
       return {
         ...conv,
         unread_count: unreadCount || 0,
-        last_message: lastMessageData?.content || null,
         last_message_at: lastMessageData?.created_at || null,
         request: request || undefined,
         other_party: {
@@ -296,7 +257,6 @@ export async function getConversationsServer(userId: string): Promise<Conversati
           created_at: lastMessageData.created_at,
           sender_id: lastMessageData.sender_id,
         } : null,
-        unread_count: unreadCount || 0,
       }
     })
   )
