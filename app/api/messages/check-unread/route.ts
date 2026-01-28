@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger'
 
 /**
  * Route API pour vérifier les messages non lus après 5 minutes
- * Appelée automatiquement par Vercel Cron toutes les 5 minutes
+ * Appelée automatiquement par Vercel Cron toutes les heures (compatible plan Hobby)
  */
 export async function POST(request: NextRequest) {
   // Vérifier que la requête vient de Vercel Cron (sécurité)
