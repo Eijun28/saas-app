@@ -12,9 +12,10 @@ interface NavItemProps {
   isActive: boolean
   comingSoon?: boolean
   badge?: number | null
+  onClick?: () => void
 }
 
-export function NavItem({ href, icon: Icon, label, isActive, comingSoon = false, badge }: NavItemProps) {
+export function NavItem({ href, icon: Icon, label, isActive, comingSoon = false, badge, onClick }: NavItemProps) {
   const content = (
     <motion.div
       className={cn(
@@ -52,7 +53,7 @@ export function NavItem({ href, icon: Icon, label, isActive, comingSoon = false,
   }
 
   return (
-    <Link href={href} className="block">
+    <Link href={href} className="block" onClick={onClick}>
       {content}
     </Link>
   )

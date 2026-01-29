@@ -24,7 +24,7 @@ export function PageTitle({ title, description, className }: PageTitleProps) {
         className
       )}
     >
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-700 tracking-tight mb-2">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#823F91] tracking-tight mb-2">
         {title}
       </h1>
       {description && (

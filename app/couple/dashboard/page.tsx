@@ -229,13 +229,11 @@ export default function CoupleDashboardPage() {
                   <div className="flex items-center gap-3">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <motion.div 
-                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300 cursor-help"
-                          whileHover={{ scale: 1.05, rotate: -2 }}
-                          transition={{ duration: 0.2 }}
+                        <div
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm cursor-help"
                         >
                           <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                        </motion.div>
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-gray-900 text-white border-gray-700">
                         <p className="text-xs">{card.description}</p>
@@ -321,13 +319,11 @@ export default function CoupleDashboardPage() {
                   <Link href={section.href} className="block h-full">
                     <div className="group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 flex flex-col h-full border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]">
                       <div className="flex items-start gap-3 flex-1 relative z-10">
-                        <motion.div 
-                          className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
-                          whileHover={{ scale: 1.05, rotate: -2 }}
-                          transition={{ duration: 0.2 }}
+                        <div
+                          className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm"
                         >
                           <Icon className="h-5 w-5 text-white" />
-                        </motion.div>
+                        </div>
                         <div className="flex-1 min-w-0 flex flex-col">
                           <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight group-hover:text-[#823F91] transition-colors mb-1">
                             {section.title}
