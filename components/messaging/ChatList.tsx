@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Search, Check, CheckCheck } from 'lucide-react'
-import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import type { Conversation } from '@/lib/supabase/messaging'
 
 interface ChatListProps {
@@ -119,13 +118,8 @@ export function ChatList({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* En-tête avec titre et recherche */}
-      <div className="p-4 sm:p-5 md:p-6 border-b border-gray-100">
-        <PageTitle 
-          title="Messagerie"
-          description="Communiquez avec vos contacts"
-          className="mb-3 sm:mb-4"
-        />
+      {/* En-tête avec recherche */}
+      <div className="p-3 sm:p-4 border-b border-gray-100">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input

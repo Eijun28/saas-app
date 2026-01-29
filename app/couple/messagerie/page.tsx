@@ -1,12 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Send, MessageSquare, Search, UserRound, Check, CheckCheck } from 'lucide-react'
+import { Send, MessageSquare, Search, CheckCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
@@ -264,27 +261,20 @@ export default function MessageriePage() {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50/50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto h-screen flex flex-col p-4 md:p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-4"
-        >
-          <p className="text-sm md:text-base text-gray-600">Communiquez avec tous vos prestataires</p>
-        </motion.div>
+        <PageTitle
+          title="Messagerie"
+          description="Communiquez avec vos prestataires"
+          className="pb-4"
+        />
 
         <div className="flex-1 flex gap-4 overflow-hidden">
           {/* Liste des conversations - Carte blanche arrondie */}
-          <div className="w-full lg:w-[380px] xl:w-[420px] bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden">
-            {/* En-tête */}
-            <div className="p-4 sm:p-5 md:p-6 border-b border-gray-100">
-              <PageTitle 
-                title="Messagerie"
-                description="Communiquez avec vos prestataires"
-                className="mb-0"
-              />
-              <div className="relative mt-4">
+          <div className="w-full lg:w-[380px] xl:w-[420px] bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+            {/* En-tête avec recherche */}
+            <div className="p-3 sm:p-4 border-b border-gray-100">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
@@ -397,7 +387,7 @@ export default function MessageriePage() {
           </div>
 
           {/* Zone de messages - Carte blanche arrondie */}
-          <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {selectedConversation ? (
               <>
                 {/* En-tête de conversation */}

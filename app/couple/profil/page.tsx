@@ -24,11 +24,11 @@ import { Badge } from '@/components/ui/badge'
 
 import { Progress } from '@/components/ui/progress'
 
-import { 
+import {
 
-  Loader2, Check, User, Calendar, 
+  Loader2, Check, User, Calendar,
 
-  Palette, Briefcase, Church, ArrowUpDown
+  Palette, Briefcase, Church
 
 } from 'lucide-react'
 
@@ -1557,7 +1557,7 @@ export default function CoupleProfilPage() {
 
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative items-end">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <div className="space-y-2">
 
@@ -1580,23 +1580,6 @@ export default function CoupleProfilPage() {
                       />
 
                     </div>
-
-                    {/* Bouton d'échange */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const temp = formData.budget_min
-                        setFormData({
-                          ...formData,
-                          budget_min: formData.budget_max,
-                          budget_max: temp
-                        })
-                      }}
-                      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:translate-y-0 md:top-auto md:bottom-0 z-10 p-2 rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white transition-colors shadow-md hover:shadow-lg"
-                      title="Échanger les valeurs"
-                    >
-                      <ArrowUpDown className="h-4 w-4" />
-                    </button>
 
                     <div className="space-y-2">
 

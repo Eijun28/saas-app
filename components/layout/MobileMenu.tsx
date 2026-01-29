@@ -65,6 +65,7 @@ export function MobileMenu({ isOpen, onClose, items }: MobileMenuProps) {
                     label={item.label}
                     isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
                     comingSoon={item.comingSoon}
+                    onClick={onClose}
                   />
                 ))}
               </nav>
