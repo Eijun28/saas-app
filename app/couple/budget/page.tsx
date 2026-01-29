@@ -10,6 +10,7 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Wallet, Plus, Edit2, Trash2, X, Check } from 'lucide-react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts'
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,24 @@ const categories = [
   'Cadeaux',
   'Autre',
 ]
+
+// Couleurs pour le camembert par catégorie
+const CHART_COLORS: Record<string, string> = {
+  'Photographe': '#823F91',
+  'Traiteur': '#9D5FA8',
+  'Fleuriste': '#B87FC0',
+  'Musique': '#D49FFD',
+  'Location de salle': '#6D3478',
+  'Robe de mariée': '#E8C4F5',
+  'Costume': '#A855F7',
+  'Décoration': '#C084FC',
+  'Transport': '#DDA0DD',
+  'Cadeaux': '#E9D5F5',
+  'Autre': '#9CA3AF',
+}
+
+// Couleur par défaut pour les catégories personnalisées
+const DEFAULT_COLORS = ['#823F91', '#9D5FA8', '#B87FC0', '#D49FFD', '#E8C4F5', '#6D3478', '#A855F7', '#C084FC']
 
 export default function BudgetPage() {
   const { user } = useUser()
@@ -371,6 +390,119 @@ export default function BudgetPage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Camembert répartition par catégorie */}
+          {budgetItems.length > 0 && (() => {
+            // Calculer les données du camembert par catégorie
+            const chartData = budgetItems.reduce((acc, item) => {
+              const existing = acc.find(d => d.name === item.category)
+              if (existing) {
+                existing.value += item.amount
+              } else {
+                acc.push({ name: item.category, value: item.amount })
+              }
+              return acc
+            }, [] as { name: string; value: number }[])
+              .sort((a, b) => b.value - a.value)
+
+            // Fonction pour obtenir la couleur d'une catégorie
+            const getColor = (category: string, index: number) => {
+              return CHART_COLORS[category] || DEFAULT_COLORS[index % DEFAULT_COLORS.length]
+            }
+
+            return (
+              <Card className="border-gray-200 mb-8">
+                <CardHeader>
+                  <CardTitle className="text-lg">Répartition par catégorie</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                    {/* Camembert */}
+                    <div className="h-[280px] sm:h-[320px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius="45%"
+                            outerRadius="80%"
+                            paddingAngle={2}
+                            dataKey="value"
+                            strokeWidth={0}
+                          >
+                            {chartData.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={getColor(entry.name, index)}
+                              />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload
+                                const percentage = ((data.value / totalSpent) * 100).toFixed(1)
+                                return (
+                                  <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+                                    <p className="font-semibold text-gray-900">{data.name}</p>
+                                    <p className="text-[#823F91] font-bold">
+                                      {data.value.toLocaleString('fr-FR')} €
+                                    </p>
+                                    <p className="text-gray-500 text-sm">{percentage}% du total</p>
+                                  </div>
+                                )
+                              }
+                              return null
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Légende détaillée */}
+                    <div className="space-y-3">
+                      {chartData.map((item, index) => {
+                        const percentage = ((item.value / totalSpent) * 100).toFixed(1)
+                        return (
+                          <div key={item.name} className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: getColor(item.name, index) }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-medium text-gray-900 truncate">
+                                  {item.name}
+                                </span>
+                                <span className="text-sm font-bold text-[#823F91] whitespace-nowrap">
+                                  {item.value.toLocaleString('fr-FR')} €
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-300"
+                                    style={{
+                                      width: `${percentage}%`,
+                                      backgroundColor: getColor(item.name, index)
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-gray-500 w-12 text-right">
+                                  {percentage}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })()}
 
           {/* Liste des dépenses */}
           <Card className="border-gray-200">

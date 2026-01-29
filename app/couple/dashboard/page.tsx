@@ -1,13 +1,13 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Sparkles, 
-  Wallet, 
-  MessageSquare, 
-  Calendar, 
+import {
+  Sparkles,
+  Wallet,
+  MessageSquare,
+  Calendar,
   TrendingUp,
   ArrowRight,
   FileText,
@@ -25,6 +25,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
 import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+
+interface BudgetItem {
+  id: string
+  category: string
+  amount: number
+}
 
 export default function CoupleDashboardPage() {
   const router = useRouter()
@@ -39,6 +46,14 @@ export default function CoupleDashboardPage() {
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [statsLoading, setStatsLoading] = useState(true)
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
+  const [budgetHovered, setBudgetHovered] = useState(false)
+
+  // Couleurs pour le camembert
+  const CHART_COLORS = [
+    '#823F91', '#9D5FA8', '#B87FC0', '#D49FFD', '#E8C4F5',
+    '#6D3478', '#A855F7', '#C084FC', '#DDA0DD', '#E9D5F5'
+  ]
 
   useEffect(() => {
     if (!user) return
@@ -108,7 +123,17 @@ export default function CoupleDashboardPage() {
 
           // Calculer le budget total de la même manière que dans la page budget
           const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
-          
+
+          // Charger les items de budget pour le camembert
+          const { data: budgetItemsData } = await supabase
+            .from('budget_items')
+            .select('id, category, amount')
+            .eq('couple_id', user.id)
+
+          if (budgetItemsData) {
+            setBudgetItems(budgetItemsData)
+          }
+
           setStats({
             prestatairesTrouves: favorisCount || 0,
             budgetAlloue: budgetTotal,
@@ -151,6 +176,20 @@ export default function CoupleDashboardPage() {
     router.push('/sign-in')
     return null
   }
+
+  // Calculer les données du camembert par catégorie
+  const chartData = budgetItems.reduce((acc, item) => {
+    const existing = acc.find(d => d.name === item.category)
+    if (existing) {
+      existing.value += item.amount
+    } else {
+      acc.push({ name: item.category, value: item.amount })
+    }
+    return acc
+  }, [] as { name: string; value: number }[])
+    .sort((a, b) => b.value - a.value)
+
+  const totalSpent = budgetItems.reduce((sum, item) => sum + item.amount, 0)
 
   // Sections principales - uniquement celles qui ne sont pas dans les actions rapides
   const sections = [
@@ -215,6 +254,8 @@ export default function CoupleDashboardPage() {
               },
             ].map((card, index) => {
               const Icon = card.icon
+              const isBudgetCard = card.label === "Budget"
+
               return (
               <motion.div
                 key={card.label}
@@ -223,6 +264,8 @@ export default function CoupleDashboardPage() {
                 transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
                 className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
                 onClick={card.onClick}
+                onMouseEnter={() => isBudgetCard && setBudgetHovered(true)}
+                onMouseLeave={() => isBudgetCard && setBudgetHovered(false)}
               >
                 <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
                   {/* Header: Icon + Label */}
@@ -246,32 +289,84 @@ export default function CoupleDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Main Value + Subtitle */}
-                  <div className="space-y-1">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: card.delay + 0.1 }}
-                      className="flex items-baseline gap-2 flex-wrap"
-                    >
-                      {typeof card.value === 'number' ? (
-                        <motion.p 
-                          className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
-                          initial={{ opacity: 0, scale: 0.5 }}
+                  {/* Main Value + Subtitle ou Camembert pour Budget */}
+                  <div className="space-y-1 relative">
+                    <AnimatePresence mode="wait">
+                      {isBudgetCard && budgetHovered && chartData.length > 0 ? (
+                        <motion.div
+                          key="chart"
+                          initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: card.delay + 0.2 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center gap-3"
                         >
-                          {card.value}
-                        </motion.p>
+                          <div className="w-16 h-16 sm:w-20 sm:h-20">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={chartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius="40%"
+                                  outerRadius="90%"
+                                  dataKey="value"
+                                  strokeWidth={0}
+                                >
+                                  {chartData.map((entry, i) => (
+                                    <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                                  ))}
+                                </Pie>
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-lg sm:text-xl font-bold text-gray-900">
+                              {totalSpent.toLocaleString('fr-FR')} €
+                            </p>
+                            <p className="text-xs text-gray-500">dépensé</p>
+                            <div className="mt-1 space-y-0.5">
+                              {chartData.slice(0, 3).map((item, i) => (
+                                <div key={item.name} className="flex items-center gap-1.5 text-xs">
+                                  <div
+                                    className="w-2 h-2 rounded-full flex-shrink-0"
+                                    style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                                  />
+                                  <span className="truncate text-gray-600">{item.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
                       ) : (
-                        <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
-                          {card.value}
-                        </p>
+                        <motion.div
+                          key="value"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ delay: isBudgetCard ? 0 : card.delay + 0.1 }}
+                          className="flex items-baseline gap-2 flex-wrap"
+                        >
+                          {typeof card.value === 'number' ? (
+                            <motion.p
+                              className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.5, delay: card.delay + 0.2 }}
+                            >
+                              {card.value}
+                            </motion.p>
+                          ) : (
+                            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
+                              {card.value}
+                            </p>
+                          )}
+                        </motion.div>
                       )}
-                    </motion.div>
-                    
-                    {/* Subtitle */}
-                    {card.subtitle && (
+                    </AnimatePresence>
+
+                    {/* Subtitle - masqué quand le camembert est affiché */}
+                    {(!isBudgetCard || !budgetHovered || chartData.length === 0) && card.subtitle && (
                       <p className="text-xs sm:text-sm text-gray-600">
                         {card.subtitle}
                       </p>
