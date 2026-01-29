@@ -38,7 +38,7 @@ export function MessagingLayout({
   // Mobile/Tablette: afficher soit la liste soit la conversation
   if (isMobile) {
     return (
-      <div className="flex flex-col h-screen bg-purple-50 p-4">
+      <div className="flex flex-col h-screen bg-purple-50/50 p-4">
         <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden">
           {isConversationPage ? children : chatListComponent}
         </div>
@@ -50,10 +50,10 @@ export function MessagingLayout({
   // Si aucune conversation, afficher l'état vide sur tout l'écran
   if (conversations.length === 0) {
     return (
-      <div className="flex h-screen bg-purple-50 p-4 md:p-6">
+      <div className="flex h-screen bg-purple-50/50 p-4 md:p-6">
         <div className="flex-1 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-md w-full text-center border border-gray-200">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-md w-full text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
               <svg
                 className="w-6 h-6 sm:w-8 sm:w-8 text-gray-400"
                 fill="none"
@@ -83,7 +83,7 @@ export function MessagingLayout({
   }
 
   return (
-    <div className="flex h-screen bg-purple-50 p-4 md:p-6 gap-4">
+    <div className="flex h-screen bg-purple-50/50 p-4 md:p-6 gap-4">
       {/* Liste des conversations - Carte blanche arrondie */}
       <div className="w-full lg:w-[380px] xl:w-[420px] bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden">
         {chatListComponent}
@@ -92,9 +92,9 @@ export function MessagingLayout({
       {/* Zone de conversation - Carte blanche arrondie */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white rounded-2xl shadow-sm">
         {children || (
-          <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-6">
-            <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full text-center border border-gray-200">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+            <div className="p-6 sm:p-8 max-w-md w-full text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                 <svg
                   className="w-6 h-6 sm:w-8 sm:w-8 text-gray-400"
                   fill="none"
