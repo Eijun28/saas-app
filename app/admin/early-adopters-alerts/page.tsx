@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { isAdminEmail } from '@/lib/config/admin'
 
+// Force dynamic rendering to avoid static build with missing env vars
+export const dynamic = 'force-dynamic'
+
 export default async function EarlyAdoptersAlertsPage() {
   const supabase = await createClient()
   
