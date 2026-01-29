@@ -72,8 +72,6 @@ export default function LoadingMatching() {
               .reduce((acc, s) => acc + s.duration, 0);
             const progressDelay = delay + step.duration * 0.3;
 
-            const Icon = step.icon;
-            
             return (
               <motion.div
                 key={index}

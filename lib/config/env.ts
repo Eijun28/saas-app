@@ -87,20 +87,34 @@ export function getServerEnvConfig(): ServerEnvConfig {
     return validatedServerConfig
   }
 
-
   const result = serverEnvSchema.safeParse(process.env)
 
   if (!result.success) {
+    // During build time, env vars may not be available - return placeholder config
+    // This allows static generation to complete; runtime will have real values
+    const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SUPABASE_URL
+
+    if (isBuildTime) {
+      validatedServerConfig = {
+        NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder-anon-key',
+        NEXT_PUBLIC_SITE_URL: 'https://placeholder.vercel.app',
+        SUPABASE_SERVICE_ROLE_KEY: 'placeholder-service-role-key',
+        NODE_ENV: 'production',
+      }
+      return validatedServerConfig
+    }
+
     const errors = result.error.issues.map(issue => {
       const path = issue.path.length > 0 ? issue.path.join('.') : 'root'
       return `${path}: ${issue.message}`
     }).join('\n')
 
     const isVercel = process.env.VERCEL === '1'
-    const platformHint = isVercel 
+    const platformHint = isVercel
       ? '\n\n💡 Sur Vercel, configurez ces variables dans : Settings > Environment Variables'
       : '\n\n💡 Vérifiez votre fichier .env.local ou les variables d\'environnement de votre plateforme de déploiement.'
-    
+
     throw new Error(
       `❌ Configuration invalide - Variables d'environnement manquantes ou invalides (serveur):\n${errors}${platformHint}`
     )

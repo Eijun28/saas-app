@@ -7,9 +7,17 @@ import { getServiceSpecificPrompt, shouldAskQuestion } from '@/lib/chatbot/servi
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 import { logger } from '@/lib/logger';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+}
 
 // Fonction utilitaire pour corriger l'encodage UTF-8 des caractères accentués
 function fixUtf8Encoding(text: string): string {
@@ -413,7 +421,7 @@ Exemple mauvais ton :
     // Appel à OpenAI avec gestion d'erreur améliorée
     let response;
     try {
-      response = await openai.chat.completions.create({
+      response = await getOpenAI().chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [
           { role: 'system', content: systemPrompt },
