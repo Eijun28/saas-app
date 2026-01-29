@@ -12,7 +12,7 @@ export function SidebarInsetWrapper({ children }: { children: React.ReactNode })
       }}
     >
       <CoupleHeader />
-      <main className="flex-1 w-full p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 overflow-x-hidden">
+      <main className="flex-1 w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 md:pb-5 lg:pb-6 xl:pb-8 overflow-x-hidden">
         {children}
       </main>
     </SidebarInset>

@@ -14,9 +14,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "280px"
+const SIDEBAR_WIDTH = "240px" // Réduit de 280px à 240px pour desktop
 const SIDEBAR_WIDTH_MOBILE = "75%"
-const SIDEBAR_WIDTH_ICON = "6rem"
+const SIDEBAR_WIDTH_TABLET = "220px" // Pour tablettes
+const SIDEBAR_WIDTH_ICON = "5rem" // 80px pour que les icônes soient entièrement visibles
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -114,6 +115,7 @@ const SidebarProvider = React.forwardRef<
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH,
+              "--sidebar-width-tablet": SIDEBAR_WIDTH_TABLET,
               "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
               ...style,
             } as React.CSSProperties
@@ -159,8 +161,14 @@ const Sidebar = React.forwardRef<
     )
   }
 
-  // Always render Sheet for mobile - it will be hidden on desktop via CSS
-  const sidebarWidth = state === "collapsed" && collapsible === "icon" ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH
+  // Responsive sidebar width based on screen size
+  const sidebarWidth = React.useMemo(() => {
+    if (state === "collapsed" && collapsible === "icon") {
+      return SIDEBAR_WIDTH_ICON
+    }
+    // Utiliser des tailles adaptées selon les breakpoints via CSS variables
+    return SIDEBAR_WIDTH
+  }, [state, collapsible])
 
   return (
     <>
@@ -200,21 +208,23 @@ const Sidebar = React.forwardRef<
             "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
             "border-sidebar-border group-data-[side=left]:border-r group-data-[side=right]:border-l"
           )}
-          style={{
-            width: sidebarWidth,
-          } as React.CSSProperties}
-        >
-          <div
-            className={cn(
-              "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear md:flex",
-              side === "left" ? "left-0" : "right-0",
-              "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
-              "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
-              className
-            )}
             style={{
               width: sidebarWidth,
             } as React.CSSProperties}
+          >
+            <div
+              className={cn(
+                "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear",
+                "md:flex",
+                side === "left" ? "left-0" : "right-0",
+                // Tailles responsive : tablet (md) = 220px, desktop (lg+) = 240px, collapsed = 64px
+                state === "collapsed" && collapsible === "icon" 
+                  ? "w-[var(--sidebar-width-icon)]" 
+                  : "md:w-[220px] lg:w-[240px]",
+                "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
+                "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
+                className
+              )}
           >
             <div
               data-sidebar="sidebar"

@@ -11,7 +11,7 @@ interface CheckoutButtonProps {
   planType: 'premium' | 'pro'
   children: React.ReactNode
   className?: string
-  variant?: 'default' | 'outline' | 'glow'
+  variant?: 'default' | 'outline'
 }
 
 export function CheckoutButton({ planType, children, className, variant = 'default' }: CheckoutButtonProps) {
@@ -47,7 +47,7 @@ export function CheckoutButton({ planType, children, className, variant = 'defau
       onClick={handleActivate}
       disabled={loading || success}
       className={className}
-      variant={variant === 'glow' ? 'default' : variant}
+      variant={variant}
     >
       {loading ? (
         <>

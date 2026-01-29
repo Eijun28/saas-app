@@ -85,13 +85,13 @@ export function ChatHeader({
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 safe-area-top">
+    <div className="bg-white border-b border-gray-100 safe-area-top">
       <div className="px-3 sm:px-4 py-2.5 sm:py-3">
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Bouton retour (mobile/tablette only) */}
           <button
             onClick={handleBack}
-            className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors lg:hidden"
+            className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors lg:hidden"
             aria-label="Retour"
           >
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
@@ -101,7 +101,7 @@ export function ChatHeader({
           <div className="relative flex-shrink-0">
             <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
               <AvatarImage src={otherParty.avatar_url || undefined} alt={otherParty.name} />
-              <AvatarFallback className="bg-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
+              <AvatarFallback className="bg-white border border-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -125,7 +125,7 @@ export function ChatHeader({
             {/* Bouton appel vidéo */}
             <button
               onClick={handleVideoCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
               aria-label="Appel vidéo"
             >
               <Video className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
@@ -134,7 +134,7 @@ export function ChatHeader({
             {/* Bouton appel vocal */}
             <button
               onClick={handleVoiceCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
               aria-label="Appel vocal"
             >
               <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
@@ -144,7 +144,7 @@ export function ChatHeader({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
                   aria-label="Menu"
                 >
                   <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />

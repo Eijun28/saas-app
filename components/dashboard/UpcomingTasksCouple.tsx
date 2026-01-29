@@ -40,7 +40,7 @@ export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksC
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-xl p-4 sm:p-5 border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)] transition-all duration-300"
+      className="bg-white rounded-xl p-4 sm:p-5 border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-all duration-300"
     >
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -86,7 +86,7 @@ export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksC
                 "flex items-start gap-2.5 p-3 rounded-xl transition-all border-0",
                 task.completed
                   ? "bg-gray-50/50 opacity-60 shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
-                  : "bg-white shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12)]"
+                  : "bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.12)]"
               )}
             >
               <button 

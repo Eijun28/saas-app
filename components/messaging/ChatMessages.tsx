@@ -219,7 +219,7 @@ export function ChatMessages({
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto bg-gray-50 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
+      className="flex-1 overflow-y-auto bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
       style={{
         scrollbarWidth: 'thin',
         scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent',
@@ -231,7 +231,7 @@ export function ChatMessages({
             {/* Séparateur de date */}
             {groupIndex > 0 && (
               <div className="flex items-center justify-center my-5 sm:my-6">
-                <div className="bg-white px-4 py-1.5 rounded-full text-xs text-gray-500 font-medium shadow-sm border border-gray-200">
+                <div className="bg-white px-4 py-1.5 rounded-full text-xs text-gray-500 font-medium border border-gray-200">
                   {formatDateSeparator(group.items[0].created_at)}
                 </div>
               </div>
@@ -262,10 +262,9 @@ export function ChatMessages({
                         <div
                           className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                             isOwn
-                              ? 'bg-[#823F91] text-white rounded-br-sm'
-                              : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm'
+                              ? 'bg-gray-800 text-white rounded-br-sm'
+                              : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                           }`}
-                          style={isOwn ? { backgroundColor: '#823F91' } : {}}
                         >
                           {/* Contenu texte */}
                           {message.content && (
@@ -273,7 +272,6 @@ export function ChatMessages({
                               className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
                                 isOwn ? 'text-white' : 'text-gray-900'
                               }`}
-                              style={isOwn ? { color: '#FFFFFF' } : {}}
                             >
                               {message.content}
                             </p>
@@ -289,7 +287,7 @@ export function ChatMessages({
                                 className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
                                   isOwn
                                     ? 'bg-white/20 hover:bg-white/30 text-white'
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                    : 'bg-white/50 hover:bg-white/70 text-gray-600'
                                 }`}
                                 aria-label="Menu message"
                               >
@@ -342,8 +340,8 @@ export function ChatMessages({
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] sm:min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-250px)] px-3 sm:px-4 pt-8 sm:pt-12 md:pt-16">
-            <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-sm w-full text-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center border border-gray-200">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
                 <svg
                   className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400"
                   fill="none"

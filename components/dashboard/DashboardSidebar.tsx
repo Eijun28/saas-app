@@ -149,7 +149,7 @@ export function DashboardSidebar({
                       "flex items-center justify-center rounded-lg transition-smooth flex-shrink-0",
                       collapsed ? "h-10 w-10" : "h-9 w-9",
                       isActive
-                        ? "gradient-primary shadow-glow"
+                        ? "bg-primary"
                         : "bg-muted/80 group-hover:bg-muted"
                     )}
                   >
@@ -190,7 +190,7 @@ export function DashboardSidebar({
             "flex items-center rounded-lg bg-muted/40",
             collapsed ? "justify-center p-2" : "gap-3 px-3 py-2"
           )}>
-            <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-semibold text-primary-foreground">N</span>
             </div>
             {!collapsed && (

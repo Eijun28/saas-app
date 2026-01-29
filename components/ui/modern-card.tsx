@@ -39,7 +39,7 @@ export function ModernCard({
       <Card
         className={cn(
           'h-full rounded-xl transition-all duration-300 border-0 shadow-sm',
-          'hover:shadow-md hover:shadow-purple-500/5',
+          'hover:shadow-md',
           'bg-white gap-4 py-4',
           glassmorphism && 'backdrop-blur-md bg-purple-500/5',
           className

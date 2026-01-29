@@ -16,6 +16,7 @@ import { Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -441,20 +442,10 @@ export default function AgendaPage() {
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mb-6"
-      >
-        <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 text-center">
-          Agenda
-        </h1>
-        <p className="text-[#823F91]/70 text-sm sm:text-base text-center">
-          Gérez votre disponibilité et vos événements
-        </p>
-      </motion.div>
+      <PageTitle 
+        title="Agenda"
+        description="Gérez votre disponibilité et vos événements"
+      />
 
       {/* Calendrier plein écran */}
       <motion.div

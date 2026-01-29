@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Send, UserRound } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { extractSupabaseError } from '@/lib/utils'
+import { PageTitle } from '@/components/couple/shared/PageTitle'
 
 type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 
@@ -460,12 +461,11 @@ export default function DemandesPage() {
 
   return (
     <div className="w-full">
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-4 md:px-6">
-        <div>
-          <p className="text-xs sm:text-sm text-[#6B7280]">
-            Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée.
-          </p>
-        </div>
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
+        <PageTitle 
+          title="Demandes"
+          description="Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée."
+        />
 
         {!demandes || demandes.length === 0 ? (
           <Card className="border-gray-200">

@@ -26,7 +26,7 @@ export default function PricingSection() {
       priceNote: "Gratuit pour toujours",
       billingPeriod: "month",
       cta: {
-        variant: "glow",
+        variant: "default",
         label: "Créer mon compte gratuit",
         href: "/sign-up",
       },
@@ -37,7 +37,7 @@ export default function PricingSection() {
         "Accès à tous les portfolios",
         "Support par email",
       ],
-      variant: "glow-brand",
+      variant: "default",
     },
   ];
 
@@ -76,7 +76,7 @@ export default function PricingSection() {
       monthlyPrice: 59,
       priceNote: "",
       cta: {
-        variant: "glow",
+        variant: "default",
         label: user ? "Activer Pro" : "S'inscrire et activer Pro",
         href: user ? undefined : "/sign-up?plan=pro",
         planType: "pro",
@@ -94,7 +94,7 @@ export default function PricingSection() {
         "Contrats numériques avec signature",
         "Paiements en ligne + acomptes sécurisés",
       ],
-      variant: "glow-brand",
+      variant: "default",
       comingSoon: true,
     },
     {
@@ -104,7 +104,7 @@ export default function PricingSection() {
       monthlyPrice: 89,
       priceNote: "",
       cta: {
-        variant: "glow",
+        variant: "default",
         label: user ? "Activer Premium" : "S'inscrire et activer Premium",
         href: user ? undefined : "/sign-up?plan=premium",
         planType: "premium",
@@ -120,7 +120,7 @@ export default function PricingSection() {
         "Support prioritaire + account manager dédié",
         "Exports comptables automatisés",
       ],
-      variant: "glow",
+      variant: "default",
       comingSoon: true,
     },
   ];
@@ -320,11 +320,7 @@ export default function PricingSection() {
                       <CheckoutButton
                         planType={plan.cta.planType}
                         variant={plan.cta.variant}
-                        className={cn(
-                          "w-full mt-4",
-                          plan.cta.variant === "glow" &&
-                            "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all"
-                        )}
+                        className="w-full mt-4"
                       >
                         {plan.cta.label}
                       </CheckoutButton>

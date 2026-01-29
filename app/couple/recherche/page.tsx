@@ -14,6 +14,7 @@ import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog
 import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
+import { PageTitle } from '@/components/couple/shared/PageTitle'
 
 interface Provider {
   id: string
@@ -390,21 +391,12 @@ export default function RecherchePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="w-full">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
-        >
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
-            Rechercher un prestataire
-          </h1>
-          <p className="text-gray-600 text-base sm:text-lg">
-            Trouvez le prestataire parfait pour votre mariage
-          </p>
-        </motion.div>
+        <PageTitle 
+          title="Rechercher un prestataire"
+          description="Trouvez le prestataire parfait pour votre mariage"
+        />
 
         {/* Barre de recherche avec dropdown */}
         <motion.div

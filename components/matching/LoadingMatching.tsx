@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 interface LoadingStep {
   icon: React.ComponentType<{ className?: string }>;
   text: string;
-  emoji: string;
   duration: number;
 }
 
@@ -16,25 +15,21 @@ export default function LoadingMatching() {
     {
       icon: Brain,
       text: 'Je comprends vos besoins en profondeur...',
-      emoji: '🧠',
       duration: 1000,
     },
     {
       icon: Search,
       text: "J'analyse les prestataires...",
-      emoji: '🔍',
       duration: 1200,
     },
     {
       icon: Target,
       text: 'Je calcule les scores de compatibilité...',
-      emoji: '🎯',
       duration: 1000,
     },
     {
       icon: Star,
       text: 'Je sélectionne les 3 meilleurs matchs...',
-      emoji: '✨',
       duration: 800,
     },
   ];
@@ -77,6 +72,8 @@ export default function LoadingMatching() {
               .reduce((acc, s) => acc + s.duration, 0);
             const progressDelay = delay + step.duration * 0.3;
 
+            const Icon = step.icon;
+            
             return (
               <motion.div
                 key={index}
@@ -92,8 +89,7 @@ export default function LoadingMatching() {
                 <div className="flex items-center justify-center gap-2 text-gray-700">
                   <motion.div
                     animate={{
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 5, -5, 0],
+                      scale: [1, 1.1, 1],
                     }}
                     transition={{
                       duration: 1.5,
@@ -101,9 +97,8 @@ export default function LoadingMatching() {
                       ease: 'easeInOut',
                       delay: delay / 1000,
                     }}
-                    className="text-xl"
                   >
-                    {step.emoji}
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#823F91]" />
                   </motion.div>
                   <span className="text-sm sm:text-base font-medium">
                     {step.text}

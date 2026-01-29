@@ -18,11 +18,11 @@ import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
 import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { motion } from 'framer-motion'
-import { triggerConfetti } from '@/lib/utils/confetti'
 import { cn } from '@/lib/utils'
 
 export default function ProfilPublicPage() {
@@ -70,23 +70,6 @@ export default function ProfilPublicPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Trigger confetti when completion reaches 100%
-  useEffect(() => {
-    const completionChecks = [
-      { complete: !!profile?.avatar_url, label: 'Photo de profil' },
-      { complete: !!profile?.nom_entreprise, label: "Nom d'entreprise" },
-      { complete: !!profile?.description_courte, label: 'Description' },
-      { complete: cultures.length > 0, label: 'Cultures' },
-      { complete: zones.length > 0, label: 'Zones' },
-      { complete: portfolio.length > 0, label: 'Portfolio' },
-    ]
-    const completedCount = completionChecks.filter(c => c.complete).length
-    const completionPercent = Math.round((completedCount / completionChecks.length) * 100)
-    
-    if (completionPercent === 100) {
-      triggerConfetti()
-    }
-  }, [profile, cultures, zones, portfolio])
 
   const reloadData = async () => {
     if (!user) return
@@ -257,11 +240,12 @@ export default function ProfilPublicPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header Simple - Avatar à gauche, Nom/Métier, Bouton à droite */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
+      <PageTitle 
+        title="Profil public"
+        description="Gérez votre profil visible par les couples"
+      />
+      <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
             {/* Avatar + Nom + Métier à gauche */}
             <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
@@ -328,13 +312,10 @@ export default function ProfilPublicPage() {
               />
             </div>
           </div>
-        </div>
-      </div>
 
       {/* Barre de progression du profil */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-3">
+      <div className="w-full py-2 sm:py-3">
+        <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
               Profil prêt à {completionPercent}%
             </span>
@@ -345,14 +326,10 @@ export default function ProfilPublicPage() {
               />
             </div>
           </div>
-        </div>
       </div>
 
-      {/* Layout Centré - Sans sidebar */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
-        <div className="max-w-4xl mx-auto">
-          {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
-          <main>
+      {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
+      <main>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
                 <TabsList className="grid grid-cols-4 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
                 <TabsTrigger 
@@ -475,9 +452,7 @@ export default function ProfilPublicPage() {
                 </motion.div>
               </TabsContent>
             </Tabs>
-          </main>
-        </div>
-      </div>
+      </main>
     </div>
   )
 }

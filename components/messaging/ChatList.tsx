@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Search, Check, CheckCheck } from 'lucide-react'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import type { Conversation } from '@/lib/supabase/messaging'
 
 interface ChatListProps {
@@ -87,8 +88,8 @@ export function ChatList({
   if (conversations.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-sm p-8 max-w-sm text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-8 max-w-sm text-center border border-gray-200">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
             <svg
               className="w-8 h-8 text-gray-400"
               fill="none"
@@ -119,8 +120,12 @@ export function ChatList({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* En-tête avec titre et recherche */}
-      <div className="p-3 sm:p-4 border-b border-gray-200">
-        <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Messagerie</h1>
+      <div className="p-4 sm:p-5 md:p-6 border-b border-gray-100">
+        <PageTitle 
+          title="Messagerie"
+          description="Communiquez avec vos contacts"
+          className="mb-3 sm:mb-4"
+        />
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -128,7 +133,7 @@ export function ChatList({
             placeholder="Rechercher..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-gray-50 border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
+            className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-white border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
           />
         </div>
       </div>
@@ -157,7 +162,7 @@ export function ChatList({
                 onClick={() => handleConversationClick(conversation.id)}
                 className={`
                   bg-white rounded-xl p-2.5 sm:p-3 cursor-pointer transition-all active:scale-[0.98]
-                  ${isSelected ? 'ring-2 ring-gray-300 shadow-sm' : 'hover:shadow-sm border border-gray-100'}
+                  ${isSelected ? 'ring-2 ring-gray-300 shadow-sm bg-white' : 'hover:bg-white border border-gray-100'}
                 `}
               >
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -165,7 +170,7 @@ export function ChatList({
                   <div className="relative flex-shrink-0">
                     <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                       <AvatarImage src={otherParty?.avatar_url || undefined} alt={otherParty?.name} />
-                      <AvatarFallback className="bg-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
+                      <AvatarFallback className="bg-white border border-gray-200 text-gray-600 text-xs sm:text-sm font-semibold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -201,7 +206,7 @@ export function ChatList({
                           {conversation.last_message?.sender_id === currentUserId && (
                             <div className="flex-shrink-0">
                               {isRead ? (
-                                <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
+                                <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                               ) : (
                                 <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                               )}
@@ -212,9 +217,9 @@ export function ChatList({
                     </div>
                   </div>
 
-                  {/* Badge messages non-lus style iPhone */}
+                  {/* Badge messages non-lus */}
                   {unreadCount > 0 && (
-                    <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-[#007AFF] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center shadow-sm">
+                    <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-gray-800 text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}

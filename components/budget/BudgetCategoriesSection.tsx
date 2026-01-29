@@ -16,11 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { type BudgetCategory } from '@/lib/types/budget'
 import { updateCategoryBudget, deleteCategory } from '@/lib/actions/budget'
 import { addCustomCategory } from '@/lib/actions/budget-categories'
+import { getCategoryIcon, AVAILABLE_ICONS, getIconName } from '@/lib/constants/budget-icons'
 
 interface BudgetCategoriesSectionProps {
   categories: BudgetCategory[]
@@ -38,7 +39,7 @@ export function BudgetCategoriesSection({
   const [editBudget, setEditBudget] = useState('')
   const [loading, setLoading] = useState<string | null>(null)
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [newCategoryIcon, setNewCategoryIcon] = useState('📦')
+  const [newCategoryIcon, setNewCategoryIcon] = useState<LucideIcon>(AVAILABLE_ICONS[AVAILABLE_ICONS.length - 1].icon)
   const [newCategoryBudget, setNewCategoryBudget] = useState('')
 
   // Calculer le budget total alloué
@@ -94,7 +95,8 @@ export function BudgetCategoriesSection({
     }
 
     setLoading('new')
-    const result = await addCustomCategory(newCategoryName.trim(), newCategoryIcon, budget)
+    const iconName = getIconName(newCategoryIcon)
+    const result = await addCustomCategory(newCategoryName.trim(), iconName, budget)
     setLoading(null)
 
     if (result.error) {
@@ -102,7 +104,7 @@ export function BudgetCategoriesSection({
     } else {
       setIsAddingCategory(false)
       setNewCategoryName('')
-      setNewCategoryIcon('📦')
+      setNewCategoryIcon(AVAILABLE_ICONS[AVAILABLE_ICONS.length - 1].icon)
       setNewCategoryBudget('')
       onUpdate()
     }
@@ -156,9 +158,10 @@ export function BudgetCategoriesSection({
                   {/* En-tête catégorie */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">
-                        {category.category_icon || '📦'}
-                      </span>
+                      {(() => {
+                        const CategoryIcon = getCategoryIcon(category.category_name, category.category_icon)
+                        return <CategoryIcon className="h-6 w-6 text-[#823F91]" />
+                      })()}
                       <div>
                         <h3 className="font-semibold text-[#111827]">
                           {category.category_name}
@@ -310,14 +313,30 @@ export function BudgetCategoriesSection({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category-icon">Icône (emoji)</Label>
-                <Input
-                  id="category-icon"
-                  placeholder="📦"
-                  value={newCategoryIcon}
-                  onChange={(e) => setNewCategoryIcon(e.target.value)}
-                  maxLength={2}
-                />
+                <Label htmlFor="category-icon">Icône</Label>
+                <div className="grid grid-cols-6 gap-2 p-2 border rounded-lg">
+                  {AVAILABLE_ICONS.map((iconOption) => {
+                    const IconComponent = iconOption.icon
+                    const isSelected = newCategoryIcon === iconOption.icon
+                    return (
+                      <button
+                        key={iconOption.name}
+                        type="button"
+                        onClick={() => setNewCategoryIcon(iconOption.icon)}
+                        className={`p-2 rounded-lg border-2 transition-colors ${
+                          isSelected
+                            ? 'border-[#823F91] bg-[#823F91]/10'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        aria-label={iconOption.label}
+                      >
+                        <IconComponent className={`h-5 w-5 mx-auto ${
+                          isSelected ? 'text-[#823F91]' : 'text-gray-500'
+                        }`} />
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="space-y-2">

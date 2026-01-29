@@ -45,7 +45,7 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
         <div className="flex items-center gap-2 ml-1">
           <div className="h-8 w-8 rounded-lg overflow-hidden">
             {avatarError ? (
-              <div className="h-full w-full gradient-primary flex items-center justify-center">
+              <div className="h-full w-full bg-primary flex items-center justify-center">
                 <span className="text-xs font-medium text-primary-foreground">M</span>
               </div>
             ) : (

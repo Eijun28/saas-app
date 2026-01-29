@@ -221,7 +221,7 @@ export default function CoupleDashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
-                className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]"
+                className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
                 onClick={card.onClick}
               >
                 <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
@@ -290,8 +290,6 @@ export default function CoupleDashboardPage() {
                     </div>
                   )}
 
-                  {/* Hover effect overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </div>
               </motion.div>
             )
@@ -321,7 +319,7 @@ export default function CoupleDashboardPage() {
                   }}
                 >
                   <Link href={section.href} className="block h-full">
-                    <div className="group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 flex flex-col h-full border-0 shadow-[0_2px_8px_rgba(130,63,145,0.08)] hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="group relative p-4 sm:p-5 rounded-xl bg-white transition-all duration-300 flex flex-col h-full border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]">
                       <div className="flex items-start gap-3 flex-1 relative z-10">
                         <motion.div 
                           className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0 shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all duration-300"
@@ -343,9 +341,6 @@ export default function CoupleDashboardPage() {
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Hover effect overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
                     </div>
                   </Link>
                 </motion.div>

@@ -137,16 +137,16 @@ export function ChatInput({
   const hasContent = content.trim().length > 0
 
   return (
-    <div className="bg-white border-t border-gray-200 safe-area-bottom">
+    <div className="bg-white border-t border-gray-100 safe-area-bottom">
       <form onSubmit={handleSubmit} className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-1.5 sm:gap-2 bg-gray-50 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-300 transition-all">
+          <div className="flex items-end gap-1.5 sm:gap-2 bg-white rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-300 transition-all">
             {/* Bouton emoji */}
             <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
               <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                    className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
                     aria-label="Emoji"
                   >
                     <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
@@ -239,7 +239,7 @@ export function ChatInput({
               <button
                 type="submit"
                 disabled={!content.trim() || isSending}
-                className="flex-shrink-0 bg-gray-900 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-800 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-shrink-0 bg-gray-800 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-700 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Envoyer"
               >
                 <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
@@ -251,7 +251,7 @@ export function ChatInput({
                 className={`flex-shrink-0 rounded-full w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center transition-all duration-200 ${
                   isRecording
                     ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'hover:bg-gray-100 active:bg-gray-200'
+                    : 'hover:bg-white/50 active:bg-white/70'
                 }`}
                 aria-label="Enregistrer un message vocal"
               >

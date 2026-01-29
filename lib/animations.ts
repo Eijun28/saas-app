@@ -91,18 +91,3 @@ export const pulseBadge = {
   },
 };
 
-// Animation de glow effect
-export const glowEffect = {
-  animate: {
-    boxShadow: [
-      '0 0 0px rgba(139, 92, 246, 0)',
-      '0 0 20px rgba(139, 92, 246, 0.3)',
-      '0 0 0px rgba(139, 92, 246, 0)',
-    ],
-  },
-  transition: {
-    repeat: Infinity,
-    duration: 2,
-    ease: 'easeInOut',
-  },
-};

@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, PanelLeftClose, PanelLeft, Search } from "lucide-react"
+import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, ChevronsLeft, ChevronsRight, Search } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -62,9 +62,9 @@ function SidebarToggleButton() {
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <PanelLeft className='h-5 w-5 text-black' />
+        <ChevronsRight className='h-5 w-5 text-black' />
       ) : (
-        <PanelLeftClose className='h-5 w-5 text-black' />
+        <ChevronsLeft className='h-5 w-5 text-black' />
       )}
     </Button>
   )

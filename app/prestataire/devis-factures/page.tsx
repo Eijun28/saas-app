@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { formatCoupleName } from '@/lib/supabase/queries/couples.queries'
@@ -311,18 +312,11 @@ export default function DevisFacturesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
-        <div className="max-w-4xl mx-auto space-y-3 xs:space-y-4 sm:space-y-6">
-          {/* Titre de la page */}
-          <div>
-            <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold text-foreground">
-              Devis & Factures
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Gérez vos devis et informations bancaires
-            </p>
-          </div>
+    <div className="w-full max-w-4xl mx-auto space-y-3 xs:space-y-4 sm:space-y-6">
+      <PageTitle 
+        title="Devis & Factures"
+        description="Gérez vos devis et informations bancaires"
+      />
 
           {/* Cartes Analytics */}
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 w-full">
@@ -658,8 +652,6 @@ export default function DevisFacturesPage() {
               </motion.div>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
     </div>
   )
 }

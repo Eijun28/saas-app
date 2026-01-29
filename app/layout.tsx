@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GeistSans } from 'geist/font/sans';
+import { Inter } from 'next/font/google';
 import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
@@ -42,6 +43,13 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+// Configuration de la police Inter pour le dashboard
+export const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`${GeistSans.className} antialiased bg-background`} suppressHydrationWarning>
+      <body className={`${GeistSans.className} ${inter.variable} antialiased bg-background`} suppressHydrationWarning>
         {/* Données structurées pour le SEO */}
         <JsonLd data={[generateOrganizationSchema(), generateWebSiteSchema()]} />
         <NuplyNavbarMenu />

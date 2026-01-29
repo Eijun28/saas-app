@@ -98,8 +98,6 @@ export function StatCard({
           "pointer-events-none"
         )} />
         
-        {/* Accent line at top (style Revolut) */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#823F91] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         <CardContent className="relative p-3 sm:p-4 md:p-5 lg:p-6 space-y-2 sm:space-y-3 md:space-y-4 flex flex-col flex-1">
           {/* Header: Icon + Label */}
@@ -247,12 +245,6 @@ export function StatCard({
             </motion.div>
           )}
 
-          {/* Hover effect overlay */}
-          <div className={cn(
-            "absolute inset-0 bg-gradient-to-br from-[#823F91]/5 via-transparent to-transparent",
-            "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-            "pointer-events-none"
-          )} />
         </CardContent>
       </Card>
     </motion.div>

@@ -4,7 +4,6 @@ import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 import { Button, buttonVariants } from "../../ui/button";
-import Glow from "../../ui/glow";
 import { Section } from "../../ui/section";
 
 interface CTAButtonProps {
@@ -56,9 +55,6 @@ export default function CTA({
             ))}
           </div>
         )}
-      </div>
-      <div className="absolute top-0 left-0 h-full w-full translate-y-[1rem] opacity-80 transition-all duration-500 ease-in-out group-hover:translate-y-[-2rem] group-hover:opacity-100">
-        <Glow variant="bottom" />
       </div>
     </Section>
   );

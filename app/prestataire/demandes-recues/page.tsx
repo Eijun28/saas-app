@@ -10,6 +10,7 @@ import { Search, RefreshCw } from 'lucide-react'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { DemandeCard } from '@/components/prestataire/demandes/DemandeCard'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -421,27 +422,19 @@ export default function DemandesRecuesPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 px-3 sm:px-4 md:px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full"
-      >
-        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 sm:mb-2 break-words">
-          Demandes reçues
-        </h1>
-        <p className="text-[#823F91]/70 text-xs sm:text-sm md:text-base lg:text-lg break-words">
-          Gérez toutes vos demandes de prestations
-        </p>
-      </motion.div>
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+      <PageTitle 
+        title="Demandes reçues"
+        description="Gérez toutes vos demandes de prestations"
+        className="pb-6 sm:pb-7 md:pb-8"
+      />
 
       {/* Bouton pour créer les conversations manquantes */}
       {demandes.en_cours.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-end px-3 sm:px-0"
+          className="flex justify-end"
         >
           <Button
             variant="outline"
@@ -472,31 +465,31 @@ export default function DemandesRecuesPage() {
           <TabsList className="mb-6 sm:mb-8 w-full sm:w-auto bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 inline-flex min-w-full sm:min-w-0">
             <TabsTrigger 
               value="nouvelles" 
-              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span:not([data-slot=badge])]:!text-[#823F91] [&[data-state=active]>span:not([data-slot=badge])]:!text-white"
             >
-              <span className="text-[#823F91] data-[state=active]:text-white transition-colors">Nouvelles</span>
+              <span className="transition-colors">Nouvelles</span>
               {demandes.nouvelles.length > 0 && (
-                <Badge className="bg-[#823F91] text-white data-[state=active]:bg-white data-[state=active]:text-[#823F91] shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center transition-colors">
+                <Badge className="bg-[#823F91] !text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center [&]:!text-white [&>*]:!text-white">
                   {demandes.nouvelles.length}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger 
               value="en-cours" 
-              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span:not([data-slot=badge])]:!text-[#823F91] [&[data-state=active]>span:not([data-slot=badge])]:!text-white"
             >
-              <span className="text-[#823F91] data-[state=active]:text-white transition-colors">En cours</span>
+              <span className="transition-colors">En cours</span>
               {demandes.en_cours.length > 0 && (
-                <Badge className="bg-[#823F91] text-white data-[state=active]:bg-white data-[state=active]:text-[#823F91] shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center transition-colors">
+                <Badge className="bg-[#823F91] !text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center [&]:!text-white [&>*]:!text-white">
                   {demandes.en_cours.length}
                 </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger 
               value="terminees" 
-              className="bg-transparent text-[#823F91] flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap"
+              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span]:!text-[#823F91] [&[data-state=active]>span]:!text-white"
             >
-              <span className="text-[#823F91] data-[state=active]:text-white transition-colors">Terminées</span>
+              <span className="transition-colors">Terminées</span>
             </TabsTrigger>
           </TabsList>
         </div>

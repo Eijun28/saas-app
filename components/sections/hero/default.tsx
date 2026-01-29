@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import Github from "../../logos/github";
 import { Badge } from "../../ui/badge";
 import { Button, buttonVariants } from "../../ui/button";
-import Glow from "../../ui/glow";
 import { Mockup, MockupFrame } from "../../ui/mockup";
 import Screenshot from "../../ui/screenshot";
 import { Section } from "../../ui/section";
@@ -62,7 +61,7 @@ export default function Hero({
     {
       href: "https://www.launchuicomponents.com/",
       text: "Github",
-      variant: "glow",
+      variant: "default",
       icon: <Github className="mr-2 size-4" />,
     },
   ],
@@ -115,10 +114,6 @@ export default function Hero({
                   {mockup}
                 </Mockup>
               </MockupFrame>
-              <Glow
-                variant="top"
-                className="animate-appear-zoom opacity-0 delay-1000"
-              />
             </div>
           )}
         </div>

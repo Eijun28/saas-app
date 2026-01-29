@@ -53,7 +53,7 @@ export default async function PrestataireConversationPage({ params }: Conversati
         />
       }
     >
-      <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+      <div className="flex flex-col h-full bg-white overflow-hidden">
         <ChatHeader
           conversation={{
             id: conversation.id,

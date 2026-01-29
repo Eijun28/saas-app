@@ -39,7 +39,7 @@ export function SectionCard({
           <div className="flex items-start justify-between mb-4">
             <div
               className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-xl transition-smooth group-hover:scale-105 hover-gradient-purple",
+                "flex h-11 w-11 items-center justify-center rounded-xl transition-smooth group-hover:scale-105",
                 gradient
               )}
             >

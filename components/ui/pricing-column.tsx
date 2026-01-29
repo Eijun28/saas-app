@@ -12,14 +12,14 @@ export interface PricingColumnProps {
   priceNote?: string;
   billingPeriod?: "day" | "month";
   cta: {
-    variant: "default" | "glow" | "outline";
+    variant: "default" | "outline";
     label: string;
     href?: string;
     planType?: "premium" | "pro";
     onClick?: () => void;
   };
   features: string[];
-  variant?: "default" | "glow" | "glow-brand";
+  variant?: "default";
   className?: string;
   comingSoon?: boolean;
 }
@@ -37,19 +37,12 @@ export function PricingColumn({
   className,
   comingSoon = false,
 }: PricingColumnProps) {
-  const isGlow = variant === "glow" || variant === "glow-brand";
-  const isGlowBrand = variant === "glow-brand";
-
   return (
     <div
       className={cn(
         "relative flex flex-col h-full rounded-xl border bg-white p-6 shadow-sm transition-all",
         !comingSoon && "hover:shadow-lg",
         comingSoon && "opacity-60 pointer-events-none",
-        isGlow &&
-          "border-[#823F91]/20 bg-gradient-to-br from-white to-[#E8D4EF]/10",
-        isGlowBrand &&
-          "border-[#823F91] ring-2 ring-[#823F91]/20 bg-gradient-to-br from-[#823F91]/5 to-white",
         className
       )}
     >
@@ -136,19 +129,11 @@ export function PricingColumn({
         cta.href ? (
           <Link href={cta.href} className="mt-auto">
             <Button
-              variant={
-                cta.variant === "glow"
-                  ? "default"
-                  : cta.variant === "outline"
-                  ? "outline"
-                  : "default"
-              }
+              variant={cta.variant === "outline" ? "outline" : "default"}
               className={cn(
                 "w-full mt-6",
-                cta.variant === "glow" &&
-                  "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all",
                 cta.variant === "default" &&
-                  "bg-slate-900 text-white hover:bg-slate-800",
+                  "bg-[#823F91] text-white hover:bg-[#6D3478]",
                 cta.variant === "outline" &&
                   "border-slate-300 text-slate-900 hover:bg-slate-50"
               )}
@@ -160,19 +145,11 @@ export function PricingColumn({
           <div className="mt-auto">
             <Button
               onClick={cta.onClick}
-              variant={
-                cta.variant === "glow"
-                  ? "default"
-                  : cta.variant === "outline"
-                  ? "outline"
-                  : "default"
-              }
+              variant={cta.variant === "outline" ? "outline" : "default"}
               className={cn(
                 "w-full mt-6",
-                cta.variant === "glow" &&
-                  "bg-[#823F91] text-white hover:bg-[#6D3478] shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all",
                 cta.variant === "default" &&
-                  "bg-slate-900 text-white hover:bg-slate-800",
+                  "bg-[#823F91] text-white hover:bg-[#6D3478]",
                 cta.variant === "outline" &&
                   "border-slate-300 text-slate-900 hover:bg-slate-50"
               )}

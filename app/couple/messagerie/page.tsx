@@ -10,6 +10,7 @@ import { Send, MessageSquare, Search, UserRound, Check, CheckCheck } from 'lucid
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
+import { PageTitle } from '@/components/couple/shared/PageTitle'
 
 export default function MessageriePage() {
   const router = useRouter()
@@ -263,30 +264,34 @@ export default function MessageriePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto h-screen flex flex-col">
+    <div className="min-h-screen bg-purple-50">
+      <div className="max-w-7xl mx-auto h-screen flex flex-col p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 md:p-6 pb-2"
+          className="mb-4"
         >
           <p className="text-sm md:text-base text-gray-600">Communiquez avec tous vos prestataires</p>
         </motion.div>
 
-        <div className="flex-1 flex overflow-hidden">
-          {/* Liste des conversations - Style iPhone */}
-          <div className="w-full lg:w-[380px] xl:w-[420px] border-r border-gray-200 bg-white flex flex-col">
+        <div className="flex-1 flex gap-4 overflow-hidden">
+          {/* Liste des conversations - Carte blanche arrondie */}
+          <div className="w-full lg:w-[380px] xl:w-[420px] bg-white rounded-2xl shadow-sm flex flex-col overflow-hidden">
             {/* En-tête */}
-            <div className="p-3 sm:p-4 border-b border-gray-200">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Messagerie</h1>
-              <div className="relative">
+            <div className="p-4 sm:p-5 md:p-6 border-b border-gray-100">
+              <PageTitle 
+                title="Messagerie"
+                description="Communiquez avec vos prestataires"
+                className="mb-0"
+              />
+              <div className="relative mt-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder="Rechercher un prestataire..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-gray-50 border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
+                  className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-white border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
                 />
               </div>
             </div>
@@ -326,7 +331,7 @@ export default function MessageriePage() {
                           }}
                           className={`
                             bg-white rounded-xl p-2.5 sm:p-3 cursor-pointer transition-all active:scale-[0.98]
-                            ${isSelected ? 'ring-2 ring-[#823F91] shadow-sm bg-[#F9F5FB]' : 'hover:shadow-sm border border-gray-100'}
+                            ${isSelected ? 'ring-2 ring-gray-300 shadow-sm bg-white' : 'hover:bg-white border border-gray-100'}
                           `}
                         >
                           <div className="flex items-center gap-2 sm:gap-3">
@@ -334,7 +339,7 @@ export default function MessageriePage() {
                             <div className="relative flex-shrink-0">
                               <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                                 <AvatarImage src={avatar || undefined} alt={name} />
-                                <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#c081e3] text-white text-xs sm:text-sm font-semibold">
+                                <AvatarFallback className="bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold">
                                   {initials}
                                 </AvatarFallback>
                               </Avatar>
@@ -368,7 +373,7 @@ export default function MessageriePage() {
                                     {/* Checkmarks pour les messages envoyés */}
                                     {isFromMe && (
                                       <div className="flex-shrink-0">
-                                        <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91]" />
+                                        <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                                       </div>
                                     )}
                                   </>
@@ -376,9 +381,9 @@ export default function MessageriePage() {
                               </div>
                             </div>
 
-                            {/* Badge messages non-lus style iPhone */}
+                            {/* Badge messages non-lus */}
                             {unreadCount > 0 && (
-                              <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-[#823F91] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center shadow-sm">
+                              <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-gray-800 text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center">
                                 {unreadCount > 99 ? '99+' : unreadCount}
                               </div>
                             )}
@@ -391,19 +396,19 @@ export default function MessageriePage() {
             </div>
           </div>
 
-          {/* Zone de messages - Style iPhone */}
-          <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+          {/* Zone de messages - Carte blanche arrondie */}
+          <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden">
             {selectedConversation ? (
               <>
                 {/* En-tête de conversation */}
-                <div className="bg-white border-b border-gray-200 safe-area-top">
+                <div className="bg-white border-b border-gray-100 safe-area-top">
                   <div className="px-3 sm:px-4 py-2.5 sm:py-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                       {/* Avatar avec status online */}
                       <div className="relative flex-shrink-0">
                         <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                           <AvatarImage src={prestataireAvatars[selectedConversation] || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#c081e3] text-white text-xs sm:text-sm font-semibold">
+                          <AvatarFallback className="bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold">
                             {(prestataireNames[selectedConversation] || 'P').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                           </AvatarFallback>
                         </Avatar>
@@ -424,7 +429,7 @@ export default function MessageriePage() {
 
                 {/* Messages */}
                 <div
-                  className="flex-1 overflow-y-auto bg-gray-50 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
+                  className="flex-1 overflow-y-auto bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
                   style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent',
@@ -455,17 +460,15 @@ export default function MessageriePage() {
                               <div
                                 className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                                   isFromMe
-                                    ? 'bg-[#823F91] text-white rounded-br-sm'
-                                    : 'bg-white text-gray-900 rounded-bl-sm border border-gray-200 shadow-sm'
+                                    ? 'bg-gray-800 text-white rounded-br-sm'
+                                    : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                                 }`}
-                                style={isFromMe ? { backgroundColor: '#823F91' } : {}}
                               >
-                                {/* Contenu texte - FORCER LE BLANC pour les messages envoyés */}
+                                {/* Contenu texte */}
                                 <p 
                                   className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
                                     isFromMe ? 'text-white' : 'text-gray-900'
                                   }`}
-                                  style={isFromMe ? { color: '#FFFFFF' } : {}}
                                 >
                                   {msg.content}
                                 </p>
@@ -475,9 +478,7 @@ export default function MessageriePage() {
                             {/* Timestamp et checkmarks */}
                             {showTime && (
                               <div className="flex items-center gap-1 mt-0.5 px-1 sm:px-1.5">
-                                <span className={`text-[10px] sm:text-[11px] ${
-                                  isFromMe ? 'text-white/70' : 'text-gray-400'
-                                }`}>
+                                <span className="text-[10px] sm:text-[11px] text-gray-400">
                                   {new Date(msg.created_at).toLocaleTimeString('fr-FR', {
                                     hour: '2-digit',
                                     minute: '2-digit',
@@ -485,7 +486,7 @@ export default function MessageriePage() {
                                 </span>
                                 {isFromMe && (
                                   <div className="flex-shrink-0">
-                                    <CheckCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/70" />
+                                    <CheckCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
                                   </div>
                                 )}
                               </div>
@@ -498,10 +499,10 @@ export default function MessageriePage() {
                   </div>
                 </div>
 
-                {/* Zone de saisie - Style iPhone */}
-                <div className="bg-white border-t border-gray-200/60 safe-area-bottom">
+                {/* Zone de saisie */}
+                <div className="bg-white border-t border-gray-100 safe-area-bottom">
                   <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                    <div className="flex items-end gap-2 bg-gray-100 rounded-full px-4 py-2.5 border border-gray-200/60 focus-within:bg-white focus-within:border-gray-300 focus-within:shadow-sm transition-all">
+                    <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:border-gray-300 transition-all">
                       <textarea
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
@@ -520,7 +521,7 @@ export default function MessageriePage() {
                         disabled={!newMessage.trim()}
                         className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
                           newMessage.trim()
-                            ? 'bg-[#007AFF] text-white shadow-sm hover:bg-[#0051D5] active:scale-95'
+                            ? 'bg-gray-800 text-white hover:bg-gray-700 active:scale-95'
                             : 'bg-transparent text-gray-400 cursor-not-allowed'
                         }`}
                       >
@@ -531,9 +532,9 @@ export default function MessageriePage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-gray-50 p-4 sm:p-6">
-                <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8 max-w-md w-full text-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-6">
+                <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full text-center border border-gray-200">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
                     <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
