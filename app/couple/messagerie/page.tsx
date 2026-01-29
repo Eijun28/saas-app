@@ -264,7 +264,7 @@ export default function MessageriePage() {
   }
 
   return (
-    <div className="min-h-screen bg-purple-50">
+    <div className="min-h-screen bg-purple-50/50">
       <div className="max-w-7xl mx-auto h-screen flex flex-col p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -532,9 +532,9 @@ export default function MessageriePage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-white p-4 sm:p-6">
-                <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full text-center border border-gray-200">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+                <div className="p-6 sm:p-8 max-w-md w-full text-center">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                     <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                   </div>
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">

@@ -53,7 +53,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
         />
       }
     >
-      <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+      <div className="flex flex-col h-full bg-white overflow-hidden">
         <ChatHeader
           conversation={{
             id: conversation.id,
