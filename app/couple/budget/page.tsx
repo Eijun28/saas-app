@@ -10,7 +10,6 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Wallet, Plus, Edit2, Trash2, X, Check } from 'lucide-react'
-import { PageTitle } from '@/components/couple/shared/PageTitle'
 import {
   Dialog,
   DialogContent,
@@ -256,25 +255,30 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="min-h-screen bg-white p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <PageTitle 
-            title="Budget"
-            description="Gérez votre budget de mariage et suivez vos dépenses"
-            className="pb-0"
-          />
-          <Button
-            onClick={() => {
-              resetForm()
-              setIsDialogOpen(true)
-            }}
-            className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            Ajouter une dépense
-          </Button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+            <div>
+              <p className="text-[#4A4A4A]">
+                Gérez votre budget de mariage et suivez vos dépenses
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                resetForm()
+                setIsDialogOpen(true)
+              }}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              Ajouter une dépense
+            </Button>
+          </div>
 
           {/* Vue d'ensemble du budget */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
