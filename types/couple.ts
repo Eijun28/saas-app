@@ -251,13 +251,26 @@ export interface Demande {
 // Interface pour les devis
 export interface Devis {
   id: string
-  demande_id: string
+  demande_id: string | null
   prestataire_id: string
   couple_id: string
+  devis_number?: string | null
   amount: number
-  details: string
-  validity_date?: string
+  title?: string | null
+  description?: string | null
+  details?: string | null
+  currency?: string
+  included_services?: string[] | null
+  excluded_services?: string[] | null
+  conditions?: string | null
+  valid_until?: string | null
+  validity_date?: string // Ancien champ, pour compatibilité
+  pdf_url?: string | null
+  attachment_url?: string | null
   status: 'pending' | 'accepted' | 'rejected' | 'negotiating'
+  viewed_at?: string | null
+  accepted_at?: string | null
+  rejected_at?: string | null
   created_at: string
   updated_at: string
 }

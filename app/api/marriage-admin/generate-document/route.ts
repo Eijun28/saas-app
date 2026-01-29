@@ -4,9 +4,17 @@ import OpenAI from 'openai'
 import { logger } from '@/lib/logger'
 import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization to avoid build-time errors
+let openaiClient: OpenAI | null = null
+
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openaiClient
+}
 
 // Validation des types de documents autorisés
 const ALLOWED_DOCUMENT_TYPES = ['birth_certificate_request', 'housing_certificate', 'witnesses_list'] as const
@@ -167,7 +175,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
     const maxPromptLength = 2000
     const truncatedPrompt = prompt.slice(0, maxPromptLength)
 
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
