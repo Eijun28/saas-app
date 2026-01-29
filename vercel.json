@@ -1,8 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/messages/check-unread",
-      "schedule": "0 9 * * *"
-    }
-  ]
-}
+{}
