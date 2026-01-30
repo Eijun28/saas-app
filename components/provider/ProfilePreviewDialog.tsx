@@ -267,14 +267,14 @@ export function ProfilePreviewDialog({
             Aperçu du profil public - {profile.nom_entreprise}
           </DialogTitle>
 
-          {/* HEADER FIXE - Sans background */}
-          <div className="relative p-4 md:p-6 border-b border-white/30 bg-[#5a2a63] flex-shrink-0">
+          {/* HEADER FIXE - Dégradé blanc/violet léger */}
+          <div className="relative p-4 md:p-6 border-b border-gray-100 bg-gradient-to-br from-white via-purple-50/50 to-purple-100/30 flex-shrink-0">
             {/* Close button */}
             <DialogClose asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 md:top-4 md:right-4 text-white hover:bg-white/20 z-10"
+                className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-600 hover:bg-gray-100 z-10"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -283,48 +283,48 @@ export function ProfilePreviewDialog({
             {/* Avatar + Nom côte à côte */}
             <div className="flex items-start gap-3 md:gap-4">
               <Avatar className="h-14 w-14 md:h-16 md:w-16 border-2 border-[#823F91]/20 shadow-sm flex-shrink-0">
-                <AvatarImage 
-                  src={avatarUrl || undefined} 
+                <AvatarImage
+                  src={avatarUrl || undefined}
                   alt={profile.nom_entreprise}
                 />
-                <AvatarFallback className="text-lg md:text-xl bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 text-[#823F91]">
+                <AvatarFallback className="text-lg md:text-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white">
                   {getInitials(profile.nom_entreprise)}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0 pr-8">
-                <h1 className="text-lg md:text-xl font-bold mb-1 truncate text-white">
+                <h1 className="text-lg md:text-xl font-bold mb-1 truncate text-gray-900">
                   {profile.nom_entreprise || 'Nom d\'entreprise'}
                 </h1>
-                <p className="text-sm text-white/80 mb-2 truncate">
+                <p className="text-sm text-gray-600 mb-2 truncate">
                   {profile.service_type}
                 </p>
 
                 {/* Badges infos clés */}
                 <div className="flex flex-wrap gap-1">
                   {profile.is_early_adopter && (
-                    <Badge className="text-xs bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0">
+                    <Badge className="text-xs bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white border-0">
                       <Sparkles className="h-3 w-3 mr-1" />
                       Partenaire Fondateur
                     </Badge>
                   )}
-                  
+
                   {profile.ville_principale && (
-                    <Badge variant="outline" className="text-xs bg-white/20 border-white/30 text-white">
+                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91]">
                       <MapPin className="h-3 w-3 mr-1" />
                       {profile.ville_principale}
                     </Badge>
                   )}
 
                   {getBudgetDisplay() && (
-                    <Badge variant="outline" className="text-xs bg-white/20 border-white/30 text-white hidden sm:flex">
+                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91] hidden sm:flex">
                       <Euro className="h-3 w-3 mr-1" />
                       {getBudgetDisplay()}
                     </Badge>
                   )}
 
                   {profile.annees_experience && (
-                    <Badge variant="outline" className="text-xs bg-white/20 border-white/30 text-white">
+                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91]">
                       <Briefcase className="h-3 w-3 mr-1" />
                       {profile.annees_experience} ans
                     </Badge>
@@ -336,49 +336,49 @@ export function ProfilePreviewDialog({
 
           {/* TABS */}
           <Tabs defaultValue={isCoupleView ? "contact" : "about"} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <TabsList className="w-full rounded-none border-b border-white/30 bg-[#5a2a63] flex-shrink-0">
-              <TabsTrigger value="about" className="flex-1 text-xs md:text-sm text-white data-[state=active]:text-white data-[state=active]:bg-white/20">
+            <TabsList className="w-full rounded-none border-b border-gray-100 bg-gradient-to-r from-purple-50/50 to-white flex-shrink-0">
+              <TabsTrigger value="about" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 À propos
               </TabsTrigger>
-              <TabsTrigger value="portfolio" className="flex-1 text-xs md:text-sm text-white data-[state=active]:text-white data-[state=active]:bg-white/20">
+              <TabsTrigger value="portfolio" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 Portfolio ({portfolio.length})
               </TabsTrigger>
-              <TabsTrigger value="contact" className="flex-1 text-xs md:text-sm text-white data-[state=active]:text-white data-[state=active]:bg-white/20">
+              <TabsTrigger value="contact" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 {isCoupleView ? 'Envoyer une demande' : 'Contact'}
               </TabsTrigger>
             </TabsList>
 
             {/* CONTENT SCROLLABLE */}
-            <div className="flex-1 min-h-0 overflow-y-auto bg-[#5a2a63]">
+            <div className="flex-1 min-h-0 overflow-y-auto bg-gradient-to-b from-white to-purple-50/30">
               <div className="p-4 md:p-5">
                 {/* TAB À PROPOS */}
-                <TabsContent value="about" className="mt-0 space-y-6 w-full text-white">
+                <TabsContent value="about" className="mt-0 space-y-6 w-full text-gray-900">
                   {/* Description courte */}
                   {profile.description_courte && (
                     <div>
-                      <p className="text-lg leading-relaxed text-white">
+                      <p className="text-lg leading-relaxed text-gray-800">
                         {profile.description_courte}
                       </p>
                       {profile.prenom && profile.nom && (
-                        <p className="text-sm text-white/80 mt-2">
+                        <p className="text-sm text-gray-500 mt-2">
                           Par {profile.prenom} {profile.nom}
                         </p>
                       )}
                     </div>
                   )}
 
-                  {profile.description_courte && <Separator className="h-px bg-white/30" />}
+                  {profile.description_courte && <Separator className="h-px bg-gray-200" />}
 
                   {/* Bio complète */}
                   {profile.bio && (
                     <>
                       <div>
-                        <h3 className="font-semibold text-lg mb-3 text-white">Présentation</h3>
-                        <p className="text-white/90 leading-relaxed whitespace-pre-line">
+                        <h3 className="font-semibold text-lg mb-3 text-gray-900">Présentation</h3>
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                           {profile.bio}
                         </p>
                       </div>
-                      <Separator className="h-px bg-white/30" />
+                      <Separator className="h-px bg-gray-200" />
                     </>
                   )}
 
@@ -386,22 +386,22 @@ export function ProfilePreviewDialog({
                   {cultures.length > 0 && (
                     <>
                       <div>
-                        <h3 className="font-semibold text-lg mb-3 text-white">
-                          🎭 Cultures maîtrisées
+                        <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                          Cultures maîtrisées
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {cultures.map((culture) => (
                             <Badge
                               key={culture.id}
                               variant="secondary"
-                              className="text-sm py-1.5 px-4 bg-white/20 border-white/30 text-white"
+                              className="text-sm py-1.5 px-4 bg-purple-50 border-purple-200 text-[#823F91]"
                             >
                               {culture.label}
                             </Badge>
                           ))}
                         </div>
                       </div>
-                      <Separator className="h-px bg-white/30" />
+                      <Separator className="h-px bg-gray-200" />
                     </>
                   )}
 
@@ -409,31 +409,31 @@ export function ProfilePreviewDialog({
                   {zones.length > 0 && (
                     <>
                       <div>
-                        <h3 className="font-semibold text-lg mb-3 text-white">
-                          📍 Zones d'intervention
+                        <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                          Zones d'intervention
                         </h3>
                         <div className="flex flex-wrap gap-2">
                           {zones.map((zone) => (
                             <Badge
                               key={zone.id}
                               variant="outline"
-                              className="text-sm py-1.5 px-4 bg-white/20 border-white/30 text-white"
+                              className="text-sm py-1.5 px-4 bg-purple-50 border-purple-200 text-[#823F91]"
                             >
                               {zone.label}
                             </Badge>
                           ))}
                         </div>
                       </div>
-                      <Separator className="h-px bg-white/30" />
+                      <Separator className="h-px bg-gray-200" />
                     </>
                   )}
 
                   {/* Réseaux sociaux */}
-                  {(profile.instagram_url || profile.facebook_url || profile.website_url || 
+                  {(profile.instagram_url || profile.facebook_url || profile.website_url ||
                     profile.linkedin_url || profile.tiktok_url) && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-3 text-white">
-                        🔗 Réseaux sociaux
+                      <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                        Réseaux sociaux
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {profile.instagram_url && (
@@ -441,7 +441,7 @@ export function ProfilePreviewDialog({
                             href={profile.instagram_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
                           >
                             <Instagram className="h-4 w-4" />
                             Instagram
@@ -453,7 +453,7 @@ export function ProfilePreviewDialog({
                             href={profile.facebook_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
                           >
                             <Facebook className="h-4 w-4" />
                             Facebook
@@ -465,7 +465,7 @@ export function ProfilePreviewDialog({
                             href={profile.website_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
                           >
                             <Globe className="h-4 w-4" />
                             Site web
@@ -477,7 +477,7 @@ export function ProfilePreviewDialog({
                             href={profile.linkedin_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
                           >
                             <Linkedin className="h-4 w-4" />
                             LinkedIn
@@ -489,7 +489,7 @@ export function ProfilePreviewDialog({
                             href={profile.tiktok_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/20 border border-white/30 text-white hover:bg-white/30 transition-colors text-sm"
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
                           >
                             <Music2 className="h-4 w-4" />
                             TikTok
@@ -505,9 +505,9 @@ export function ProfilePreviewDialog({
                     !profile.bio &&
                     cultures.length === 0 &&
                     zones.length === 0 && (
-                      <Card className="p-6 md:p-12 text-center bg-white/10 border-white/20">
-                        <p className="text-white/80 text-sm md:text-base">
-                          {isCoupleView 
+                      <Card className="p-6 md:p-12 text-center bg-purple-50/50 border-purple-100">
+                        <p className="text-gray-600 text-sm md:text-base">
+                          {isCoupleView
                             ? 'Ce prestataire n\'a pas encore complété son profil'
                             : 'Complétez votre profil pour le rendre plus attractif'}
                         </p>
@@ -522,7 +522,7 @@ export function ProfilePreviewDialog({
                       {portfolio.map((image) => (
                         <Card
                           key={image.id}
-                          className="overflow-hidden group aspect-square cursor-pointer hover:shadow-lg transition-all relative"
+                          className="overflow-hidden group aspect-square cursor-pointer hover:shadow-lg transition-all relative border-gray-200"
                         >
                           <img
                             src={image.image_url}
@@ -531,7 +531,6 @@ export function ProfilePreviewDialog({
                             loading="lazy"
                             onError={(e) => {
                               console.error('Erreur chargement image portfolio:', image.image_url)
-                              // En cas d'erreur de chargement, masquer l'image
                               const target = e.target as HTMLImageElement
                               target.style.display = 'none'
                             }}
@@ -545,15 +544,15 @@ export function ProfilePreviewDialog({
                       ))}
                     </div>
                   ) : (
-                    <Card className="p-6 md:p-12 text-center bg-white/10 border-white/20">
+                    <Card className="p-6 md:p-12 text-center bg-purple-50/50 border-purple-100">
                       <div className="mb-3 md:mb-4 flex justify-center">
-                        <Camera className="w-12 h-12 md:w-16 md:h-16 text-white/70" />
+                        <Camera className="w-12 h-12 md:w-16 md:h-16 text-gray-400" />
                       </div>
-                      <h3 className="font-semibold text-base md:text-lg mb-2 text-white">
+                      <h3 className="font-semibold text-base md:text-lg mb-2 text-gray-900">
                         {isCoupleView ? 'Aucune photo dans le portfolio' : 'Aucune photo dans votre portfolio'}
                       </h3>
-                      <p className="text-xs md:text-sm text-white/80">
-                        {isCoupleView 
+                      <p className="text-xs md:text-sm text-gray-600">
+                        {isCoupleView
                           ? 'Ce prestataire n\'a pas encore ajouté de photos à son portfolio'
                           : 'Ajoutez des photos de vos réalisations'}
                       </p>
@@ -565,28 +564,28 @@ export function ProfilePreviewDialog({
                 <TabsContent value="contact" className="mt-0 w-full">
                   {isCoupleView ? (
                     <div className="w-full">
-                      <Card className="p-5 md:p-6 border-2 border-white/30 bg-white/10 w-full">
+                      <Card className="p-5 md:p-6 border border-purple-200 bg-white w-full shadow-sm">
                         <div className="space-y-4">
                           {/* Message */}
                           <div className="space-y-2">
-                            <Label htmlFor="demande-message" className="text-sm font-semibold flex items-center gap-2 text-white">
-                              <MessageCircle className="h-4 w-4 text-white" />
-                              Message personnalisé <span className="text-red-400">*</span>
+                            <Label htmlFor="demande-message" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                              <MessageCircle className="h-4 w-4 text-[#823F91]" />
+                              Message personnalisé <span className="text-red-500">*</span>
                             </Label>
                             <Textarea
                               id="demande-message"
                               placeholder="Décrivez votre projet, vos besoins, vos attentes..."
                               value={demandeMessage}
                               onChange={(e) => setDemandeMessage(e.target.value)}
-                              className="min-h-[120px] text-sm resize-none border-2 border-white/30 bg-white/10 text-white placeholder:text-white/50 focus-visible:border-white focus-visible:ring-white/20"
+                              className="min-h-[120px] text-sm resize-none border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
                             />
                           </div>
 
                           {/* Date et Budget */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="demande-date" className="text-sm font-semibold flex items-center gap-2 text-white">
-                                <Calendar className="h-4 w-4 text-white" />
+                              <Label htmlFor="demande-date" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                                <Calendar className="h-4 w-4 text-[#823F91]" />
                                 Date du mariage
                               </Label>
                               <Input
@@ -594,12 +593,12 @@ export function ProfilePreviewDialog({
                                 type="date"
                                 value={demandeDate}
                                 onChange={(e) => setDemandeDate(e.target.value)}
-                                className="text-sm border-2 border-white/30 bg-white/10 text-white focus-visible:border-white focus-visible:ring-white/20"
+                                className="text-sm border border-gray-200 bg-white text-gray-900 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="demande-budget" className="text-sm font-semibold flex items-center gap-2 text-white">
-                                <Euro className="h-4 w-4 text-white" />
+                              <Label htmlFor="demande-budget" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
+                                <Euro className="h-4 w-4 text-[#823F91]" />
                                 Budget indicatif (€)
                               </Label>
                               <Input
@@ -608,7 +607,7 @@ export function ProfilePreviewDialog({
                                 placeholder="Ex: 2000"
                                 value={demandeBudget}
                                 onChange={(e) => setDemandeBudget(e.target.value)}
-                                className="text-sm border-2 border-white/30 bg-white/10 text-white placeholder:text-white/50 focus-visible:border-white focus-visible:ring-white/20"
+                                className="text-sm border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
                                 min="0"
                                 step="100"
                               />
@@ -618,20 +617,20 @@ export function ProfilePreviewDialog({
                       </Card>
                     </div>
                   ) : (
-                    <Card className="p-4 text-center bg-white/10 border-white/20">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/20 mb-3">
-                        <MessageCircle className="h-5 w-5 text-white" />
+                    <Card className="p-4 text-center bg-purple-50/50 border-purple-100">
+                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 mb-3">
+                        <MessageCircle className="h-5 w-5 text-[#823F91]" />
                       </div>
-                      <h3 className="text-base font-bold mb-1 text-white">
+                      <h3 className="text-base font-bold mb-1 text-gray-900">
                         Contacter {profile.nom_entreprise}
                       </h3>
-                      <p className="text-xs text-white/80 mb-3">
+                      <p className="text-xs text-gray-600 mb-3">
                         Les couples pourront vous contacter via la messagerie intégrée
                       </p>
-                      <Button size="sm" className="text-xs bg-white/20 hover:bg-white/30 text-white border border-white/30" disabled>
+                      <Button size="sm" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200" disabled>
                         Envoyer un message
                       </Button>
-                      <p className="text-xs text-white/80 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         Disponible une fois votre profil publié
                       </p>
                     </Card>
@@ -642,7 +641,7 @@ export function ProfilePreviewDialog({
           </Tabs>
 
           {/* FOOTER FIXE */}
-          <div className="border-t border-white/30 bg-[#5a2a63] p-3 md:p-4 flex-shrink-0">
+          <div className="border-t border-gray-100 bg-gradient-to-r from-purple-50/50 to-white p-3 md:p-4 flex-shrink-0">
             {isCoupleView ? (
               <div className="flex gap-3">
                 <Button

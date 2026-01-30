@@ -842,8 +842,8 @@ export default function CoupleProfilPage() {
               </div>
             </div>
 
-            {/* Bouton Sauvegarder à droite */}
-            <div className="flex-shrink-0">
+            {/* Bouton Sauvegarder à droite - masqué sur mobile */}
+            <div className="flex-shrink-0 hidden sm:block">
               <Button
                 onClick={handleSave}
                 disabled={saving}
@@ -853,12 +853,12 @@ export default function CoupleProfilPage() {
                 {saving ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                    <span className="hidden sm:inline">Enregistrement...</span>
+                    <span>Enregistrement...</span>
                   </>
                 ) : (
                   <>
                     <Check className="h-3.5 w-3.5 mr-1.5" />
-                    <span className="hidden sm:inline">Enregistrer</span>
+                    <span>Enregistrer</span>
                   </>
                 )}
               </Button>
@@ -1650,6 +1650,30 @@ export default function CoupleProfilPage() {
     </Tabs>
         </div>
       </div>
+
+      {/* Bouton Enregistrer fixe en bas sur mobile */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg sm:hidden z-50">
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm h-12 text-sm font-medium"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Enregistrement...
+            </>
+          ) : (
+            <>
+              <Check className="h-4 w-4 mr-2" />
+              Enregistrer les modifications
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Spacer pour éviter que le contenu soit caché par le bouton fixe sur mobile */}
+      <div className="h-20 sm:hidden" />
     </div>
 
   )

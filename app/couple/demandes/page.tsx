@@ -3,12 +3,21 @@
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { Send, UserRound } from 'lucide-react'
+import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { extractSupabaseError } from '@/lib/utils'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
+import { toast } from 'sonner'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { motion } from 'framer-motion'
 
 type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 
@@ -62,18 +71,31 @@ type FavoriRow = {
   type_prestation?: string | null
 }
 
-const STATUS_LABEL: Record<RequestStatus, string> = {
-  pending: 'En attente',
-  accepted: 'Acceptée',
-  rejected: 'Refusée',
-  cancelled: 'Annulée',
-}
-
-const STATUS_BADGE_CLASS: Record<RequestStatus, string> = {
-  pending: 'bg-amber-100 text-amber-800 border-amber-200',
-  accepted: 'bg-green-100 text-green-800 border-green-200',
-  rejected: 'bg-red-100 text-red-800 border-red-200',
-  cancelled: 'bg-gray-100 text-gray-800 border-gray-200',
+const STATUS_CONFIG: Record<RequestStatus, { label: string; icon: any; className: string; bgClass: string }> = {
+  pending: {
+    label: 'En attente',
+    icon: Clock,
+    className: 'text-amber-600',
+    bgClass: 'bg-amber-50 border-amber-200',
+  },
+  accepted: {
+    label: 'Acceptée',
+    icon: CheckCircle,
+    className: 'text-green-600',
+    bgClass: 'bg-green-50 border-green-200',
+  },
+  rejected: {
+    label: 'Refusée',
+    icon: XCircle,
+    className: 'text-red-600',
+    bgClass: 'bg-red-50 border-red-200',
+  },
+  cancelled: {
+    label: 'Annulée',
+    icon: Ban,
+    className: 'text-gray-500',
+    bgClass: 'bg-gray-50 border-gray-200',
+  },
 }
 
 function getProviderDisplayName(p?: ProviderProfile): string {
@@ -400,7 +422,7 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
-    
+
     // RLS + trigger garantissent la sécurité (pending only)
     const { error } = await supabase
       .from('requests')
@@ -411,11 +433,36 @@ export default function DemandesPage() {
 
     if (error) {
       console.error('Erreur annulation demande:', error)
-      setError(`Erreur: ${error.message}`)
+      toast.error('Erreur lors de l\'annulation')
       return
     }
 
-    // Recharger les demandes
+    toast.success('Demande annulée')
+    await loadDemandes()
+  }
+
+  async function resendRequest(request: RequestRow) {
+    if (!user?.id) return
+
+    const supabase = createClient()
+
+    // Créer une nouvelle demande avec les mêmes informations
+    const { error } = await supabase
+      .from('requests')
+      .insert({
+        couple_id: user.id,
+        provider_id: request.provider_id,
+        initial_message: request.initial_message,
+        status: 'pending',
+      })
+
+    if (error) {
+      console.error('Erreur renvoi demande:', error)
+      toast.error('Erreur lors du renvoi de la demande')
+      return
+    }
+
+    toast.success('Demande renvoyée avec succès')
     await loadDemandes()
   }
 
@@ -461,75 +508,173 @@ export default function DemandesPage() {
 
   return (
     <div className="w-full">
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-        <PageTitle 
-          title="Demandes"
-          description="Vos demandes sont envoyées à des prestataires. Le chat s'active uniquement quand une demande est acceptée."
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+        <PageTitle
+          title="Demandes & Devis"
+          description="Suivez vos demandes envoyées aux prestataires"
         />
 
         {!demandes || demandes.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="pt-8 sm:pt-12 pb-8 sm:pb-12 text-center px-4 sm:px-6">
-              <Send className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-gray-300" />
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">Aucune demande envoyée</h3>
-              <p className="text-xs sm:text-sm text-gray-500">Quand vous contactez un prestataire, la demande apparaîtra ici.</p>
+          <Card className="border-gray-100 shadow-sm">
+            <CardContent className="pt-12 pb-12 text-center px-6">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-50 flex items-center justify-center">
+                <Send className="h-8 w-8 text-gray-300" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande envoyée</h3>
+              <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                Recherchez des prestataires et envoyez-leur une demande pour commencer.
+              </p>
+              <Button
+                className="mt-6 bg-[#823F91] hover:bg-[#6D3478]"
+                onClick={() => window.location.href = '/couple/recherche'}
+              >
+                Rechercher des prestataires
+              </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {demandes.map((r) => {
+          <div className="space-y-3">
+            {demandes.map((r, index) => {
               const provider = providerById.get(r.provider_id) || (r as any).prestataire
               const name = getProviderDisplayName(provider)
+              const serviceType = provider?.service_type || provider?.type_prestation || ''
+              const status = STATUS_CONFIG[r.status]
+              const StatusIcon = status.icon
 
               return (
-                <Card key={r.id} className="border-gray-200">
-                  <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                        {provider?.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={provider.avatar_url}
-                            alt={name}
-                            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover border flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-gray-100 border flex items-center justify-center flex-shrink-0">
-                            <UserRound className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                          </div>
-                        )}
+                <motion.div
+                  key={r.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className={`border shadow-sm hover:shadow-md transition-shadow ${status.bgClass}`}>
+                    <CardContent className="p-4 sm:p-5">
+                      {/* Header avec prestataire et statut */}
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-white shadow-sm flex-shrink-0">
+                            <AvatarImage src={provider?.avatar_url || ''} alt={name} />
+                            <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-sm sm:text-base font-semibold">
+                              {name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
 
-                        <div className="min-w-0 flex-1">
-                          <CardTitle className="text-sm sm:text-base truncate">
-                            Demande envoyée à {name}
-                          </CardTitle>
-                          <CardDescription className="text-xs sm:text-sm">
-                            Envoyée le {new Date(r.created_at).toLocaleDateString('fr-FR')}
-                          </CardDescription>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
+                              {name}
+                            </h3>
+                            {serviceType && (
+                              <p className="text-xs sm:text-sm text-gray-500 truncate">{serviceType}</p>
+                            )}
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(r.created_at).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Statut et actions */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border ${status.className}`}>
+                            <StatusIcon className="h-3.5 w-3.5" />
+                            <span className="text-xs font-medium">{status.label}</span>
+                          </div>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4 text-gray-500" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              {r.status === 'pending' && (
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  onClick={() => cancelRequest(r.id)}
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Annuler la demande
+                                </DropdownMenuItem>
+                              )}
+                              {(r.status === 'cancelled' || r.status === 'rejected') && (
+                                <DropdownMenuItem
+                                  className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                  onClick={() => resendRequest(r)}
+                                >
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Renvoyer la demande
+                                </DropdownMenuItem>
+                              )}
+                              {r.status === 'accepted' && (
+                                <DropdownMenuItem
+                                  className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                  onClick={() => window.location.href = '/couple/messagerie'}
+                                >
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  Envoyer un message
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
 
-                      <Badge variant="outline" className={`${STATUS_BADGE_CLASS[r.status]} text-xs sm:text-sm flex-shrink-0 self-start sm:self-auto`}>
-                        {STATUS_LABEL[r.status]}
-                      </Badge>
-                    </div>
-                  </CardHeader>
+                      {/* Message */}
+                      <div className="bg-white/60 rounded-lg p-3 border border-white/80">
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-3">
+                          {r.initial_message}
+                        </p>
+                      </div>
 
-                  <CardContent className="pt-0 space-y-2 sm:space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
-                    <p className="text-xs sm:text-sm text-gray-700 whitespace-pre-wrap break-words">{r.initial_message}</p>
+                      {/* Actions rapides pour pending */}
+                      {r.status === 'pending' && (
+                        <div className="mt-4 flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs"
+                            onClick={() => cancelRequest(r.id)}
+                          >
+                            <X className="h-3.5 w-3.5 mr-1.5" />
+                            Annuler
+                          </Button>
+                        </div>
+                      )}
 
-                    {r.status === 'pending' ? (
-                      <form onSubmit={(e) => {
-                        e.preventDefault()
-                        cancelRequest(r.id)
-                      }} className="flex justify-end">
-                        <Button type="submit" variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm h-8 sm:h-9">
-                          Annuler la demande
-                        </Button>
-                      </form>
-                    ) : null}
-                  </CardContent>
-                </Card>
+                      {/* Actions rapides pour cancelled/rejected */}
+                      {(r.status === 'cancelled' || r.status === 'rejected') && (
+                        <div className="mt-4 flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
+                            onClick={() => resendRequest(r)}
+                          >
+                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                            Renvoyer
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Actions rapides pour accepted */}
+                      {r.status === 'accepted' && (
+                        <div className="mt-4 flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
+                            onClick={() => window.location.href = '/couple/messagerie'}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                            Discuter
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               )
             })}
           </div>

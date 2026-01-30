@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import {
   Sparkles,
@@ -47,7 +47,6 @@ export default function CoupleDashboardPage() {
   const [nom, setNom] = useState('')
   const [statsLoading, setStatsLoading] = useState(true)
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
-  const [budgetHovered, setBudgetHovered] = useState(false)
 
   // Couleurs pour le camembert
   const CHART_COLORS = [
@@ -264,8 +263,6 @@ export default function CoupleDashboardPage() {
                 transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
                 className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
                 onClick={card.onClick}
-                onMouseEnter={() => isBudgetCard && setBudgetHovered(true)}
-                onMouseLeave={() => isBudgetCard && setBudgetHovered(false)}
               >
                 <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
                   {/* Header: Icon + Label */}
@@ -291,82 +288,56 @@ export default function CoupleDashboardPage() {
 
                   {/* Main Value + Subtitle ou Camembert pour Budget */}
                   <div className="space-y-1 relative">
-                    <AnimatePresence mode="wait">
-                      {isBudgetCard && budgetHovered && chartData.length > 0 ? (
-                        <motion.div
-                          key="chart"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex items-center gap-3"
-                        >
-                          <div className="w-16 h-16 sm:w-20 sm:h-20">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                <Pie
-                                  data={chartData}
-                                  cx="50%"
-                                  cy="50%"
-                                  innerRadius="40%"
-                                  outerRadius="90%"
-                                  dataKey="value"
-                                  strokeWidth={0}
-                                >
-                                  {chartData.map((entry, i) => (
-                                    <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                                  ))}
-                                </Pie>
-                              </PieChart>
-                            </ResponsiveContainer>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-lg sm:text-xl font-bold text-gray-900">
-                              {totalSpent.toLocaleString('fr-FR')} €
-                            </p>
-                            <p className="text-xs text-gray-500">dépensé</p>
-                            <div className="mt-1 space-y-0.5">
-                              {chartData.slice(0, 3).map((item, i) => (
-                                <div key={item.name} className="flex items-center gap-1.5 text-xs">
-                                  <div
-                                    className="w-2 h-2 rounded-full flex-shrink-0"
-                                    style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
-                                  />
-                                  <span className="truncate text-gray-600">{item.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="value"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ delay: isBudgetCard ? 0 : card.delay + 0.1 }}
-                          className="flex items-baseline gap-2 flex-wrap"
-                        >
-                          {typeof card.value === 'number' ? (
-                            <motion.p
-                              className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.5, delay: card.delay + 0.2 }}
-                            >
-                              {card.value}
-                            </motion.p>
-                          ) : (
-                            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
-                              {card.value}
-                            </p>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: card.delay + 0.1 }}
+                      className="flex items-center gap-3"
+                    >
+                      {/* Montant */}
+                      <div className="flex-1">
+                        {typeof card.value === 'number' ? (
+                          <motion.p
+                            className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: card.delay + 0.2 }}
+                          >
+                            {card.value}
+                          </motion.p>
+                        ) : (
+                          <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
+                            {card.value}
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Subtitle - masqué quand le camembert est affiché */}
-                    {(!isBudgetCard || !budgetHovered || chartData.length === 0) && card.subtitle && (
+                      {/* Mini camembert pour Budget (toujours visible si données) */}
+                      {isBudgetCard && chartData.length > 0 && (
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 hidden sm:block">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="35%"
+                                outerRadius="95%"
+                                dataKey="value"
+                                strokeWidth={0}
+                              >
+                                {chartData.map((entry, i) => (
+                                  <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                                ))}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* Subtitle */}
+                    {card.subtitle && (
                       <p className="text-xs sm:text-sm text-gray-600">
                         {card.subtitle}
                       </p>
