@@ -143,7 +143,7 @@ export function CoupleSidebarWrapper() {
                     >
                       <Link href={item.href} onClick={handleNavClick} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
                         <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
-                        <span className="flex-1">{item.label}</span>
+                        <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
                         {badgeCount > 0 && (
                           <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shadow-sm group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1/2 group-data-[collapsible=icon]:-translate-y-1/2">
                             {badgeCount > 99 ? '99+' : badgeCount}
