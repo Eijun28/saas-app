@@ -353,31 +353,45 @@ function Navbar({
             <>
               <Link
                 href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                className={cn(
-                  "text-sm transition-colors flex items-center h-8",
-                  scrolled 
-                    ? "text-[#374151] hover:text-[#823F91]" 
-                    : "text-white hover:text-[#E8D4EF]"
-                )}
+                className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
                 style={{
-                  ...(!scrolled && { textShadow: '0 1px 2px rgba(0,0,0,0.1)' }),
+                  color: '#823F91',
                   pointerEvents: 'auto',
                   position: 'relative',
-                  zIndex: 100000
+                  zIndex: 100000,
+                  transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#a720f2'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#823F91'
                 }}
               >
                 {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
               </Link>
-              <Button
+              <button
                 onClick={handleSignOutClick}
-                variant="ghost"
-                size="sm"
-                className="text-sm h-8"
-                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+                className="text-base font-bold cursor-pointer transition-colors flex items-center h-8 gap-1"
+                style={{
+                  color: '#823F91',
+                  pointerEvents: 'auto',
+                  position: 'relative',
+                  zIndex: 100000,
+                  transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: 'none',
+                  border: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#a720f2'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#823F91'
+                }}
               >
-                <LogOut className="h-4 w-4 mr-1" />
+                <LogOut className="h-4 w-4" />
                 Déconnexion
-              </Button>
+              </button>
             </>
             ) : (
             <>
@@ -527,18 +541,39 @@ function Navbar({
                     <Link
                       href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-3 py-2 text-sm text-neutral-700 hover:text-[#823F91] transition-colors"
+                      className="block w-full text-left px-3 py-2 text-base transition-colors"
+                      style={{
+                        color: '#823F91',
+                        transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#a720f2'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#823F91'
+                      }}
                     >
                       {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                     </Link>
-                    <Button
+                    <button
                       onClick={handleSignOutClick}
-                      variant="ghost"
-                      className="w-full justify-start text-sm h-9"
+                      className="w-full text-left px-3 py-2 text-base flex items-center gap-2 transition-colors"
+                      style={{
+                        color: '#823F91',
+                        background: 'none',
+                        border: 'none',
+                        transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = '#a720f2'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = '#823F91'
+                      }}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className="h-4 w-4" />
                       Déconnexion
-                    </Button>
+                    </button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
