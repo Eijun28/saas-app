@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
