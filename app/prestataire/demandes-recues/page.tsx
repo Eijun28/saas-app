@@ -82,9 +82,10 @@ export default function DemandesRecuesPage() {
         budget_min: 0,
         budget_max: 0,
         lieu: '',
-        statut: request.status === 'pending' ? 'nouvelle' 
+        statut: request.status === 'pending' ? 'nouvelle'
           : request.status === 'accepted' ? 'en_cours'
           : request.status === 'rejected' ? 'terminee'
+          : request.status === 'cancelled' ? 'annulee'
           : 'nouvelle',
         message: request.initial_message,
         created_at: request.created_at,
@@ -95,6 +96,7 @@ export default function DemandesRecuesPage() {
       } else if (demandeFormatted.statut === 'en_cours') {
         en_cours.push(demandeFormatted)
       } else {
+        // Les demandes annulées et terminées vont dans terminées
         terminees.push(demandeFormatted)
       }
     })
