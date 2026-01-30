@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Plus, Trash2, Star, GripVertical, Euro } from 'lucide-react'
+import { Plus, Trash2, Pencil, Euro, X, Check } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -18,13 +18,12 @@ import type { ProviderPricing, PricingUnit } from '@/lib/types/pricing'
 import {
   PRICING_UNITS,
   getPricingUnitConfig,
-  formatPricing,
+  formatPrice,
 } from '@/lib/types/pricing'
 import {
   addProviderPricing,
   updateProviderPricing,
   deleteProviderPricing,
-  setPrimaryPricing,
 } from '@/lib/actions/provider-pricing'
 
 interface PricingEditorProps {
@@ -33,61 +32,129 @@ interface PricingEditorProps {
   onUpdate?: () => void
 }
 
-interface LocalPricing extends Partial<ProviderPricing> {
-  localId: string
-  isNew?: boolean
-  isEditing?: boolean
-}
-
 export function PricingEditor({ providerId, initialPricing, onUpdate }: PricingEditorProps) {
-  const [pricings, setPricings] = useState<LocalPricing[]>([])
+  const [pricings, setPricings] = useState<ProviderPricing[]>([])
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [isAdding, setIsAdding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Form state for new/editing pricing
+  const [formData, setFormData] = useState({
+    pricing_unit: 'forfait' as PricingUnit,
+    price_min: '' as string,
+    price_max: '' as string,
+    label: '',
+  })
+
   useEffect(() => {
-    setPricings(
-      initialPricing.map(p => ({
-        ...p,
-        localId: p.id,
-        isNew: false,
-        isEditing: false,
-      }))
-    )
+    setPricings(initialPricing)
   }, [initialPricing])
 
-  const addNewPricing = () => {
-    const newPricing: LocalPricing = {
-      localId: `new-${Date.now()}`,
+  const resetForm = () => {
+    setFormData({
       pricing_unit: 'forfait',
-      price_min: null,
-      price_max: null,
+      price_min: '',
+      price_max: '',
       label: '',
-      is_primary: pricings.length === 0, // First one is primary
-      display_order: pricings.length,
-      isNew: true,
-      isEditing: true,
-    }
-    setPricings([...pricings, newPricing])
+    })
   }
 
-  const updateLocalPricing = (localId: string, updates: Partial<LocalPricing>) => {
-    setPricings(pricings.map(p =>
-      p.localId === localId ? { ...p, ...updates, isEditing: true } : p
-    ))
+  const startEditing = (pricing: ProviderPricing) => {
+    setEditingId(pricing.id)
+    setIsAdding(false)
+    setFormData({
+      pricing_unit: pricing.pricing_unit,
+      price_min: pricing.price_min?.toString() || '',
+      price_max: pricing.price_max?.toString() || '',
+      label: pricing.label || '',
+    })
   }
 
-  const removePricing = async (localId: string) => {
-    const pricing = pricings.find(p => p.localId === localId)
-    if (!pricing) return
+  const startAdding = () => {
+    setIsAdding(true)
+    setEditingId(null)
+    resetForm()
+  }
 
-    if (pricing.isNew) {
-      setPricings(pricings.filter(p => p.localId !== localId))
+  const cancelEdit = () => {
+    setEditingId(null)
+    setIsAdding(false)
+    resetForm()
+  }
+
+  const handleSave = async () => {
+    const config = getPricingUnitConfig(formData.pricing_unit)
+
+    // Validation
+    if (config.requiresPrice && !formData.price_min) {
+      toast.error('Veuillez indiquer un prix')
       return
     }
 
-    if (!pricing.id) return
+    const priceMin = formData.price_min ? parseFloat(formData.price_min) : null
+    const priceMax = formData.price_max ? parseFloat(formData.price_max) : null
+
+    if (priceMin && priceMax && priceMin > priceMax) {
+      toast.error('Le prix minimum ne peut pas être supérieur au maximum')
+      return
+    }
 
     setIsSaving(true)
-    const { error } = await deleteProviderPricing(pricing.id)
+
+    if (isAdding) {
+      // Add new pricing
+      const { data, error } = await addProviderPricing({
+        pricing_unit: formData.pricing_unit,
+        price_min: priceMin,
+        price_max: priceMax,
+        label: formData.label || null,
+        is_primary: pricings.length === 0,
+        display_order: pricings.length,
+      })
+
+      if (error) {
+        toast.error('Erreur', { description: error })
+        setIsSaving(false)
+        return
+      }
+
+      if (data) {
+        setPricings([...pricings, data])
+        toast.success('Tarif ajouté')
+        setIsAdding(false)
+        resetForm()
+        onUpdate?.()
+      }
+    } else if (editingId) {
+      // Update existing pricing
+      const { data, error } = await updateProviderPricing(editingId, {
+        pricing_unit: formData.pricing_unit,
+        price_min: priceMin,
+        price_max: priceMax,
+        label: formData.label || null,
+      })
+
+      if (error) {
+        toast.error('Erreur', { description: error })
+        setIsSaving(false)
+        return
+      }
+
+      if (data) {
+        setPricings(pricings.map(p => p.id === editingId ? data : p))
+        toast.success('Tarif mis à jour')
+        setEditingId(null)
+        resetForm()
+        onUpdate?.()
+      }
+    }
+
+    setIsSaving(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    setIsSaving(true)
+    const { error } = await deleteProviderPricing(id)
     setIsSaving(false)
 
     if (error) {
@@ -95,313 +162,241 @@ export function PricingEditor({ providerId, initialPricing, onUpdate }: PricingE
       return
     }
 
-    setPricings(pricings.filter(p => p.localId !== localId))
+    setPricings(pricings.filter(p => p.id !== id))
     toast.success('Tarif supprimé')
     onUpdate?.()
   }
 
-  const savePricing = async (localId: string) => {
-    const pricing = pricings.find(p => p.localId === localId)
-    if (!pricing) return
-
-    const config = getPricingUnitConfig(pricing.pricing_unit as PricingUnit)
-
-    // Validation
-    if (config.requiresPrice && !pricing.price_min) {
-      toast.error('Erreur', { description: 'Veuillez indiquer un prix' })
-      return
-    }
-
-    if (pricing.price_min && pricing.price_max && pricing.price_min > pricing.price_max) {
-      toast.error('Erreur', { description: 'Le prix minimum ne peut pas être supérieur au maximum' })
-      return
-    }
-
-    setIsSaving(true)
-
-    if (pricing.isNew) {
-      const { data, error } = await addProviderPricing({
-        pricing_unit: pricing.pricing_unit as PricingUnit,
-        price_min: pricing.price_min || null,
-        price_max: pricing.price_max || null,
-        label: pricing.label || null,
-        is_primary: pricing.is_primary || false,
-        display_order: pricing.display_order || 0,
-      })
-
-      setIsSaving(false)
-
-      if (error) {
-        toast.error('Erreur', { description: error })
-        return
-      }
-
-      if (data) {
-        setPricings(pricings.map(p =>
-          p.localId === localId
-            ? { ...data, localId: data.id, isNew: false, isEditing: false }
-            : p
-        ))
-        toast.success('Tarif ajouté')
-        onUpdate?.()
-      }
-    } else if (pricing.id) {
-      const { data, error } = await updateProviderPricing(pricing.id, {
-        pricing_unit: pricing.pricing_unit as PricingUnit,
-        price_min: pricing.price_min || null,
-        price_max: pricing.price_max || null,
-        label: pricing.label || null,
-        is_primary: pricing.is_primary || false,
-      })
-
-      setIsSaving(false)
-
-      if (error) {
-        toast.error('Erreur', { description: error })
-        return
-      }
-
-      if (data) {
-        setPricings(pricings.map(p =>
-          p.localId === localId
-            ? { ...data, localId: data.id, isNew: false, isEditing: false }
-            : p
-        ))
-        toast.success('Tarif mis à jour')
-        onUpdate?.()
-      }
-    }
-  }
-
-  const setAsPrimary = async (localId: string) => {
-    const pricing = pricings.find(p => p.localId === localId)
-    if (!pricing?.id || pricing.isNew) return
-
-    setIsSaving(true)
-    const { error } = await setPrimaryPricing(pricing.id)
-    setIsSaving(false)
-
-    if (error) {
-      toast.error('Erreur', { description: error })
-      return
-    }
-
-    setPricings(pricings.map(p => ({
-      ...p,
-      is_primary: p.localId === localId,
-    })))
-    toast.success('Tarif principal défini')
-    onUpdate?.()
-  }
+  const config = getPricingUnitConfig(formData.pricing_unit)
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <Label className="text-base">Vos tarifs</Label>
+          <Label className="text-base font-medium">Vos tarifs</Label>
           <p className="text-sm text-muted-foreground">
-            Définissez vos différents tarifs (forfait, par personne, etc.)
+            Définissez vos différents tarifs
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addNewPricing}
-          disabled={isSaving}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Ajouter
-        </Button>
+        {!isAdding && !editingId && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={startAdding}
+            disabled={isSaving}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter
+          </Button>
+        )}
       </div>
 
-      {pricings.length === 0 ? (
+      {/* Liste des tarifs enregistrés */}
+      {pricings.length > 0 && !isAdding && !editingId && (
+        <div className="space-y-2">
+          {pricings.map((pricing) => {
+            const unitConfig = getPricingUnitConfig(pricing.pricing_unit)
+            return (
+              <div
+                key={pricing.id}
+                className="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg group hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Euro className="h-4 w-4 text-[#823F91]" />
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {unitConfig.shortLabel}
+                      </span>
+                      <span className="text-sm text-gray-500">:</span>
+                      <span className="font-semibold text-gray-900">
+                        {pricing.pricing_unit === 'sur_devis' ? (
+                          'Sur devis'
+                        ) : pricing.price_max && pricing.price_max !== pricing.price_min ? (
+                          `${formatPrice(pricing.price_min)} - ${formatPrice(pricing.price_max)}`
+                        ) : (
+                          formatPrice(pricing.price_min)
+                        )}
+                      </span>
+                    </div>
+                    {pricing.label && (
+                      <p className="text-xs text-gray-500 mt-0.5">{pricing.label}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => startEditing(pricing)}
+                    className="h-8 w-8 text-gray-500 hover:text-[#823F91]"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(pricing.id)}
+                    disabled={isSaving}
+                    className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* État vide */}
+      {pricings.length === 0 && !isAdding && (
         <div className="border border-dashed rounded-xl p-6 text-center text-muted-foreground">
           <Euro className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Aucun tarif défini</p>
-          <p className="text-xs mt-1">Cliquez sur "Ajouter" pour définir vos prix</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {pricings.map((pricing) => (
-            <PricingItem
-              key={pricing.localId}
-              pricing={pricing}
-              onUpdate={(updates) => updateLocalPricing(pricing.localId, updates)}
-              onSave={() => savePricing(pricing.localId)}
-              onRemove={() => removePricing(pricing.localId)}
-              onSetPrimary={() => setAsPrimary(pricing.localId)}
-              isSaving={isSaving}
-              totalCount={pricings.length}
-            />
-          ))}
+          <Button
+            type="button"
+            variant="link"
+            onClick={startAdding}
+            className="text-[#823F91] mt-1"
+          >
+            Ajouter votre premier tarif
+          </Button>
         </div>
       )}
-    </div>
-  )
-}
 
-interface PricingItemProps {
-  pricing: LocalPricing
-  onUpdate: (updates: Partial<LocalPricing>) => void
-  onSave: () => void
-  onRemove: () => void
-  onSetPrimary: () => void
-  isSaving: boolean
-  totalCount: number
-}
-
-function PricingItem({
-  pricing,
-  onUpdate,
-  onSave,
-  onRemove,
-  onSetPrimary,
-  isSaving,
-  totalCount,
-}: PricingItemProps) {
-  const config = getPricingUnitConfig(pricing.pricing_unit as PricingUnit)
-  const showPriceInputs = config.requiresPrice
-
-  return (
-    <div
-      className={cn(
-        'border rounded-xl p-4 space-y-3 transition-colors',
-        pricing.is_primary && 'border-[#823F91] bg-[#823F91]/5',
-        pricing.isEditing && 'border-blue-300 bg-blue-50/50'
-      )}
-    >
-      {/* Header row */}
-      <div className="flex items-center gap-2">
-        <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
-
-        <Select
-          value={pricing.pricing_unit}
-          onValueChange={(value) => onUpdate({ pricing_unit: value as PricingUnit })}
-        >
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Type de tarif" />
-          </SelectTrigger>
-          <SelectContent className="!bg-white">
-            {PRICING_UNITS.map((unit) => (
-              <SelectItem key={unit.value} value={unit.value}>
-                {unit.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex items-center gap-1">
-          {totalCount > 1 && (
+      {/* Formulaire d'ajout/édition */}
+      {(isAdding || editingId) && (
+        <div className="border rounded-xl p-4 space-y-4 bg-white shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              {isAdding ? 'Nouveau tarif' : 'Modifier le tarif'}
+            </span>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              onClick={onSetPrimary}
-              disabled={isSaving || pricing.isNew || pricing.is_primary}
-              className={cn(
-                'h-8 w-8',
-                pricing.is_primary && 'text-[#823F91]'
-              )}
-              title={pricing.is_primary ? 'Tarif principal' : 'Définir comme principal'}
+              onClick={cancelEdit}
+              className="h-8 w-8 text-gray-400 hover:text-gray-600"
             >
-              <Star
-                className={cn('h-4 w-4', pricing.is_primary && 'fill-current')}
-              />
+              <X className="h-4 w-4" />
             </Button>
-          )}
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onRemove}
-            disabled={isSaving}
-            className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Price inputs */}
-      {showPriceInputs && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs text-muted-foreground">
-              Prix {config.allowRange ? 'minimum' : ''} (€)
-            </Label>
-            <Input
-              type="number"
-              placeholder={config.placeholder}
-              value={pricing.price_min ?? ''}
-              onChange={(e) => onUpdate({
-                price_min: e.target.value ? parseFloat(e.target.value) : null
-              })}
-              min="0"
-              step="0.01"
-            />
           </div>
-          {config.allowRange && (
-            <div>
-              <Label className="text-xs text-muted-foreground">
-                Prix maximum (€) <span className="opacity-50">optionnel</span>
-              </Label>
-              <Input
-                type="number"
-                placeholder={config.placeholder}
-                value={pricing.price_max ?? ''}
-                onChange={(e) => onUpdate({
-                  price_max: e.target.value ? parseFloat(e.target.value) : null
-                })}
-                min="0"
-                step="0.01"
-              />
+
+          {/* Type de tarif */}
+          <div className="space-y-2">
+            <Label className="text-xs text-gray-600">Type de tarif</Label>
+            <Select
+              value={formData.pricing_unit}
+              onValueChange={(value) => setFormData({ ...formData, pricing_unit: value as PricingUnit })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionnez un type" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                {PRICING_UNITS.map((unit) => (
+                  <SelectItem key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Prix */}
+          {config.requiresPrice && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-xs text-gray-600">
+                  Prix {config.allowRange ? 'minimum' : ''} (€)
+                </Label>
+                <Input
+                  type="number"
+                  placeholder={config.placeholder}
+                  value={formData.price_min}
+                  onChange={(e) => setFormData({ ...formData, price_min: e.target.value })}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              {config.allowRange && (
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-600">
+                    Prix maximum (€) <span className="text-gray-400">optionnel</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder={config.placeholder}
+                    value={formData.price_max}
+                    onChange={(e) => setFormData({ ...formData, price_max: e.target.value })}
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              )}
             </div>
           )}
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label className="text-xs text-gray-600">
+              Description <span className="text-gray-400">optionnel</span>
+            </Label>
+            <Input
+              type="text"
+              placeholder="Ex: Menu standard, Formule journée..."
+              value={formData.label}
+              onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+            />
+          </div>
+
+          {/* Aperçu */}
+          <div className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg text-sm">
+            <span className="text-gray-500">Aperçu :</span>
+            <span className="font-medium text-gray-900">
+              {config.shortLabel} : {' '}
+              {formData.pricing_unit === 'sur_devis' ? (
+                'Sur devis'
+              ) : formData.price_min ? (
+                formData.price_max && formData.price_max !== formData.price_min ? (
+                  `${formatPrice(parseFloat(formData.price_min))} - ${formatPrice(parseFloat(formData.price_max))}`
+                ) : (
+                  formatPrice(parseFloat(formData.price_min))
+                )
+              ) : (
+                '—'
+              )}
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cancelEdit}
+              disabled={isSaving}
+              className="flex-1"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex-1 bg-[#823F91] hover:bg-[#6D3478] gap-2"
+            >
+              <Check className="h-4 w-4" />
+              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
+            </Button>
+          </div>
         </div>
       )}
-
-      {/* Label/description (optional) */}
-      <div>
-        <Label className="text-xs text-muted-foreground">
-          Description <span className="opacity-50">optionnel</span>
-        </Label>
-        <Input
-          type="text"
-          placeholder="Ex: Menu standard, Formule journée..."
-          value={pricing.label ?? ''}
-          onChange={(e) => onUpdate({ label: e.target.value || null })}
-        />
-      </div>
-
-      {/* Preview & Save */}
-      <div className="flex items-center justify-between pt-2 border-t">
-        <div className="text-sm">
-          <span className="text-muted-foreground">Aperçu : </span>
-          <span className="font-medium">
-            {pricing.pricing_unit === 'sur_devis'
-              ? 'Sur devis'
-              : pricing.price_min
-                ? formatPricing(pricing as ProviderPricing)
-                : '—'
-            }
-          </span>
-        </div>
-
-        {pricing.isEditing && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={onSave}
-            disabled={isSaving}
-            className="bg-[#823F91] hover:bg-[#6D3478]"
-          >
-            {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-          </Button>
-        )}
-      </div>
     </div>
   )
 }
