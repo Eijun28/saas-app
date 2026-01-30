@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -71,7 +72,14 @@ function SidebarToggleButton() {
 export function PrestataireSidebarWrapper() {
   const pathname = usePathname()
   const { counts } = useNotifications()
-  const { isMobile, setOpenMobile } = useSidebar()
+  const { isMobile, setOpenMobile, openMobile } = useSidebar()
+
+  // Fermer la sidebar mobile automatiquement quand la route change
+  React.useEffect(() => {
+    if (isMobile && openMobile) {
+      setOpenMobile(false)
+    }
+  }, [pathname]) // Se déclenche à chaque changement de route
 
   const handleNavClick = () => {
     if (isMobile) {
