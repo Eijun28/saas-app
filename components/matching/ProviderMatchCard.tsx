@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import ScoreBreakdownModal from './ScoreBreakdownModal';
+import { PricingDisplay } from '@/components/provider/PricingDisplay';
 
 interface ProviderMatchCardProps {
   match: ProviderMatch;
@@ -143,17 +144,12 @@ export default function ProviderMatchCard({
 
         {/* Infos clés */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Budget */}
-          {(provider.budget_min || provider.budget_max) && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Budget</p>
-              <p className="text-sm font-medium text-gray-900">
-                {provider.budget_min ? `${provider.budget_min}€` : ''}
-                {provider.budget_min && provider.budget_max ? ' - ' : ''}
-                {provider.budget_max ? `${provider.budget_max}€` : ''}
-              </p>
-            </div>
-          )}
+          {/* Budget/Tarifs */}
+          <PricingDisplay
+            budgetMin={provider.budget_min}
+            budgetMax={provider.budget_max}
+            variant="card"
+          />
 
           {/* Expérience */}
           {provider.annees_experience && (
