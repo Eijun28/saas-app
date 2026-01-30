@@ -17,7 +17,9 @@ import { ZoneSelector } from '@/components/provider/ZoneSelector'
 import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
+import { PricingEditor } from '@/components/provider/PricingEditor'
 import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
+import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
@@ -54,6 +56,9 @@ export default function ProfilPublicPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeTab, setActiveTab] = useState('infos')
+
+  // Pricing data
+  const { pricings, reload: reloadPricing } = useProviderPricing(user?.id || null)
 
   useEffect(() => {
     async function getUser() {
@@ -392,6 +397,14 @@ export default function ProfilPublicPage() {
                         currentServiceType={profile?.service_type}
                         onSave={reloadData}
                       />
+                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
+                        <PricingEditor
+                          key={`pricing-${refreshKey}`}
+                          providerId={user.id}
+                          initialPricing={pricings}
+                          onUpdate={reloadPricing}
+                        />
+                      </div>
                       <SocialLinksEditor
                         key={`social-${profile?._timestamp || 0}`}
                         userId={user.id}

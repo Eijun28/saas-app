@@ -1,7 +1,8 @@
-import { 
-  Camera, Video, UtensilsCrossed, Music, Flower2, ClipboardList, Building2, 
-  Scissors, Cake, Tent, UserRound, Music2, PenTool, Pen, 
-  Sparkles, Shirt, Gem, FileText, Scroll, Car, Sparkle
+import {
+  Camera, Video, UtensilsCrossed, Music, Flower2, ClipboardList, Building2,
+  Scissors, Cake, Tent, UserRound, Music2, PenTool, Pen,
+  Sparkles, Shirt, Gem, FileText, Scroll, Car, Sparkle, Crown, Star,
+  Drama, Palette, Heart, HandMetal, Lightbulb, Gift
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -72,19 +73,108 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     ],
   },
   {
-    id: 'maghreb',
-    label: 'Métiers traditionnels du Maghreb',
+    id: 'maghreb_oriental',
+    label: 'Traditions Maghreb & Orient',
+    icon: Crown,
+    services: [
+      // Neggafa & Accompagnement
+      { value: 'neggafa', label: 'Neggafa / Nekkacha', icon: Crown },
+      { value: 'negafa_algerienne', label: 'Negafa algérienne', icon: Crown },
+      { value: 'negafa_marocaine', label: 'Negafa marocaine', icon: Crown },
+      { value: 'negafa_tunisienne', label: 'Negafa tunisienne', icon: Crown },
+
+      // Tenues traditionnelles
+      { value: 'caftan', label: 'Créateur/Location Caftan', icon: Shirt },
+      { value: 'takchita', label: 'Créateur/Location Takchita', icon: Shirt },
+      { value: 'karakou', label: 'Créateur/Location Karakou', icon: Shirt },
+      { value: 'keswa', label: 'Créateur/Location Keswa', icon: Shirt },
+      { value: 'bindalli', label: 'Créateur/Location Bindalli (turc)', icon: Shirt },
+      { value: 'jabador', label: 'Créateur/Location Jabador homme', icon: Shirt },
+      { value: 'burnous', label: 'Créateur/Location Burnous', icon: Shirt },
+      { value: 'location_tenues_traditionnelles', label: 'Location tenues traditionnelles', icon: Shirt },
+
+      // Henné & Soins
+      { value: 'henna_artiste', label: 'Artiste Henné', icon: PenTool },
+      { value: 'henna_marocain', label: 'Henné marocain (Fassi)', icon: PenTool },
+      { value: 'henna_indien', label: 'Mehndi / Henné indien', icon: PenTool },
+      { value: 'henna_soudanais', label: 'Henné soudanais', icon: PenTool },
+      { value: 'hammam', label: 'Hammam / Spa traditionnel', icon: Sparkles },
+
+      // Musique & Animation orientale
+      { value: 'zaffa', label: 'Zaffa / Procession musicale', icon: Music2 },
+      { value: 'musicien_traditionnel', label: 'Musicien traditionnel (Oud, Darbouka...)', icon: Music2 },
+      { value: 'groupe_chaabi', label: 'Groupe Chaabi', icon: Music2 },
+      { value: 'groupe_andalou', label: 'Groupe Andalou', icon: Music2 },
+      { value: 'groupe_gnawa', label: 'Groupe Gnawa', icon: Music2 },
+      { value: 'danseuse_orientale', label: 'Danseuse orientale / Belly dancer', icon: Star },
+      { value: 'troupe_folklorique', label: 'Troupe folklorique', icon: Drama },
+
+      // Décoration orientale
+      { value: 'decorateur_maghrebin', label: 'Décorateur mariages maghrébins', icon: Flower2 },
+      { value: 'location_amariya', label: 'Location Amariya / Trône', icon: Crown },
+      { value: 'calligraphe', label: 'Calligraphe arabe', icon: Pen },
+
+      // Organisation
+      { value: 'organisateur_ceremonie', label: 'Organisateur cérémonies traditionnelles', icon: ClipboardList },
+    ],
+  },
+  {
+    id: 'afrique_subsaharienne',
+    label: 'Traditions Afrique',
+    icon: Star,
+    services: [
+      { value: 'griot', label: 'Griot / Djeli', icon: Music2 },
+      { value: 'couturier_africain', label: 'Créateur tenues africaines', icon: Shirt },
+      { value: 'styliste_wax', label: 'Styliste Wax / Pagne', icon: Palette },
+      { value: 'coiffure_africaine', label: 'Coiffure africaine (tresses, locks...)', icon: Scissors },
+      { value: 'danseurs_africains', label: 'Danseurs africains', icon: Drama },
+      { value: 'percussionnistes', label: 'Percussionnistes / Djembé', icon: HandMetal },
+      { value: 'decorateur_africain', label: 'Décorateur mariages africains', icon: Flower2 },
+      { value: 'traiteur_africain', label: 'Traiteur africain', icon: UtensilsCrossed },
+    ],
+  },
+  {
+    id: 'asie_inde',
+    label: 'Traditions Asie & Inde',
     icon: Sparkles,
     services: [
-      { value: 'neggafa', label: 'Neggafa (Nekkacha)', icon: UserRound },
-      { value: 'zaffa', label: 'Zaffa (Procession musicale)', icon: Music2 },
-      { value: 'henna_artiste', label: 'Artiste Henna', icon: PenTool },
-      { value: 'calligraphe', label: 'Calligraphe', icon: Pen },
-      { value: 'musicien_traditionnel', label: 'Musicien traditionnel (Oud, Darbouka...)', icon: Music2 },
-      { value: 'danseuse_orientale', label: 'Danseuse orientale / Belly dancer', icon: Sparkles },
-      { value: 'couturier_traditionnel', label: 'Couturier traditionnel', icon: Shirt },
-      { value: 'decorateur_maghrebin', label: 'Décorateur spécialisé mariages maghrébins', icon: Flower2 },
-      { value: 'organisateur_ceremonie', label: 'Organisateur de cérémonies traditionnelles', icon: ClipboardList },
+      // Inde
+      { value: 'pandit', label: 'Pandit / Officiant hindou', icon: Scroll },
+      { value: 'mehndi_artist', label: 'Artiste Mehndi', icon: PenTool },
+      { value: 'sangeet_dj', label: 'DJ Sangeet / Bollywood', icon: Music },
+      { value: 'danseurs_bollywood', label: 'Danseurs Bollywood', icon: Drama },
+      { value: 'styliste_sari', label: 'Styliste Sari / Lehenga', icon: Shirt },
+      { value: 'decorateur_indien', label: 'Décorateur mariages indiens', icon: Flower2 },
+      { value: 'traiteur_indien', label: 'Traiteur indien', icon: UtensilsCrossed },
+
+      // Asie de l'Est & Sud-Est
+      { value: 'ceremonie_the', label: 'Cérémonie du thé', icon: Gift },
+      { value: 'calligraphe_asiatique', label: 'Calligraphe asiatique', icon: Pen },
+      { value: 'musicien_asiatique', label: 'Musicien traditionnel asiatique', icon: Music2 },
+      { value: 'traiteur_asiatique', label: 'Traiteur asiatique', icon: UtensilsCrossed },
+    ],
+  },
+  {
+    id: 'autres_traditions',
+    label: 'Autres traditions',
+    icon: Heart,
+    services: [
+      // Antilles & Caraïbes
+      { value: 'groupe_zouk', label: 'Groupe Zouk / Kompa', icon: Music2 },
+      { value: 'styliste_antillais', label: 'Styliste tenues antillaises', icon: Shirt },
+      { value: 'traiteur_antillais', label: 'Traiteur antillais / créole', icon: UtensilsCrossed },
+
+      // Europe de l'Est
+      { value: 'musicien_klezmer', label: 'Musicien Klezmer', icon: Music2 },
+      { value: 'musicien_slave', label: 'Musicien slave traditionnel', icon: Music2 },
+
+      // Amérique latine
+      { value: 'mariachi', label: 'Mariachi', icon: Music2 },
+      { value: 'danseurs_latino', label: 'Danseurs latino (salsa, bachata...)', icon: Drama },
+
+      // Général
+      { value: 'couturier_traditionnel', label: 'Couturier traditionnel (autre)', icon: Shirt },
+      { value: 'musicien_folk', label: 'Musicien folk traditionnel', icon: Music2 },
     ],
   },
   {
