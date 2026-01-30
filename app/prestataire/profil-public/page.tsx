@@ -119,7 +119,7 @@ export default function ProfilPublicPage() {
           .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
           .eq('id', userId)
           .maybeSingle()
-        profileData = data
+        profileData = data as typeof profileData
         profileError = error
       }
 
