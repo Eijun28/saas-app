@@ -262,7 +262,7 @@ export function ChatMessages({
                         <div
                           className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                             isOwn
-                              ? 'bg-gray-800 text-white rounded-br-sm'
+                              ? 'bg-[#823F91] text-white rounded-br-sm'
                               : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                           }`}
                         >
@@ -286,8 +286,8 @@ export function ChatMessages({
                               <button
                                 className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
                                   isOwn
-                                    ? 'bg-white/20 hover:bg-white/30 text-white'
-                                    : 'bg-white/50 hover:bg-white/70 text-gray-600'
+                                    ? 'bg-white/25 hover:bg-white/40 text-white'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                                 }`}
                                 aria-label="Menu message"
                               >

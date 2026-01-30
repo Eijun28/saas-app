@@ -422,9 +422,9 @@ export default function RecherchePage() {
                   <ChevronDown className="h-4 w-4 text-gray-400 ml-auto flex-shrink-0" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent 
-                className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white" 
-                align="start" 
+              <PopoverContent
+                className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white z-[9999] shadow-lg border border-gray-200 rounded-xl"
+                align="start"
                 side="bottom"
                 collisionPadding={16}
                 avoidCollisions={true}
@@ -450,7 +450,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[320px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[500px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      className="w-[calc(100vw-2rem)] sm:w-[320px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg" 
                       side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}
@@ -521,7 +521,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg" 
                       side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}
@@ -574,7 +574,7 @@ export default function RecherchePage() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[400px] overflow-y-auto z-[9999] shadow-none border border-gray-200" 
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg" 
                       side={isMobile ? "bottom" : "right"} 
                       align="start" 
                       sideOffset={8}

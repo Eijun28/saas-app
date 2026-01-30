@@ -27,6 +27,8 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
         return 'bg-green-100 text-green-800'
       case 'refusee':
         return 'bg-red-100 text-red-800'
+      case 'annulee':
+        return 'bg-gray-100 text-gray-600'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -49,6 +51,8 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
         return 'Terminée'
       case 'refusee':
         return 'Refusée'
+      case 'annulee':
+        return 'Annulée par le couple'
       default:
         return statut
     }

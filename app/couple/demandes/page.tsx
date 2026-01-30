@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare } from 'lucide-react'
+import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react'
+import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { useUser } from '@/hooks/use-user'
 import { extractSupabaseError } from '@/lib/utils'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
@@ -114,6 +115,7 @@ export default function DemandesPage() {
   const [favoris, setFavoris] = useState<FavoriRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
 
   // Helper pour obtenir le couple_id depuis user_id
   async function getCoupleId(): Promise<string | null> {
@@ -177,10 +179,10 @@ export default function DemandesPage() {
       .select('user_id, nom_entreprise, type_prestation')
       .in('user_id', prestataireIds)
 
-    // Charger tous les profils utilisateurs en une seule requête
+    // Charger tous les profils utilisateurs en une seule requête (avec service_type et nom_entreprise)
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, avatar_url, prenom, nom')
+      .select('id, avatar_url, prenom, nom, nom_entreprise, service_type')
       .in('id', prestataireIds)
 
     // Créer des Maps pour accès rapide
@@ -193,18 +195,24 @@ export default function DemandesPage() {
       const prestataireProfile = prestataireMap.get(prestataireId)
       const profile = profileMap.get(prestataireId)
 
+      // Priorité: prestataire_profiles.nom_entreprise > profiles.nom_entreprise > prénom nom
+      const nomEntreprise = prestataireProfile?.nom_entreprise || (profile as any)?.nom_entreprise || null
+      const serviceType = prestataireProfile?.type_prestation || (profile as any)?.service_type || null
+
       return {
         ...demande,
         provider_id: prestataireId,
-        service_type: prestataireProfile?.type_prestation || null,
+        service_type: serviceType,
+        type_prestation: serviceType,
         wedding_date: null,
-        prestataire: prestataireProfile ? {
-          nom_entreprise: prestataireProfile.nom_entreprise || null,
-          service_type: prestataireProfile.type_prestation || '',
+        prestataire: {
+          id: prestataireId,
+          nom_entreprise: nomEntreprise,
+          service_type: serviceType,
           avatar_url: profile?.avatar_url || null,
           prenom: profile?.prenom || null,
           nom: profile?.nom || null,
-        } : undefined
+        }
       } as RequestRow & { prestataire?: ProviderProfile }
     })
 
@@ -446,6 +454,20 @@ export default function DemandesPage() {
 
     const supabase = createClient()
 
+    // Vérifier s'il existe déjà une demande en cours pour ce prestataire
+    const { data: existingRequest } = await supabase
+      .from('requests')
+      .select('id, status')
+      .eq('couple_id', user.id)
+      .eq('provider_id', request.provider_id)
+      .eq('status', 'pending')
+      .maybeSingle()
+
+    if (existingRequest) {
+      toast.error('Une demande est déjà en attente pour ce prestataire')
+      return
+    }
+
     // Créer une nouvelle demande avec les mêmes informations
     const { error } = await supabase
       .from('requests')
@@ -458,7 +480,11 @@ export default function DemandesPage() {
 
     if (error) {
       console.error('Erreur renvoi demande:', error)
-      toast.error('Erreur lors du renvoi de la demande')
+      if (error.code === '23505') {
+        toast.error('Une demande est déjà en attente pour ce prestataire')
+      } else {
+        toast.error('Erreur lors du renvoi de la demande')
+      }
       return
     }
 
@@ -498,13 +524,45 @@ export default function DemandesPage() {
 
   // Créer un Map pour associer rapidement les profils aux demandes
   const providerById = new Map<string, ProviderProfile>()
-  
+
   // Remplir le Map avec les données des demandes
   demandes.forEach(d => {
     if (d.provider_id && (d as any).prestataire) {
       providerById.set(d.provider_id, (d as any).prestataire)
     }
   })
+
+  // Grouper les demandes par catégorie de service
+  const demandesByCategory = demandes.reduce((acc, demande) => {
+    const provider = (demande as any).prestataire
+    const serviceType = provider?.service_type || demande.type_prestation || 'Autre'
+    const categoryLabel = getServiceTypeLabel(serviceType) || serviceType || 'Autre'
+
+    if (!acc[categoryLabel]) {
+      acc[categoryLabel] = []
+    }
+    acc[categoryLabel].push(demande)
+    return acc
+  }, {} as Record<string, RequestRow[]>)
+
+  // Trier les catégories alphabétiquement
+  const sortedCategories = Object.keys(demandesByCategory).sort((a, b) => {
+    if (a === 'Autre') return 1
+    if (b === 'Autre') return -1
+    return a.localeCompare(b)
+  })
+
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(category)) {
+        newSet.delete(category)
+      } else {
+        newSet.add(category)
+      }
+      return newSet
+    })
+  }
 
   return (
     <div className="w-full">
@@ -533,148 +591,176 @@ export default function DemandesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
-            {demandes.map((r, index) => {
-              const provider = providerById.get(r.provider_id) || (r as any).prestataire
-              const name = getProviderDisplayName(provider)
-              const serviceType = provider?.service_type || provider?.type_prestation || ''
-              const status = STATUS_CONFIG[r.status]
-              const StatusIcon = status.icon
+          <div className="space-y-6">
+            {sortedCategories.map((category, catIndex) => {
+              const categoryDemandes = demandesByCategory[category]
+              const isCollapsed = collapsedCategories.has(category)
 
               return (
-                <motion.div
-                  key={r.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className={`border shadow-sm hover:shadow-md transition-shadow ${status.bgClass}`}>
-                    <CardContent className="p-4 sm:p-5">
-                      {/* Header avec prestataire et statut */}
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-white shadow-sm flex-shrink-0">
-                            <AvatarImage src={provider?.avatar_url || ''} alt={name} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-sm sm:text-base font-semibold">
-                              {name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                <div key={category} className="space-y-3">
+                  {/* Header de catégorie */}
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gradient-to-r from-[#823F91]/10 to-[#9D5FA8]/5 rounded-lg hover:from-[#823F91]/15 hover:to-[#9D5FA8]/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-[#823F91]">{category}</span>
+                      <Badge variant="secondary" className="bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20">
+                        {categoryDemandes.length}
+                      </Badge>
+                    </div>
+                    {isCollapsed ? (
+                      <ChevronDown className="h-5 w-5 text-[#823F91]" />
+                    ) : (
+                      <ChevronUp className="h-5 w-5 text-[#823F91]" />
+                    )}
+                  </button>
 
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
-                              {name}
-                            </h3>
-                            {serviceType && (
-                              <p className="text-xs sm:text-sm text-gray-500 truncate">{serviceType}</p>
-                            )}
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              {new Date(r.created_at).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                        </div>
+                  {/* Liste des demandes de cette catégorie */}
+                  {!isCollapsed && (
+                    <div className="space-y-3 pl-0 sm:pl-2">
+                      {categoryDemandes.map((r, index) => {
+                        const provider = providerById.get(r.provider_id) || (r as any).prestataire
+                        const name = getProviderDisplayName(provider)
+                        const status = STATUS_CONFIG[r.status]
+                        const StatusIcon = status.icon
 
-                        {/* Statut et actions */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border ${status.className}`}>
-                            <StatusIcon className="h-3.5 w-3.5" />
-                            <span className="text-xs font-medium">{status.label}</span>
-                          </div>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4 text-gray-500" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              {r.status === 'pending' && (
-                                <DropdownMenuItem
-                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                                  onClick={() => cancelRequest(r.id)}
-                                >
-                                  <X className="h-4 w-4 mr-2" />
-                                  Annuler la demande
-                                </DropdownMenuItem>
-                              )}
-                              {(r.status === 'cancelled' || r.status === 'rejected') && (
-                                <DropdownMenuItem
-                                  className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
-                                  onClick={() => resendRequest(r)}
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  Renvoyer la demande
-                                </DropdownMenuItem>
-                              )}
-                              {r.status === 'accepted' && (
-                                <DropdownMenuItem
-                                  className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
-                                  onClick={() => window.location.href = '/couple/messagerie'}
-                                >
-                                  <MessageSquare className="h-4 w-4 mr-2" />
-                                  Envoyer un message
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-
-                      {/* Message */}
-                      <div className="bg-white/60 rounded-lg p-3 border border-white/80">
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-3">
-                          {r.initial_message}
-                        </p>
-                      </div>
-
-                      {/* Actions rapides pour pending */}
-                      {r.status === 'pending' && (
-                        <div className="mt-4 flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs"
-                            onClick={() => cancelRequest(r.id)}
+                        return (
+                          <motion.div
+                            key={r.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.03 }}
                           >
-                            <X className="h-3.5 w-3.5 mr-1.5" />
-                            Annuler
-                          </Button>
-                        </div>
-                      )}
+                            <Card className={`border shadow-sm hover:shadow-md transition-shadow ${status.bgClass}`}>
+                              <CardContent className="p-4 sm:p-5">
+                                {/* Header avec prestataire et statut */}
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-white shadow-sm flex-shrink-0">
+                                      <AvatarImage src={provider?.avatar_url || ''} alt={name} />
+                                      <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-sm sm:text-base font-semibold">
+                                        {name.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
 
-                      {/* Actions rapides pour cancelled/rejected */}
-                      {(r.status === 'cancelled' || r.status === 'rejected') && (
-                        <div className="mt-4 flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
-                            onClick={() => resendRequest(r)}
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                            Renvoyer
-                          </Button>
-                        </div>
-                      )}
+                                    <div className="min-w-0 flex-1">
+                                      <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
+                                        {name}
+                                      </h3>
+                                      <p className="text-xs text-gray-400 mt-0.5">
+                                        {new Date(r.created_at).toLocaleDateString('fr-FR', {
+                                          day: 'numeric',
+                                          month: 'long',
+                                          year: 'numeric'
+                                        })}
+                                      </p>
+                                    </div>
+                                  </div>
 
-                      {/* Actions rapides pour accepted */}
-                      {r.status === 'accepted' && (
-                        <div className="mt-4 flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
-                            onClick={() => window.location.href = '/couple/messagerie'}
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-                            Discuter
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                                  {/* Statut et actions */}
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border ${status.className}`}>
+                                      <StatusIcon className="h-3.5 w-3.5" />
+                                      <span className="text-xs font-medium">{status.label}</span>
+                                    </div>
+
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                          <MoreVertical className="h-4 w-4 text-gray-500" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="w-48">
+                                        {r.status === 'pending' && (
+                                          <DropdownMenuItem
+                                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                            onClick={() => cancelRequest(r.id)}
+                                          >
+                                            <X className="h-4 w-4 mr-2" />
+                                            Annuler la demande
+                                          </DropdownMenuItem>
+                                        )}
+                                        {(r.status === 'cancelled' || r.status === 'rejected') && (
+                                          <DropdownMenuItem
+                                            className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                            onClick={() => resendRequest(r)}
+                                          >
+                                            <RefreshCw className="h-4 w-4 mr-2" />
+                                            Renvoyer la demande
+                                          </DropdownMenuItem>
+                                        )}
+                                        {r.status === 'accepted' && (
+                                          <DropdownMenuItem
+                                            className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                            onClick={() => window.location.href = '/couple/messagerie'}
+                                          >
+                                            <MessageSquare className="h-4 w-4 mr-2" />
+                                            Envoyer un message
+                                          </DropdownMenuItem>
+                                        )}
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </div>
+
+                                {/* Message */}
+                                <div className="bg-white/60 rounded-lg p-3 border border-white/80">
+                                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-3">
+                                    {r.initial_message}
+                                  </p>
+                                </div>
+
+                                {/* Actions rapides pour pending */}
+                                {r.status === 'pending' && (
+                                  <div className="mt-4 flex items-center justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs"
+                                      onClick={() => cancelRequest(r.id)}
+                                    >
+                                      <X className="h-3.5 w-3.5 mr-1.5" />
+                                      Annuler
+                                    </Button>
+                                  </div>
+                                )}
+
+                                {/* Actions rapides pour cancelled/rejected */}
+                                {(r.status === 'cancelled' || r.status === 'rejected') && (
+                                  <div className="mt-4 flex items-center justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
+                                      onClick={() => resendRequest(r)}
+                                    >
+                                      <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                      Renvoyer
+                                    </Button>
+                                  </div>
+                                )}
+
+                                {/* Actions rapides pour accepted */}
+                                {r.status === 'accepted' && (
+                                  <div className="mt-4 flex items-center justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
+                                      onClick={() => window.location.href = '/couple/messagerie'}
+                                    >
+                                      <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                                      Discuter
+                                    </Button>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>

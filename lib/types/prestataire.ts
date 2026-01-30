@@ -18,7 +18,7 @@ export interface Demande {
   budget_min: number
   budget_max: number
   lieu: string
-  statut: 'nouvelle' | 'acceptee' | 'refusee' | 'en_cours' | 'terminee'
+  statut: 'nouvelle' | 'acceptee' | 'refusee' | 'en_cours' | 'terminee' | 'annulee'
   message?: string
   created_at: string
 }
