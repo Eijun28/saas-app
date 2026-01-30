@@ -19,6 +19,7 @@ import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
 import { PricingEditor } from '@/components/provider/PricingEditor'
 import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
+import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { CULTURES } from '@/lib/constants/cultures'
@@ -48,6 +49,19 @@ export default function ProfilPublicPage() {
     website_url?: string | null
     linkedin_url?: string | null
     tiktok_url?: string | null
+    // Boutique fields
+    has_physical_location?: boolean
+    boutique_name?: string | null
+    boutique_address?: string | null
+    boutique_address_complement?: string | null
+    boutique_postal_code?: string | null
+    boutique_city?: string | null
+    boutique_country?: string | null
+    boutique_phone?: string | null
+    boutique_email?: string | null
+    boutique_hours?: Record<string, { open: string; close: string; closed: boolean }> | null
+    boutique_notes?: string | null
+    boutique_appointment_only?: boolean
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -94,18 +108,18 @@ export default function ProfilPublicPage() {
       
       let { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
         .eq('id', userId)
         .maybeSingle()
 
       if (profileError && profileError.code === '42703') {
-        console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans réseaux sociaux')
+        console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans boutique')
         const { data, error } = await freshSupabase
           .from('profiles')
           .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type')
           .eq('id', userId)
           .maybeSingle()
-        profileData = data
+        profileData = data as typeof profileData
         profileError = error
       }
 
@@ -193,6 +207,19 @@ export default function ProfilPublicPage() {
         website_url: socialLinks.website_url,
         linkedin_url: socialLinks.linkedin_url,
         tiktok_url: socialLinks.tiktok_url,
+        // Boutique fields
+        has_physical_location: profileData?.has_physical_location || false,
+        boutique_name: profileData?.boutique_name || null,
+        boutique_address: profileData?.boutique_address || null,
+        boutique_address_complement: profileData?.boutique_address_complement || null,
+        boutique_postal_code: profileData?.boutique_postal_code || null,
+        boutique_city: profileData?.boutique_city || null,
+        boutique_country: profileData?.boutique_country || null,
+        boutique_phone: profileData?.boutique_phone || null,
+        boutique_email: profileData?.boutique_email || null,
+        boutique_hours: profileData?.boutique_hours || null,
+        boutique_notes: profileData?.boutique_notes || null,
+        boutique_appointment_only: profileData?.boutique_appointment_only || false,
         _timestamp: timestamp,
       }
       
@@ -417,6 +444,27 @@ export default function ProfilPublicPage() {
                         }}
                         onSave={reloadData}
                       />
+                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
+                        <BoutiqueEditor
+                          key={`boutique-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          initialData={{
+                            has_physical_location: profile?.has_physical_location || false,
+                            boutique_name: profile?.boutique_name,
+                            boutique_address: profile?.boutique_address,
+                            boutique_address_complement: profile?.boutique_address_complement,
+                            boutique_postal_code: profile?.boutique_postal_code,
+                            boutique_city: profile?.boutique_city,
+                            boutique_country: profile?.boutique_country,
+                            boutique_phone: profile?.boutique_phone,
+                            boutique_email: profile?.boutique_email,
+                            boutique_hours: profile?.boutique_hours,
+                            boutique_notes: profile?.boutique_notes,
+                            boutique_appointment_only: profile?.boutique_appointment_only || false,
+                          }}
+                          onSave={reloadData}
+                        />
+                      </div>
                     </div>
                   </Card>
                 </motion.div>
