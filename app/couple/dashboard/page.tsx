@@ -12,7 +12,10 @@ import {
   ArrowRight,
   FileText,
   Search,
-  Info
+  Info,
+  Eye,
+  EyeOff,
+  Heart
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import Link from 'next/link'
@@ -33,6 +36,116 @@ interface BudgetItem {
   amount: number
 }
 
+// Wedding Countdown Component
+function WeddingCountdown({ weddingDate }: { weddingDate: Date }) {
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  })
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date()
+      const diff = weddingDate.getTime() - now.getTime()
+
+      if (diff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 })
+        return
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+      setCountdown({ days, hours, minutes, seconds })
+    }
+
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+    return () => clearInterval(interval)
+  }, [weddingDate])
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  const countdownItems = [
+    { value: countdown.days, label: 'Jours' },
+    { value: countdown.hours, label: 'Heures' },
+    { value: countdown.minutes, label: 'Minutes' },
+    { value: countdown.seconds, label: 'Secondes' },
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#823F91] via-[#9D5FA8] to-[#B855D6] p-6 sm:p-8 shadow-xl"
+    >
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Heart className="h-5 w-5 text-pink-200 animate-pulse" />
+          <h2 className="text-lg sm:text-xl font-semibold text-white/90">
+            Compte à rebours
+          </h2>
+          <Heart className="h-5 w-5 text-pink-200 animate-pulse" />
+        </div>
+
+        {/* Countdown boxes */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-6">
+          {countdownItems.map((item, index) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className="relative"
+            >
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                <motion.span
+                  key={item.value}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="block text-2xl sm:text-4xl md:text-5xl font-bold text-white tabular-nums"
+                >
+                  {String(item.value).padStart(2, '0')}
+                </motion.span>
+                <span className="text-[10px] sm:text-xs uppercase tracking-wider text-white/70 mt-1 block">
+                  {item.label}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Wedding date */}
+        <div className="text-center">
+          <p className="text-white/80 text-sm sm:text-base">
+            <span className="text-white/60">Votre mariage le </span>
+            <span className="font-semibold text-white capitalize">
+              {formatDate(weddingDate)}
+            </span>
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function CoupleDashboardPage() {
   const router = useRouter()
   const { user, loading } = useUser()
@@ -47,6 +160,9 @@ export default function CoupleDashboardPage() {
   const [nom, setNom] = useState('')
   const [statsLoading, setStatsLoading] = useState(true)
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
+  const [budgetVisible, setBudgetVisible] = useState(true)
+  const [weddingDate, setWeddingDate] = useState<Date | null>(null)
+  const [isHoveringBudget, setIsHoveringBudget] = useState(false)
 
   // Couleurs pour le camembert
   const CHART_COLORS = [
@@ -101,6 +217,7 @@ export default function CoupleDashboardPage() {
           let joursRestants = null
           if (coupleData.wedding_date) {
             const dateMariage = new Date(coupleData.wedding_date)
+            setWeddingDate(dateMariage)
             const aujourdhui = new Date()
             const diff = dateMariage.getTime() - aujourdhui.getTime()
             joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
@@ -262,7 +379,9 @@ export default function CoupleDashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
                 className="relative bg-white rounded-xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
-                onClick={card.onClick}
+                onClick={isBudgetCard ? undefined : card.onClick}
+                onMouseEnter={() => isBudgetCard && setIsHoveringBudget(true)}
+                onMouseLeave={() => isBudgetCard && setIsHoveringBudget(false)}
               >
                 <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
                   {/* Header: Icon + Label */}
@@ -284,10 +403,30 @@ export default function CoupleDashboardPage() {
                         {card.label}
                       </p>
                     </div>
+                    {/* Toggle visibility button for Budget card - appears on hover */}
+                    {isBudgetCard && (
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: isHoveringBudget ? 1 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setBudgetVisible(!budgetVisible)
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                        title={budgetVisible ? "Masquer le budget" : "Afficher le budget"}
+                      >
+                        {budgetVisible ? (
+                          <Eye className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <EyeOff className="h-4 w-4 text-gray-500" />
+                        )}
+                      </motion.button>
+                    )}
                   </div>
 
                   {/* Main Value + Subtitle ou Camembert pour Budget */}
-                  <div className="space-y-1 relative">
+                  <div className="space-y-1 relative" onClick={isBudgetCard ? card.onClick : undefined}>
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -296,7 +435,11 @@ export default function CoupleDashboardPage() {
                     >
                       {/* Montant */}
                       <div className="flex-1">
-                        {typeof card.value === 'number' ? (
+                        {isBudgetCard ? (
+                          <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
+                            {budgetVisible ? card.value : '••••• €'}
+                          </p>
+                        ) : typeof card.value === 'number' ? (
                           <motion.p
                             className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
                             initial={{ opacity: 0, scale: 0.5 }}
@@ -313,7 +456,7 @@ export default function CoupleDashboardPage() {
                       </div>
 
                       {/* Mini camembert pour Budget (toujours visible si données) */}
-                      {isBudgetCard && chartData.length > 0 && (
+                      {isBudgetCard && chartData.length > 0 && budgetVisible && (
                         <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 hidden sm:block">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -347,7 +490,10 @@ export default function CoupleDashboardPage() {
                   {/* Action button - compact */}
                   {card.actionLabel && (
                     <div className="pt-2 mt-auto">
-                      <button className="w-full flex items-center justify-between text-xs font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
+                      <button
+                        onClick={isBudgetCard ? card.onClick : undefined}
+                        className="w-full flex items-center justify-between text-xs font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn"
+                      >
                         <span className="group-hover/btn:underline">{card.actionLabel}</span>
                         <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </button>
@@ -360,6 +506,11 @@ export default function CoupleDashboardPage() {
           })
           )}
         </div>
+
+        {/* Wedding Countdown - Beautiful UI */}
+        {weddingDate && stats.joursRestants !== null && stats.joursRestants > 0 && (
+          <WeddingCountdown weddingDate={weddingDate} />
+        )}
 
         {/* Sections principales - Compact et sans répétitions */}
         {sections.length > 0 && (

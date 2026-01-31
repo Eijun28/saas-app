@@ -1,8 +1,23 @@
 # 📚 NUPLY - Documentation Architecture pour Claude/Cursor
 
- 
-
 > **Document de référence pour l'IA**: Ce fichier contient l'architecture complète du projet NUPLY pour permettre à Claude et Cursor de comprendre et suivre le projet efficacement.
+
+---
+
+## 📋 Changelog Récent (Janvier 2026)
+
+### Dashboard Couple
+- **Budget Toggle (hover)**: Bouton oeil visible au survol de la carte budget pour masquer/afficher le montant
+- **Wedding Countdown**: Composant compte à rebours élégant (jours, heures, minutes, secondes) avec gradient violet
+
+### Profil Prestataire
+- **BoutiqueEditor**: Section boutique/showroom cliquable et dépliable avec affichage de l'adresse en preview
+
+### Emails
+- **Template confirmation**: Simplifié (bouton uniquement, pas de lien texte long)
+
+### UX Prestataire
+- Flux d'inscription validé - aucun obstacle identifié
 
  
 

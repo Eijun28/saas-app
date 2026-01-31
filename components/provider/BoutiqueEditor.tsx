@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { MapPin, Clock, Phone, Mail, Store, CalendarCheck } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail, Store, CalendarCheck, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BoutiqueData {
@@ -54,6 +54,7 @@ const DEFAULT_HOURS: Record<string, { open: string; close: string; closed: boole
 
 export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorProps) {
   const [hasLocation, setHasLocation] = useState(initialData?.has_physical_location || false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [boutiqueName, setBoutiqueName] = useState(initialData?.boutique_name || '')
   const [address, setAddress] = useState(initialData?.boutique_address || '')
   const [addressComplement, setAddressComplement] = useState(initialData?.boutique_address_complement || '')
@@ -68,6 +69,13 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
   const [appointmentOnly, setAppointmentOnly] = useState(initialData?.boutique_appointment_only || false)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+
+  // Auto-expand when hasLocation is true and there's address data, or when user enables it
+  useEffect(() => {
+    if (hasLocation) {
+      setIsExpanded(true)
+    }
+  }, [hasLocation])
 
   // Track changes
   useEffect(() => {
@@ -151,28 +159,98 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
     }
   }
 
+  // Build formatted address for display
+  const formattedAddress = [address, postalCode, city].filter(Boolean).join(', ')
+
+  // Handle click on the toggle section to expand/collapse or enable
+  const handleToggleClick = () => {
+    if (!hasLocation) {
+      setHasLocation(true)
+      setIsExpanded(true)
+    } else {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {/* Toggle boutique */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border">
-        <div className="flex items-center gap-3">
-          <Store className="h-5 w-5 text-[#823F91]" />
-          <div>
-            <Label className="text-base font-medium">Boutique / Showroom</Label>
-            <p className="text-sm text-muted-foreground">
-              Avez-vous un lieu physique où recevoir vos clients ?
-            </p>
+      {/* Toggle boutique - Clickable section */}
+      <div
+        className={cn(
+          "rounded-xl border transition-all duration-300 overflow-hidden",
+          hasLocation
+            ? "bg-gradient-to-r from-[#823F91]/5 to-[#9D5FA8]/5 border-[#823F91]/20"
+            : "bg-gray-50 border-gray-200 hover:border-[#823F91]/30 hover:bg-[#823F91]/5"
+        )}
+      >
+        {/* Header - Always visible and clickable */}
+        <div
+          className="flex items-center justify-between p-4 cursor-pointer group"
+          onClick={handleToggleClick}
+        >
+          <div className="flex items-center gap-3 flex-1">
+            <div className={cn(
+              "h-10 w-10 rounded-lg flex items-center justify-center transition-colors",
+              hasLocation
+                ? "bg-gradient-to-br from-[#823F91] to-[#9D5FA8]"
+                : "bg-gray-200 group-hover:bg-[#823F91]/20"
+            )}>
+              <Store className={cn(
+                "h-5 w-5 transition-colors",
+                hasLocation ? "text-white" : "text-gray-500 group-hover:text-[#823F91]"
+              )} />
+            </div>
+            <div className="flex-1">
+              <Label className="text-base font-medium cursor-pointer">Boutique / Showroom</Label>
+              {!hasLocation ? (
+                <p className="text-sm text-muted-foreground">
+                  Cliquez pour ajouter votre lieu physique
+                </p>
+              ) : formattedAddress ? (
+                <p className="text-sm text-[#823F91] flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {formattedAddress}
+                </p>
+              ) : (
+                <p className="text-sm text-amber-600 flex items-center gap-1">
+                  <Pencil className="h-3 w-3" />
+                  Cliquez pour renseigner l'adresse
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Switch
+              checked={hasLocation}
+              onCheckedChange={(checked) => {
+                setHasLocation(checked)
+                if (checked) setIsExpanded(true)
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+            {hasLocation && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsExpanded(!isExpanded)
+                }}
+                className="p-1 rounded-lg hover:bg-white/50 transition-colors"
+              >
+                {isExpanded ? (
+                  <ChevronUp className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                )}
+              </button>
+            )}
           </div>
         </div>
-        <Switch
-          checked={hasLocation}
-          onCheckedChange={setHasLocation}
-        />
-      </div>
 
-      {/* Boutique details */}
-      {hasLocation && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+        {/* Boutique details - Expandable content */}
+        {hasLocation && isExpanded && (
+          <div className="px-4 pb-4 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-[#823F91]/10 pt-4">
           {/* Nom de la boutique */}
           <div className="space-y-2">
             <Label htmlFor="boutique-name">
@@ -329,8 +407,9 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
               rows={3}
             />
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* Save button */}
       {hasChanges && (
