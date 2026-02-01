@@ -22,6 +22,16 @@ interface ProviderTag {
   category?: string
 }
 
+// Types pour les réponses Supabase avec jointures
+interface TagJoinResult {
+  tag_id: string
+  tags: {
+    id: string
+    label: string
+    category: string | null
+  } | null
+}
+
 interface Provider {
   id: string
   nom_entreprise: string
@@ -268,7 +278,7 @@ export default function RecherchePage() {
           const { data: tagsData } = await supabase
             .from('provider_tags')
             .select('tag_id, tags(id, label, category)')
-            .eq('profile_id', profile.id)
+            .eq('profile_id', profile.id) as { data: TagJoinResult[] | null }
 
           // Récupérer le portfolio pour compter les photos
           const { data: portfolioData } = await supabase
@@ -294,12 +304,13 @@ export default function RecherchePage() {
             .filter(Boolean) as Array<{ id: string; label: string }>
 
           // Mapper les tags
-          const tags = (tagsData || [])
-            .map(t => {
-              const tag = t.tags as { id: string; label: string; category?: string } | null
-              return tag ? { id: tag.id, label: tag.label, category: tag.category } : null
-            })
-            .filter(Boolean) as ProviderTag[]
+          const tags: ProviderTag[] = (tagsData || [])
+            .filter((t): t is TagJoinResult & { tags: NonNullable<TagJoinResult['tags']> } => t.tags !== null)
+            .map(t => ({
+              id: t.tags.id,
+              label: t.tags.label,
+              category: t.tags.category ?? undefined
+            }))
 
           // Calculer le pourcentage de complétion
           const completionPercentage = await calculateProfileCompletion(
