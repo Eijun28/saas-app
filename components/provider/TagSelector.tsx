@@ -78,7 +78,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
     const { data: userTagsData, error: userTagsError } = await supabase
       .from('provider_tags')
       .select('tag_id, tags(*)')
-      .eq('profile_id', userId) as { data: ProviderTagJoinResult[] | null; error: typeof userTagsError };
+      .eq('profile_id', userId) as unknown as { data: ProviderTagJoinResult[] | null; error: Error | null };
 
     if (userTagsError) {
       console.error('Error loading user tags:', userTagsError);
