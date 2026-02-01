@@ -294,9 +294,12 @@ export default function RecherchePage() {
             .filter(Boolean) as Array<{ id: string; label: string }>
 
           // Mapper les tags
-          const tags = (tagsData || [])
-            .map(t => t.tags)
-            .filter(Boolean) as ProviderTag[]
+          const tags: ProviderTag[] = (tagsData || [])
+            .map(t => {
+              const tag = t.tags as { id: string; label: string; category?: string } | null
+              return tag ? { id: tag.id, label: tag.label, category: tag.category } : null
+            })
+            .filter((t): t is ProviderTag => t !== null)
 
           // Calculer le pourcentage de complétion
           const completionPercentage = await calculateProfileCompletion(
