@@ -299,7 +299,7 @@ export default function RecherchePage() {
               const tag = t.tags as { id: string; label: string; category?: string } | null
               return tag ? { id: tag.id, label: tag.label, category: tag.category } : null
             })
-            .filter((t): t is ProviderTag => t !== null)
+            .filter((t): t is { id: string; label: string; category?: string } => t !== null)
 
           // Calculer le pourcentage de complétion
           const completionPercentage = await calculateProfileCompletion(
