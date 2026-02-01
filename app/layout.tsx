@@ -44,7 +44,7 @@ export const viewport: Viewport = {
 };
 
 // Configuration de la police Inter pour le dashboard
-export const inter = Inter({
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
