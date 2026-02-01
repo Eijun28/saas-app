@@ -40,13 +40,16 @@ export interface ScoreBreakdown {
   reputation: number; // /20
   experience: number; // /10
   location_match: number; // /10
-  
+
+  // Tags match (bonus)
+  tags_match?: number; // 0 à +10 points bonus
+
   // Bonus IA (futur)
   ai_bonus?: number; // -10 à +10
   ai_reasoning?: string;
-  
+
   // Total
-  total_algo: number; // /90
+  total_algo: number; // /90 base + tags bonus
   final_score: number; // /100
 }
 

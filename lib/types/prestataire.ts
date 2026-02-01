@@ -109,3 +109,24 @@ export interface ProviderPortfolioImage {
   created_at: string;
 }
 
+// Tags types
+export type TagCategory = 'style' | 'ambiance' | 'service' | 'specialite' | 'qualite';
+
+export interface Tag {
+  id: string;
+  label: string;
+  slug: string;
+  category?: TagCategory;
+  is_predefined: boolean;
+  usage_count: number;
+  created_at: string;
+}
+
+export interface ProviderTag {
+  id: string;
+  profile_id: string;
+  tag_id: string;
+  created_at: string;
+  tag?: Tag; // Joined tag data
+}
+

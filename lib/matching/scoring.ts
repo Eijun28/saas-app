@@ -184,12 +184,51 @@ export function calculateLocationScore(
   const hasRegionMatch = providerZones.some((zone) =>
     zone.startsWith(coupleRegion || '')
   );
-  
+
   if (hasRegionMatch) {
     return 6;
   }
 
   return 2; // Score minimal si pas de match
+}
+
+/**
+ * Calcule le score de correspondance des tags (bonus 0-10 points)
+ * Les tags permettent d'affiner le matching selon le style et les spécialités
+ */
+export function calculateTagsScore(
+  coupleTags: string[] | undefined,
+  providerTags: string[] | undefined
+): number {
+  // Si le couple n'a pas spécifié de tags, pas de bonus/malus
+  if (!coupleTags || coupleTags.length === 0) {
+    return 0;
+  }
+
+  // Si le prestataire n'a pas de tags, léger malus
+  if (!providerTags || providerTags.length === 0) {
+    return -2;
+  }
+
+  // Compter les tags en commun
+  const matchedTags = coupleTags.filter((t) =>
+    providerTags.includes(t)
+  );
+
+  const matchPercentage = matchedTags.length / coupleTags.length;
+
+  // Échelle de bonus:
+  // 100% match = +10 points
+  // 75%+ match = +8 points
+  // 50%+ match = +5 points
+  // 25%+ match = +2 points
+  // 0% match = 0 points
+  if (matchPercentage >= 1) return 10;
+  if (matchPercentage >= 0.75) return 8;
+  if (matchPercentage >= 0.5) return 5;
+  if (matchPercentage >= 0.25) return 2;
+
+  return 0;
 }
 
 /**
@@ -229,15 +268,22 @@ export function calculateTotalScore(
     provider.ville_principale
   );
 
-  const totalAlgo = 
+  // Calculate tags match bonus (up to +10 points)
+  const tagsScore = calculateTagsScore(
+    criteria.tags,
+    provider.tags
+  );
+
+  const totalAlgo =
     culturalScore +
     budgetScore +
     reputationScore +
     experienceScore +
-    locationScore;
+    locationScore +
+    tagsScore;
 
-  // Pour l'instant, pas de bonus IA (étape 5)
-  const finalScore = Math.min(100, totalAlgo);
+  // Final score capped at 100
+  const finalScore = Math.min(100, Math.max(0, totalAlgo));
 
   const breakdown: ScoreBreakdown = {
     cultural_match: culturalScore,
@@ -245,6 +291,7 @@ export function calculateTotalScore(
     reputation: reputationScore,
     experience: experienceScore,
     location_match: locationScore,
+    tags_match: tagsScore,
     total_algo: totalAlgo,
     final_score: finalScore,
   };

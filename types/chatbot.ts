@@ -22,37 +22,40 @@ export interface ChatbotConversation {
 export interface SearchCriteria {
   // Essentiel
   service_type: string;
-  
+
   // Culture
   cultures: string[];
   cultural_importance: 'essential' | 'important' | 'nice_to_have';
-  
+
   // Budget
   budget_min?: number;
   budget_max?: number;
   budget_flexibility?: 'flexible' | 'somewhat_flexible' | 'strict';
-  
+
   // Localisation
   wedding_date?: string;
   wedding_department?: string;
   wedding_city?: string;
-  
+
   // Style & Ambiance
   wedding_style?: string;
   wedding_ambiance?: string;
   specific_requirements?: string[];
-  
+
+  // Tags/keywords for better matching
+  tags?: string[];
+
   // Nombre d'invités
   guest_count?: number;
-  
+
   // Besoins spécifiques (texte libre analysé par IA)
   vision_description?: string;
   must_haves?: string[];
   must_not_haves?: string[];
-  
+
   // Données extraites du profil couple
   auto_filled_from_profile?: boolean;
-  
+
   // Référence budget global (si disponible)
   budget_reference?: {
     global_min?: number;
