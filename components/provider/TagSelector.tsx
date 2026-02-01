@@ -22,6 +22,12 @@ import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import type { Tag, TagCategory } from '@/lib/types/prestataire';
 
+// Type pour la réponse Supabase avec jointure tags
+interface ProviderTagJoinResult {
+  tag_id: string
+  tags: Tag | null
+}
+
 interface TagSelectorProps {
   userId: string;
   maxTags?: number;
@@ -72,14 +78,16 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
     const { data: userTagsData, error: userTagsError } = await supabase
       .from('provider_tags')
       .select('tag_id, tags(*)')
-      .eq('profile_id', userId);
+      .eq('profile_id', userId) as { data: ProviderTagJoinResult[] | null; error: typeof userTagsError };
 
     if (userTagsError) {
       console.error('Error loading user tags:', userTagsError);
     } else {
-      const tags = userTagsData?.map(pt => pt.tags).filter(Boolean) as Tag[];
-      setSelectedTags(tags || []);
-      setInitialTagIds(tags?.map(t => t.id) || []);
+      const tags: Tag[] = (userTagsData || [])
+        .filter((pt): pt is ProviderTagJoinResult & { tags: Tag } => pt.tags !== null)
+        .map(pt => pt.tags);
+      setSelectedTags(tags);
+      setInitialTagIds(tags.map(t => t.id));
     }
 
     setIsLoading(false);
