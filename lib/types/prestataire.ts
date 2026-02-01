@@ -96,6 +96,8 @@ export interface ProviderZone {
   created_at: string;
 }
 
+export type PortfolioFileType = 'image' | 'pdf';
+
 export interface ProviderPortfolioImage {
   id: string;
   profile_id: string;
@@ -103,6 +105,7 @@ export interface ProviderPortfolioImage {
   image_path: string;
   title?: string;
   display_order: number;
+  file_type: PortfolioFileType;
   created_at: string;
 }
 
