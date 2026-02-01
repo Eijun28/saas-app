@@ -26,10 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_provider_tags_profile_id ON provider_tags(profile
 CREATE INDEX IF NOT EXISTS idx_provider_tags_tag_id ON provider_tags(tag_id);
 CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug);
 CREATE INDEX IF NOT EXISTS idx_tags_category ON tags(category);
-CREATE INDEX IF NOT EXISTS idx_tags_label_search ON tags USING gin(label gin_trgm_ops);
-
--- Enable trigram extension for fuzzy search (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX IF NOT EXISTS idx_tags_label ON tags(label);
 
 -- RLS Policies for tags table
 ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
