@@ -96,6 +96,8 @@ export interface ProviderZone {
   created_at: string;
 }
 
+export type PortfolioFileType = 'image' | 'pdf';
+
 export interface ProviderPortfolioImage {
   id: string;
   profile_id: string;
@@ -103,6 +105,28 @@ export interface ProviderPortfolioImage {
   image_path: string;
   title?: string;
   display_order: number;
+  file_type: PortfolioFileType;
   created_at: string;
+}
+
+// Tags types
+export type TagCategory = 'style' | 'ambiance' | 'service' | 'specialite' | 'qualite';
+
+export interface Tag {
+  id: string;
+  label: string;
+  slug: string;
+  category?: TagCategory;
+  is_predefined: boolean;
+  usage_count: number;
+  created_at: string;
+}
+
+export interface ProviderTag {
+  id: string;
+  profile_id: string;
+  tag_id: string;
+  created_at: string;
+  tag?: Tag; // Joined tag data
 }
 

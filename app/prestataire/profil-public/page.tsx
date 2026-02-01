@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle } from 'lucide-react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { BusinessNameEditor } from '@/components/provider/BusinessNameEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
+import { TagSelector } from '@/components/provider/TagSelector'
 import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
@@ -363,29 +364,36 @@ export default function ProfilPublicPage() {
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
-                <TabsList className="grid grid-cols-4 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-                <TabsTrigger 
-                  value="infos" 
+                <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                <TabsTrigger
+                  value="infos"
                   className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
                   <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
                   <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Infos</span>
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="cultures"
                   className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
                   <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
                   <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Cultures</span>
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="zones"
                   className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
                   <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
                   <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Zones</span>
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
+                  value="tags"
+                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                >
+                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
+                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Tags</span>
+                </TabsTrigger>
+                <TabsTrigger
                   value="portfolio"
                   className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
                 >
@@ -493,6 +501,20 @@ export default function ProfilPublicPage() {
                   <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
                     <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
                       <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
+                    </div>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent value="tags" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <TagSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
                 </motion.div>

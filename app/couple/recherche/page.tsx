@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,22 @@ import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
+
+interface ProviderTag {
+  id: string
+  label: string
+  category?: string
+}
+
+// Types pour les réponses Supabase avec jointures
+interface TagJoinResult {
+  tag_id: string
+  tags: {
+    id: string
+    label: string
+    category: string | null
+  } | null
+}
 
 interface Provider {
   id: string
@@ -37,6 +53,7 @@ interface Provider {
   tiktok_url?: string | null
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
+  tags: ProviderTag[]
   completionPercentage?: number
 }
 
@@ -90,19 +107,37 @@ export default function RecherchePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedCulture, setSelectedCulture] = useState<string | null>(null)
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [availableTags, setAvailableTags] = useState<ProviderTag[]>([])
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
-  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | null>(null)
+  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | 'tags' | null>(null)
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Load available tags on mount
+  useEffect(() => {
+    async function loadTags() {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('tags')
+        .select('id, label, category')
+        .order('usage_count', { ascending: false })
+        .limit(50)
+      if (data) {
+        setAvailableTags(data)
+      }
+    }
+    loadTags()
+  }, [])
+
   useEffect(() => {
     if (user) {
       searchProviders()
     }
-  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry])
+  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags])
 
   // Fonction pour calculer le pourcentage de complétion du profil
   const calculateProfileCompletion = async (
@@ -224,7 +259,7 @@ export default function RecherchePage() {
       }
 
 
-      // Pour chaque profil, récupérer les cultures, zones et portfolio
+      // Pour chaque profil, récupérer les cultures, zones, tags et portfolio
       const enrichedProviders = await Promise.all(
         profilesData.map(async (profile) => {
           // Récupérer les cultures
@@ -238,6 +273,12 @@ export default function RecherchePage() {
             .from('provider_zones')
             .select('zone_id')
             .eq('profile_id', profile.id)
+
+          // Récupérer les tags
+          const { data: tagsData } = await supabase
+            .from('provider_tags')
+            .select('tag_id, tags(id, label, category)')
+            .eq('profile_id', profile.id) as { data: TagJoinResult[] | null }
 
           // Récupérer le portfolio pour compter les photos
           const { data: portfolioData } = await supabase
@@ -262,6 +303,15 @@ export default function RecherchePage() {
             })
             .filter(Boolean) as Array<{ id: string; label: string }>
 
+          // Mapper les tags
+          const tags: ProviderTag[] = (tagsData || [])
+            .filter((t): t is TagJoinResult & { tags: NonNullable<TagJoinResult['tags']> } => t.tags !== null)
+            .map(t => ({
+              id: t.tags.id,
+              label: t.tags.label,
+              category: t.tags.category ?? undefined
+            }))
+
           // Calculer le pourcentage de complétion
           const completionPercentage = await calculateProfileCompletion(
             profile.id,
@@ -284,6 +334,7 @@ export default function RecherchePage() {
             ...profile,
             cultures,
             zones,
+            tags,
             completionPercentage,
           } as Provider & { completionPercentage: number }
         })
@@ -318,9 +369,16 @@ export default function RecherchePage() {
 
       // Filtrer par pays sélectionné (via zones ou ville)
       if (selectedCountry) {
-        filteredProviders = filteredProviders.filter(p => 
+        filteredProviders = filteredProviders.filter(p =>
           p.ville_principale?.toLowerCase().includes(selectedCountry.toLowerCase()) ||
           p.zones.some(z => z.label.toLowerCase().includes(selectedCountry.toLowerCase()))
+        )
+      }
+
+      // Filtrer par tags sélectionnés (doit avoir TOUS les tags sélectionnés)
+      if (selectedTags.length > 0) {
+        filteredProviders = filteredProviders.filter(p =>
+          selectedTags.every(tagId => p.tags.some(t => t.id === tagId))
         )
       }
 
@@ -573,10 +631,10 @@ export default function RecherchePage() {
                         <ChevronDown className="h-4 w-4 text-gray-700" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg" 
-                      side={isMobile ? "bottom" : "right"} 
-                      align="start" 
+                    <PopoverContent
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg"
+                      side={isMobile ? "bottom" : "right"}
+                      align="start"
                       sideOffset={8}
                       collisionPadding={16}
                       avoidCollisions={true}
@@ -613,6 +671,69 @@ export default function RecherchePage() {
                       </div>
                     </PopoverContent>
                   </Popover>
+
+                  {/* Tags */}
+                  <Popover open={openSubDropdown === 'tags'} onOpenChange={(open) => setOpenSubDropdown(open ? 'tags' : null)}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-gray-700" />
+                          Tags
+                          {selectedTags.length > 0 && (
+                            <Badge variant="secondary" className="ml-2 text-xs bg-gray-200 text-gray-900 font-medium">
+                              {selectedTags.length}
+                            </Badge>
+                          )}
+                        </span>
+                        <ChevronDown className="h-4 w-4 text-gray-700" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[calc(100vw-2rem)] sm:w-[280px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg"
+                      side={isMobile ? "bottom" : "right"}
+                      align="start"
+                      sideOffset={8}
+                      collisionPadding={16}
+                      avoidCollisions={true}
+                    >
+                      <div className="space-y-1">
+                        <button
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedTags.length === 0 ? "bg-gray-100" : ""}`}
+                          onClick={() => {
+                            setSelectedTags([])
+                            setOpenSubDropdown(null)
+                          }}
+                        >
+                          Tous les tags
+                        </button>
+                        <div className="border-t border-gray-200 my-2"></div>
+                        {availableTags.map((tag) => {
+                          const isSelected = selectedTags.includes(tag.id)
+                          return (
+                            <button
+                              key={tag.id}
+                              className={`w-full text-left px-3 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedTags(prev => prev.filter(id => id !== tag.id))
+                                } else {
+                                  setSelectedTags(prev => [...prev, tag.id])
+                                }
+                              }}
+                            >
+                              <span className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-[#823F91] border-[#823F91]' : 'border-gray-300'}`}>
+                                {isSelected && <X className="h-3 w-3 text-white" />}
+                              </span>
+                              {tag.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </PopoverContent>
             </Popover>
@@ -642,11 +763,11 @@ export default function RecherchePage() {
           </div>
           
           {/* Filtres actifs */}
-          {(selectedCategory || selectedCulture || selectedCountry || searchQuery) && (
+          {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || searchQuery) && (
             <div className="flex flex-wrap gap-2">
               {selectedCategory && (
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCategory(null)}
                 >
@@ -655,8 +776,8 @@ export default function RecherchePage() {
                 </Badge>
               )}
               {selectedCulture && (
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCulture(null)}
                 >
@@ -665,8 +786,8 @@ export default function RecherchePage() {
                 </Badge>
               )}
               {selectedCountry && (
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSelectedCountry(null)}
                 >
@@ -674,9 +795,24 @@ export default function RecherchePage() {
                   <X className="h-3 w-3 ml-2" />
                 </Badge>
               )}
+              {selectedTags.map(tagId => {
+                const tag = availableTags.find(t => t.id === tagId)
+                return tag ? (
+                  <Badge
+                    key={tagId}
+                    variant="secondary"
+                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-purple-100"
+                    onClick={() => setSelectedTags(prev => prev.filter(id => id !== tagId))}
+                  >
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag.label}
+                    <X className="h-3 w-3 ml-2" />
+                  </Badge>
+                ) : null
+              })}
               {searchQuery && (
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900"
                   onClick={() => setSearchQuery('')}
                 >

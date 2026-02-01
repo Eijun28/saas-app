@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -46,7 +46,7 @@ interface ProfilePreviewDialogProps {
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
-  portfolio: Array<{ id: string; image_url: string; title?: string }>
+  portfolio: Array<{ id: string; image_url: string; title?: string; file_type?: 'image' | 'pdf' }>
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTriggerButton?: boolean
@@ -519,29 +519,55 @@ export function ProfilePreviewDialog({
                 <TabsContent value="portfolio" className="mt-0 w-full">
                   {portfolio && portfolio.length > 0 ? (
                     <div className="grid grid-cols-2 gap-3">
-                      {portfolio.map((image) => (
-                        <Card
-                          key={image.id}
-                          className="overflow-hidden group aspect-square cursor-pointer hover:shadow-lg transition-all relative border-gray-200"
-                        >
-                          <img
-                            src={image.image_url}
-                            alt={image.title || `Photo portfolio - ${profile.nom_entreprise}`}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                            onError={(e) => {
-                              console.error('Erreur chargement image portfolio:', image.image_url)
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
-                            }}
-                          />
-                          {image.title && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <p className="text-white text-xs font-medium truncate">{image.title}</p>
-                            </div>
-                          )}
-                        </Card>
-                      ))}
+                      {portfolio.map((item) => {
+                        const isPdf = item.file_type === 'pdf';
+
+                        return (
+                          <Card
+                            key={item.id}
+                            className="overflow-hidden group aspect-square cursor-pointer hover:shadow-lg transition-all relative border-gray-200"
+                          >
+                            {isPdf ? (
+                              // Affichage PDF
+                              <a
+                                href={item.image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
+                              >
+                                <FileText className="h-10 w-10 text-red-500 mb-2" />
+                                <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
+                                  {item.title || 'Document PDF'}
+                                </span>
+                                <span className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                                  <ExternalLink className="h-3 w-3" />
+                                  Ouvrir
+                                </span>
+                              </a>
+                            ) : (
+                              // Affichage Image
+                              <>
+                                <img
+                                  src={item.image_url}
+                                  alt={item.title || `Photo portfolio - ${profile.nom_entreprise}`}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    console.error('Erreur chargement image portfolio:', item.image_url)
+                                    const target = e.target as HTMLImageElement
+                                    target.style.display = 'none'
+                                  }}
+                                />
+                                {item.title && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </Card>
+                        );
+                      })}
                     </div>
                   ) : (
                     <Card className="p-6 md:p-12 text-center bg-purple-50/50 border-purple-100">

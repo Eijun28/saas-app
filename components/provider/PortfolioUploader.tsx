@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { Upload, X, Loader2, Image as ImageIcon, GripVertical, FileText, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { createClient } from '@/lib/supabase/client';
@@ -15,6 +15,12 @@ interface PortfolioUploaderProps {
   maxImages?: number; // Default: 10
   onSave?: () => void; // Callback for parent to refresh data
 }
+
+// Types de fichiers acceptés
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const ACCEPTED_PDF_TYPE = 'application/pdf';
+const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ACCEPTED_PDF_TYPE];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioUploaderProps) {
   const [images, setImages] = useState<ProviderPortfolioImage[]>([]);
@@ -104,7 +110,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
     // Vérifier limite
     if (images.length + files.length > maxImages) {
       toast.error('Limite atteinte', {
-        description: `Maximum ${maxImages} photos autorisées`,
+        description: `Maximum ${maxImages} fichiers autorisés`,
       });
       return;
     }
@@ -113,17 +119,19 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const isPdf = file.type === ACCEPTED_PDF_TYPE;
+      const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
 
       // Vérifier type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Erreur', {
-          description: `${file.name} n'est pas une image`,
+      if (!isImage && !isPdf) {
+        toast.error('Type de fichier non supporté', {
+          description: `${file.name} doit être une image (JPG, PNG, WebP) ou un PDF`,
         });
         continue;
       }
 
-      // Vérifier taille (max 10MB avant compression)
-      if (file.size > 10 * 1024 * 1024) {
+      // Vérifier taille (max 10MB)
+      if (file.size > MAX_FILE_SIZE) {
         toast.error('Fichier trop volumineux', {
           description: `${file.name} est trop volumineux (max 10MB)`,
         });
@@ -131,11 +139,11 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
       }
 
       try {
-        // Compresser
-        const compressedFile = await compressImage(file);
+        // Compresser uniquement les images (pas les PDFs)
+        const fileToUpload = isImage ? await compressImage(file) : file;
 
         // Générer nom unique
-        const fileExt = file.name.split('.').pop();
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || (isPdf ? 'pdf' : 'jpg');
         const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const supabase = createClient();
@@ -143,9 +151,10 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
         // Upload vers Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('portfolio')
-          .upload(fileName, compressedFile, {
+          .upload(fileName, fileToUpload, {
             cacheControl: '3600',
             upsert: false,
+            contentType: isPdf ? 'application/pdf' : 'image/jpeg',
           });
 
         if (uploadError) throw uploadError;
@@ -155,7 +164,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
           .from('portfolio')
           .getPublicUrl(fileName);
 
-        // Insérer en DB
+        // Insérer en DB avec le type de fichier
         const { data: dbData, error: dbError } = await supabase
           .from('provider_portfolio')
           .insert({
@@ -163,6 +172,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
             image_url: urlData.publicUrl,
             image_path: fileName,
             display_order: images.length + i,
+            file_type: isPdf ? 'pdf' : 'image',
           })
           .select()
           .single();
@@ -175,7 +185,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
         // Ajouter à l'état
         setImages(prev => [...prev, dbData]);
         toast.success('Succès', {
-          description: 'Photo ajoutée',
+          description: isPdf ? 'PDF ajouté' : 'Photo ajoutée',
         });
         onSave?.(); // Trigger parent refresh
       } catch (error: any) {
@@ -233,7 +243,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
 
       setImages(updatedImages);
       toast.success('Succès', {
-        description: 'Photo supprimée',
+        description: 'Fichier supprimé',
       });
       onSave?.(); // Trigger parent refresh
     } catch (error: any) {
@@ -375,7 +385,7 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
           <input
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,application/pdf"
             onChange={(e) => handleFileUpload(e.target.files)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             disabled={isUploading || images.length >= maxImages}
@@ -390,10 +400,10 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
               <>
                 <Upload className="h-5 w-5 text-muted-foreground" />
                 <p className="text-xs font-medium text-muted-foreground">
-                  Glissez vos photos ici ou cliquez pour parcourir
+                  Glissez vos fichiers ici ou cliquez pour parcourir
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  PNG, JPG jusqu'à 10MB • {images.length}/{maxImages} photos
+                  PNG, JPG, PDF jusqu'à 10MB • {images.length}/{maxImages} fichiers
                 </p>
               </>
             )}
@@ -401,54 +411,79 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
         </div>
       )}
 
-      {/* Galerie des images */}
+      {/* Galerie des fichiers */}
       {images.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-foreground mb-3">Galerie ({images.length} photo{images.length > 1 ? 's' : ''})</h3>
+          <h3 className="text-sm font-medium text-foreground mb-3">Galerie ({images.length} fichier{images.length > 1 ? 's' : ''})</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.map((image, index) => (
-              <div
-                key={image.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, image.id)}
-                onDragOver={(e) => handleDragOver(e, image.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, image.id)}
-                className={`
-                  relative group cursor-move
-                  ${dragOverImageId === image.id ? 'ring-2 ring-[#823F91] ring-offset-2' : ''}
-                  ${draggedImageId === image.id ? 'opacity-50' : ''}
-                `}
-              >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
+            {images.map((image, index) => {
+              const isPdf = image.file_type === 'pdf';
+
+              return (
+                <div
+                  key={image.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, image.id)}
+                  onDragOver={(e) => handleDragOver(e, image.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, image.id)}
+                  className={`
+                    relative group cursor-move
+                    ${dragOverImageId === image.id ? 'ring-2 ring-[#823F91] ring-offset-2' : ''}
+                    ${draggedImageId === image.id ? 'opacity-50' : ''}
+                  `}
                 >
-                  <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
-                    <NextImage
-                      src={image.image_url}
-                      alt={image.title || 'Portfolio'}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                    {/* Bouton de suppression avec croix */}
-                    <button
-                      onClick={(e) => handleDelete(image.id, image.image_path, e)}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100"
-                      aria-label="Supprimer la photo"
-                    >
-                      <X className="h-3.5 w-3.5 text-white" />
-                    </button>
-                    {/* Icône de drag */}
-                    <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
-                      <GripVertical className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  </Card>
-                </motion.div>
-              </div>
-            ))}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
+                      {isPdf ? (
+                        // Affichage PDF
+                        <a
+                          href={image.image_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
+                        >
+                          <FileText className="h-12 w-12 text-red-500 mb-2" />
+                          <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
+                            {image.title || 'Document PDF'}
+                          </span>
+                          <span className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                            <ExternalLink className="h-3 w-3" />
+                            Ouvrir
+                          </span>
+                        </a>
+                      ) : (
+                        // Affichage Image
+                        <NextImage
+                          src={image.image_url}
+                          alt={image.title || 'Portfolio'}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      )}
+                      {/* Bouton de suppression avec croix */}
+                      <button
+                        onClick={(e) => handleDelete(image.id, image.image_path, e)}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100"
+                        aria-label="Supprimer le fichier"
+                      >
+                        <X className="h-3.5 w-3.5 text-white" />
+                      </button>
+                      {/* Icône de drag */}
+                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
+                        <GripVertical className="h-3.5 w-3.5 text-white" />
+                      </div>
+                    </Card>
+                  </motion.div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -456,7 +491,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
       {images.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">Aucune photo dans votre portfolio</p>
+          <p className="text-sm">Aucun fichier dans votre portfolio</p>
+          <p className="text-xs mt-1 opacity-70">Ajoutez des photos ou des PDFs explicatifs</p>
         </div>
       )}
     </div>
