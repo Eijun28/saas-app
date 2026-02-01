@@ -32,10 +32,12 @@ CREATE INDEX IF NOT EXISTS idx_tags_label ON tags(label);
 ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can read tags
+DROP POLICY IF EXISTS "Tags are viewable by everyone" ON tags;
 CREATE POLICY "Tags are viewable by everyone" ON tags
   FOR SELECT USING (true);
 
 -- Only authenticated users can create tags (will be moderated via is_predefined)
+DROP POLICY IF EXISTS "Authenticated users can create tags" ON tags;
 CREATE POLICY "Authenticated users can create tags" ON tags
   FOR INSERT TO authenticated
   WITH CHECK (is_predefined = false);
@@ -44,14 +46,17 @@ CREATE POLICY "Authenticated users can create tags" ON tags
 ALTER TABLE provider_tags ENABLE ROW LEVEL SECURITY;
 
 -- Anyone can view provider tags
+DROP POLICY IF EXISTS "Provider tags are viewable by everyone" ON provider_tags;
 CREATE POLICY "Provider tags are viewable by everyone" ON provider_tags
   FOR SELECT USING (true);
 
 -- Providers can manage their own tags
+DROP POLICY IF EXISTS "Providers can insert their own tags" ON provider_tags;
 CREATE POLICY "Providers can insert their own tags" ON provider_tags
   FOR INSERT TO authenticated
   WITH CHECK (profile_id = auth.uid());
 
+DROP POLICY IF EXISTS "Providers can delete their own tags" ON provider_tags;
 CREATE POLICY "Providers can delete their own tags" ON provider_tags
   FOR DELETE TO authenticated
   USING (profile_id = auth.uid());
