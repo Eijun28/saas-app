@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { MapPin, Clock, Phone, Mail, Store, CalendarCheck } from 'lucide-react'
@@ -153,21 +152,36 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
 
   return (
     <div className="space-y-6">
-      {/* Toggle boutique */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border">
-        <div className="flex items-center gap-3">
-          <Store className="h-5 w-5 text-[#823F91]" />
+      {/* Toggle boutique - carte avec ombre 3D */}
+      <div className="flex items-center justify-between p-5 rounded-2xl bg-white shadow-[0_4px_20px_-4px_rgba(130,63,145,0.15)] hover:shadow-[0_8px_30px_-4px_rgba(130,63,145,0.2)] transition-shadow duration-300">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-[#823F91]/5">
+            <Store className="h-6 w-6 text-[#823F91]" />
+          </div>
           <div>
-            <Label className="text-base font-medium">Boutique / Showroom</Label>
-            <p className="text-sm text-muted-foreground">
-              Avez-vous un lieu physique où recevoir vos clients ?
+            <Label className="text-base font-semibold text-gray-900">Boutique / Showroom</Label>
+            <p className="text-sm text-gray-500">
+              Avez-vous un lieu physique ou recevoir vos clients ?
             </p>
           </div>
         </div>
-        <Switch
-          checked={hasLocation}
-          onCheckedChange={setHasLocation}
-        />
+        <button
+          type="button"
+          role="switch"
+          aria-checked={hasLocation}
+          onClick={() => setHasLocation(!hasLocation)}
+          className={cn(
+            'relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full transition-colors duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91] focus-visible:ring-offset-2',
+            hasLocation ? 'bg-[#823F91]' : 'bg-gray-200'
+          )}
+        >
+          <span
+            className={cn(
+              'pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-300 ease-in-out mt-0.5',
+              hasLocation ? 'translate-x-7 ml-0.5' : 'translate-x-0.5'
+            )}
+          />
+        </button>
       </div>
 
       {/* Boutique details */}
@@ -247,21 +261,36 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
             </div>
           </div>
 
-          {/* Sur rendez-vous */}
-          <div className="flex items-center justify-between p-4 rounded-xl bg-amber-50 border border-amber-200">
-            <div className="flex items-center gap-3">
-              <CalendarCheck className="h-5 w-5 text-amber-600" />
+          {/* Sur rendez-vous - carte avec ombre 3D */}
+          <div className="flex items-center justify-between p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/50 shadow-[0_4px_20px_-4px_rgba(245,158,11,0.2)] hover:shadow-[0_8px_30px_-4px_rgba(245,158,11,0.25)] transition-shadow duration-300">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50">
+                <CalendarCheck className="h-6 w-6 text-amber-600" />
+              </div>
               <div>
-                <Label className="text-base font-medium">Sur rendez-vous uniquement</Label>
-                <p className="text-sm text-muted-foreground">
+                <Label className="text-base font-semibold text-gray-900">Sur rendez-vous uniquement</Label>
+                <p className="text-sm text-gray-500">
                   Les clients doivent prendre RDV avant de venir
                 </p>
               </div>
             </div>
-            <Switch
-              checked={appointmentOnly}
-              onCheckedChange={setAppointmentOnly}
-            />
+            <button
+              type="button"
+              role="switch"
+              aria-checked={appointmentOnly}
+              onClick={() => setAppointmentOnly(!appointmentOnly)}
+              className={cn(
+                'relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full transition-colors duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2',
+                appointmentOnly ? 'bg-amber-500' : 'bg-gray-200'
+              )}
+            >
+              <span
+                className={cn(
+                  'pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-transform duration-300 ease-in-out mt-0.5',
+                  appointmentOnly ? 'translate-x-7 ml-0.5' : 'translate-x-0.5'
+                )}
+              />
+            </button>
           </div>
 
           {/* Horaires */}
