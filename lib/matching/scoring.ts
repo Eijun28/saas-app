@@ -4,6 +4,43 @@ import type { SearchCriteria } from '@/types/chatbot';
 import type { ScoreBreakdown } from '@/types/matching';
 
 /**
+ * Configuration du systeme d'equite
+ */
+export const FAIRNESS_CONFIG = {
+  // Poids du score d'equite dans le score final (0-1)
+  // 0.15 = l'equite peut influencer jusqu'a 15% du score final
+  FAIRNESS_WEIGHT: 0.15,
+
+  // Score minimum d'equite (evite de penaliser trop les prestataires populaires)
+  MIN_FAIRNESS_SCORE: 0.1,
+
+  // Nombre d'impressions hebdomadaires avant de commencer a penaliser
+  IMPRESSION_THRESHOLD: 10,
+
+  // Activer le systeme d'equite
+  ENABLED: true,
+};
+
+/**
+ * Interface pour les donnees d'equite d'un prestataire
+ */
+export interface FairnessData {
+  impressions_this_week: number;
+  total_impressions: number;
+  fairness_score: number;
+  click_through_rate: number;
+}
+
+/**
+ * Interface etendue pour les criteres de recherche avec equite
+ */
+export interface ExtendedSearchCriteria extends SearchCriteria {
+  // Tags specifiques demandes par le couple
+  specialty_tags?: string[];
+  style_tags?: string[];
+}
+
+/**
  * Calcule le score de match culturel (/30 points)
  */
 export function calculateCulturalScore(
@@ -232,12 +269,132 @@ export function calculateTagsScore(
 }
 
 /**
- * Calcule le score global
+ * Calcule le score de specialites (bonus 0-15 points)
+ * Les specialites sont des tags de categorie 'specialite' qui correspondent
+ * a des besoins specifiques (mariage religieux, LGBTQ+ friendly, etc.)
+ */
+export function calculateSpecialtyScore(
+  coupleSpecialties: string[] | undefined,
+  providerSpecialties: string[] | undefined
+): number {
+  // Si le couple n'a pas de specialites demandees, pas de bonus/malus
+  if (!coupleSpecialties || coupleSpecialties.length === 0) {
+    return 0;
+  }
+
+  // Si le prestataire n'a pas de specialites, leger malus
+  if (!providerSpecialties || providerSpecialties.length === 0) {
+    return -3;
+  }
+
+  // Normaliser les slugs pour comparaison
+  const normalizedCouple = coupleSpecialties.map(s => s.toLowerCase().trim());
+  const normalizedProvider = providerSpecialties.map(s => s.toLowerCase().trim());
+
+  // Compter les specialites en commun
+  const matchedSpecialties = normalizedCouple.filter(s =>
+    normalizedProvider.includes(s)
+  );
+
+  const matchPercentage = matchedSpecialties.length / normalizedCouple.length;
+
+  // Echelle de bonus plus importante pour les specialites
+  // car elles representent des besoins specifiques importants
+  if (matchPercentage >= 1) return 15;     // Match parfait
+  if (matchPercentage >= 0.75) return 12;  // Tres bon match
+  if (matchPercentage >= 0.5) return 8;    // Bon match
+  if (matchPercentage >= 0.25) return 4;   // Match partiel
+  return 0;
+}
+
+/**
+ * Calcule le facteur d'equite (multiplicateur 0.85-1.15)
+ * Ce facteur permet de favoriser les prestataires moins exposes
+ */
+export function calculateFairnessMultiplier(
+  fairnessData: FairnessData | undefined
+): number {
+  if (!FAIRNESS_CONFIG.ENABLED || !fairnessData) {
+    return 1.0; // Pas d'ajustement si desactive ou pas de donnees
+  }
+
+  const { impressions_this_week, fairness_score } = fairnessData;
+
+  // Si peu d'impressions, ne pas penaliser
+  if (impressions_this_week < FAIRNESS_CONFIG.IMPRESSION_THRESHOLD) {
+    // Leger bonus pour les prestataires peu exposes
+    return 1.0 + (FAIRNESS_CONFIG.FAIRNESS_WEIGHT * 0.5);
+  }
+
+  // Utiliser le score d'equite calcule par la BDD
+  // fairness_score est entre 0.1 et 1.0
+  // On le transforme en multiplicateur entre 0.85 et 1.15
+  const adjustedScore = Math.max(FAIRNESS_CONFIG.MIN_FAIRNESS_SCORE, fairness_score);
+
+  // Transformer en multiplicateur: 0.1 -> 0.85, 1.0 -> 1.15
+  const multiplier = 0.85 + (adjustedScore * 0.3);
+
+  return multiplier;
+}
+
+/**
+ * Calcule un bonus base sur le CTR (Click-Through Rate)
+ * Les prestataires avec un bon CTR sont plus pertinents
+ */
+export function calculateCTRBonus(
+  fairnessData: FairnessData | undefined
+): number {
+  if (!fairnessData || fairnessData.total_impressions < 20) {
+    return 0; // Pas assez de donnees pour etre significatif
+  }
+
+  const ctr = fairnessData.click_through_rate;
+
+  // CTR moyen estime a 10-15%
+  // Bonus si au-dessus, malus si en-dessous
+  if (ctr >= 0.25) return 5;   // Excellent CTR
+  if (ctr >= 0.15) return 3;   // Bon CTR
+  if (ctr >= 0.10) return 0;   // CTR moyen
+  if (ctr >= 0.05) return -2;  // CTR faible
+  return -3;                   // CTR tres faible
+}
+
+/**
+ * Interface etendue du provider pour le scoring avec equite
+ */
+export interface ProviderWithFairness {
+  cultures?: string[];
+  budget_min?: number;
+  budget_max?: number;
+  average_rating?: number;
+  review_count?: number;
+  annees_experience?: number;
+  zones?: string[];
+  ville_principale?: string;
+  tags?: string[];
+  specialty_tags?: string[];
+  fairness_data?: FairnessData;
+  [key: string]: unknown;
+}
+
+/**
+ * Interface etendue pour le breakdown avec equite
+ */
+export interface ExtendedScoreBreakdown extends ScoreBreakdown {
+  specialty_match?: number;
+  fairness_multiplier?: number;
+  ctr_bonus?: number;
+  score_before_fairness?: number;
+}
+
+/**
+ * Calcule le score global avec support de l'equite
+ * Compatible avec l'ancienne API tout en supportant les nouvelles fonctionnalites
  */
 export function calculateTotalScore(
-  criteria: SearchCriteria,
-  provider: any
-): { score: number; breakdown: ScoreBreakdown } {
+  criteria: SearchCriteria | ExtendedSearchCriteria,
+  provider: ProviderWithFairness
+): { score: number; breakdown: ExtendedScoreBreakdown } {
   const culturalScore = calculateCulturalScore(
     criteria.cultures || [],
     criteria.cultural_importance || 'important',
@@ -274,27 +431,68 @@ export function calculateTotalScore(
     provider.tags
   );
 
+  // Calculate specialty match bonus (up to +15 points)
+  const extendedCriteria = criteria as ExtendedSearchCriteria;
+  const specialtyScore = calculateSpecialtyScore(
+    extendedCriteria.specialty_tags,
+    provider.specialty_tags
+  );
+
+  // Calculate CTR bonus/malus (-3 to +5 points)
+  const ctrBonus = calculateCTRBonus(provider.fairness_data);
+
+  // Score algorithmique total avant equite
   const totalAlgo =
     culturalScore +
     budgetScore +
     reputationScore +
     experienceScore +
     locationScore +
-    tagsScore;
+    tagsScore +
+    specialtyScore +
+    ctrBonus;
 
-  // Final score capped at 100
-  const finalScore = Math.min(100, Math.max(0, totalAlgo));
+  // Score avant application de l'equite (cap a 100)
+  const scoreBeforeFairness = Math.min(100, Math.max(0, totalAlgo));
 
-  const breakdown: ScoreBreakdown = {
+  // Calculer le multiplicateur d'equite
+  const fairnessMultiplier = calculateFairnessMultiplier(provider.fairness_data);
+
+  // Appliquer l'equite au score
+  // Le multiplicateur ajuste legerement le score pour favoriser les prestataires moins exposes
+  const adjustedScore = scoreBeforeFairness * fairnessMultiplier;
+
+  // Score final (cap a 100)
+  const finalScore = Math.min(100, Math.max(0, Math.round(adjustedScore)));
+
+  const breakdown: ExtendedScoreBreakdown = {
     cultural_match: culturalScore,
     budget_match: budgetScore,
     reputation: reputationScore,
     experience: experienceScore,
     location_match: locationScore,
     tags_match: tagsScore,
+    specialty_match: specialtyScore,
+    fairness_multiplier: fairnessMultiplier,
+    ctr_bonus: ctrBonus,
+    score_before_fairness: scoreBeforeFairness,
     total_algo: totalAlgo,
     final_score: finalScore,
   };
 
   return { score: finalScore, breakdown };
+}
+
+/**
+ * Fonction utilitaire pour preparer les donnees d'equite avant le scoring
+ * A appeler cote serveur pour enrichir les providers avec leurs donnees d'equite
+ */
+export function enrichProviderWithFairness(
+  provider: Record<string, unknown>,
+  fairnessData: FairnessData | null
+): ProviderWithFairness {
+  return {
+    ...provider,
+    fairness_data: fairnessData || undefined,
+  } as ProviderWithFairness;
 }

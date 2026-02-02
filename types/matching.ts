@@ -42,10 +42,18 @@ export interface ScoreBreakdown {
   location_match: number; // /10
 
   // Tags match (bonus)
-  tags_match?: number; // 0 à +10 points bonus
+  tags_match?: number; // 0 a +10 points bonus
+
+  // Specialty match (bonus pour besoins specifiques)
+  specialty_match?: number; // 0 a +15 points bonus
+
+  // Equite (pour eviter de toujours montrer les memes)
+  fairness_multiplier?: number; // 0.85 a 1.15
+  ctr_bonus?: number; // -3 a +5 points
+  score_before_fairness?: number; // Score avant application de l'equite
 
   // Bonus IA (futur)
-  ai_bonus?: number; // -10 à +10
+  ai_bonus?: number; // -10 a +10
   ai_reasoning?: string;
 
   // Total
