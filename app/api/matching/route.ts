@@ -452,12 +452,22 @@ export async function POST(request: NextRequest) {
         .in('profile_id', providerIds);
 
       if (providerTagsData) {
-        providerTagsData.forEach((item: { profile_id: string; tags: { slug: string; category: string } | null }) => {
-          if (item.tags?.category === 'specialite') {
-            const existing = specialtyTagsMap.get(item.profile_id) || [];
-            existing.push(item.tags.slug);
-            specialtyTagsMap.set(item.profile_id, existing);
-          }
+        // Le type de retour Supabase peut varier selon la relation
+        // On gere les deux cas: objet unique ou tableau
+        providerTagsData.forEach((item) => {
+          const profileId = item.profile_id as string;
+          const tags = item.tags;
+
+          // Gerer le cas ou tags est un tableau ou un objet
+          const tagsList = Array.isArray(tags) ? tags : [tags];
+
+          tagsList.forEach((tag) => {
+            if (tag && tag.category === 'specialite') {
+              const existing = specialtyTagsMap.get(profileId) || [];
+              existing.push(tag.slug as string);
+              specialtyTagsMap.set(profileId, existing);
+            }
+          });
         });
       }
     } catch (tagsError) {
