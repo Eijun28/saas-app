@@ -1,7 +1,12 @@
 // app/api/matching/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { calculateTotalScore } from '@/lib/matching/scoring';
+import {
+  calculateTotalScore,
+  enrichProviderWithFairness,
+  type FairnessData,
+  type ExtendedSearchCriteria,
+} from '@/lib/matching/scoring';
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
 import { logger } from '@/lib/logger';
 
@@ -349,42 +354,42 @@ export async function POST(request: NextRequest) {
         })
       );
     } else {
-      // Méthode optimisée : jointures Supabase + requête groupée pour portfolio
-      logger.debug('⚡ Utilisation de la méthode d\'enrichissement optimisée');
-      
-      // Requête groupée pour compter les portfolios (une seule requête au lieu de N)
+      // Methode optimisee : jointures Supabase + requete groupee pour portfolio
+      logger.debug('⚡ Utilisation de la methode d\'enrichissement optimisee');
+
+      // Requete groupee pour compter les portfolios (une seule requete au lieu de N)
       const { data: portfolioCounts } = await supabase
         .from('provider_portfolio')
         .select('profile_id')
         .in('profile_id', providerIds);
-      
-      // Créer un map pour accès rapide O(1)
+
+      // Creer un map pour acces rapide O(1)
       const portfolioCountMap = new Map<string, number>();
       portfolioCounts?.forEach((item) => {
         const count = portfolioCountMap.get(item.profile_id) || 0;
         portfolioCountMap.set(item.profile_id, count + 1);
       });
 
-      // Enrichir les prestataires avec les données déjà chargées via jointures
+      // Enrichir les prestataires avec les donnees deja chargees via jointures
       enrichedProviders = providers.map((provider) => {
         const providerId = typeof provider.id === 'string' ? provider.id : String(provider.id);
-        
+
         // Extraire les cultures depuis la jointure
         const providerCultures = (provider.provider_cultures as Array<{ culture_id: string }>) || [];
         const cultures = providerCultures.map((c) => c.culture_id);
-        
+
         // Extraire les zones depuis la jointure
         const providerZones = (provider.provider_zones as Array<{ zone_id: string }>) || [];
         const zones = providerZones.map((z) => z.zone_id);
-        
-        // Récupérer le portfolio_count depuis le map
+
+        // Recuperer le portfolio_count depuis le map
         const portfolio_count = portfolioCountMap.get(providerId) || 0;
-        
-        // Extraire les données de rating
-        const publicProfile = Array.isArray(provider.prestataire_public_profiles) 
-          ? provider.prestataire_public_profiles[0] 
+
+        // Extraire les donnees de rating
+        const publicProfile = Array.isArray(provider.prestataire_public_profiles)
+          ? provider.prestataire_public_profiles[0]
           : provider.prestataire_public_profiles;
-        
+
         return {
           ...provider,
           cultures,
@@ -396,14 +401,98 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ÉTAPE 3 : CALCULER LES SCORES
+    // ETAPE 2.5 : CHARGER LES DONNEES D'EQUITE ET LES TAGS DE SPECIALITE
+    logger.debug('⚖️ Chargement des donnees d\'equite et specialites');
+
+    // Charger les donnees d'equite pour tous les prestataires
+    let fairnessDataMap = new Map<string, FairnessData>();
+    try {
+      const { data: fairnessData } = await supabase
+        .from('provider_impressions')
+        .select('profile_id, impressions_this_week, total_impressions, click_through_rate')
+        .eq('service_type', normalizedServiceType)
+        .in('profile_id', providerIds);
+
+      if (fairnessData) {
+        // Calculer le score d'equite pour chaque prestataire
+        const maxImpressions = Math.max(...fairnessData.map(f => f.impressions_this_week || 0), 1);
+
+        fairnessData.forEach((item) => {
+          const impressions = item.impressions_this_week || 0;
+          // Score d'equite: moins d'impressions = meilleur score
+          const fairnessScore = impressions > 0
+            ? 1.0 - Math.pow(impressions / maxImpressions, 0.5)
+            : 1.0;
+
+          fairnessDataMap.set(item.profile_id, {
+            impressions_this_week: impressions,
+            total_impressions: item.total_impressions || 0,
+            fairness_score: Math.max(0.1, fairnessScore),
+            click_through_rate: item.click_through_rate || 0,
+          });
+        });
+      }
+    } catch (fairnessError) {
+      // Si la table n'existe pas encore, continuer sans donnees d'equite
+      logger.warn('⚠️ Impossible de charger les donnees d\'equite (table peut-etre inexistante):', fairnessError);
+    }
+
+    // Charger les tags de specialite pour tous les prestataires
+    let specialtyTagsMap = new Map<string, string[]>();
+    try {
+      const { data: providerTagsData } = await supabase
+        .from('provider_tags')
+        .select(`
+          profile_id,
+          tags!inner (
+            slug,
+            category
+          )
+        `)
+        .in('profile_id', providerIds);
+
+      if (providerTagsData) {
+        // Le type de retour Supabase peut varier selon la relation
+        // On gere les deux cas: objet unique ou tableau
+        providerTagsData.forEach((item) => {
+          const profileId = item.profile_id as string;
+          const tags = item.tags;
+
+          // Gerer le cas ou tags est un tableau ou un objet
+          const tagsList = Array.isArray(tags) ? tags : [tags];
+
+          tagsList.forEach((tag) => {
+            if (tag && tag.category === 'specialite') {
+              const existing = specialtyTagsMap.get(profileId) || [];
+              existing.push(tag.slug as string);
+              specialtyTagsMap.set(profileId, existing);
+            }
+          });
+        });
+      }
+    } catch (tagsError) {
+      logger.warn('⚠️ Impossible de charger les tags de specialite:', tagsError);
+    }
+
+    // ETAPE 3 : CALCULER LES SCORES AVEC EQUITE
     const scoredProviders = enrichedProviders.map((provider) => {
-      const { score, breakdown } = calculateTotalScore(
-        search_criteria,
-        provider
+      const providerId = typeof provider.id === 'string' ? provider.id : String(provider.id);
+
+      // Enrichir le provider avec les donnees d'equite et specialites
+      const enrichedProvider = enrichProviderWithFairness(
+        {
+          ...provider,
+          specialty_tags: specialtyTagsMap.get(providerId) || [],
+        },
+        fairnessDataMap.get(providerId) || null
       );
 
-      // Générer explication simple
+      const { score, breakdown } = calculateTotalScore(
+        search_criteria as ExtendedSearchCriteria,
+        enrichedProvider
+      );
+
+      // Generer explication simple
       const providerForExplanation = {
         average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
         annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
@@ -414,23 +503,23 @@ export async function POST(request: NextRequest) {
         provider_id: provider.id,
         provider,
         score,
-        rank: 0, // Sera défini après tri
+        rank: 0, // Sera defini apres tri
         breakdown,
         explanation,
       };
     });
 
-    // ÉTAPE 4 : TRIER ET SÉLECTIONNER RÉSULTATS
-    // Par défaut, on retourne les top 3, mais on garde tous les résultats triés pour pagination future
+    // ETAPE 4 : TRIER ET SELECTIONNER RESULTATS
+    // Par defaut, on retourne les top 3, mais on garde tous les resultats tries pour pagination future
     const sortedProviders = scoredProviders
       .sort((a, b) => b.score - a.score)
       .map((p, index) => ({ ...p, rank: index + 1 }));
-    
-    // Sélectionner les top 3 pour l'affichage initial
+
+    // Selectionner les top 3 pour l'affichage initial
     const topMatches = sortedProviders.slice(0, 3);
 
-    // ÉTAPE 5 : SAUVEGARDER DANS MATCHING_HISTORY
-    // matching_history.couple_id référence maintenant couples(id) directement
+    // ETAPE 5 : SAUVEGARDER DANS MATCHING_HISTORY
+    // matching_history.couple_id reference maintenant couples(id) directement
     const { error: historyError } = await supabase
       .from('matching_history')
       .insert({
@@ -438,15 +527,40 @@ export async function POST(request: NextRequest) {
         conversation_id,
         service_type: search_criteria.service_type,
         search_criteria,
-        results: sortedProviders, // Sauvegarder tous les résultats pour pagination
+        results: sortedProviders, // Sauvegarder tous les resultats pour pagination
       });
 
     if (historyError) {
       logger.error('Erreur sauvegarde historique:', historyError);
     }
 
+    // ETAPE 6 : ENREGISTRER LES IMPRESSIONS POUR L'EQUITE
+    // Enregistrer une impression pour chaque prestataire affiche dans le top 3
+    try {
+      for (const match of topMatches) {
+        const providerId = typeof match.provider_id === 'string'
+          ? match.provider_id
+          : String(match.provider_id);
+
+        await supabase.rpc('record_impression', {
+          p_profile_id: providerId,
+          p_service_type: normalizedServiceType,
+          p_couple_id: couple_id,
+          p_conversation_id: conversation_id || null,
+          p_rank_position: match.rank,
+          p_score: match.score,
+          p_search_criteria: search_criteria,
+        });
+      }
+      logger.debug('✅ Impressions enregistrees pour', topMatches.length, 'prestataires');
+    } catch (impressionError) {
+      // Ne pas bloquer le matching si l'enregistrement des impressions echoue
+      logger.warn('⚠️ Erreur enregistrement impressions (non bloquant):', impressionError);
+    }
+
     logger.info(`🎯 Top 3 scores: ${topMatches.map(p => p.score).join(', ')}`);
-    logger.info(`📊 Total résultats disponibles: ${sortedProviders.length}`);
+    logger.info(`📊 Total resultats disponibles: ${sortedProviders.length}`);
+    logger.info(`⚖️ Equite: ${fairnessDataMap.size} prestataires avec donnees d'equite`);
 
     return NextResponse.json({
       matches: topMatches, // Retourner les top 3 pour compatibilité UI
