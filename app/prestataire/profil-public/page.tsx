@@ -24,7 +24,7 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
-import { VisibilityStats } from '@/components/provider/VisibilityStats'
+import { ProfilePowerCard } from '@/components/provider/ProfilePowerCard'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -348,7 +348,7 @@ export default function ProfilPublicPage() {
             </div>
           </div>
 
-      {/* Cartes Score & Visibilite */}
+      {/* Cartes Score & Puissance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <ProfileScoreCard
           profile={profile}
@@ -356,9 +356,11 @@ export default function ProfilPublicPage() {
           zones={zones}
           portfolio={portfolio}
         />
-        <VisibilityStats
-          userId={user.id}
-          serviceType={profile?.service_type}
+        <ProfilePowerCard
+          profile={profile}
+          cultures={cultures}
+          zones={zones}
+          portfolio={portfolio}
         />
       </div>
 
