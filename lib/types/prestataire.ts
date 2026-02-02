@@ -130,3 +130,23 @@ export interface ProviderTag {
   tag?: Tag; // Joined tag data
 }
 
+// Service Specialties types
+export interface ProviderSpecialty {
+  id: string;
+  profile_id: string;
+  service_type: string;
+  group_id: string;
+  option_value: string;
+  created_at: string;
+}
+
+export interface ProviderCustomSpecialty {
+  id: string;
+  profile_id: string;
+  service_type: string;
+  group_id: string;
+  custom_label: string;
+  custom_value: string;
+  created_at: string;
+}
+

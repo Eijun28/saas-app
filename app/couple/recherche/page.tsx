@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Settings2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog
 import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
+import { getSpecialtiesForService, type SpecialtyGroup } from '@/lib/constants/service-specialties'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 
 interface ProviderTag {
@@ -30,6 +31,11 @@ interface TagJoinResult {
     label: string
     category: string | null
   } | null
+}
+
+interface ProviderSpecialtyData {
+  group_id: string
+  option_value: string
 }
 
 interface Provider {
@@ -54,6 +60,7 @@ interface Provider {
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
   tags: ProviderTag[]
+  specialties: ProviderSpecialtyData[]
   completionPercentage?: number
 }
 
@@ -109,8 +116,10 @@ export default function RecherchePage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [availableTags, setAvailableTags] = useState<ProviderTag[]>([])
+  const [selectedSpecialties, setSelectedSpecialties] = useState<{ groupId: string; optionValue: string }[]>([])
+  const [availableSpecialtyGroups, setAvailableSpecialtyGroups] = useState<SpecialtyGroup[]>([])
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
-  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | 'tags' | null>(null)
+  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | 'tags' | 'specialites' | null>(null)
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
@@ -133,11 +142,22 @@ export default function RecherchePage() {
     loadTags()
   }, [])
 
+  // Update available specialty groups when category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      const groups = getSpecialtiesForService(selectedCategory)
+      setAvailableSpecialtyGroups(groups)
+    } else {
+      setAvailableSpecialtyGroups([])
+      setSelectedSpecialties([]) // Clear selected specialties when no category
+    }
+  }, [selectedCategory])
+
   useEffect(() => {
     if (user) {
       searchProviders()
     }
-  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags])
+  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags, selectedSpecialties])
 
   // Fonction pour calculer le pourcentage de complétion du profil
   const calculateProfileCompletion = async (
@@ -280,6 +300,12 @@ export default function RecherchePage() {
             .select('tag_id, tags(id, label, category)')
             .eq('profile_id', profile.id) as { data: TagJoinResult[] | null }
 
+          // Récupérer les spécialités
+          const { data: specialtiesData } = await supabase
+            .from('provider_specialties')
+            .select('group_id, option_value')
+            .eq('profile_id', profile.id)
+
           // Récupérer le portfolio pour compter les photos
           const { data: portfolioData } = await supabase
             .from('provider_portfolio')
@@ -312,6 +338,12 @@ export default function RecherchePage() {
               category: t.tags.category ?? undefined
             }))
 
+          // Mapper les spécialités
+          const specialties: ProviderSpecialtyData[] = (specialtiesData || []).map(s => ({
+            group_id: s.group_id,
+            option_value: s.option_value
+          }))
+
           // Calculer le pourcentage de complétion
           const completionPercentage = await calculateProfileCompletion(
             profile.id,
@@ -335,6 +367,7 @@ export default function RecherchePage() {
             cultures,
             zones,
             tags,
+            specialties,
             completionPercentage,
           } as Provider & { completionPercentage: number }
         })
@@ -379,6 +412,15 @@ export default function RecherchePage() {
       if (selectedTags.length > 0) {
         filteredProviders = filteredProviders.filter(p =>
           selectedTags.every(tagId => p.tags.some(t => t.id === tagId))
+        )
+      }
+
+      // Filtrer par spécialités sélectionnées (doit avoir TOUTES les spécialités sélectionnées)
+      if (selectedSpecialties.length > 0) {
+        filteredProviders = filteredProviders.filter(p =>
+          selectedSpecialties.every(spec =>
+            p.specialties.some(s => s.group_id === spec.groupId && s.option_value === spec.optionValue)
+          )
         )
       }
 
@@ -734,6 +776,85 @@ export default function RecherchePage() {
                       </div>
                     </PopoverContent>
                   </Popover>
+
+                  {/* Spécialités (visible uniquement si un métier est sélectionné) */}
+                  {selectedCategory && availableSpecialtyGroups.length > 0 && (
+                    <Popover open={openSubDropdown === 'specialites'} onOpenChange={(open) => setOpenSubDropdown(open ? 'specialites' : null)}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
+                        >
+                          <span className="flex items-center gap-2">
+                            <Settings2 className="h-4 w-4 text-gray-700" />
+                            Spécialités
+                            {selectedSpecialties.length > 0 && (
+                              <Badge variant="secondary" className="ml-2 text-xs bg-purple-200 text-purple-900 font-medium">
+                                {selectedSpecialties.length}
+                              </Badge>
+                            )}
+                          </span>
+                          <ChevronDown className="h-4 w-4 text-gray-700" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-[calc(100vw-2rem)] sm:w-[320px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[60vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg"
+                        side={isMobile ? "bottom" : "right"}
+                        align="start"
+                        sideOffset={8}
+                        collisionPadding={16}
+                        avoidCollisions={true}
+                      >
+                        <div className="space-y-1">
+                          <button
+                            className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedSpecialties.length === 0 ? "bg-gray-100" : ""}`}
+                            onClick={() => {
+                              setSelectedSpecialties([])
+                              setOpenSubDropdown(null)
+                            }}
+                          >
+                            Toutes les spécialités
+                          </button>
+                          <div className="border-t border-gray-200 my-2"></div>
+                          {availableSpecialtyGroups.map((group) => (
+                            <div key={group.id} className="space-y-1">
+                              <div className="px-2 py-1.5 text-xs font-semibold text-[#823F91] uppercase">
+                                {group.label}
+                              </div>
+                              {group.options.map((option) => {
+                                const isSelected = selectedSpecialties.some(
+                                  s => s.groupId === group.id && s.optionValue === option.value
+                                )
+                                return (
+                                  <button
+                                    key={`${group.id}-${option.value}`}
+                                    className={`w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setSelectedSpecialties(prev =>
+                                          prev.filter(s => !(s.groupId === group.id && s.optionValue === option.value))
+                                        )
+                                      } else {
+                                        setSelectedSpecialties(prev => [
+                                          ...prev,
+                                          { groupId: group.id, optionValue: option.value }
+                                        ])
+                                      }
+                                    }}
+                                  >
+                                    <span className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-[#823F91] border-[#823F91]' : 'border-gray-300'}`}>
+                                      {isSelected && <X className="h-3 w-3 text-white" />}
+                                    </span>
+                                    {option.label}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>
@@ -763,7 +884,7 @@ export default function RecherchePage() {
           </div>
           
           {/* Filtres actifs */}
-          {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || searchQuery) && (
+          {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || selectedSpecialties.length > 0 || searchQuery) && (
             <div className="flex flex-wrap gap-2">
               {selectedCategory && (
                 <Badge
@@ -806,6 +927,24 @@ export default function RecherchePage() {
                   >
                     <Tag className="h-3 w-3 mr-1" />
                     {tag.label}
+                    <X className="h-3 w-3 ml-2" />
+                  </Badge>
+                ) : null
+              })}
+              {selectedSpecialties.map(spec => {
+                const group = availableSpecialtyGroups.find(g => g.id === spec.groupId)
+                const option = group?.options.find(o => o.value === spec.optionValue)
+                return option ? (
+                  <Badge
+                    key={`${spec.groupId}-${spec.optionValue}`}
+                    variant="secondary"
+                    className="px-3 py-1 text-sm cursor-pointer hover:bg-purple-200 text-purple-900 bg-purple-100"
+                    onClick={() => setSelectedSpecialties(prev =>
+                      prev.filter(s => !(s.groupId === spec.groupId && s.optionValue === spec.optionValue))
+                    )}
+                  >
+                    <Settings2 className="h-3 w-3 mr-1" />
+                    {option.label}
                     <X className="h-3 w-3 ml-2" />
                   </Badge>
                 ) : null
