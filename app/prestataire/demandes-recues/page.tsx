@@ -424,89 +424,65 @@ export default function DemandesRecuesPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
-      <PageTitle 
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-5">
+      <PageTitle
         title="Demandes reçues"
         description="Gérez toutes vos demandes de prestations"
-        className="pb-6 sm:pb-7 md:pb-8"
       />
 
-      {/* Bouton pour créer les conversations manquantes */}
-      {demandes.en_cours.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-end"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFixConversations}
-            disabled={isFixingConversations}
-            className="gap-2 text-xs sm:text-sm h-8 sm:h-9"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isFixingConversations ? 'animate-spin' : ''}`} />
-            <span className="hidden xs:inline">{isFixingConversations ? 'Vérification...' : 'Vérifier les conversations'}</span>
-            <span className="xs:hidden">{isFixingConversations ? 'Vérif...' : 'Vérifier'}</span>
-          </Button>
-        </motion.div>
-      )}
-
-      <div className="relative w-full px-3 sm:px-0">
-        <Search className="absolute left-3 sm:left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]/50 pointer-events-none" />
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         <Input
           placeholder="Rechercher une demande..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-9 sm:h-10 md:h-11 border-[#823F91]/20 focus:border-[#823F91] focus:ring-[#823F91]/20 text-xs sm:text-sm md:text-base"
+          className="w-full pl-10 pr-4 h-10 bg-white border-gray-200 focus:border-[#823F91] focus:ring-[#823F91]/20 text-sm rounded-xl"
         />
       </div>
 
       <Tabs defaultValue="nouvelles" className="w-full">
-        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-          <TabsList className="mb-6 sm:mb-8 w-full sm:w-auto bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 inline-flex min-w-full sm:min-w-0">
-            <TabsTrigger 
-              value="nouvelles" 
-              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span:not([data-slot=badge])]:!text-[#823F91] [&[data-state=active]>span:not([data-slot=badge])]:!text-white"
-            >
-              <span className="transition-colors">Nouvelles</span>
-              {demandes.nouvelles.length > 0 && (
-                <Badge className="bg-[#823F91] !text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center [&]:!text-white [&>*]:!text-white">
-                  {demandes.nouvelles.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="en-cours" 
-              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span:not([data-slot=badge])]:!text-[#823F91] [&[data-state=active]>span:not([data-slot=badge])]:!text-white"
-            >
-              <span className="transition-colors">En cours</span>
-              {demandes.en_cours.length > 0 && (
-                <Badge className="bg-[#823F91] !text-white shadow-md text-xs px-1.5 py-0 min-w-[1.25rem] h-5 flex items-center justify-center [&]:!text-white [&>*]:!text-white">
-                  {demandes.en_cours.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="terminees" 
-              className="bg-transparent !text-[#823F91] data-[state=active]:!text-white flex-1 sm:flex-initial gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:shadow-lg data-[state=active]:shadow-[#823F91]/30 whitespace-nowrap [&>span]:!text-[#823F91] [&[data-state=active]>span]:!text-white"
-            >
-              <span className="transition-colors">Terminées</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <TabsList className="w-full h-auto p-1 bg-gray-100/80 rounded-xl grid grid-cols-3 gap-1">
+          <TabsTrigger
+            value="nouvelles"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+          >
+            Nouvelles
+            {demandes.nouvelles.length > 0 && (
+              <Badge className="ml-1.5 bg-[#823F91] text-white text-[10px] px-1.5 py-0 min-w-[18px] h-[18px]">
+                {demandes.nouvelles.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="en-cours"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+          >
+            En cours
+            {demandes.en_cours.length > 0 && (
+              <Badge className="ml-1.5 bg-[#823F91] text-white text-[10px] px-1.5 py-0 min-w-[18px] h-[18px]">
+                {demandes.en_cours.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="terminees"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+          >
+            Terminées
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="nouvelles" className="mt-0">
+        <TabsContent value="nouvelles" className="mt-4">
           {demandes.nouvelles.length === 0 ? (
             <EmptyState
               title="Aucune nouvelle demande"
               description="Les nouvelles demandes de couples apparaîtront ici"
             />
           ) : (
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-3">
               {demandes.nouvelles
-                .filter((d) => 
-                  !searchTerm || 
+                .filter((d) =>
+                  !searchTerm ||
                   d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
                 )
@@ -522,24 +498,24 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="en-cours" className="mt-0">
+        <TabsContent value="en-cours" className="mt-4">
           {demandes.en_cours.length === 0 ? (
             <EmptyState
               title="Aucune demande en cours"
               description="Les demandes acceptées apparaîtront ici"
             />
           ) : (
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-3">
               {demandes.en_cours
-                .filter((d) => 
-                  !searchTerm || 
+                .filter((d) =>
+                  !searchTerm ||
                   d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .map((demande) => (
-                  <DemandeCard 
-                    key={demande.id} 
-                    demande={demande} 
+                  <DemandeCard
+                    key={demande.id}
+                    demande={demande}
                     conversationId={conversationIdsMap.get(demande.id) || null}
                   />
                 ))}
@@ -547,24 +523,24 @@ export default function DemandesRecuesPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="terminees" className="mt-0">
+        <TabsContent value="terminees" className="mt-4">
           {demandes.terminees.length === 0 ? (
             <EmptyState
               title="Aucune demande terminée"
               description="L'historique de vos prestations apparaîtra ici"
             />
           ) : (
-            <div className="space-y-3 sm:space-y-4 w-full">
+            <div className="space-y-3">
               {demandes.terminees
-                .filter((d) => 
-                  !searchTerm || 
+                .filter((d) =>
+                  !searchTerm ||
                   d.couple_nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                   d.lieu.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .map((demande) => (
-                  <DemandeCard 
-                    key={demande.id} 
-                    demande={demande} 
+                  <DemandeCard
+                    key={demande.id}
+                    demande={demande}
                     conversationId={conversationIdsMap.get(demande.id) || null}
                   />
                 ))}

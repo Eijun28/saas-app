@@ -504,24 +504,23 @@ export function ProfilePreviewDialog({
                 )}
 
                 {portfolio && portfolio.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {portfolio.map((item) => {
-                      const isPdf = item.file_type === 'pdf'
+                      const isPdf = item.file_type === 'pdf' || item.image_url?.toLowerCase().endsWith('.pdf')
                       return (
                         <div
                           key={item.id}
-                          className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative"
+                          className="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer relative"
                         >
                           {isPdf ? (
                             <button
                               onClick={() => setPdfPreviewUrl(item.image_url)}
                               className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-colors"
                             >
-                              <FileText className="h-10 w-10 text-red-500 mb-2" />
-                              <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
+                              <FileText className="h-8 w-8 text-red-500 mb-1" />
+                              <span className="text-[10px] font-medium text-red-600 px-1 text-center truncate max-w-full">
                                 {item.title || 'PDF'}
                               </span>
-                              <span className="text-[10px] text-red-400 mt-1">Cliquer pour apercu</span>
                             </button>
                           ) : (
                             <>
@@ -532,8 +531,8 @@ export function ProfilePreviewDialog({
                                 loading="lazy"
                               />
                               {item.title && (
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <p className="text-white text-[10px] font-medium truncate">{item.title}</p>
                                 </div>
                               )}
                             </>
