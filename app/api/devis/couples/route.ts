@@ -67,16 +67,24 @@ export async function GET() {
 
     const couplesWithConsent = new Set(consents?.map(c => c.couple_id) || [])
 
+    // Type pour le couple joint
+    type CoupleData = {
+      id: string
+      partner_1_name: string | null
+      partner_2_name: string | null
+      wedding_date: string | null
+    }
+
     // Construire la liste des couples avec leurs infos
     const couples = conversations
       .filter(c => c.couples)
       .map(c => {
-        const couple = c.couples as {
-          id: string
-          partner_1_name: string | null
-          partner_2_name: string | null
-          wedding_date: string | null
-        }
+        // Supabase peut retourner un objet ou un tableau selon la relation
+        const coupleData = c.couples as unknown
+        const couple = (Array.isArray(coupleData) ? coupleData[0] : coupleData) as CoupleData
+
+        if (!couple) return null
+
         return {
           id: couple.id,
           partner_1_name: couple.partner_1_name,
@@ -87,6 +95,7 @@ export async function GET() {
           conversation_id: c.id,
         }
       })
+      .filter((c): c is NonNullable<typeof c> => c !== null)
       // Supprimer les doublons (même couple peut avoir plusieurs conversations théoriquement)
       .filter((couple, index, self) =>
         index === self.findIndex(c => c.id === couple.id)
