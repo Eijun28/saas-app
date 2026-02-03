@@ -41,6 +41,7 @@ interface ProfilePreviewDialogProps {
     website_url?: string | null
     linkedin_url?: string | null
     tiktok_url?: string | null
+    pricing_unit?: string
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
@@ -75,6 +76,7 @@ export function ProfilePreviewDialog({
   const [demandeBudget, setDemandeBudget] = useState('')
   const [isCreatingDemande, setIsCreatingDemande] = useState(false)
   const [activeTab, setActiveTab] = useState('about')
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
@@ -82,8 +84,25 @@ export function ProfilePreviewDialog({
       setDemandeDate('')
       setDemandeBudget('')
       setActiveTab('about')
+      setPdfPreviewUrl(null)
     }
   }, [open])
+
+  const getPricingUnitLabel = (unit?: string) => {
+    const labels: Record<string, string> = {
+      'forfait': 'forfait',
+      'par_personne': '/ personne',
+      'par_heure': '/ heure',
+      'par_demi_journee': '/ demi-journée',
+      'par_journee': '/ journée',
+      'par_part': '/ part',
+      'par_essayage': '/ essayage',
+      'par_piece': '/ pièce',
+      'par_km': '/ km',
+      'sur_devis': 'sur devis'
+    }
+    return unit ? labels[unit] || '' : ''
+  }
 
   const getInitials = (name: string) => {
     return name
@@ -228,7 +247,7 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-colors"
+          className="gap-2 bg-white border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-colors shadow-sm"
         >
           <Eye className="h-4 w-4" />
           Apercu du profil
@@ -301,41 +320,69 @@ export function ProfilePreviewDialog({
             </div>
           </div>
 
-          {/* TABS */}
+          {/* TABS - Pills style */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="w-full h-11 rounded-none border-b border-gray-100 bg-gray-50/50 p-0">
-              <TabsTrigger
-                value="about"
-                className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
-              >
-                <User className="h-4 w-4 mr-1.5" />
-                A propos
-              </TabsTrigger>
-              <TabsTrigger
-                value="portfolio"
-                className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
-              >
-                <Camera className="h-4 w-4 mr-1.5" />
-                Portfolio
-              </TabsTrigger>
-              {hasSocialLinks && (
-                <TabsTrigger
-                  value="links"
-                  className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+            <div className="px-5 pt-3 pb-2">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setActiveTab('about')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    activeTab === 'about'
+                      ? "bg-[#823F91] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
                 >
-                  <Link2 className="h-4 w-4 mr-1.5" />
-                  Liens
-                </TabsTrigger>
-              )}
-              {isCoupleView && (
-                <TabsTrigger
-                  value="contact"
-                  className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  A propos
+                </button>
+                <button
+                  onClick={() => setActiveTab('portfolio')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    activeTab === 'portfolio'
+                      ? "bg-[#823F91] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
                 >
-                  <Send className="h-4 w-4 mr-1.5" />
-                  Contact
-                </TabsTrigger>
-              )}
+                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  Portfolio
+                </button>
+                {hasSocialLinks && (
+                  <button
+                    onClick={() => setActiveTab('links')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeTab === 'links'
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    )}
+                  >
+                    <Link2 className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    Liens
+                  </button>
+                )}
+                {isCoupleView && (
+                  <button
+                    onClick={() => setActiveTab('contact')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeTab === 'contact'
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    )}
+                  >
+                    <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    Contact
+                  </button>
+                )}
+              </div>
+            </div>
+            <TabsList className="hidden">
+              <TabsTrigger value="about">A propos</TabsTrigger>
+              <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+              <TabsTrigger value="links">Liens</TabsTrigger>
+              <TabsTrigger value="contact">Contact</TabsTrigger>
             </TabsList>
 
             {/* SCROLLABLE CONTENT */}
@@ -373,7 +420,14 @@ export function ProfilePreviewDialog({
                       <Euro className="h-3.5 w-3.5" />
                       Tarifs
                     </h4>
-                    <p className="text-sm font-medium text-gray-900">{getBudgetDisplay()}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {getBudgetDisplay()}
+                      {profile.pricing_unit && (
+                        <span className="text-gray-500 font-normal ml-1">
+                          {getPricingUnitLabel(profile.pricing_unit)}
+                        </span>
+                      )}
+                    </p>
                   </div>
                 )}
 
@@ -430,6 +484,25 @@ export function ProfilePreviewDialog({
 
               {/* TAB: PORTFOLIO */}
               <TabsContent value="portfolio" className="m-0 p-5">
+                {/* PDF Preview Modal */}
+                {pdfPreviewUrl && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPdfPreviewUrl(null)}>
+                    <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setPdfPreviewUrl(null)}
+                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                      >
+                        <X className="h-4 w-4 text-gray-600" />
+                      </button>
+                      <iframe
+                        src={`${pdfPreviewUrl}#toolbar=0`}
+                        className="w-full h-full"
+                        title="PDF Preview"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {portfolio && portfolio.length > 0 ? (
                   <div className="grid grid-cols-2 gap-3">
                     {portfolio.map((item) => {
@@ -440,17 +513,16 @@ export function ProfilePreviewDialog({
                           className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative"
                         >
                           {isPdf ? (
-                            <a
-                              href={item.image_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
+                            <button
+                              onClick={() => setPdfPreviewUrl(item.image_url)}
+                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-colors"
                             >
                               <FileText className="h-10 w-10 text-red-500 mb-2" />
                               <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
                                 {item.title || 'PDF'}
                               </span>
-                            </a>
+                              <span className="text-[10px] text-red-400 mt-1">Cliquer pour apercu</span>
+                            </button>
                           ) : (
                             <>
                               <img

@@ -313,10 +313,19 @@ export default function DevisFacturesPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-3 xs:space-y-4 sm:space-y-6">
-      <PageTitle 
-        title="Devis & Factures"
-        description="Gérez vos devis et informations bancaires"
-      />
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+        <PageTitle
+          title="Devis & Factures"
+          description="Gérez vos devis et informations bancaires"
+          className="pb-0 sm:pb-0"
+        />
+        <Button
+          className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white self-start sm:self-auto flex-shrink-0 sm:mt-1"
+          onClick={() => setActiveTab('historique')}
+        >
+          Générer un devis
+        </Button>
+      </div>
 
           {/* Cartes Analytics */}
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 w-full">
