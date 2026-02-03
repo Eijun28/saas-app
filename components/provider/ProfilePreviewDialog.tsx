@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2 } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogClose,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
@@ -40,6 +41,7 @@ interface ProfilePreviewDialogProps {
     website_url?: string | null
     linkedin_url?: string | null
     tiktok_url?: string | null
+    pricing_unit?: string
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
@@ -73,7 +75,8 @@ export function ProfilePreviewDialog({
   const [demandeDate, setDemandeDate] = useState('')
   const [demandeBudget, setDemandeBudget] = useState('')
   const [isCreatingDemande, setIsCreatingDemande] = useState(false)
-  const [activeTab, setActiveTab] = useState<'about' | 'portfolio' | 'contact'>('about')
+  const [activeTab, setActiveTab] = useState('about')
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
@@ -81,8 +84,25 @@ export function ProfilePreviewDialog({
       setDemandeDate('')
       setDemandeBudget('')
       setActiveTab('about')
+      setPdfPreviewUrl(null)
     }
   }, [open])
+
+  const getPricingUnitLabel = (unit?: string) => {
+    const labels: Record<string, string> = {
+      'forfait': 'forfait',
+      'par_personne': '/ personne',
+      'par_heure': '/ heure',
+      'par_demi_journee': '/ demi-journée',
+      'par_journee': '/ journée',
+      'par_part': '/ part',
+      'par_essayage': '/ essayage',
+      'par_piece': '/ pièce',
+      'par_km': '/ km',
+      'sur_devis': 'sur devis'
+    }
+    return unit ? labels[unit] || '' : ''
+  }
 
   const getInitials = (name: string) => {
     return name
@@ -220,20 +240,14 @@ export function ProfilePreviewDialog({
 
   const hasSocialLinks = socialLinks.length > 0
 
-  // Tabs config
-  const tabs = [
-    { id: 'about' as const, label: 'A propos', icon: User },
-    { id: 'portfolio' as const, label: `Portfolio (${portfolio.length})`, icon: Camera },
-    ...(isCoupleView ? [{ id: 'contact' as const, label: 'Contact', icon: Send }] : []),
-  ]
-
   return (
     <>
       {showTriggerButton && (
         <Button
+          variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 bg-[#823F91] hover:bg-[#6D3478] text-white shadow-md"
+          className="gap-2 bg-white border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-colors shadow-sm"
         >
           <Eye className="h-4 w-4" />
           Apercu du profil
@@ -242,7 +256,7 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-[480px] max-h-[90vh] p-0 gap-0 overflow-hidden rounded-3xl bg-white border-0 shadow-2xl flex flex-col"
+          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl"
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
@@ -254,93 +268,130 @@ export function ProfilePreviewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-4 right-4 z-20 h-8 w-8 rounded-full bg-black/5 hover:bg-black/10 backdrop-blur-sm"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200"
             >
               <X className="h-4 w-4 text-gray-600" />
             </Button>
           </DialogClose>
 
           {/* HEADER */}
-          <div className="p-6 pb-4 bg-gradient-to-b from-gray-50 to-white">
-            <div className="flex items-center gap-4">
+          <div className="p-5 pb-4 border-b border-gray-100">
+            <div className="flex items-start gap-4">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <Avatar className="h-20 w-20 ring-4 ring-white shadow-lg">
+                <Avatar className="h-16 w-16 ring-2 ring-gray-100">
                   <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-                  <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
+                  <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
                     {getInitials(profile.nom_entreprise)}
                   </AvatarFallback>
                 </Avatar>
                 {profile.is_early_adopter && (
-                  <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-3 ring-white shadow-md">
-                    <Sparkles className="h-3.5 w-3.5 text-white" />
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-white">
+                    <Sparkles className="h-3 w-3 text-white" />
                   </div>
                 )}
               </div>
 
               {/* Info */}
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-gray-900 truncate mb-0.5">
+              <div className="flex-1 min-w-0 pt-0.5 pr-8">
+                <h2 className="text-lg font-bold text-gray-900 truncate">
                   {profile.nom_entreprise}
                 </h2>
-                <p className="text-sm text-[#823F91] font-medium mb-2">
+                <p className="text-sm text-gray-500 mb-2">
                   {profile.service_type}
                 </p>
 
-                {/* Key info inline */}
-                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                {/* Key info badges */}
+                <div className="flex flex-wrap items-center gap-2">
                   {profile.ville_principale && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
+                      <MapPin className="h-3 w-3 mr-1" />
                       {profile.ville_principale}
-                    </span>
-                  )}
-                  {getBudgetDisplay() && (
-                    <span className="flex items-center gap-1">
-                      <Euro className="h-3 w-3" />
-                      {getBudgetDisplay()}
-                    </span>
+                    </Badge>
                   )}
                   {profile.annees_experience && (
-                    <span className="flex items-center gap-1">
-                      <Briefcase className="h-3 w-3" />
+                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
+                      <Briefcase className="h-3 w-3 mr-1" />
                       {profile.annees_experience} ans
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* TABS - Pill design */}
-          <div className="px-6 pb-3">
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl">
-              {tabs.map((tab) => (
+          {/* TABS - Pills style */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <div className="px-5 pt-3 pb-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab('about')}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium transition-all duration-200",
-                    activeTab === tab.id
-                      ? "bg-white text-[#823F91] shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    activeTab === 'about'
+                      ? "bg-[#823F91] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   )}
                 >
-                  <tab.icon className="h-4 w-4" />
-                  <span className="hidden xs:inline">{tab.label}</span>
+                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  A propos
                 </button>
-              ))}
+                <button
+                  onClick={() => setActiveTab('portfolio')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    activeTab === 'portfolio'
+                      ? "bg-[#823F91] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  )}
+                >
+                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  Portfolio
+                </button>
+                {hasSocialLinks && (
+                  <button
+                    onClick={() => setActiveTab('links')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeTab === 'links'
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    )}
+                  >
+                    <Link2 className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    Liens
+                  </button>
+                )}
+                {isCoupleView && (
+                  <button
+                    onClick={() => setActiveTab('contact')}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      activeTab === 'contact'
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    )}
+                  >
+                    <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    Contact
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+            <TabsList className="hidden">
+              <TabsTrigger value="about">A propos</TabsTrigger>
+              <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+              <TabsTrigger value="links">Liens</TabsTrigger>
+              <TabsTrigger value="contact">Contact</TabsTrigger>
+            </TabsList>
 
-          {/* SCROLLABLE CONTENT */}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            {/* TAB: A PROPOS */}
-            {activeTab === 'about' && (
-              <div className="px-6 pb-6 space-y-5">
+            {/* SCROLLABLE CONTENT */}
+            <div className="flex-1 overflow-y-auto max-h-[calc(85vh-200px)]">
+              {/* TAB: A PROPOS */}
+              <TabsContent value="about" className="m-0 p-5 space-y-5">
                 {/* Description */}
                 {profile.description_courte && (
-                  <div className="bg-gray-50 rounded-2xl p-4">
+                  <div>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {profile.description_courte}
                     </p>
@@ -354,29 +405,47 @@ export function ProfilePreviewDialog({
 
                 {/* Bio */}
                 {profile.bio && (
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Presentation</h4>
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Presentation</h4>
                     <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                       {profile.bio}
                     </p>
                   </div>
                 )}
 
+                {/* Tarifs */}
+                {getBudgetDisplay() && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <Euro className="h-3.5 w-3.5" />
+                      Tarifs
+                    </h4>
+                    <p className="text-sm font-medium text-gray-900">
+                      {getBudgetDisplay()}
+                      {profile.pricing_unit && (
+                        <span className="text-gray-500 font-normal ml-1">
+                          {getPricingUnitLabel(profile.pricing_unit)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+
                 {/* Cultures */}
                 {cultures.length > 0 && (
-                  <div>
-                    <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <Heart className="h-3.5 w-3.5 text-[#823F91]" />
                       Cultures maitrisees
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {cultures.map((culture) => (
-                        <span
+                        <Badge
                           key={culture.id}
-                          className="px-3 py-1.5 bg-[#823F91]/10 text-[#823F91] text-sm font-medium rounded-full"
+                          className="text-xs py-1.5 px-3 bg-[#823F91]/10 text-[#823F91] border-0 font-normal hover:bg-[#823F91]/15"
                         >
                           {culture.label}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -384,44 +453,20 @@ export function ProfilePreviewDialog({
 
                 {/* Zones */}
                 {zones.length > 0 && (
-                  <div>
-                    <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <MapPin className="h-3.5 w-3.5" />
                       Zones d'intervention
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {zones.map((zone) => (
-                        <span
+                        <Badge
                           key={zone.id}
-                          className="px-3 py-1.5 bg-gray-100 text-gray-600 text-sm font-medium rounded-full"
+                          variant="outline"
+                          className="text-xs py-1.5 px-3 bg-gray-50 text-gray-600 border-gray-200 font-normal"
                         >
                           {zone.label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Social links */}
-                {hasSocialLinks && (
-                  <div>
-                    <h4 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                      <Link2 className="h-3.5 w-3.5" />
-                      Reseaux sociaux
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {socialLinks.map((social, i) => (
-                        <a
-                          key={i}
-                          href={social.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition-colors"
-                        >
-                          <social.icon className="h-4 w-4" />
-                          {social.label}
-                          <ExternalLink className="h-3 w-3 text-gray-400" />
-                        </a>
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -429,39 +474,54 @@ export function ProfilePreviewDialog({
 
                 {/* Empty state */}
                 {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
-                  <div className="text-center py-12 text-gray-400 text-sm">
+                  <div className="text-center py-8 text-gray-400 text-sm">
                     {isCoupleView
                       ? 'Ce prestataire n\'a pas encore complete son profil'
                       : 'Completez votre profil pour le rendre plus attractif'}
                   </div>
                 )}
-              </div>
-            )}
+              </TabsContent>
 
-            {/* TAB: PORTFOLIO */}
-            {activeTab === 'portfolio' && (
-              <div className="px-6 pb-6">
+              {/* TAB: PORTFOLIO */}
+              <TabsContent value="portfolio" className="m-0 p-5">
+                {/* PDF Preview Modal */}
+                {pdfPreviewUrl && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPdfPreviewUrl(null)}>
+                    <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setPdfPreviewUrl(null)}
+                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                      >
+                        <X className="h-4 w-4 text-gray-600" />
+                      </button>
+                      <iframe
+                        src={`${pdfPreviewUrl}#toolbar=0`}
+                        className="w-full h-full"
+                        title="PDF Preview"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {portfolio && portfolio.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     {portfolio.map((item) => {
-                      const isPdf = item.file_type === 'pdf'
+                      const isPdf = item.file_type === 'pdf' || item.image_url?.toLowerCase().endsWith('.pdf')
                       return (
                         <div
                           key={item.id}
-                          className="aspect-square rounded-2xl overflow-hidden bg-gray-100 group cursor-pointer relative shadow-sm"
+                          className="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer relative"
                         >
                           {isPdf ? (
-                            <a
-                              href={item.image_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
+                            <button
+                              onClick={() => setPdfPreviewUrl(item.image_url)}
+                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-colors"
                             >
-                              <FileText className="h-10 w-10 text-red-500 mb-2" />
-                              <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
+                              <FileText className="h-8 w-8 text-red-500 mb-1" />
+                              <span className="text-[10px] font-medium text-red-600 px-1 text-center truncate max-w-full">
                                 {item.title || 'PDF'}
                               </span>
-                            </a>
+                            </button>
                           ) : (
                             <>
                               <img
@@ -471,8 +531,8 @@ export function ProfilePreviewDialog({
                                 loading="lazy"
                               />
                               {item.title && (
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <p className="text-white text-[10px] font-medium truncate">{item.title}</p>
                                 </div>
                               )}
                             </>
@@ -482,10 +542,8 @@ export function ProfilePreviewDialog({
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <Camera className="h-8 w-8 text-gray-300" />
-                    </div>
+                  <div className="text-center py-12">
+                    <Camera className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-sm text-gray-500">
                       {isCoupleView
                         ? 'Aucune photo dans le portfolio'
@@ -493,60 +551,88 @@ export function ProfilePreviewDialog({
                     </p>
                   </div>
                 )}
-              </div>
-            )}
+              </TabsContent>
 
-            {/* TAB: CONTACT (couple view only) */}
-            {activeTab === 'contact' && isCoupleView && (
-              <div className="px-6 pb-6 space-y-4">
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <Label htmlFor="message" className="text-sm font-semibold text-gray-700 mb-2 block">
-                    Votre message <span className="text-red-500">*</span>
-                  </Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Decrivez votre projet, vos besoins..."
-                    value={demandeMessage}
-                    onChange={(e) => setDemandeMessage(e.target.value)}
-                    className="min-h-[120px] text-sm resize-none border-0 bg-white shadow-sm rounded-xl focus-visible:ring-2 focus-visible:ring-[#823F91]/20"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <Label htmlFor="date" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Date du mariage
-                    </Label>
-                    <Input
-                      id="date"
-                      type="date"
-                      value={demandeDate}
-                      onChange={(e) => setDemandeDate(e.target.value)}
-                      className="text-sm border-0 bg-white shadow-sm rounded-xl focus-visible:ring-2 focus-visible:ring-[#823F91]/20"
-                    />
+              {/* TAB: LIENS / RESEAUX */}
+              {hasSocialLinks && (
+                <TabsContent value="links" className="m-0 p-5">
+                  <div className="space-y-3">
+                    {socialLinks.map((social, i) => (
+                      <a
+                        key={i}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                          <social.icon className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{social.label}</p>
+                          <p className="text-xs text-gray-500 truncate">{social.url}</p>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-[#823F91] transition-colors" />
+                      </a>
+                    ))}
                   </div>
-                  <div className="bg-gray-50 rounded-2xl p-4">
-                    <Label htmlFor="budget" className="text-sm font-semibold text-gray-700 mb-2 block">
-                      Budget (€)
-                    </Label>
-                    <Input
-                      id="budget"
-                      type="number"
-                      placeholder="2000"
-                      value={demandeBudget}
-                      onChange={(e) => setDemandeBudget(e.target.value)}
-                      className="text-sm border-0 bg-white shadow-sm rounded-xl focus-visible:ring-2 focus-visible:ring-[#823F91]/20"
-                    />
+                </TabsContent>
+              )}
+
+              {/* TAB: CONTACT (couple view only) */}
+              {isCoupleView && (
+                <TabsContent value="contact" className="m-0 p-5">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="message" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Votre message <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="message"
+                        placeholder="Decrivez votre projet, vos besoins..."
+                        value={demandeMessage}
+                        onChange={(e) => setDemandeMessage(e.target.value)}
+                        className="min-h-[120px] text-sm resize-none border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="date" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Date du mariage
+                        </Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          value={demandeDate}
+                          onChange={(e) => setDemandeDate(e.target.value)}
+                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="budget" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Budget (€)
+                        </Label>
+                        <Input
+                          id="budget"
+                          type="number"
+                          placeholder="2000"
+                          value={demandeBudget}
+                          onChange={(e) => setDemandeBudget(e.target.value)}
+                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
+                </TabsContent>
+              )}
+            </div>
+          </Tabs>
 
           {/* FOOTER */}
-          <div className="border-t border-gray-100 p-4 bg-white flex-shrink-0">
+          <div className="border-t border-gray-100 p-4 bg-gray-50/50">
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-12 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold rounded-2xl gap-2 shadow-lg"
+                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
               >
@@ -564,7 +650,7 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-12 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-semibold rounded-2xl gap-2 shadow-lg"
+                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
                 onClick={() => setActiveTab('contact')}
               >
                 <MessageCircle className="h-4 w-4" />
@@ -573,8 +659,8 @@ export function ProfilePreviewDialog({
               </Button>
             ) : (
               <Button
-                variant="ghost"
-                className="w-full h-12 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-2xl"
+                variant="outline"
+                className="w-full h-11 text-sm border-gray-200 text-gray-600 hover:bg-gray-100"
                 onClick={() => setOpen(false)}
               >
                 Fermer l'apercu

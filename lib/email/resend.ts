@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { generateEmailTemplate } from './templates'
 
-export const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@nuply.com'
+export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
 export const FROM_NAME = process.env.FROM_NAME || 'NUPLY'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

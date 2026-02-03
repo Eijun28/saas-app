@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ArrowLeft, Video, Phone, MoreVertical, User, BellOff, Flag, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { DevisFlowButton } from '@/components/devis/DevisFlowButton'
 
 interface ChatHeaderProps {
   conversation: {
@@ -121,23 +122,33 @@ export function ChatHeader({
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex items-center gap-0.5 sm:gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Bouton créer devis (prestataire only) */}
+            {userType === 'prestataire' && (
+              <DevisFlowButton
+                conversationId={conversation.id}
+                coupleId={conversation.couple_id}
+                coupleName={otherParty.name}
+                isPrestataire={true}
+              />
+            )}
+
             {/* Bouton appel vidéo */}
             <button
               onClick={handleVideoCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Appel vidéo"
             >
-              <Video className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+              <Video className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
             </button>
 
             {/* Bouton appel vocal */}
             <button
               onClick={handleVoiceCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
               aria-label="Appel vocal"
             >
-              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
             </button>
 
             {/* Menu dropdown */}

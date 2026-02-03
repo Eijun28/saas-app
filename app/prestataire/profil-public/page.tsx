@@ -64,6 +64,7 @@ export default function ProfilPublicPage() {
     boutique_hours?: Record<string, { open: string; close: string; closed: boolean }> | null
     boutique_notes?: string | null
     boutique_appointment_only?: boolean
+    pricing_unit?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -174,6 +175,14 @@ export default function ProfilPublicPage() {
         .eq('profile_id', userId)
         .order('display_order', { ascending: true })
 
+      // Récupérer le pricing_unit principal
+      const { data: pricingData } = await freshSupabase
+        .from('provider_pricing')
+        .select('pricing_unit')
+        .eq('provider_id', userId)
+        .eq('is_primary', true)
+        .maybeSingle()
+
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         return culture ? { id: c.culture_id, label: culture.label } : null
@@ -222,6 +231,7 @@ export default function ProfilPublicPage() {
         boutique_hours: profileData?.boutique_hours || null,
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
+        pricing_unit: pricingData?.pricing_unit || undefined,
         _timestamp: timestamp,
       }
       
@@ -339,6 +349,7 @@ export default function ProfilPublicPage() {
                   website_url: profile?.website_url,
                   linkedin_url: profile?.linkedin_url,
                   tiktok_url: profile?.tiktok_url,
+                  pricing_unit: profile?.pricing_unit,
                 }}
                 cultures={cultures}
                 zones={zones}

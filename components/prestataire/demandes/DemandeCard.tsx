@@ -1,9 +1,9 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, MapPin, Euro, MessageSquare, Check, X, ArrowRight } from 'lucide-react'
+import { Calendar, MessageSquare, Check, X, ArrowRight } from 'lucide-react'
 import type { Demande } from '@/lib/types/prestataire'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -17,49 +17,26 @@ interface DemandeCardProps {
 
 export function DemandeCard({ demande, onAccept, onReject, conversationId }: DemandeCardProps) {
   const router = useRouter()
-  const getStatusColor = (statut: Demande['statut']) => {
-    switch (statut) {
-      case 'nouvelle':
-        return 'text-amber-50 border-transparent'
-      case 'en_cours':
-        return 'bg-blue-100 text-blue-800'
-      case 'terminee':
-        return 'bg-green-100 text-green-800'
-      case 'refusee':
-        return 'bg-red-100 text-red-800'
-      case 'annulee':
-        return 'bg-gray-100 text-gray-600'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-  
-  const getStatusStyle = (statut: Demande['statut']) => {
-    if (statut === 'nouvelle') {
-      return { backgroundColor: 'rgba(221, 97, 255, 1)', borderColor: 'rgba(255, 255, 255, 0)' }
-    }
-    return {}
-  }
 
-  const getStatusLabel = (statut: Demande['statut']) => {
+  const getStatusBadge = (statut: Demande['statut']) => {
     switch (statut) {
       case 'nouvelle':
-        return 'Nouvelle'
+        return <Badge className="bg-[#823F91] text-white text-xs px-2 py-0.5">Nouvelle</Badge>
       case 'en_cours':
-        return 'En cours'
+        return <Badge className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5">En cours</Badge>
       case 'terminee':
-        return 'Terminée'
+        return <Badge className="bg-green-100 text-green-700 text-xs px-2 py-0.5">Terminée</Badge>
       case 'refusee':
-        return 'Refusée'
+        return <Badge className="bg-red-100 text-red-700 text-xs px-2 py-0.5">Refusée</Badge>
       case 'annulee':
-        return 'Annulée par le couple'
+        return <Badge className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5">Annulée</Badge>
       default:
-        return statut
+        return null
     }
   }
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'Non spécifié'
+    if (!dateString) return ''
     try {
       return new Date(dateString).toLocaleDateString('fr-FR', {
         day: 'numeric',
@@ -67,105 +44,82 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
         year: 'numeric'
       })
     } catch {
-      return 'Date invalide'
+      return ''
     }
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="w-full"
+      transition={{ duration: 0.2 }}
     >
-      <Card className="w-full border-[#823F91]/20 hover:shadow-lg transition-shadow overflow-hidden">
-        <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+      <Card className="bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden">
+        <CardContent className="p-4">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-base sm:text-lg font-semibold mb-2 break-words pr-2">
-                Demande reçue de {demande.couple_nom}
-              </CardTitle>
-              <Badge 
-                className={`${getStatusColor(demande.statut)} text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 inline-flex items-center`} 
-                style={getStatusStyle(demande.statut)}
-              >
-                {getStatusLabel(demande.statut)}
-              </Badge>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                {demande.couple_nom}
+              </h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                {getStatusBadge(demande.statut)}
+                {demande.date_evenement && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(demande.date_evenement)}
+                  </span>
+                )}
+              </div>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">
+            <span className="text-[11px] text-gray-400 flex-shrink-0">
               {formatDate(demande.created_at)}
-            </p>
+            </span>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
+
+          {/* Message */}
           {demande.message && (
-            <div className="flex items-start gap-2 sm:gap-3 bg-gray-50 rounded-lg p-3 sm:p-4">
-              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] mt-0.5 flex-shrink-0" />
-              <p className="text-sm sm:text-base text-gray-700 break-words flex-1 leading-relaxed">
-                {demande.message}
-              </p>
-            </div>
+            <p className="text-sm text-gray-600 leading-relaxed mb-3 line-clamp-2">
+              {demande.message}
+            </p>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {demande.date_evenement && (
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] flex-shrink-0" />
-                <span className="text-xs sm:text-sm text-gray-600 break-words">
-                  {formatDate(demande.date_evenement)}
-                </span>
-              </div>
-            )}
-            {demande.lieu && (
-              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] flex-shrink-0" />
-                <span className="text-xs sm:text-sm text-gray-600 break-words truncate sm:whitespace-normal">
-                  {demande.lieu}
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <Euro className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91] flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-gray-600 break-words">
-                {demande.budget_min > 0 && demande.budget_max > 0
-                  ? `${demande.budget_min}€ - ${demande.budget_max}€`
-                  : 'Non spécifié'}
-              </span>
-            </div>
-          </div>
-
+          {/* Actions */}
           {demande.statut === 'nouvelle' && onAccept && onReject && (
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-3 border-t border-gray-100">
+            <div className="flex gap-2 pt-3 border-t border-gray-50">
               <Button
                 onClick={() => onAccept(demande.id)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-10 sm:h-9 text-sm font-medium"
                 size="sm"
+                className="flex-1 h-9 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-medium rounded-lg"
               >
-                <Check className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span>Accepter</span>
+                <Check className="h-4 w-4 mr-1.5" />
+                Accepter
               </Button>
               <Button
                 onClick={() => onReject(demande.id)}
-                variant="outline"
-                className="flex-1 text-red-600 border-red-200 hover:bg-red-50 h-10 sm:h-9 text-sm font-medium"
                 size="sm"
+                variant="outline"
+                className="flex-1 h-9 text-gray-600 border-gray-200 hover:bg-gray-50 text-sm font-medium rounded-lg"
               >
-                <X className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span>Refuser</span>
+                <X className="h-4 w-4 mr-1.5" />
+                Refuser
               </Button>
             </div>
           )}
 
           {(demande.statut === 'en_cours' || demande.statut === 'terminee') && conversationId && (
-            <div className="pt-2 sm:pt-3 border-t border-gray-100">
+            <div className="pt-3 border-t border-gray-50">
               <Button
                 onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
-                className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white h-10 sm:h-9 text-sm font-medium"
                 size="sm"
+                variant="ghost"
+                className="w-full h-9 text-[#823F91] hover:bg-[#823F91]/5 text-sm font-medium rounded-lg justify-between"
               >
-                <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span>Voir la conversation</span>
-                <ArrowRight className="h-4 w-4 ml-2 flex-shrink-0" />
+                <span className="flex items-center gap-1.5">
+                  <MessageSquare className="h-4 w-4" />
+                  Voir la conversation
+                </span>
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           )}
@@ -174,4 +128,3 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
     </motion.div>
   )
 }
-
