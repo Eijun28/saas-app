@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
 
 const resendApiKey = process.env.RESEND_API_KEY
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 /**
@@ -81,6 +81,13 @@ export async function sendNewRequestEmail(
       subject,
       html,
     })
+
+    // Log l'email envoyé
+    await adminClient.from('email_logs').insert({
+      user_id: providerId,
+      email_type: 'new_request',
+      metadata: { requestId, coupleId }
+    }).catch(() => {}) // Silencieux si la table n'existe pas encore
 
     logger.info('✅ Email nouvelle demande envoyé au prestataire', { providerId, requestId })
     return { success: true }
