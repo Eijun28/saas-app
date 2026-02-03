@@ -24,7 +24,6 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
-import { ProfilePowerCard } from '@/components/provider/ProfilePowerCard'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -348,21 +347,13 @@ export default function ProfilPublicPage() {
             </div>
           </div>
 
-      {/* Cartes Score & Puissance */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <ProfileScoreCard
-          profile={profile}
-          cultures={cultures}
-          zones={zones}
-          portfolio={portfolio}
-        />
-        <ProfilePowerCard
-          profile={profile}
-          cultures={cultures}
-          zones={zones}
-          portfolio={portfolio}
-        />
-      </div>
+      {/* Carte Score de complétion */}
+      <ProfileScoreCard
+        profile={profile}
+        cultures={cultures}
+        zones={zones}
+        portfolio={portfolio}
+      />
 
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>

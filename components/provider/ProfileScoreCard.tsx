@@ -1,20 +1,19 @@
 'use client'
 
-import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle2,
-  Circle,
-  Sparkles,
-  TrendingUp,
   Camera,
   FileText,
   MapPin,
   Heart,
-  Tag,
-  Zap,
-  Award,
+  Sparkles,
+  TrendingUp,
   Target,
+  Award,
+  Zap,
+  ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -59,6 +58,8 @@ export function ProfileScoreCard({
   tags = [],
   className,
 }: ProfileScoreCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   const scoreItems = useMemo<ScoreItem[]>(() => {
     return [
       {
@@ -173,195 +174,182 @@ export function ProfileScoreCard({
   }, [scoreItems])
 
   // Score level and color
-  const { level, color, bgColor, message } = useMemo(() => {
+  const { level, color } = useMemo(() => {
     if (percentage >= 90) return {
       level: 'Excellent',
       color: 'text-emerald-600',
-      bgColor: 'bg-emerald-500',
-      message: 'Votre profil est optimal pour attirer les couples !'
     }
     if (percentage >= 70) return {
       level: 'Tres bien',
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-500',
-      message: 'Encore quelques details pour un profil parfait'
+      color: 'text-[#823F91]',
     }
     if (percentage >= 50) return {
       level: 'Bon debut',
       color: 'text-amber-600',
-      bgColor: 'bg-amber-500',
-      message: 'Completez votre profil pour plus de visibilite'
     }
     return {
       level: 'A completer',
       color: 'text-red-500',
-      bgColor: 'bg-red-500',
-      message: 'Un profil complet recoit 5x plus de demandes'
     }
   }, [percentage])
+
+  // Incomplete items for the collapsed summary
+  const incompleteItems = scoreItems.filter(item => !item.completed)
 
   return (
     <div className={cn(
       'relative overflow-hidden rounded-2xl bg-white',
       'shadow-[0_4px_20px_-4px_rgba(130,63,145,0.12)]',
       'border border-gray-100/50',
+      'transition-all duration-300',
       className
     )}>
-      {/* Gradient background accent */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#823F91]/10 to-transparent rounded-bl-full" />
-
-      <div className="relative p-6">
-        {/* Header with score */}
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Award className="h-5 w-5 text-[#823F91]" />
-              <h3 className="font-semibold text-gray-900">Score de votre profil</h3>
-            </div>
-            <p className="text-sm text-gray-500">{message}</p>
+      {/* Header - Always visible, clickable */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left p-4 sm:p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/20 rounded-2xl"
+      >
+        <div className="flex items-center gap-4">
+          {/* Icon */}
+          <div className="flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-purple-50">
+            <Award className="h-5 w-5 text-[#823F91]" />
           </div>
 
-          {/* Circular score */}
-          <div className="relative">
-            <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="#f3f4f6"
-                strokeWidth="8"
-              />
-              <motion.circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="url(#scoreGradient)"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${percentage * 2.51} 251`}
-                initial={{ strokeDasharray: '0 251' }}
-                animate={{ strokeDasharray: `${percentage * 2.51} 251` }}
-                transition={{ duration: 1.5, ease: 'easeOut' }}
-              />
-              <defs>
-                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#823F91" />
-                  <stop offset="100%" stopColor="#a855f7" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <motion.span
-                className="text-2xl font-bold text-gray-900"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {percentage}%
-              </motion.span>
-              <span className={cn('text-xs font-medium', color)}>{level}</span>
+          {/* Title and progress */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                Completion du profil
+              </h3>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className={cn('text-xs font-medium', color)}>{level}</span>
+                <span className="text-lg sm:text-xl font-bold text-gray-900">{percentage}%</span>
+              </div>
             </div>
+
+            {/* Progress bar */}
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-[#823F91] to-[#a855f7] rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${percentage}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+
+            {/* Summary when collapsed */}
+            {!isExpanded && incompleteItems.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                {completedCount}/{totalCount} elements • {incompleteItems.length} restant{incompleteItems.length > 1 ? 's' : ''}
+              </p>
+            )}
           </div>
-        </div>
 
-        {/* Progress items */}
-        <div className="space-y-2 mb-6">
-          {scoreItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={cn(
-                'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors',
-                item.completed
-                  ? 'bg-emerald-50/50'
-                  : item.priority === 'high'
-                  ? 'bg-amber-50/50'
-                  : 'bg-gray-50/50'
-              )}
-            >
-              <div className={cn(
-                'p-1.5 rounded-full',
-                item.completed
-                  ? 'bg-emerald-100 text-emerald-600'
-                  : item.priority === 'high'
-                  ? 'bg-amber-100 text-amber-600'
-                  : 'bg-gray-100 text-gray-400'
-              )}>
-                {item.completed ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : (
-                  item.icon
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    'text-sm font-medium',
-                    item.completed ? 'text-emerald-700' : 'text-gray-700'
-                  )}>
-                    {item.label}
-                  </span>
-                  {!item.completed && item.priority === 'high' && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 rounded">
-                      Important
-                    </span>
-                  )}
-                </div>
-                {!item.completed && item.tip && (
-                  <p className="text-xs text-gray-500 truncate">{item.tip}</p>
-                )}
-              </div>
-              <span className={cn(
-                'text-xs font-medium',
-                item.completed ? 'text-emerald-600' : 'text-gray-400'
-              )}>
-                +{item.points} pts
-              </span>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Next action recommendation */}
-        {nextAction && (
+          {/* Chevron */}
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="p-4 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10"
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex-shrink-0 text-gray-400"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-[#823F91]/10">
-                <Zap className="h-4 w-4 text-[#823F91]" />
+            <ChevronDown className="h-5 w-5" />
+          </motion.div>
+        </div>
+      </button>
+
+      {/* Expandable content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-4">
+              {/* Divider */}
+              <div className="border-t border-gray-100" />
+
+              {/* Progress items */}
+              <div className="space-y-1.5">
+                {scoreItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={cn(
+                      'flex items-center gap-3 py-2 px-3 rounded-lg transition-colors',
+                      item.completed
+                        ? 'bg-emerald-50/50'
+                        : item.priority === 'high'
+                        ? 'bg-amber-50/50'
+                        : 'bg-gray-50/50'
+                    )}
+                  >
+                    <div className={cn(
+                      'p-1.5 rounded-full flex-shrink-0',
+                      item.completed
+                        ? 'bg-emerald-100 text-emerald-600'
+                        : item.priority === 'high'
+                        ? 'bg-amber-100 text-amber-600'
+                        : 'bg-gray-100 text-gray-400'
+                    )}>
+                      {item.completed ? (
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      ) : (
+                        <span className="h-3.5 w-3.5 flex items-center justify-center">
+                          {item.icon}
+                        </span>
+                      )}
+                    </div>
+                    <span className={cn(
+                      'text-sm flex-1',
+                      item.completed ? 'text-emerald-700' : 'text-gray-700'
+                    )}>
+                      {item.label}
+                    </span>
+                    {!item.completed && item.priority === 'high' && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 rounded flex-shrink-0">
+                        Important
+                      </span>
+                    )}
+                    <span className={cn(
+                      'text-xs font-medium flex-shrink-0',
+                      item.completed ? 'text-emerald-600' : 'text-gray-400'
+                    )}>
+                      +{item.points}
+                    </span>
+                  </motion.div>
+                ))}
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Prochaine etape recommandee
-                </p>
-                <p className="text-sm text-gray-600">
-                  {nextAction.label} <span className="text-[#823F91]">(+{nextAction.points} points)</span>
-                </p>
-                {nextAction.tip && (
-                  <p className="text-xs text-gray-500 mt-1">{nextAction.tip}</p>
-                )}
-              </div>
+
+              {/* Next action recommendation */}
+              {nextAction && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="p-3 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-[#823F91]/10 flex-shrink-0">
+                      <Zap className="h-3.5 w-3.5 text-[#823F91]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">Prochaine etape :</span>{' '}
+                        {nextAction.label}
+                        <span className="text-[#823F91] ml-1">(+{nextAction.points} pts)</span>
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
-
-        {/* Stats footer */}
-        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-sm">
-          <span className="text-gray-500">
-            {completedCount}/{totalCount} elements completes
-          </span>
-          <span className="text-[#823F91] font-medium">
-            {totalScore}/{maxScore} points
-          </span>
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   )
 }
