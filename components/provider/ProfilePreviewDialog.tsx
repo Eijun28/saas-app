@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,6 +9,7 @@ import {
   DialogClose,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
@@ -73,14 +74,14 @@ export function ProfilePreviewDialog({
   const [demandeDate, setDemandeDate] = useState('')
   const [demandeBudget, setDemandeBudget] = useState('')
   const [isCreatingDemande, setIsCreatingDemande] = useState(false)
-  const [showContactForm, setShowContactForm] = useState(false)
+  const [activeTab, setActiveTab] = useState('about')
 
   useEffect(() => {
     if (!open) {
       setDemandeMessage('')
       setDemandeDate('')
       setDemandeBudget('')
-      setShowContactForm(false)
+      setActiveTab('about')
     }
   }, [open])
 
@@ -213,13 +214,12 @@ export function ProfilePreviewDialog({
   const socialLinks = [
     profile.instagram_url && { icon: Instagram, url: profile.instagram_url, label: 'Instagram' },
     profile.facebook_url && { icon: Facebook, url: profile.facebook_url, label: 'Facebook' },
-    profile.website_url && { icon: Globe, url: profile.website_url, label: 'Site' },
+    profile.website_url && { icon: Globe, url: profile.website_url, label: 'Site web' },
     profile.linkedin_url && { icon: Linkedin, url: profile.linkedin_url, label: 'LinkedIn' },
     profile.tiktok_url && { icon: Music2, url: profile.tiktok_url, label: 'TikTok' },
   ].filter(Boolean) as Array<{ icon: any; url: string; label: string }>
 
-  // Preview portfolio (first 4 images)
-  const portfolioPreview = portfolio.filter(p => p.file_type !== 'pdf').slice(0, 4)
+  const hasSocialLinks = socialLinks.length > 0
 
   return (
     <>
@@ -228,16 +228,16 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 border-[#823F91]/20 text-[#823F91] hover:bg-[#823F91]/5"
+          className="gap-2 border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-colors"
         >
           <Eye className="h-4 w-4" />
-          Apercu
+          Apercu du profil
         </Button>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl"
+          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl"
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
@@ -249,287 +249,347 @@ export function ProfilePreviewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200"
             >
               <X className="h-4 w-4 text-gray-600" />
             </Button>
           </DialogClose>
 
-          {/* Scrollable content */}
-          <div className="overflow-y-auto max-h-[85vh]">
-            {/* HEADER */}
-            <div className="p-5 pb-4">
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-16 w-16 ring-2 ring-gray-100">
-                    <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-                    <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
-                      {getInitials(profile.nom_entreprise)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {profile.is_early_adopter && (
-                    <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-white">
-                      <Sparkles className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <h2 className="text-lg font-bold text-gray-900 truncate">
-                    {profile.nom_entreprise}
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-2">
-                    {profile.service_type}
-                  </p>
-
-                  {/* Key info row */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
-                    {profile.ville_principale && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {profile.ville_principale}
-                      </span>
-                    )}
-                    {getBudgetDisplay() && (
-                      <span className="flex items-center gap-1">
-                        <Euro className="h-3 w-3" />
-                        {getBudgetDisplay()}
-                      </span>
-                    )}
-                    {profile.annees_experience && (
-                      <span className="flex items-center gap-1">
-                        <Briefcase className="h-3 w-3" />
-                        {profile.annees_experience} ans
-                      </span>
-                    )}
+          {/* HEADER */}
+          <div className="p-5 pb-4 border-b border-gray-100">
+            <div className="flex items-start gap-4">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <Avatar className="h-16 w-16 ring-2 ring-gray-100">
+                  <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
+                  <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
+                    {getInitials(profile.nom_entreprise)}
+                  </AvatarFallback>
+                </Avatar>
+                {profile.is_early_adopter && (
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-white">
+                    <Sparkles className="h-3 w-3 text-white" />
                   </div>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0 pt-0.5 pr-8">
+                <h2 className="text-lg font-bold text-gray-900 truncate">
+                  {profile.nom_entreprise}
+                </h2>
+                <p className="text-sm text-gray-500 mb-2">
+                  {profile.service_type}
+                </p>
+
+                {/* Key info badges */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {profile.ville_principale && (
+                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {profile.ville_principale}
+                    </Badge>
+                  )}
+                  {profile.annees_experience && (
+                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
+                      <Briefcase className="h-3 w-3 mr-1" />
+                      {profile.annees_experience} ans
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* DESCRIPTION */}
-            {profile.description_courte && (
-              <div className="px-5 pb-4">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {profile.description_courte}
-                </p>
-                {profile.prenom && profile.nom && (
-                  <p className="text-xs text-gray-400 mt-1.5">
-                    — {profile.prenom} {profile.nom}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* CULTURES */}
-            {cultures.length > 0 && (
-              <div className="px-5 pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Heart className="h-3.5 w-3.5 text-[#823F91]" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Cultures</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {cultures.map((culture) => (
-                    <Badge
-                      key={culture.id}
-                      variant="secondary"
-                      className="text-xs py-1 px-2.5 bg-[#823F91]/8 text-[#823F91] border-0 font-normal"
-                    >
-                      {culture.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ZONES */}
-            {zones.length > 0 && (
-              <div className="px-5 pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Zones</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {zones.slice(0, 5).map((zone) => (
-                    <Badge
-                      key={zone.id}
-                      variant="outline"
-                      className="text-xs py-1 px-2.5 bg-gray-50 text-gray-600 border-gray-200 font-normal"
-                    >
-                      {zone.label}
-                    </Badge>
-                  ))}
-                  {zones.length > 5 && (
-                    <Badge variant="outline" className="text-xs py-1 px-2.5 bg-gray-50 text-gray-400 border-gray-200 font-normal">
-                      +{zones.length - 5}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* PORTFOLIO PREVIEW */}
-            {portfolioPreview.length > 0 && (
-              <div className="px-5 pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Camera className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    Portfolio ({portfolio.length})
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {portfolioPreview.map((item, i) => (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "aspect-square rounded-lg overflow-hidden bg-gray-100",
-                        i === 3 && portfolio.length > 4 && "relative"
-                      )}
-                    >
-                      <img
-                        src={item.image_url}
-                        alt={item.title || 'Portfolio'}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      {i === 3 && portfolio.length > 4 && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">+{portfolio.length - 4}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* SOCIAL LINKS */}
-            {socialLinks.length > 0 && (
-              <div className="px-5 pb-4">
-                <div className="flex flex-wrap gap-2">
-                  {socialLinks.map((social, i) => (
-                    <a
-                      key={i}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs transition-colors"
-                    >
-                      <social.icon className="h-3.5 w-3.5" />
-                      {social.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* CONTACT FORM (for couple view) */}
-            {isCoupleView && showContactForm && (
-              <div className="px-5 pb-4 space-y-3">
-                <div className="h-px bg-gray-100" />
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="message" className="text-xs font-medium text-gray-700 mb-1.5 block">
-                      Votre message
-                    </Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Decrivez votre projet..."
-                      value={demandeMessage}
-                      onChange={(e) => setDemandeMessage(e.target.value)}
-                      className="min-h-[100px] text-sm resize-none border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="date" className="text-xs font-medium text-gray-700 mb-1.5 block">
-                        Date du mariage
-                      </Label>
-                      <Input
-                        id="date"
-                        type="date"
-                        value={demandeDate}
-                        onChange={(e) => setDemandeDate(e.target.value)}
-                        className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="budget" className="text-xs font-medium text-gray-700 mb-1.5 block">
-                        Budget (€)
-                      </Label>
-                      <Input
-                        id="budget"
-                        type="number"
-                        placeholder="2000"
-                        value={demandeBudget}
-                        onChange={(e) => setDemandeBudget(e.target.value)}
-                        className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {!profile.description_courte && cultures.length === 0 && zones.length === 0 && portfolio.length === 0 && (
-              <div className="px-5 pb-4">
-                <div className="text-center py-8 text-gray-400 text-sm">
-                  {isCoupleView
-                    ? 'Ce prestataire n\'a pas encore complete son profil'
-                    : 'Completez votre profil pour le rendre plus attractif'}
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* TABS */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <TabsList className="w-full h-11 rounded-none border-b border-gray-100 bg-gray-50/50 p-0">
+              <TabsTrigger
+                value="about"
+                className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+              >
+                <User className="h-4 w-4 mr-1.5" />
+                A propos
+              </TabsTrigger>
+              <TabsTrigger
+                value="portfolio"
+                className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+              >
+                <Camera className="h-4 w-4 mr-1.5" />
+                Portfolio
+              </TabsTrigger>
+              {hasSocialLinks && (
+                <TabsTrigger
+                  value="links"
+                  className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+                >
+                  <Link2 className="h-4 w-4 mr-1.5" />
+                  Liens
+                </TabsTrigger>
+              )}
+              {isCoupleView && (
+                <TabsTrigger
+                  value="contact"
+                  className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-[#823F91] data-[state=active]:bg-transparent data-[state=active]:text-[#823F91] text-gray-500 text-sm font-medium"
+                >
+                  <Send className="h-4 w-4 mr-1.5" />
+                  Contact
+                </TabsTrigger>
+              )}
+            </TabsList>
+
+            {/* SCROLLABLE CONTENT */}
+            <div className="flex-1 overflow-y-auto max-h-[calc(85vh-200px)]">
+              {/* TAB: A PROPOS */}
+              <TabsContent value="about" className="m-0 p-5 space-y-5">
+                {/* Description */}
+                {profile.description_courte && (
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {profile.description_courte}
+                    </p>
+                    {profile.prenom && profile.nom && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        — {profile.prenom} {profile.nom}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Bio */}
+                {profile.bio && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Presentation</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                      {profile.bio}
+                    </p>
+                  </div>
+                )}
+
+                {/* Tarifs */}
+                {getBudgetDisplay() && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <Euro className="h-3.5 w-3.5" />
+                      Tarifs
+                    </h4>
+                    <p className="text-sm font-medium text-gray-900">{getBudgetDisplay()}</p>
+                  </div>
+                )}
+
+                {/* Cultures */}
+                {cultures.length > 0 && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <Heart className="h-3.5 w-3.5 text-[#823F91]" />
+                      Cultures maitrisees
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {cultures.map((culture) => (
+                        <Badge
+                          key={culture.id}
+                          className="text-xs py-1.5 px-3 bg-[#823F91]/10 text-[#823F91] border-0 font-normal hover:bg-[#823F91]/15"
+                        >
+                          {culture.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Zones */}
+                {zones.length > 0 && (
+                  <div className="pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <MapPin className="h-3.5 w-3.5" />
+                      Zones d'intervention
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {zones.map((zone) => (
+                        <Badge
+                          key={zone.id}
+                          variant="outline"
+                          className="text-xs py-1.5 px-3 bg-gray-50 text-gray-600 border-gray-200 font-normal"
+                        >
+                          {zone.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    {isCoupleView
+                      ? 'Ce prestataire n\'a pas encore complete son profil'
+                      : 'Completez votre profil pour le rendre plus attractif'}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* TAB: PORTFOLIO */}
+              <TabsContent value="portfolio" className="m-0 p-5">
+                {portfolio && portfolio.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {portfolio.map((item) => {
+                      const isPdf = item.file_type === 'pdf'
+                      return (
+                        <div
+                          key={item.id}
+                          className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative"
+                        >
+                          {isPdf ? (
+                            <a
+                              href={item.image_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
+                            >
+                              <FileText className="h-10 w-10 text-red-500 mb-2" />
+                              <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
+                                {item.title || 'PDF'}
+                              </span>
+                            </a>
+                          ) : (
+                            <>
+                              <img
+                                src={item.image_url}
+                                alt={item.title || 'Portfolio'}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                              {item.title && (
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Camera className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">
+                      {isCoupleView
+                        ? 'Aucune photo dans le portfolio'
+                        : 'Ajoutez des photos a votre portfolio'}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* TAB: LIENS / RESEAUX */}
+              {hasSocialLinks && (
+                <TabsContent value="links" className="m-0 p-5">
+                  <div className="space-y-3">
+                    {socialLinks.map((social, i) => (
+                      <a
+                        key={i}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                          <social.icon className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{social.label}</p>
+                          <p className="text-xs text-gray-500 truncate">{social.url}</p>
+                        </div>
+                        <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-[#823F91] transition-colors" />
+                      </a>
+                    ))}
+                  </div>
+                </TabsContent>
+              )}
+
+              {/* TAB: CONTACT (couple view only) */}
+              {isCoupleView && (
+                <TabsContent value="contact" className="m-0 p-5">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="message" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Votre message <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="message"
+                        placeholder="Decrivez votre projet, vos besoins..."
+                        value={demandeMessage}
+                        onChange={(e) => setDemandeMessage(e.target.value)}
+                        className="min-h-[120px] text-sm resize-none border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="date" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Date du mariage
+                        </Label>
+                        <Input
+                          id="date"
+                          type="date"
+                          value={demandeDate}
+                          onChange={(e) => setDemandeDate(e.target.value)}
+                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="budget" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Budget (€)
+                        </Label>
+                        <Input
+                          id="budget"
+                          type="number"
+                          placeholder="2000"
+                          value={demandeBudget}
+                          onChange={(e) => setDemandeBudget(e.target.value)}
+                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
+            </div>
+          </Tabs>
 
           {/* FOOTER */}
           <div className="border-t border-gray-100 p-4 bg-gray-50/50">
-            {isCoupleView ? (
-              showContactForm ? (
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    className="flex-1 text-sm h-10 text-gray-600"
-                    onClick={() => setShowContactForm(false)}
-                    disabled={isCreatingDemande}
-                  >
-                    Retour
-                  </Button>
-                  <Button
-                    className="flex-1 h-10 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
-                    onClick={handleCreateDemande}
-                    disabled={isCreatingDemande || !demandeMessage.trim()}
-                  >
-                    {isCreatingDemande ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                        Envoi...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Envoyer
-                      </>
-                    )}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  className="w-full h-10 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
-                  onClick={() => setShowContactForm(true)}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Contacter ce prestataire
-                  <ChevronRight className="h-4 w-4 ml-auto" />
-                </Button>
-              )
+            {isCoupleView && activeTab === 'contact' ? (
+              <Button
+                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                onClick={handleCreateDemande}
+                disabled={isCreatingDemande || !demandeMessage.trim()}
+              >
+                {isCreatingDemande ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Envoyer la demande
+                  </>
+                )}
+              </Button>
+            ) : isCoupleView ? (
+              <Button
+                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                onClick={() => setActiveTab('contact')}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Contacter ce prestataire
+                <ChevronRight className="h-4 w-4 ml-auto" />
+              </Button>
             ) : (
               <Button
-                variant="ghost"
-                className="w-full h-10 text-sm text-gray-600 hover:text-gray-900"
+                variant="outline"
+                className="w-full h-11 text-sm border-gray-200 text-gray-600 hover:bg-gray-100"
                 onClick={() => setOpen(false)}
               >
                 Fermer l'apercu
