@@ -262,16 +262,15 @@ export function ChatMessages({
                         <div
                           className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                             isOwn
-                              ? 'bg-[#823F91] text-white rounded-br-sm'
+                              ? 'bg-white border border-[#823F91]/30 text-gray-900 rounded-br-sm shadow-sm'
                               : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                           }`}
                         >
                           {/* Contenu texte */}
                           {message.content && (
-                            <p 
-                              className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                                isOwn ? 'text-white' : 'text-gray-900'
-                              }`}
+                            <p
+                              className="text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal text-gray-900"
+                              style={{ color: '#111827' }}
                             >
                               {message.content}
                             </p>
@@ -284,11 +283,7 @@ export function ChatMessages({
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button
-                                className={`absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${
-                                  isOwn
-                                    ? 'bg-white/25 hover:bg-white/40 text-white'
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                }`}
+                                className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-gray-100 hover:bg-gray-200 text-gray-600"
                                 aria-label="Menu message"
                               >
                                 <MoreVertical className="h-3.5 w-3.5" />

@@ -146,22 +146,18 @@ export function MessageThread({
                 <div
                   className={`max-w-[70%] rounded-lg px-4 py-2 ${
                     isOwnMessage
-                      ? 'bg-[#823F91] text-white'
+                      ? 'bg-white border border-[#823F91]/30 text-gray-900 shadow-sm'
                       : 'bg-gray-100 text-gray-900'
                   }`}
-                  style={isOwnMessage ? { backgroundColor: '#823F91' } : {}}
                 >
-                  <p 
-                    className="text-sm"
-                    style={isOwnMessage ? { color: '#FFFFFF' } : {}}
+                  <p
+                    className="text-sm text-gray-900"
+                    style={{ color: '#111827' }}
                   >
                     {message.content}
                   </p>
                   <p
-                    className={`text-xs mt-1 ${
-                      isOwnMessage ? 'text-white/70' : 'text-gray-500'
-                    }`}
-                    style={isOwnMessage ? { color: 'rgba(255, 255, 255, 0.7)' } : {}}
+                    className="text-xs mt-1 text-gray-500"
                   >
                     {new Date(message.created_at).toLocaleTimeString('fr-FR', {
                       hour: '2-digit',
