@@ -89,14 +89,6 @@ export function ProfileScoreCard({
         priority: 'high',
       },
       {
-        id: 'bio',
-        label: 'Biographie complete',
-        completed: !!profile?.bio && profile.bio.length > 100,
-        points: 10,
-        icon: <FileText className="h-4 w-4" />,
-        priority: 'medium',
-      },
-      {
         id: 'budget',
         label: 'Tarifs renseignes',
         completed: !!profile?.budget_min || !!profile?.budget_max,

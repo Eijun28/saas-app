@@ -401,7 +401,58 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ETAPE 2.5 : CHARGER LES DONNEES D'EQUITE ET LES TAGS DE SPECIALITE
+    // ETAPE 2.5 : FILTRER PAR COMPLETION DU PROFIL (70% minimum)
+    // Seuls les prestataires avec un profil suffisamment complet sont visibles
+    const MINIMUM_PROFILE_COMPLETION = 70;
+
+    const providersWithCompletion = enrichedProviders.filter((provider) => {
+      // Calculer le score de complétion (même logique que ProfileScoreCard)
+      let score = 0;
+      const maxScore = 100;
+
+      // Avatar: 15 pts
+      if (provider.avatar_url) score += 15;
+      // Nom entreprise: 10 pts
+      if (provider.nom_entreprise) score += 10;
+      // Description courte (> 20 chars): 15 pts
+      if (provider.description_courte && String(provider.description_courte).length > 20) score += 15;
+      // Budget: 10 pts
+      if (provider.budget_min || provider.budget_max) score += 10;
+      // Ville principale: 5 pts
+      if (provider.ville_principale) score += 5;
+      // Cultures: 15 pts
+      if (Array.isArray(provider.cultures) && provider.cultures.length > 0) score += 15;
+      // Zones: 10 pts
+      if (Array.isArray(provider.zones) && provider.zones.length > 0) score += 10;
+      // Portfolio (3+ photos): 15 pts
+      if (typeof provider.portfolio_count === 'number' && provider.portfolio_count >= 3) score += 15;
+      // Réseaux sociaux: 5 pts (non vérifié ici car non chargé, on l'ignore)
+      // Le score max effectif est donc 95 pts
+
+      const completionPercent = Math.round((score / maxScore) * 100);
+      return completionPercent >= MINIMUM_PROFILE_COMPLETION;
+    });
+
+    logger.info(`📊 Filtrage profil: ${enrichedProviders.length} -> ${providersWithCompletion.length} prestataires (>= ${MINIMUM_PROFILE_COMPLETION}% complétion)`);
+
+    // Si aucun prestataire ne passe le filtre de complétion, retourner un message explicatif
+    if (providersWithCompletion.length === 0 && enrichedProviders.length > 0) {
+      return NextResponse.json({
+        matches: [],
+        total_candidates: 0,
+        search_criteria,
+        suggestions: {
+          message: `Les prestataires de type "${search_criteria.service_type}" n'ont pas encore complété leur profil. Réessayez bientôt !`,
+          total_providers_for_service: enrichedProviders.length,
+          service_type: normalizedServiceType,
+        },
+      });
+    }
+
+    // Remplacer enrichedProviders par les prestataires filtrés
+    enrichedProviders = providersWithCompletion;
+
+    // ETAPE 2.6 : CHARGER LES DONNEES D'EQUITE ET LES TAGS DE SPECIALITE
     logger.debug('⚖️ Chargement des donnees d\'equite et specialites');
 
     // Charger les donnees d'equite pour tous les prestataires
@@ -474,7 +525,7 @@ export async function POST(request: NextRequest) {
       logger.warn('⚠️ Impossible de charger les tags de specialite:', tagsError);
     }
 
-    // ETAPE 3 : CALCULER LES SCORES AVEC EQUITE
+    // ETAPE 3 : CALCULER LES SCORES AVEC EQUITE (sur les prestataires filtrés >= 70%)
     const scoredProviders = enrichedProviders.map((provider) => {
       const providerId = typeof provider.id === 'string' ? provider.id : String(provider.id);
 
