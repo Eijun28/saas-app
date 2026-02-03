@@ -195,3 +195,188 @@ export interface ConsentStatusResponse {
   consentRequest: BillingConsentRequest | null
   needsBillingInfo: boolean
 }
+
+// ============================================
+// DEVIS TEMPLATES
+// ============================================
+
+/**
+ * Template de devis réutilisable
+ */
+export interface DevisTemplate {
+  id: string
+  prestataire_id: string
+  name: string
+  description: string | null
+  is_default: boolean
+  title_template: string
+  description_template: string | null
+  default_amount: number | null
+  currency: string
+  included_services: string[]
+  excluded_services: string[]
+  conditions: string | null
+  validity_days: number
+  use_count: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Payload pour créer/modifier un template
+ */
+export interface DevisTemplatePayload {
+  name: string
+  description?: string
+  is_default?: boolean
+  title_template: string
+  description_template?: string
+  default_amount?: number
+  currency?: string
+  included_services?: string[]
+  excluded_services?: string[]
+  conditions?: string
+  validity_days?: number
+}
+
+// ============================================
+// FACTURES (INVOICES)
+// ============================================
+
+/**
+ * Statuts possibles pour une facture
+ */
+export type FactureStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+
+/**
+ * Facture complète
+ */
+export interface Facture {
+  id: string
+  devis_id: string | null
+  prestataire_id: string
+  couple_id: string
+  facture_number: string
+  title: string
+  description: string | null
+  amount_ht: number
+  tva_rate: number
+  amount_tva: number
+  amount_ttc: number
+  currency: string
+  included_services: string[]
+  conditions: string | null
+  payment_terms: string | null
+  issue_date: string
+  due_date: string | null
+  paid_date: string | null
+  status: FactureStatus
+  pdf_url: string | null
+  created_at: string
+  updated_at: string
+  // Relations
+  couple?: {
+    id: string
+    partner_1_name: string | null
+    partner_2_name: string | null
+  }
+  devis?: DevisWithPdf
+}
+
+/**
+ * Payload pour créer une facture
+ */
+export interface CreateFacturePayload {
+  devis_id?: string
+  couple_id: string
+  title: string
+  description?: string
+  amount_ht: number
+  tva_rate?: number
+  included_services?: string[]
+  conditions?: string
+  payment_terms?: string
+  due_date?: string
+}
+
+// ============================================
+// PROVIDER DEVIS SETTINGS
+// ============================================
+
+/**
+ * Paramètres de devis du prestataire
+ */
+export interface ProviderDevisSettings {
+  id: string
+  prestataire_id: string
+  default_validity_days: number
+  default_conditions: string | null
+  default_payment_terms: string | null
+  is_subject_to_tva: boolean
+  default_tva_rate: number
+  devis_prefix: string
+  facture_prefix: string
+  next_devis_number: number
+  next_facture_number: number
+  send_reminder_before_expiry: boolean
+  reminder_days_before: number
+  show_iban_on_devis: boolean
+  show_iban_on_facture: boolean
+  custom_logo_url: string | null
+  header_text: string | null
+  footer_text: string | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Payload pour mettre à jour les paramètres
+ */
+export interface ProviderDevisSettingsPayload {
+  default_validity_days?: number
+  default_conditions?: string
+  default_payment_terms?: string
+  is_subject_to_tva?: boolean
+  default_tva_rate?: number
+  devis_prefix?: string
+  facture_prefix?: string
+  send_reminder_before_expiry?: boolean
+  reminder_days_before?: number
+  show_iban_on_devis?: boolean
+  show_iban_on_facture?: boolean
+  custom_logo_url?: string
+  header_text?: string
+  footer_text?: string
+}
+
+// ============================================
+// QUICK DEVIS GENERATION
+// ============================================
+
+/**
+ * Couple avec infos pour sélection rapide
+ */
+export interface CoupleForDevis {
+  id: string
+  partner_1_name: string | null
+  partner_2_name: string | null
+  wedding_date: string | null
+  has_billing_info: boolean
+  has_consent: boolean
+  conversation_id?: string
+}
+
+/**
+ * Payload pour génération rapide de devis
+ */
+export interface QuickDevisPayload {
+  couple_id: string
+  template_id?: string
+  amount: number
+  title: string
+  description: string
+  included_services?: string[]
+  excluded_services?: string[]
+  conditions?: string
+  validity_days?: number
+}
