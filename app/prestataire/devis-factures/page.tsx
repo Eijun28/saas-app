@@ -377,14 +377,16 @@ export default function DevisFacturesPage() {
   }
 
   const getStatusBadge = (status: string, type: 'devis' | 'facture' = 'devis') => {
-    const devisConfig = {
+    type StatusConfig = { label: string; className: string }
+
+    const devisConfig: Record<string, StatusConfig> = {
       pending: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800' },
       accepted: { label: 'Accepté', className: 'bg-green-100 text-green-800' },
       rejected: { label: 'Refusé', className: 'bg-red-100 text-red-800' },
       negotiating: { label: 'Négociation', className: 'bg-blue-100 text-blue-800' },
     }
 
-    const factureConfig = {
+    const factureConfig: Record<string, StatusConfig> = {
       draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
       sent: { label: 'Envoyée', className: 'bg-blue-100 text-blue-800' },
       paid: { label: 'Payée', className: 'bg-green-100 text-green-800' },
@@ -393,7 +395,7 @@ export default function DevisFacturesPage() {
     }
 
     const config = type === 'devis' ? devisConfig : factureConfig
-    const statusConfig = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100' }
+    const statusConfig = config[status] || { label: status, className: 'bg-gray-100' }
     return <Badge className={statusConfig.className}>{statusConfig.label}</Badge>
   }
 
