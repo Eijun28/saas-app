@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,11 +9,7 @@ import {
   DialogClose,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -22,6 +18,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
+import { cn } from '@/lib/utils'
 
 interface ProfilePreviewDialogProps {
   userId: string
@@ -50,8 +47,8 @@ interface ProfilePreviewDialogProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTriggerButton?: boolean
-  isCoupleView?: boolean // Si true, affiche "Envoyer une demande" au lieu de "Continuer l'édition"
-  coupleId?: string // ID du couple pour créer la demande
+  isCoupleView?: boolean
+  coupleId?: string
 }
 
 export function ProfilePreviewDialog({
@@ -76,13 +73,14 @@ export function ProfilePreviewDialog({
   const [demandeDate, setDemandeDate] = useState('')
   const [demandeBudget, setDemandeBudget] = useState('')
   const [isCreatingDemande, setIsCreatingDemande] = useState(false)
-  
-  // Réinitialiser le formulaire quand le dialog se ferme
+  const [showContactForm, setShowContactForm] = useState(false)
+
   useEffect(() => {
     if (!open) {
       setDemandeMessage('')
       setDemandeDate('')
       setDemandeBudget('')
+      setShowContactForm(false)
     }
   }, [open])
 
@@ -109,7 +107,6 @@ export function ProfilePreviewDialog({
     }
   }, [profile.avatar_url])
 
-  // Recharger l'avatar quand le dialog s'ouvre
   useEffect(() => {
     if (open && profile.avatar_url) {
       setAvatarUrl(getUrlWithTimestamp(profile.avatar_url))
@@ -118,26 +115,25 @@ export function ProfilePreviewDialog({
 
   const getBudgetDisplay = () => {
     if (profile.budget_min && profile.budget_max) {
-      return `${profile.budget_min.toLocaleString()}€ - ${profile.budget_max.toLocaleString()}€`
+      return `${profile.budget_min.toLocaleString()} - ${profile.budget_max.toLocaleString()}€`
     } else if (profile.budget_min) {
-      return `À partir de ${profile.budget_min.toLocaleString()}€`
+      return `A partir de ${profile.budget_min.toLocaleString()}€`
     } else if (profile.budget_max) {
-      return `Jusqu'à ${profile.budget_max.toLocaleString()}€`
+      return `Jusqu'a ${profile.budget_max.toLocaleString()}€`
     }
     return null
   }
 
   const handleCreateDemande = async () => {
-    // Utiliser l'ID de l'utilisateur connecté si coupleId n'est pas fourni
     const currentCoupleId = coupleId || user?.id
-    
+
     if (!currentCoupleId || !demandeMessage.trim()) {
       toast.error('Veuillez remplir le message')
       return
     }
 
     if (!user) {
-      toast.error('Vous devez être connecté pour envoyer une demande')
+      toast.error('Vous devez etre connecte pour envoyer une demande')
       return
     }
 
@@ -145,7 +141,6 @@ export function ProfilePreviewDialog({
     const supabase = createClient()
 
     try {
-      // Vérifier si une demande existe déjà pour ce couple/prestataire
       const { data: existingRequest } = await supabase
         .from('requests')
         .select('id, status')
@@ -155,11 +150,11 @@ export function ProfilePreviewDialog({
 
       if (existingRequest) {
         if (existingRequest.status === 'pending') {
-          toast.error('Une demande est déjà en attente pour ce prestataire')
+          toast.error('Une demande est deja en attente pour ce prestataire')
           setIsCreatingDemande(false)
           return
         } else if (existingRequest.status === 'accepted') {
-          toast.error('Vous avez déjà une demande acceptée avec ce prestataire')
+          toast.error('Vous avez deja une demande acceptee avec ce prestataire')
           setIsCreatingDemande(false)
           return
         }
@@ -168,8 +163,8 @@ export function ProfilePreviewDialog({
       const { data, error } = await supabase
         .from('requests')
         .insert({
-          couple_id: currentCoupleId, // doit être auth.users.id (couples.user_id)
-          provider_id: userId, // userId = prestataire auth.users.id
+          couple_id: currentCoupleId,
+          provider_id: userId,
           initial_message: demandeMessage.trim(),
           status: 'pending',
         })
@@ -177,69 +172,54 @@ export function ProfilePreviewDialog({
         .single()
 
       if (error) {
-        console.error('Erreur Supabase détaillée:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          fullError: error,
-        })
-        
-        // Messages d'erreur plus spécifiques
+        console.error('Erreur Supabase:', error)
         if (error.code === '23505') {
-          // Violation de contrainte unique
-          toast.error('Une demande existe déjà pour ce prestataire')
+          toast.error('Une demande existe deja pour ce prestataire')
         } else if (error.code === '42501') {
-          // Permission refusée (RLS)
           toast.error('Vous n\'avez pas la permission d\'envoyer cette demande')
-        } else if (error.message) {
-          toast.error(`Erreur: ${error.message}`)
         } else {
-          toast.error('Erreur lors de l\'envoi de la demande. Veuillez réessayer.')
+          toast.error('Erreur lors de l\'envoi de la demande')
         }
         return
       }
 
-      // Envoyer l'email de notification au prestataire (sans bloquer le flow)
       if (data?.id) {
         try {
           const { sendNewRequestEmail } = await import('@/lib/email/notifications')
-          await sendNewRequestEmail(
-            userId,
-            currentCoupleId,
-            data.id,
-            demandeMessage.trim()
-          )
+          await sendNewRequestEmail(userId, currentCoupleId, data.id, demandeMessage.trim())
         } catch (emailError) {
-          // Ne pas bloquer si l'email échoue
-          console.error('Erreur envoi email notification:', emailError)
+          console.error('Erreur envoi email:', emailError)
         }
       }
 
-      toast.success('Demande envoyée avec succès !')
+      toast.success('Demande envoyee avec succes !')
       setDemandeMessage('')
       setDemandeDate('')
       setDemandeBudget('')
       setOpen(false)
-      
-      // Rediriger vers la page des demandes après un court délai
+
       setTimeout(() => {
         router.push('/couple/demandes')
       }, 500)
     } catch (error: any) {
-      console.error('Erreur création demande:', {
-        error,
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        stack: error?.stack,
-      })
+      console.error('Erreur creation demande:', error)
       toast.error(error?.message || 'Erreur lors de l\'envoi de la demande')
     } finally {
       setIsCreatingDemande(false)
     }
   }
+
+  // Get social links
+  const socialLinks = [
+    profile.instagram_url && { icon: Instagram, url: profile.instagram_url, label: 'Instagram' },
+    profile.facebook_url && { icon: Facebook, url: profile.facebook_url, label: 'Facebook' },
+    profile.website_url && { icon: Globe, url: profile.website_url, label: 'Site' },
+    profile.linkedin_url && { icon: Linkedin, url: profile.linkedin_url, label: 'LinkedIn' },
+    profile.tiktok_url && { icon: Music2, url: profile.tiktok_url, label: 'TikTok' },
+  ].filter(Boolean) as Array<{ icon: any; url: string; label: string }>
+
+  // Preview portfolio (first 4 images)
+  const portfolioPreview = portfolio.filter(p => p.file_type !== 'pdf').slice(0, 4)
 
   return (
     <>
@@ -248,472 +228,312 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2"
+          className="gap-2 border-[#823F91]/20 text-[#823F91] hover:bg-[#823F91]/5"
         >
           <Eye className="h-4 w-4" />
-          Aperçu du profil
+          Apercu
         </Button>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent 
-          className="max-w-[calc(100vw-1rem)] sm:max-w-2xl max-h-[70vh] sm:max-h-[85vh] p-0 gap-0 overflow-hidden rounded-xl flex flex-col"
+        <DialogContent
+          className="max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl"
           showCloseButton={false}
-          style={{
-            animation: 'none',
-          }}
         >
           <DialogTitle className="sr-only">
-            Aperçu du profil public - {profile.nom_entreprise}
+            Apercu du profil - {profile.nom_entreprise}
           </DialogTitle>
 
-          {/* HEADER FIXE - Dégradé blanc/violet léger */}
-          <div className="relative p-4 md:p-6 border-b border-gray-100 bg-gradient-to-br from-white via-purple-50/50 to-purple-100/30 flex-shrink-0">
-            {/* Close button */}
-            <DialogClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-600 hover:bg-gray-100 z-10"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </DialogClose>
+          {/* Close button */}
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-sm"
+            >
+              <X className="h-4 w-4 text-gray-600" />
+            </Button>
+          </DialogClose>
 
-            {/* Avatar + Nom côte à côte */}
-            <div className="flex items-start gap-3 md:gap-4">
-              <Avatar className="h-14 w-14 md:h-16 md:w-16 border-2 border-[#823F91]/20 shadow-sm flex-shrink-0">
-                <AvatarImage
-                  src={avatarUrl || undefined}
-                  alt={profile.nom_entreprise}
-                />
-                <AvatarFallback className="text-lg md:text-xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white">
-                  {getInitials(profile.nom_entreprise)}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="flex-1 min-w-0 pr-8">
-                <h1 className="text-lg md:text-xl font-bold mb-1 truncate text-gray-900">
-                  {profile.nom_entreprise || 'Nom d\'entreprise'}
-                </h1>
-                <p className="text-sm text-gray-600 mb-2 truncate">
-                  {profile.service_type}
-                </p>
-
-                {/* Badges infos clés */}
-                <div className="flex flex-wrap gap-1">
+          {/* Scrollable content */}
+          <div className="overflow-y-auto max-h-[85vh]">
+            {/* HEADER */}
+            <div className="p-5 pb-4">
+              <div className="flex items-start gap-4">
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  <Avatar className="h-16 w-16 ring-2 ring-gray-100">
+                    <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
+                    <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
+                      {getInitials(profile.nom_entreprise)}
+                    </AvatarFallback>
+                  </Avatar>
                   {profile.is_early_adopter && (
-                    <Badge className="text-xs bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white border-0">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Partenaire Fondateur
-                    </Badge>
+                    <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-white">
+                      <Sparkles className="h-3 w-3 text-white" />
+                    </div>
                   )}
+                </div>
 
-                  {profile.ville_principale && (
-                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91]">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      {profile.ville_principale}
+                {/* Info */}
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h2 className="text-lg font-bold text-gray-900 truncate">
+                    {profile.nom_entreprise}
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {profile.service_type}
+                  </p>
+
+                  {/* Key info row */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
+                    {profile.ville_principale && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {profile.ville_principale}
+                      </span>
+                    )}
+                    {getBudgetDisplay() && (
+                      <span className="flex items-center gap-1">
+                        <Euro className="h-3 w-3" />
+                        {getBudgetDisplay()}
+                      </span>
+                    )}
+                    {profile.annees_experience && (
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="h-3 w-3" />
+                        {profile.annees_experience} ans
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* DESCRIPTION */}
+            {profile.description_courte && (
+              <div className="px-5 pb-4">
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {profile.description_courte}
+                </p>
+                {profile.prenom && profile.nom && (
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    — {profile.prenom} {profile.nom}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* CULTURES */}
+            {cultures.length > 0 && (
+              <div className="px-5 pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="h-3.5 w-3.5 text-[#823F91]" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Cultures</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {cultures.map((culture) => (
+                    <Badge
+                      key={culture.id}
+                      variant="secondary"
+                      className="text-xs py-1 px-2.5 bg-[#823F91]/8 text-[#823F91] border-0 font-normal"
+                    >
+                      {culture.label}
                     </Badge>
-                  )}
+                  ))}
+                </div>
+              </div>
+            )}
 
-                  {getBudgetDisplay() && (
-                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91] hidden sm:flex">
-                      <Euro className="h-3 w-3 mr-1" />
-                      {getBudgetDisplay()}
+            {/* ZONES */}
+            {zones.length > 0 && (
+              <div className="px-5 pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Zones</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {zones.slice(0, 5).map((zone) => (
+                    <Badge
+                      key={zone.id}
+                      variant="outline"
+                      className="text-xs py-1 px-2.5 bg-gray-50 text-gray-600 border-gray-200 font-normal"
+                    >
+                      {zone.label}
                     </Badge>
-                  )}
-
-                  {profile.annees_experience && (
-                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-[#823F91]">
-                      <Briefcase className="h-3 w-3 mr-1" />
-                      {profile.annees_experience} ans
+                  ))}
+                  {zones.length > 5 && (
+                    <Badge variant="outline" className="text-xs py-1 px-2.5 bg-gray-50 text-gray-400 border-gray-200 font-normal">
+                      +{zones.length - 5}
                     </Badge>
                   )}
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* TABS */}
-          <Tabs defaultValue={isCoupleView ? "contact" : "about"} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <TabsList className="w-full rounded-none border-b border-gray-100 bg-gradient-to-r from-purple-50/50 to-white flex-shrink-0">
-              <TabsTrigger value="about" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                À propos
-              </TabsTrigger>
-              <TabsTrigger value="portfolio" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                Portfolio ({portfolio.length})
-              </TabsTrigger>
-              <TabsTrigger value="contact" className="flex-1 text-xs md:text-sm text-gray-600 data-[state=active]:text-[#823F91] data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                {isCoupleView ? 'Envoyer une demande' : 'Contact'}
-              </TabsTrigger>
-            </TabsList>
-
-            {/* CONTENT SCROLLABLE */}
-            <div className="flex-1 min-h-0 overflow-y-auto bg-gradient-to-b from-white to-purple-50/30">
-              <div className="p-4 md:p-5">
-                {/* TAB À PROPOS */}
-                <TabsContent value="about" className="mt-0 space-y-6 w-full text-gray-900">
-                  {/* Description courte */}
-                  {profile.description_courte && (
-                    <div>
-                      <p className="text-lg leading-relaxed text-gray-800">
-                        {profile.description_courte}
-                      </p>
-                      {profile.prenom && profile.nom && (
-                        <p className="text-sm text-gray-500 mt-2">
-                          Par {profile.prenom} {profile.nom}
-                        </p>
+            {/* PORTFOLIO PREVIEW */}
+            {portfolioPreview.length > 0 && (
+              <div className="px-5 pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Camera className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Portfolio ({portfolio.length})
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {portfolioPreview.map((item, i) => (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        "aspect-square rounded-lg overflow-hidden bg-gray-100",
+                        i === 3 && portfolio.length > 4 && "relative"
+                      )}
+                    >
+                      <img
+                        src={item.image_url}
+                        alt={item.title || 'Portfolio'}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      {i === 3 && portfolio.length > 4 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">+{portfolio.length - 4}</span>
+                        </div>
                       )}
                     </div>
-                  )}
+                  ))}
+                </div>
+              </div>
+            )}
 
-                  {profile.description_courte && <Separator className="h-px bg-gray-200" />}
+            {/* SOCIAL LINKS */}
+            {socialLinks.length > 0 && (
+              <div className="px-5 pb-4">
+                <div className="flex flex-wrap gap-2">
+                  {socialLinks.map((social, i) => (
+                    <a
+                      key={i}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs transition-colors"
+                    >
+                      <social.icon className="h-3.5 w-3.5" />
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                  {/* Bio complète */}
-                  {profile.bio && (
-                    <>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-3 text-gray-900">Présentation</h3>
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                          {profile.bio}
-                        </p>
-                      </div>
-                      <Separator className="h-px bg-gray-200" />
-                    </>
-                  )}
-
-                  {/* Cultures */}
-                  {cultures.length > 0 && (
-                    <>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-3 text-gray-900">
-                          Cultures maîtrisées
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {cultures.map((culture) => (
-                            <Badge
-                              key={culture.id}
-                              variant="secondary"
-                              className="text-sm py-1.5 px-4 bg-purple-50 border-purple-200 text-[#823F91]"
-                            >
-                              {culture.label}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <Separator className="h-px bg-gray-200" />
-                    </>
-                  )}
-
-                  {/* Zones */}
-                  {zones.length > 0 && (
-                    <>
-                      <div>
-                        <h3 className="font-semibold text-lg mb-3 text-gray-900">
-                          Zones d'intervention
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          {zones.map((zone) => (
-                            <Badge
-                              key={zone.id}
-                              variant="outline"
-                              className="text-sm py-1.5 px-4 bg-purple-50 border-purple-200 text-[#823F91]"
-                            >
-                              {zone.label}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                      <Separator className="h-px bg-gray-200" />
-                    </>
-                  )}
-
-                  {/* Réseaux sociaux */}
-                  {(profile.instagram_url || profile.facebook_url || profile.website_url ||
-                    profile.linkedin_url || profile.tiktok_url) && (
+            {/* CONTACT FORM (for couple view) */}
+            {isCoupleView && showContactForm && (
+              <div className="px-5 pb-4 space-y-3">
+                <div className="h-px bg-gray-100" />
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="message" className="text-xs font-medium text-gray-700 mb-1.5 block">
+                      Votre message
+                    </Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Decrivez votre projet..."
+                      value={demandeMessage}
+                      onChange={(e) => setDemandeMessage(e.target.value)}
+                      className="min-h-[100px] text-sm resize-none border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <h3 className="font-semibold text-lg mb-3 text-gray-900">
-                        Réseaux sociaux
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.instagram_url && (
-                          <a
-                            href={profile.instagram_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
-                          >
-                            <Instagram className="h-4 w-4" />
-                            Instagram
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {profile.facebook_url && (
-                          <a
-                            href={profile.facebook_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
-                          >
-                            <Facebook className="h-4 w-4" />
-                            Facebook
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {profile.website_url && (
-                          <a
-                            href={profile.website_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
-                          >
-                            <Globe className="h-4 w-4" />
-                            Site web
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {profile.linkedin_url && (
-                          <a
-                            href={profile.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
-                          >
-                            <Linkedin className="h-4 w-4" />
-                            LinkedIn
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                        {profile.tiktok_url && (
-                          <a
-                            href={profile.tiktok_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 text-[#823F91] hover:bg-purple-100 transition-colors text-sm"
-                          >
-                            <Music2 className="h-4 w-4" />
-                            TikTok
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        )}
-                      </div>
+                      <Label htmlFor="date" className="text-xs font-medium text-gray-700 mb-1.5 block">
+                        Date du mariage
+                      </Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={demandeDate}
+                        onChange={(e) => setDemandeDate(e.target.value)}
+                        className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                      />
                     </div>
-                  )}
-
-                  {/* Empty state */}
-                  {!profile.description_courte &&
-                    !profile.bio &&
-                    cultures.length === 0 &&
-                    zones.length === 0 && (
-                      <Card className="p-6 md:p-12 text-center bg-purple-50/50 border-purple-100">
-                        <p className="text-gray-600 text-sm md:text-base">
-                          {isCoupleView
-                            ? 'Ce prestataire n\'a pas encore complété son profil'
-                            : 'Complétez votre profil pour le rendre plus attractif'}
-                        </p>
-                      </Card>
-                    )}
-                </TabsContent>
-
-                {/* TAB PORTFOLIO */}
-                <TabsContent value="portfolio" className="mt-0 w-full">
-                  {portfolio && portfolio.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {portfolio.map((item) => {
-                        const isPdf = item.file_type === 'pdf';
-
-                        return (
-                          <Card
-                            key={item.id}
-                            className="overflow-hidden group aspect-square cursor-pointer hover:shadow-lg transition-all relative border-gray-200"
-                          >
-                            {isPdf ? (
-                              // Affichage PDF
-                              <a
-                                href={item.image_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-150 transition-colors"
-                              >
-                                <FileText className="h-10 w-10 text-red-500 mb-2" />
-                                <span className="text-xs font-medium text-red-600 px-2 text-center truncate max-w-full">
-                                  {item.title || 'Document PDF'}
-                                </span>
-                                <span className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                                  <ExternalLink className="h-3 w-3" />
-                                  Ouvrir
-                                </span>
-                              </a>
-                            ) : (
-                              // Affichage Image
-                              <>
-                                <img
-                                  src={item.image_url}
-                                  alt={item.title || `Photo portfolio - ${profile.nom_entreprise}`}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    console.error('Erreur chargement image portfolio:', item.image_url)
-                                    const target = e.target as HTMLImageElement
-                                    target.style.display = 'none'
-                                  }}
-                                />
-                                {item.title && (
-                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <p className="text-white text-xs font-medium truncate">{item.title}</p>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </Card>
-                        );
-                      })}
+                    <div>
+                      <Label htmlFor="budget" className="text-xs font-medium text-gray-700 mb-1.5 block">
+                        Budget (€)
+                      </Label>
+                      <Input
+                        id="budget"
+                        type="number"
+                        placeholder="2000"
+                        value={demandeBudget}
+                        onChange={(e) => setDemandeBudget(e.target.value)}
+                        className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                      />
                     </div>
-                  ) : (
-                    <Card className="p-6 md:p-12 text-center bg-purple-50/50 border-purple-100">
-                      <div className="mb-3 md:mb-4 flex justify-center">
-                        <Camera className="w-12 h-12 md:w-16 md:h-16 text-gray-400" />
-                      </div>
-                      <h3 className="font-semibold text-base md:text-lg mb-2 text-gray-900">
-                        {isCoupleView ? 'Aucune photo dans le portfolio' : 'Aucune photo dans votre portfolio'}
-                      </h3>
-                      <p className="text-xs md:text-sm text-gray-600">
-                        {isCoupleView
-                          ? 'Ce prestataire n\'a pas encore ajouté de photos à son portfolio'
-                          : 'Ajoutez des photos de vos réalisations'}
-                      </p>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                {/* TAB CONTACT */}
-                <TabsContent value="contact" className="mt-0 w-full">
-                  {isCoupleView ? (
-                    <div className="w-full">
-                      <Card className="p-5 md:p-6 border border-purple-200 bg-white w-full shadow-sm">
-                        <div className="space-y-4">
-                          {/* Message */}
-                          <div className="space-y-2">
-                            <Label htmlFor="demande-message" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
-                              <MessageCircle className="h-4 w-4 text-[#823F91]" />
-                              Message personnalisé <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="demande-message"
-                              placeholder="Décrivez votre projet, vos besoins, vos attentes..."
-                              value={demandeMessage}
-                              onChange={(e) => setDemandeMessage(e.target.value)}
-                              className="min-h-[120px] text-sm resize-none border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
-                            />
-                          </div>
-
-                          {/* Date et Budget */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="demande-date" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
-                                <Calendar className="h-4 w-4 text-[#823F91]" />
-                                Date du mariage
-                              </Label>
-                              <Input
-                                id="demande-date"
-                                type="date"
-                                value={demandeDate}
-                                onChange={(e) => setDemandeDate(e.target.value)}
-                                className="text-sm border border-gray-200 bg-white text-gray-900 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="demande-budget" className="text-sm font-semibold flex items-center gap-2 text-gray-900">
-                                <Euro className="h-4 w-4 text-[#823F91]" />
-                                Budget indicatif (€)
-                              </Label>
-                              <Input
-                                id="demande-budget"
-                                type="number"
-                                placeholder="Ex: 2000"
-                                value={demandeBudget}
-                                onChange={(e) => setDemandeBudget(e.target.value)}
-                                className="text-sm border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:border-[#823F91] focus-visible:ring-[#823F91]/20"
-                                min="0"
-                                step="100"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    </div>
-                  ) : (
-                    <Card className="p-4 text-center bg-purple-50/50 border-purple-100">
-                      <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 mb-3">
-                        <MessageCircle className="h-5 w-5 text-[#823F91]" />
-                      </div>
-                      <h3 className="text-base font-bold mb-1 text-gray-900">
-                        Contacter {profile.nom_entreprise}
-                      </h3>
-                      <p className="text-xs text-gray-600 mb-3">
-                        Les couples pourront vous contacter via la messagerie intégrée
-                      </p>
-                      <Button size="sm" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200" disabled>
-                        Envoyer un message
-                      </Button>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Disponible une fois votre profil publié
-                      </p>
-                    </Card>
-                  )}
-                </TabsContent>
+                  </div>
+                </div>
               </div>
-            </div>
-          </Tabs>
+            )}
 
-          {/* FOOTER FIXE */}
-          <div className="border-t border-gray-100 bg-gradient-to-r from-purple-50/50 to-white p-3 md:p-4 flex-shrink-0">
+            {/* Empty state */}
+            {!profile.description_courte && cultures.length === 0 && zones.length === 0 && portfolio.length === 0 && (
+              <div className="px-5 pb-4">
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  {isCoupleView
+                    ? 'Ce prestataire n\'a pas encore complete son profil'
+                    : 'Completez votre profil pour le rendre plus attractif'}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* FOOTER */}
+          <div className="border-t border-gray-100 p-4 bg-gray-50/50">
             {isCoupleView ? (
-              <div className="flex gap-3">
+              showContactForm ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    className="flex-1 text-sm h-10 text-gray-600"
+                    onClick={() => setShowContactForm(false)}
+                    disabled={isCreatingDemande}
+                  >
+                    Retour
+                  </Button>
+                  <Button
+                    className="flex-1 h-10 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                    onClick={handleCreateDemande}
+                    disabled={isCreatingDemande || !demandeMessage.trim()}
+                  >
+                    {isCreatingDemande ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Envoi...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Envoyer
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
                 <Button
-                  variant="outline"
-                  className="flex-1 text-xs md:text-sm h-9 md:h-10 border-2 hover:bg-gray-50"
-                  onClick={() => {
-                    setDemandeMessage('')
-                    setDemandeDate('')
-                    setDemandeBudget('')
-                    setOpen(false)
-                  }}
-                  disabled={isCreatingDemande}
+                  className="w-full h-10 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                  onClick={() => setShowContactForm(true)}
                 >
-                  Fermer
+                  <MessageCircle className="h-4 w-4" />
+                  Contacter ce prestataire
+                  <ChevronRight className="h-4 w-4 ml-auto" />
                 </Button>
-                <Button
-                  className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white shadow-lg hover:shadow-xl transition-all gap-2 text-xs md:text-sm h-9 md:h-10"
-                  onClick={handleCreateDemande}
-                  disabled={isCreatingDemande || !demandeMessage.trim()}
-                >
-                  {isCreatingDemande ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                      Envoi...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4" />
-                      Envoyer
-                    </>
-                  )}
-                </Button>
-              </div>
+              )
             ) : (
-              <div className="flex gap-2 md:gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 text-xs md:text-sm h-9 md:h-10"
-                  onClick={() => setOpen(false)}
-                >
-                  Continuer l'édition
-                </Button>
-                <Button className="flex-1 bg-[#E8D4ED] hover:bg-[#D4B8DC] text-[#6D3478] text-xs md:text-sm h-9 md:h-10" onClick={() => setOpen(false)}>
-                  Fermer
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                className="w-full h-10 text-sm text-gray-600 hover:text-gray-900"
+                onClick={() => setOpen(false)}
+              >
+                Fermer l'apercu
+              </Button>
             )}
           </div>
         </DialogContent>
