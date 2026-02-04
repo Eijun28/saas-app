@@ -185,17 +185,17 @@ export default function ProfilPublicPage() {
         .eq('is_primary', true)
         .maybeSingle()
 
-      // Récupérer la couleur de marque
+      // Récupérer la couleur de marque depuis profiles
       let brandColor = '#823F91'
       try {
         const { data: brandData } = await freshSupabase
-          .from('prestataire_profiles')
+          .from('profiles')
           .select('brand_color')
-          .eq('user_id', userId)
+          .eq('id', userId)
           .maybeSingle()
         if (brandData?.brand_color) brandColor = brandData.brand_color
       } catch {
-        // Fallback si table n'existe pas encore
+        // Fallback si colonne n'existe pas encore
       }
 
       const mappedCultures = (culturesData || []).map(c => {

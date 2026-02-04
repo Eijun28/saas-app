@@ -1,2 +1,2 @@
-ALTER TABLE prestataire_profiles 
+ALTER TABLE profiles
 ADD COLUMN IF NOT EXISTS brand_color VARCHAR(7) DEFAULT '#823F91';

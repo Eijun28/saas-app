@@ -35,15 +35,15 @@ export function BrandColorPicker({ userId, currentColor = '#823F91', onSave }: B
 
     const supabase = createClient()
     const { error } = await supabase
-      .from('prestataire_profiles')
-      .upsert({ user_id: userId, brand_color: hex }, { onConflict: 'user_id' })
+      .from('profiles')
+      .update({ brand_color: hex })
+      .eq('id', userId)
 
     if (error) {
-      // Fallback: try profiles table
-      await supabase
-        .from('profiles')
-        .update({ brand_color: hex })
-        .eq('id', userId)
+      console.error('Erreur mise a jour couleur:', error)
+      toast.error('Erreur lors de la mise a jour')
+      setIsSaving(false)
+      return
     }
 
     setIsSaving(false)
