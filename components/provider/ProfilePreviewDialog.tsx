@@ -247,9 +247,9 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 bg-white border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-colors shadow-sm"
+          className="gap-2 bg-[#823F91] border-[#823F91] text-white hover:bg-[#6D3478] hover:border-[#6D3478] transition-colors shadow-sm"
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-4 w-4 text-white" />
           Apercu du profil
         </Button>
       )}
@@ -327,38 +327,38 @@ export function ProfilePreviewDialog({
                 <button
                   onClick={() => setActiveTab('about')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                     activeTab === 'about'
-                      ? "bg-[#823F91] text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                   )}
                 >
-                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-gray-900")} />
                   A propos
                 </button>
                 <button
                   onClick={() => setActiveTab('portfolio')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                     activeTab === 'portfolio'
-                      ? "bg-[#823F91] text-white shadow-sm"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                   )}
                 >
-                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-gray-900")} />
                   Portfolio
                 </button>
                 {hasSocialLinks && (
                   <button
                     onClick={() => setActiveTab('links')}
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                       activeTab === 'links'
-                        ? "bg-[#823F91] text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                     )}
                   >
-                    <Link2 className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-gray-900")} />
                     Liens
                   </button>
                 )}
@@ -366,13 +366,13 @@ export function ProfilePreviewDialog({
                   <button
                     onClick={() => setActiveTab('contact')}
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                       activeTab === 'contact'
-                        ? "bg-[#823F91] text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                     )}
                   >
-                    <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                    <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-gray-900")} />
                     Contact
                   </button>
                 )}
