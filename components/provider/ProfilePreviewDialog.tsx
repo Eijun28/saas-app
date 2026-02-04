@@ -51,6 +51,7 @@ interface ProfilePreviewDialogProps {
   showTriggerButton?: boolean
   isCoupleView?: boolean
   coupleId?: string
+  brandColor?: string
 }
 
 export function ProfilePreviewDialog({
@@ -64,7 +65,9 @@ export function ProfilePreviewDialog({
   showTriggerButton = true,
   isCoupleView = false,
   coupleId,
+  brandColor = '#823F91',
 }: ProfilePreviewDialogProps) {
+  const bc = brandColor // shorthand
   const router = useRouter()
   const { user } = useUser()
   const [internalOpen, setInternalOpen] = useState(false)
@@ -249,7 +252,8 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 bg-[#823F91] border-[#823F91] text-white hover:bg-[#6D3478] hover:border-[#6D3478] transition-colors shadow-sm"
+          className="gap-2 text-white transition-colors shadow-sm border-0"
+          style={{ backgroundColor: bc }}
         >
           <Eye className="h-4 w-4 text-white" />
           Apercu du profil
@@ -283,7 +287,7 @@ export function ProfilePreviewDialog({
               <div className="relative flex-shrink-0">
                 <Avatar className="h-16 w-16 ring-2 ring-gray-100">
                   <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-                  <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-[#823F91] to-[#a855f7] text-white">
+                  <AvatarFallback className="text-lg font-semibold text-white" style={{ background: `linear-gradient(135deg, ${bc}, ${bc}dd)` }}>
                     {getInitials(profile.nom_entreprise)}
                   </AvatarFallback>
                 </Avatar>
@@ -331,9 +335,10 @@ export function ProfilePreviewDialog({
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                     activeTab === 'about'
-                      ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                      ? "text-white shadow-sm border-transparent"
                       : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                   )}
+                  style={activeTab === 'about' ? { backgroundColor: bc } : undefined}
                 >
                   <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-gray-900")} />
                   A propos
@@ -343,9 +348,10 @@ export function ProfilePreviewDialog({
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                     activeTab === 'portfolio'
-                      ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                      ? "text-white shadow-sm border-transparent"
                       : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                   )}
+                  style={activeTab === 'portfolio' ? { backgroundColor: bc } : undefined}
                 >
                   <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-gray-900")} />
                   Portfolio
@@ -356,9 +362,10 @@ export function ProfilePreviewDialog({
                     className={cn(
                       "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                       activeTab === 'links'
-                        ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                        ? "text-white shadow-sm border-transparent"
                         : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                     )}
+                    style={activeTab === 'links' ? { backgroundColor: bc } : undefined}
                   >
                     <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-gray-900")} />
                     Liens
@@ -370,9 +377,10 @@ export function ProfilePreviewDialog({
                     className={cn(
                       "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                       activeTab === 'contact'
-                        ? "bg-[#823F91] text-white border-[#823F91] shadow-sm"
+                        ? "text-white shadow-sm border-transparent"
                         : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
                     )}
+                    style={activeTab === 'contact' ? { backgroundColor: bc } : undefined}
                   >
                     <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-gray-900")} />
                     Contact
@@ -437,14 +445,15 @@ export function ProfilePreviewDialog({
                 {cultures.length > 0 && (
                   <div className="pt-4 border-t border-gray-100">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <Heart className="h-3.5 w-3.5 text-[#823F91]" />
+                      <Heart className="h-3.5 w-3.5" style={{ color: bc }} />
                       Cultures maitrisees
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {cultures.map((culture) => (
                         <Badge
                           key={culture.id}
-                          className="text-xs py-1.5 px-3 bg-[#823F91]/10 text-[#823F91] border-0 font-normal hover:bg-[#823F91]/15"
+                          className="text-xs py-1.5 px-3 border-0 font-normal"
+                          style={{ backgroundColor: `${bc}15`, color: bc }}
                         >
                           {culture.label}
                         </Badge>
@@ -547,8 +556,8 @@ export function ProfilePreviewDialog({
                           {images.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2 mb-3">
-                                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
-                                  <Image className="h-4 w-4 text-[#823F91]" />
+                                <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${bc}15` }}>
+                                  <Image className="h-4 w-4" style={{ color: bc }} />
                                 </div>
                                 <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Photos ({images.length})</span>
                               </div>
@@ -556,7 +565,8 @@ export function ProfilePreviewDialog({
                                 {images.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative ring-1 ring-gray-200 hover:ring-[#823F91]/50 transition-all"
+                                    className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative ring-1 ring-gray-200 hover:ring-2 transition-all"
+                                    style={{ '--tw-ring-color': `${bc}80` } as React.CSSProperties}
                                   >
                                     <img
                                       src={item.image_url}
@@ -679,7 +689,7 @@ export function ProfilePreviewDialog({
                           <p className="text-sm font-medium text-gray-900">{social.label}</p>
                           <p className="text-xs text-gray-500 truncate">{social.url}</p>
                         </div>
-                        <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-[#823F91] transition-colors" />
+                        <ExternalLink className="h-4 w-4 text-gray-400 transition-colors" style={{ '--hover-color': bc } as React.CSSProperties} />
                       </a>
                     ))}
                   </div>
@@ -739,7 +749,8 @@ export function ProfilePreviewDialog({
           <div className="border-t border-gray-100 p-4 bg-gray-50/50">
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                className="w-full h-11 text-white text-sm gap-2"
+                style={{ backgroundColor: bc }}
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
               >
@@ -757,7 +768,8 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-11 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm gap-2"
+                className="w-full h-11 text-white text-sm gap-2"
+                style={{ backgroundColor: bc }}
                 onClick={() => setActiveTab('contact')}
               >
                 <MessageCircle className="h-4 w-4" />
