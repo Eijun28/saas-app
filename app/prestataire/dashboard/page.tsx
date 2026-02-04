@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bell, Calendar, MessageSquare, TrendingUp, Search, X } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
@@ -16,12 +15,17 @@ import { ActivityItem } from '@/components/dashboard/ActivityItem'
 import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
 import { PendingRequests } from '@/components/prestataire/dashboard/PendingRequests'
 import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPerformance'
+import { cn } from '@/lib/utils'
+
+type TimeFilter = 'all' | 'week' | 'month'
+
 export default function DashboardPrestatairePage() {
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
+
   // États
   const [stats, setStats] = useState<Stats>({
     nouvelles_demandes: 0,
@@ -340,24 +344,72 @@ export default function DashboardPrestatairePage() {
     )
   }
 
+  // Composant Pill pour les filtres
+  const FilterPill = ({
+    label,
+    value,
+    active
+  }: {
+    label: string
+    value: TimeFilter
+    active: boolean
+  }) => (
+    <button
+      onClick={() => setTimeFilter(value)}
+      className={cn(
+        "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+        active
+          ? "bg-[#823F91] text-white shadow-md shadow-[#823F91]/25"
+          : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+      )}
+    >
+      {label}
+    </button>
+  )
+
   return (
     <div className="w-full">
-      <div className="w-full space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6 xl:space-y-8">
+      <div className="w-full space-y-5 sm:space-y-6">
+
+      {/* Header avec Pills de filtre */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            Tableau de bord
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Vue d'ensemble de votre activité
+          </p>
+        </div>
+
+        {/* Pills de filtre temporel */}
+        <div className="flex items-center gap-2 p-1 bg-gray-100/80 rounded-full">
+          <FilterPill label="Tout" value="all" active={timeFilter === 'all'} />
+          <FilterPill label="Cette semaine" value="week" active={timeFilter === 'week'} />
+          <FilterPill label="Ce mois" value="month" active={timeFilter === 'month'} />
+        </div>
+      </motion.div>
+
       {/* Barre de recherche améliorée */}
       {searchQuery && (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="flex items-center justify-between p-4 sm:p-5 bg-gradient-to-r from-[#823F91]/10 via-[#9D5FA8]/10 to-[#823F91]/10 border border-[#823F91]/20 rounded-xl backdrop-blur-sm shadow-md shadow-[#823F91]/5"
+          className="flex items-center justify-between p-4 bg-[#823F91] rounded-2xl shadow-lg shadow-[#823F91]/20"
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="p-2 bg-[#823F91]/10 rounded-lg flex-shrink-0">
-              <Search className="h-4 w-4 text-[#823F91]" />
+            <div className="p-2 bg-white/20 rounded-xl flex-shrink-0">
+              <Search className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-600 mb-0.5">Recherche active</p>
-              <p className="text-sm sm:text-base text-[#823F91] font-semibold truncate">
+              <p className="text-xs text-white/70 mb-0.5">Recherche active</p>
+              <p className="text-sm sm:text-base text-white font-semibold truncate">
                 {searchQuery}
               </p>
             </div>
@@ -367,10 +419,10 @@ export default function DashboardPrestatairePage() {
               setSearchQuery('')
               sessionStorage.removeItem('prestataire_search_query')
             }}
-            className="p-2 hover:bg-[#823F91]/10 rounded-lg transition-colors active:scale-[0.98] flex-shrink-0"
+            className="p-2 hover:bg-white/20 rounded-xl transition-colors active:scale-[0.98] flex-shrink-0"
             title="Effacer la recherche"
           >
-            <X className="h-4 w-4 text-[#823F91]" />
+            <X className="h-4 w-4 text-white" />
           </button>
         </motion.div>
       )}
@@ -483,58 +535,60 @@ export default function DashboardPrestatairePage() {
           ))}
       </div>
 
-      {/* Activité récente */}
+      {/* Activité récente - Card épurée */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.5 }}
-        className="bg-white border border-gray-200/60 rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 hover:shadow-lg hover:shadow-gray-900/5 transition-all duration-300"
+        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
       >
-        <div className="flex items-center justify-between mb-3 sm:mb-4 md:mb-5 lg:mb-6">
-          <div>
-            <h2 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-gray-900">Activité récente</h2>
-            <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 mt-0.5">
-              Dernières actions sur votre compte
-            </p>
-          </div>
+        {/* Header avec fond violet */}
+        <div className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] px-5 py-4">
+          <h2 className="text-base sm:text-lg font-bold text-white">Activité récente</h2>
+          <p className="text-sm text-white/80 mt-0.5">
+            Dernières actions sur votre compte
+          </p>
         </div>
 
-        {activitiesLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 animate-pulse">
-                <div className="h-10 w-10 rounded-lg bg-gray-200" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                  <div className="h-3 w-1/2 bg-gray-200 rounded" />
+        {/* Contenu avec scroll caché */}
+        <div className="p-4 sm:p-5 max-h-[320px] overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {activitiesLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 animate-pulse">
+                  <div className="h-10 w-10 rounded-lg bg-gray-200" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                    <div className="h-3 w-1/2 bg-gray-200 rounded" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : recentActivities.length === 0 ? (
-          <EmptyState
-            title="Aucune activité récente"
-            description="Vos dernières actions apparaîtront ici"
-          />
-        ) : (
-          <div className="space-y-3">
-            {recentActivities.map((activity, index) => (
-              <ActivityItem
-                key={activity.id}
-                icon={activity.icon}
-                title={activity.title}
-                time={activity.time}
-                color={activity.color}
-                onClick={activity.href ? () => window.location.href = activity.href : undefined}
-                delay={index * 0.05}
-              />
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          ) : recentActivities.length === 0 ? (
+            <EmptyState
+              title="Aucune activité récente"
+              description="Vos dernières actions apparaîtront ici"
+            />
+          ) : (
+            <div className="space-y-2">
+              {recentActivities.map((activity, index) => (
+                <ActivityItem
+                  key={activity.id}
+                  icon={activity.icon}
+                  title={activity.title}
+                  time={activity.time}
+                  color={activity.color}
+                  onClick={activity.href ? () => window.location.href = activity.href : undefined}
+                  delay={index * 0.05}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Grille 2 colonnes pour Agenda et Demandes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3 md:gap-4 lg:gap-5 xl:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         <AgendaPreview />
         <PendingRequests />
       </div>
@@ -542,6 +596,17 @@ export default function DashboardPrestatairePage() {
       {/* Performance du mois */}
       <MonthlyPerformance />
       </div>
+
+      {/* Style global pour cacher les scrollbars */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }
