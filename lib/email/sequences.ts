@@ -117,7 +117,6 @@ export async function sendProviderIncompleteProfileReminder(
         reminder_number: reminderNumber,
         sent_at: new Date().toISOString(),
       })
-      .catch(() => {})
 
     logger.info('Email relance profil envoyé', { providerId, reminderNumber })
     return { success: true }
@@ -211,7 +210,6 @@ export async function sendCoupleIncompleteProfileReminder(
         reminder_number: reminderNumber,
         sent_at: new Date().toISOString(),
       })
-      .catch(() => {})
 
     logger.info('Email relance profil couple envoyé', { coupleUserId, reminderNumber })
     return { success: true }

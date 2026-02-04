@@ -87,7 +87,7 @@ export async function sendNewRequestEmail(
       user_id: providerId,
       email_type: 'new_request',
       metadata: { requestId, coupleId }
-    }).catch(() => {}) // Silencieux si la table n'existe pas encore
+    })
 
     logger.info('✅ Email nouvelle demande envoyé au prestataire', { providerId, requestId })
     return { success: true }

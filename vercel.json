@@ -3,10 +3,6 @@
     {
       "path": "/api/cron/email-sequences",
       "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/messages/check-unread",
-      "schedule": "*/5 * * * *"
     }
   ]
 }
