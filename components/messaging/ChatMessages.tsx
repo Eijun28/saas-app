@@ -262,16 +262,16 @@ export function ChatMessages({
                         <div
                           className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
                             isOwn
-                              ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white rounded-br-sm shadow-sm'
+                              ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-br-sm shadow-sm'
                               : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                           }`}
+                          style={isOwn ? { color: '#ffffff' } : undefined}
                         >
                           {/* Contenu texte */}
                           {message.content && (
                             <p
-                              className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                                isOwn ? 'text-white' : 'text-gray-900'
-                              }`}
+                              className="text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal"
+                              style={{ color: isOwn ? '#ffffff' : '#111827' }}
                             >
                               {message.content}
                             </p>

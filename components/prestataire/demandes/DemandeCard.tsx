@@ -109,17 +109,13 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
 
           {(demande.statut === 'en_cours' || demande.statut === 'terminee') && conversationId && (
             <div className="pt-3 border-t border-gray-50">
-              <Button
+              <button
                 onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
-                size="sm"
-                className="w-full h-9 bg-white text-[#823F91] border border-[#823F91]/30 hover:bg-[#823F91]/5 hover:border-[#823F91] text-sm font-medium rounded-lg justify-between shadow-[0_2px_8px_rgba(130,63,145,0.15)]"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#823F91] text-sm font-semibold rounded-full shadow-[0_2px_12px_rgba(130,63,145,0.25)] border border-[#823F91]/20 hover:shadow-[0_4px_16px_rgba(130,63,145,0.35)] hover:border-[#823F91]/40 transition-all duration-200"
               >
-                <span className="flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4" />
-                  Voir la conversation
-                </span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+                <MessageSquare className="h-4 w-4" />
+                Voir la conversation
+              </button>
             </div>
           )}
         </CardContent>

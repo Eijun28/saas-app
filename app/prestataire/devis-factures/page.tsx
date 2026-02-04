@@ -485,10 +485,19 @@ export default function DevisFacturesPage() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="bg-white text-[#823F91] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#823F91] data-[state=active]:to-[#9D5FA8] data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 group"
+              className="text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 data-[state=active]:shadow-md"
+              style={{
+                backgroundColor: activeTab === tab.value ? '#823F91' : 'white',
+                color: activeTab === tab.value ? '#ffffff' : '#823F91',
+              }}
             >
-              <tab.icon className="h-4 w-4 sm:mr-1.5 group-data-[state=active]:text-white text-[#823F91]" />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <tab.icon
+                className="h-4 w-4 sm:mr-1.5"
+                style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}
+              />
+              <span className="hidden sm:inline" style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}>
+                {tab.label}
+              </span>
             </TabsTrigger>
           ))}
         </TabsList>
