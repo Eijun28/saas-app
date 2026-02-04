@@ -112,8 +112,8 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
               <Button
                 onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
                 size="sm"
-                variant="ghost"
-                className="w-full h-9 text-[#823F91] hover:bg-[#823F91]/5 text-sm font-medium rounded-lg justify-between"
+                variant="outline"
+                className="w-full h-9 text-[#823F91] border-[#823F91]/30 hover:bg-[#823F91]/5 hover:border-[#823F91] text-sm font-medium rounded-lg justify-between shadow-sm"
               >
                 <span className="flex items-center gap-1.5">
                   <MessageSquare className="h-4 w-4" />
