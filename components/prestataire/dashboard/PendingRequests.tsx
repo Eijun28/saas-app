@@ -108,6 +108,30 @@ export function PendingRequests() {
     return `Il y a ${diffDays} jours`
   }
 
+  // Filtrer les demandes selon le mode de filtrage
+  const filteredRequests = requests.filter(request => {
+    const now = new Date()
+    const createdAt = new Date(request.created_at)
+    const diffHours = (now.getTime() - createdAt.getTime()) / 3600000
+
+    if (filterMode === 'all') {
+      return true
+    } else if (filterMode === 'recent') {
+      // Demandes des dernières 24h
+      return diffHours <= 24
+    } else if (filterMode === 'urgent') {
+      // Demandes dont l'événement approche (moins de 30 jours) ou anciennes demandes (plus de 3 jours)
+      if (request.event_date) {
+        const eventDate = new Date(request.event_date)
+        const daysUntilEvent = (eventDate.getTime() - now.getTime()) / 86400000
+        return daysUntilEvent <= 30 && daysUntilEvent > 0
+      }
+      // Si pas de date d'événement, considérer urgent si plus de 3 jours d'attente
+      return diffHours >= 72
+    }
+    return true
+  })
+
   const handleAction = async (requestId: string, action: 'accept' | 'reject') => {
     try {
       const supabase = createClient()
@@ -142,15 +166,15 @@ export function PendingRequests() {
       className={cn(
         "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
         active
-          ? "bg-white text-[#823F91] shadow-sm"
-          : "text-white/80 hover:text-white hover:bg-white/10"
+          ? "bg-[#823F91] text-white shadow-sm"
+          : "text-gray-600 hover:text-[#823F91] hover:bg-gray-50"
       )}
     >
       <span>{label}</span>
       {count !== undefined && count > 0 && (
         <span className={cn(
           "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-          active ? "bg-[#823F91]/10 text-[#823F91]" : "bg-white/20 text-white"
+          active ? "bg-white/20 text-white" : "bg-gray-200 text-gray-600"
         )}>
           {count}
         </span>
@@ -165,18 +189,18 @@ export function PendingRequests() {
       transition={{ duration: 0.4, delay: 0.7 }}
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
     >
-      {/* Header avec fond violet et pills */}
-      <div className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] px-5 py-4">
+      {/* Header avec fond blanc ivoire et pills */}
+      <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white">Demandes en attente</h2>
-            <p className="text-sm text-white/80 mt-0.5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Demandes en attente</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
               Nécessitent une action rapide
             </p>
           </div>
           <button
             onClick={() => router.push('/prestataire/demandes-recues')}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#823F91] hover:bg-[#6D3478] rounded-full text-white text-xs font-medium transition-colors"
           >
             Voir tout
             <ArrowRight className="h-3.5 w-3.5" />
@@ -184,7 +208,7 @@ export function PendingRequests() {
         </div>
 
         {/* Pills de filtrage */}
-        <div className="flex items-center gap-1.5 p-1 bg-white/10 rounded-full w-fit">
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-full w-fit">
           <FilterPill label="Toutes" value="all" active={filterMode === 'all'} count={requests.length} />
           <FilterPill label="Récentes" value="recent" active={filterMode === 'recent'} />
           <FilterPill label="Urgentes" value="urgent" active={filterMode === 'urgent'} />
@@ -214,17 +238,25 @@ export function PendingRequests() {
               </div>
             ))}
           </div>
-        ) : requests.length === 0 ? (
+        ) : filteredRequests.length === 0 ? (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
               <Inbox className="h-8 w-8 text-gray-300" />
             </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">Aucune demande en attente</p>
-            <p className="text-xs text-gray-500">Les nouvelles demandes apparaîtront ici</p>
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {filterMode === 'recent' ? 'Aucune demande récente' :
+               filterMode === 'urgent' ? 'Aucune demande urgente' :
+               'Aucune demande en attente'}
+            </p>
+            <p className="text-xs text-gray-500">
+              {filterMode === 'recent' ? 'Pas de demande dans les dernières 24h' :
+               filterMode === 'urgent' ? 'Aucune demande nécessitant une action urgente' :
+               'Les nouvelles demandes apparaîtront ici'}
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {requests.map((request, index) => (
+            {filteredRequests.map((request, index) => (
               <motion.div
                 key={request.id}
                 initial={{ opacity: 0, x: -10 }}

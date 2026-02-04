@@ -776,3 +776,32 @@ nav[class*="fixed"] {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #c19dcc;
 }
+
+/* === SCROLLBAR CACHÉES GLOBALEMENT === */
+/* Utiliser la classe .scrollbar-hide pour cacher les scrollbars */
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Cacher les scrollbars dans les sections de dashboard prestataire */
+.overflow-y-auto,
+.overflow-x-auto,
+.overflow-auto {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}

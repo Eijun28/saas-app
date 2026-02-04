@@ -542,10 +542,10 @@ export default function DashboardPrestatairePage() {
         transition={{ duration: 0.4, delay: 0.5 }}
         className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
       >
-        {/* Header avec fond violet */}
-        <div className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] px-5 py-4">
-          <h2 className="text-base sm:text-lg font-bold text-white">Activité récente</h2>
-          <p className="text-sm text-white/80 mt-0.5">
+        {/* Header avec fond blanc ivoire */}
+        <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">Activité récente</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
             Dernières actions sur votre compte
           </p>
         </div>
