@@ -17,14 +17,11 @@ import { PendingRequests } from '@/components/prestataire/dashboard/PendingReque
 import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPerformance'
 import { cn } from '@/lib/utils'
 
-type TimeFilter = 'all' | 'week' | 'month'
-
 export default function DashboardPrestatairePage() {
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
 
   // États
   const [stats, setStats] = useState<Stats>({
@@ -344,55 +341,22 @@ export default function DashboardPrestatairePage() {
     )
   }
 
-  // Composant Pill pour les filtres
-  const FilterPill = ({
-    label,
-    value,
-    active
-  }: {
-    label: string
-    value: TimeFilter
-    active: boolean
-  }) => (
-    <button
-      onClick={() => setTimeFilter(value)}
-      className={cn(
-        "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
-        active
-          ? "bg-[#823F91] text-white shadow-md shadow-[#823F91]/25"
-          : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
-      )}
-    >
-      {label}
-    </button>
-  )
-
   return (
     <div className="w-full">
       <div className="w-full space-y-5 sm:space-y-6">
 
-      {/* Header avec Pills de filtre */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
       >
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Tableau de bord
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Vue d'ensemble de votre activité
-          </p>
-        </div>
-
-        {/* Pills de filtre temporel */}
-        <div className="flex items-center gap-2 p-1 bg-gray-100/80 rounded-full">
-          <FilterPill label="Tout" value="all" active={timeFilter === 'all'} />
-          <FilterPill label="Cette semaine" value="week" active={timeFilter === 'week'} />
-          <FilterPill label="Ce mois" value="month" active={timeFilter === 'month'} />
-        </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          Tableau de bord
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Vue d'ensemble de votre activité
+        </p>
       </motion.div>
 
       {/* Barre de recherche améliorée */}
