@@ -332,57 +332,45 @@ export function ProfilePreviewDialog({
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setActiveTab('about')}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                    activeTab === 'about'
-                      ? "text-white shadow-sm border-transparent"
-                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
-                  )}
-                  style={activeTab === 'about' ? { backgroundColor: bc } : undefined}
+                  className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
+                  style={activeTab === 'about'
+                    ? { backgroundColor: bc, color: 'white', borderColor: bc }
+                    : { backgroundColor: 'white', color: '#111827', borderColor: '#e5e7eb' }}
                 >
-                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-gray-900")} />
+                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: activeTab === 'about' ? 'white' : '#111827' }} />
                   A propos
                 </button>
                 <button
                   onClick={() => setActiveTab('portfolio')}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                    activeTab === 'portfolio'
-                      ? "text-white shadow-sm border-transparent"
-                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
-                  )}
-                  style={activeTab === 'portfolio' ? { backgroundColor: bc } : undefined}
+                  className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
+                  style={activeTab === 'portfolio'
+                    ? { backgroundColor: bc, color: 'white', borderColor: bc }
+                    : { backgroundColor: 'white', color: '#111827', borderColor: '#e5e7eb' }}
                 >
-                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-gray-900")} />
+                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: activeTab === 'portfolio' ? 'white' : '#111827' }} />
                   Portfolio
                 </button>
                 {hasSocialLinks && (
                   <button
                     onClick={() => setActiveTab('links')}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                      activeTab === 'links'
-                        ? "text-white shadow-sm border-transparent"
-                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
-                    )}
-                    style={activeTab === 'links' ? { backgroundColor: bc } : undefined}
+                    className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
+                    style={activeTab === 'links'
+                      ? { backgroundColor: bc, color: 'white', borderColor: bc }
+                      : { backgroundColor: 'white', color: '#111827', borderColor: '#e5e7eb' }}
                   >
-                    <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-gray-900")} />
+                    <Link2 className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: activeTab === 'links' ? 'white' : '#111827' }} />
                     Liens
                   </button>
                 )}
                 {isCoupleView && (
                   <button
                     onClick={() => setActiveTab('contact')}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                      activeTab === 'contact'
-                        ? "text-white shadow-sm border-transparent"
-                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
-                    )}
-                    style={activeTab === 'contact' ? { backgroundColor: bc } : undefined}
+                    className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
+                    style={activeTab === 'contact'
+                      ? { backgroundColor: bc, color: 'white', borderColor: bc }
+                      : { backgroundColor: 'white', color: '#111827', borderColor: '#e5e7eb' }}
                   >
-                    <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-gray-900")} />
+                    <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: activeTab === 'contact' ? 'white' : '#111827' }} />
                     Contact
                   </button>
                 )}

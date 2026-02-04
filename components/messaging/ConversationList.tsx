@@ -82,37 +82,36 @@ export function ConversationList({ conversations, currentUserId, userType }: Con
             return (
               <div
                 key={conversation.id}
-                className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-3 md:p-4 hover:bg-gray-50/80 transition-colors cursor-pointer active:bg-gray-100 active:scale-[0.99] relative"
+                className="bg-white border border-gray-100 rounded-2xl p-3 sm:p-4 hover:bg-gray-50/50 hover:border-gray-200 transition-all cursor-pointer active:scale-[0.99]"
                 onClick={() => handleConversationClick(conversation.id)}
               >
-                <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                  <Avatar className="h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 flex-shrink-0 ring-1 ring-gray-100">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <Avatar className="h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0">
                     <AvatarImage src={otherParty?.avatar_url || undefined} alt={otherParty?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-[#007AFF] to-[#0051D5] text-white text-xs sm:text-sm md:text-base font-semibold">
+                    <AvatarFallback className="bg-[#823F91] text-white text-sm sm:text-base font-semibold">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-0.5 sm:mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-[15px] md:text-[17px]">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900 truncate text-[15px] sm:text-base">
                         {otherParty?.name || 'Utilisateur'}
                       </h3>
-                      <span className="text-[10px] sm:text-[11px] md:text-xs text-gray-400 flex-shrink-0 font-medium">
+                      <span className="text-[11px] sm:text-xs text-gray-400 flex-shrink-0">
                         {formatRelativeTime(lastMessageTime)}
                       </span>
                     </div>
                     {lastMessage && (
-                      <p className={`text-xs sm:text-[13px] md:text-sm truncate leading-snug ${
+                      <p className={`text-sm truncate ${
                         unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'
                       }`}>
                         {lastMessage}
                       </p>
                     )}
                   </div>
-                  
-                  {/* Badge messages non-lus style iPhone */}
+
                   {unreadCount > 0 && (
-                    <div className="flex-shrink-0 min-w-[18px] sm:min-w-[20px] h-4.5 sm:h-5 px-1 sm:px-1.5 rounded-full bg-[#007AFF] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center shadow-sm">
+                    <div className="flex-shrink-0 min-w-[22px] h-[22px] px-1.5 rounded-full bg-[#823F91] text-white text-xs font-semibold flex items-center justify-center">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </div>
                   )}
