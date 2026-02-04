@@ -8,6 +8,7 @@ import FooterWrapper from "@/components/layout/FooterWrapper";
 // import Chatbot from "@/components/Chatbot"; // Désactivé temporairement - à réactiver plus tard
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { seoConfig } from "@/lib/seo/config";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
@@ -75,6 +76,7 @@ export default function RootLayout({
         {/* Toaster pour les notifications */}
         <Toaster />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
