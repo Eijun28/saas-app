@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag, Play, Image } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -45,7 +45,7 @@ interface ProfilePreviewDialogProps {
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
-  portfolio: Array<{ id: string; image_url: string; title?: string; file_type?: 'image' | 'pdf' }>
+  portfolio: Array<{ id: string; image_url: string; title?: string; file_type?: 'image' | 'pdf' | 'video' }>
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTriggerButton?: boolean
@@ -77,6 +77,7 @@ export function ProfilePreviewDialog({
   const [isCreatingDemande, setIsCreatingDemande] = useState(false)
   const [activeTab, setActiveTab] = useState('about')
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
@@ -85,6 +86,7 @@ export function ProfilePreviewDialog({
       setDemandeBudget('')
       setActiveTab('about')
       setPdfPreviewUrl(null)
+      setVideoPreviewUrl(null)
     }
   }, [open])
 
@@ -256,7 +258,7 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 overflow-hidden rounded-2xl bg-white border-0 shadow-2xl"
+          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl bg-white border-0 shadow-2xl flex flex-col"
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
@@ -386,9 +388,9 @@ export function ProfilePreviewDialog({
             </TabsList>
 
             {/* SCROLLABLE CONTENT */}
-            <div className="flex-1 overflow-y-auto max-h-[calc(85vh-200px)]">
+            <div className="flex-1 overflow-y-auto min-h-0" style={{ maxHeight: 'calc(85vh - 220px)' }}>
               {/* TAB: A PROPOS */}
-              <TabsContent value="about" className="m-0 p-5 space-y-5">
+              <TabsContent value="about" className="m-0 p-5 space-y-5 data-[state=active]:block">
                 {/* Description */}
                 {profile.description_courte && (
                   <div>
@@ -483,7 +485,7 @@ export function ProfilePreviewDialog({
               </TabsContent>
 
               {/* TAB: PORTFOLIO */}
-              <TabsContent value="portfolio" className="m-0 p-5">
+              <TabsContent value="portfolio" className="m-0 p-5 data-[state=active]:block">
                 {/* PDF Preview Modal */}
                 {pdfPreviewUrl && (
                   <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPdfPreviewUrl(null)}>
@@ -503,51 +505,156 @@ export function ProfilePreviewDialog({
                   </div>
                 )}
 
+                {/* Video Preview Modal */}
+                {videoPreviewUrl && (
+                  <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setVideoPreviewUrl(null)}>
+                    <div className="relative w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setVideoPreviewUrl(null)}
+                        className="absolute -top-12 right-0 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                      >
+                        <X className="h-5 w-5 text-white" />
+                      </button>
+                      <video
+                        src={videoPreviewUrl}
+                        controls
+                        autoPlay
+                        className="w-full rounded-xl"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {portfolio && portfolio.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-2">
-                    {portfolio.map((item) => {
-                      const isPdf = item.file_type === 'pdf' || item.image_url?.toLowerCase().endsWith('.pdf')
-                      return (
-                        <div
-                          key={item.id}
-                          className="aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer relative"
-                        >
-                          {isPdf ? (
-                            <button
-                              onClick={() => setPdfPreviewUrl(item.image_url)}
-                              className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-colors"
-                            >
-                              <FileText className="h-8 w-8 text-red-500 mb-1" />
-                              <span className="text-[10px] font-medium text-red-600 px-1 text-center truncate max-w-full">
-                                {item.title || 'PDF'}
-                              </span>
-                            </button>
-                          ) : (
-                            <>
-                              <img
-                                src={item.image_url}
-                                alt={item.title || 'Portfolio'}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                loading="lazy"
-                              />
-                              {item.title && (
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <p className="text-white text-[10px] font-medium truncate">{item.title}</p>
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
+                  <div className="space-y-4">
+                    {/* Separation par type */}
+                    {(() => {
+                      const images = portfolio.filter(item => {
+                        const isVideo = item.file_type === 'video' || /\.(mp4|webm|mov)$/i.test(item.image_url)
+                        const isPdf = item.file_type === 'pdf' || item.image_url?.toLowerCase().endsWith('.pdf')
+                        return !isVideo && !isPdf
+                      })
+                      const videos = portfolio.filter(item =>
+                        item.file_type === 'video' || /\.(mp4|webm|mov)$/i.test(item.image_url)
                       )
-                    })}
+                      const pdfs = portfolio.filter(item =>
+                        item.file_type === 'pdf' || item.image_url?.toLowerCase().endsWith('.pdf')
+                      )
+
+                      return (
+                        <>
+                          {/* Images */}
+                          {images.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                                  <Image className="h-4 w-4 text-[#823F91]" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Photos ({images.length})</span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {images.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative ring-1 ring-gray-200 hover:ring-[#823F91]/50 transition-all"
+                                  >
+                                    <img
+                                      src={item.image_url}
+                                      alt={item.title || 'Portfolio'}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                      loading="lazy"
+                                    />
+                                    {item.title && (
+                                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <p className="text-white text-[10px] font-medium truncate">{item.title}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Videos */}
+                          {videos.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="h-7 w-7 rounded-lg bg-pink-100 flex items-center justify-center">
+                                  <Play className="h-4 w-4 text-pink-600" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Videos ({videos.length})</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                {videos.map((item) => (
+                                  <button
+                                    key={item.id}
+                                    onClick={() => setVideoPreviewUrl(item.image_url)}
+                                    className="aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-pink-50 to-pink-100 group cursor-pointer relative ring-1 ring-pink-200 hover:ring-pink-400 transition-all"
+                                  >
+                                    <video
+                                      src={item.image_url}
+                                      className="w-full h-full object-cover"
+                                      muted
+                                      preload="metadata"
+                                    />
+                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                      <div className="h-12 w-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Play className="h-5 w-5 text-pink-600 ml-0.5" />
+                                      </div>
+                                    </div>
+                                    {item.title && (
+                                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                                        <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                                      </div>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* PDFs */}
+                          {pdfs.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                                  <FileText className="h-4 w-4 text-amber-600" />
+                                </div>
+                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Documents ({pdfs.length})</span>
+                              </div>
+                              <div className="space-y-2">
+                                {pdfs.map((item) => (
+                                  <button
+                                    key={item.id}
+                                    onClick={() => setPdfPreviewUrl(item.image_url)}
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 ring-1 ring-amber-200 hover:ring-amber-400 transition-all group"
+                                  >
+                                    <div className="h-10 w-10 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                                      <FileText className="h-5 w-5 text-amber-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0 text-left">
+                                      <p className="text-sm font-medium text-gray-900 truncate">{item.title || 'Document PDF'}</p>
+                                      <p className="text-xs text-amber-600">Cliquez pour visualiser</p>
+                                    </div>
+                                    <ExternalLink className="h-4 w-4 text-amber-400 group-hover:text-amber-600 transition-colors flex-shrink-0" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )
+                    })()}
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <Camera className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    </div>
                     <p className="text-sm text-gray-500">
                       {isCoupleView
-                        ? 'Aucune photo dans le portfolio'
-                        : 'Ajoutez des photos a votre portfolio'}
+                        ? 'Aucun media dans le portfolio'
+                        : 'Ajoutez des photos et videos a votre portfolio'}
                     </p>
                   </div>
                 )}
@@ -555,7 +662,7 @@ export function ProfilePreviewDialog({
 
               {/* TAB: LIENS / RESEAUX */}
               {hasSocialLinks && (
-                <TabsContent value="links" className="m-0 p-5">
+                <TabsContent value="links" className="m-0 p-5 data-[state=active]:block">
                   <div className="space-y-3">
                     {socialLinks.map((social, i) => (
                       <a
@@ -581,7 +688,7 @@ export function ProfilePreviewDialog({
 
               {/* TAB: CONTACT (couple view only) */}
               {isCoupleView && (
-                <TabsContent value="contact" className="m-0 p-5">
+                <TabsContent value="contact" className="m-0 p-5 data-[state=active]:block">
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="message" className="text-sm font-medium text-gray-700 mb-2 block">
