@@ -501,7 +501,14 @@ export function CalendarDashboard({
                     <div
                       key={hour}
                       className="h-14 sm:h-16 md:h-20 border-b border-gray-100 hover:bg-purple-50/40 transition-colors cursor-pointer"
-                      onClick={() => setSelectedDate(day)}
+                      onClick={() => {
+                        const dateToUse = normalizeDate(day)
+                        setSelectedDate(dateToUse)
+                        // Ouvrir le dialog avec la date et l'heure pré-remplies
+                        const timeString = `${hour.toString().padStart(2, '0')}:00`
+                        setNewEvent({ date: dateToUse, time: timeString, title: '', description: '' })
+                        setIsDialogOpen(true)
+                      }}
                     />
                   ))}
 
