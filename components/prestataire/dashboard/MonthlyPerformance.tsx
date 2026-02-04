@@ -120,8 +120,8 @@ export function MonthlyPerformance() {
       className={cn(
         "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
         active
-          ? "bg-white text-[#823F91] shadow-sm"
-          : "text-white/80 hover:text-white hover:bg-white/10"
+          ? "bg-[#823F91] text-white shadow-sm"
+          : "text-gray-600 hover:text-[#823F91] hover:bg-gray-50"
       )}
     >
       <Icon className="h-3.5 w-3.5" />
@@ -136,19 +136,19 @@ export function MonthlyPerformance() {
       transition={{ duration: 0.4, delay: 0.8 }}
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
     >
-      {/* Header avec fond violet et pills */}
-      <div className="bg-gradient-to-r from-[#823F91] to-[#9D5FA8] px-5 py-4">
+      {/* Header avec fond blanc ivoire et pills */}
+      <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-white">Performance du mois</h2>
-            <p className="text-sm text-white/80 mt-0.5">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Performance du mois</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
               Taux de réponse et évolution
             </p>
           </div>
           {trend && (
             <div className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold",
-              "bg-white/20 text-white"
+              trend.positive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
             )}>
               {trend.positive ? (
                 <ArrowUp className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ export function MonthlyPerformance() {
         </div>
 
         {/* Pills de vue */}
-        <div className="flex items-center gap-1.5 p-1 bg-white/10 rounded-full w-fit">
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-full w-fit">
           <ViewPill icon={PieChart} label="Aperçu" value="overview" active={viewMode === 'overview'} />
           <ViewPill icon={BarChart3} label="Semaines" value="weekly" active={viewMode === 'weekly'} />
           <ViewPill icon={Activity} label="Détails" value="details" active={viewMode === 'details'} />
@@ -186,64 +186,156 @@ export function MonthlyPerformance() {
           </div>
         ) : (
           <>
-            {/* Taux de réponse - Card intégrée */}
-            <div className="mb-6 p-4 bg-gray-50/80 rounded-xl">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700">Taux de réponse</span>
-                <span className="text-2xl sm:text-3xl font-bold text-[#823F91]">{responseRate}%</span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${responseRate}%` }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                {responseRate >= 70 ? 'Excellent taux de réponse !' :
-                 responseRate >= 50 ? 'Bon taux, continuez ainsi !' :
-                 'Améliorez votre taux de réponse'}
-              </p>
-            </div>
+            {/* Vue Aperçu */}
+            {viewMode === 'overview' && (
+              <>
+                {/* Taux de réponse - Card intégrée */}
+                <div className="mb-6 p-4 bg-gray-50/80 rounded-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-gray-700">Taux de réponse</span>
+                    <span className="text-2xl sm:text-3xl font-bold text-[#823F91]">{responseRate}%</span>
+                  </div>
+                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${responseRate}%` }}
+                      transition={{ duration: 1, delay: 0.5 }}
+                      className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {responseRate >= 70 ? 'Excellent taux de réponse !' :
+                     responseRate >= 50 ? 'Bon taux, continuez ainsi !' :
+                     'Améliorez votre taux de réponse'}
+                  </p>
+                </div>
 
-            {/* Graphique par semaine */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-4">Demandes par semaine</h3>
-              <div className="space-y-3">
-                {weekData.map((week, index) => (
-                  <motion.div
-                    key={week.week}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="p-3 bg-gray-50/80 rounded-xl hover:bg-gray-100/80 transition-colors"
-                  >
-                    <div className="flex items-center justify-between text-sm mb-2">
-                      <span className="text-gray-600 font-medium">{week.week}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-900 font-semibold">
-                          {week.requests} demande{week.requests > 1 ? 's' : ''}
-                        </span>
-                        {week.accepted > 0 && (
-                          <span className="px-2 py-0.5 bg-[#823F91]/10 text-[#823F91] text-xs font-medium rounded-full">
-                            {week.accepted} acceptée{week.accepted > 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(week.requests / maxRequests) * 100}%` }}
-                        transition={{ duration: 0.8, delay: 0.6 + index * 0.1 }}
-                        className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
+                {/* Résumé graphique circulaire simplifié */}
+                <div className="flex items-center justify-center gap-8">
+                  <div className="relative w-32 h-32">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke="#E5E7EB"
+                        strokeWidth="12"
+                        fill="none"
                       />
+                      <motion.circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke="url(#gradient)"
+                        strokeWidth="12"
+                        fill="none"
+                        strokeLinecap="round"
+                        initial={{ strokeDasharray: "0 352" }}
+                        animate={{ strokeDasharray: `${responseRate * 3.52} 352` }}
+                        transition={{ duration: 1.5, delay: 0.3 }}
+                      />
+                      <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#823F91" />
+                          <stop offset="100%" stopColor="#9D5FA8" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-2xl font-bold text-gray-900">{responseRate}%</span>
+                      <span className="text-xs text-gray-500">Conversion</span>
                     </div>
-                  </motion.div>
-                ))}
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-[#823F91]" />
+                      <span className="text-sm text-gray-600">Acceptées</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-gray-200" />
+                      <span className="text-sm text-gray-600">En attente</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Vue Semaines - Graphique en barres */}
+            {viewMode === 'weekly' && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Demandes par semaine</h3>
+                <div className="space-y-3">
+                  {weekData.map((week, index) => (
+                    <motion.div
+                      key={week.week}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="p-3 bg-gray-50/80 rounded-xl hover:bg-gray-100/80 transition-colors"
+                    >
+                      <div className="flex items-center justify-between text-sm mb-2">
+                        <span className="text-gray-600 font-medium">{week.week}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-900 font-semibold">
+                            {week.requests} demande{week.requests > 1 ? 's' : ''}
+                          </span>
+                          {week.accepted > 0 && (
+                            <span className="px-2 py-0.5 bg-[#823F91]/10 text-[#823F91] text-xs font-medium rounded-full">
+                              {week.accepted} acceptée{week.accepted > 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(week.requests / maxRequests) * 100}%` }}
+                          transition={{ duration: 0.8, delay: 0.6 + index * 0.1 }}
+                          className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Vue Détails - Stats détaillées */}
+            {viewMode === 'details' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-4 bg-gray-50/80 rounded-xl">
+                    <p className="text-xs text-gray-500 mb-1">Total demandes</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {weekData.reduce((sum, w) => sum + w.requests, 0)}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-[#823F91]/5 rounded-xl">
+                    <p className="text-xs text-[#823F91] mb-1">Acceptées</p>
+                    <p className="text-2xl font-bold text-[#823F91]">
+                      {weekData.reduce((sum, w) => sum + w.accepted, 0)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gray-50/80 rounded-xl">
+                  <p className="text-xs text-gray-500 mb-3">Évolution hebdomadaire</p>
+                  <div className="flex items-end justify-between h-24 gap-2">
+                    {weekData.map((week, index) => (
+                      <div key={week.week} className="flex-1 flex flex-col items-center gap-1">
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: `${(week.requests / maxRequests) * 80}%` }}
+                          transition={{ duration: 0.8, delay: index * 0.1 }}
+                          className="w-full bg-gradient-to-t from-[#823F91] to-[#9D5FA8] rounded-t-lg min-h-[4px]"
+                        />
+                        <span className="text-[10px] text-gray-500">{week.week.replace('Sem. ', 'S')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
