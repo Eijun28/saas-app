@@ -24,6 +24,7 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
+import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -65,6 +66,7 @@ export default function ProfilPublicPage() {
     boutique_notes?: string | null
     boutique_appointment_only?: boolean
     pricing_unit?: string
+    brand_color?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -183,6 +185,19 @@ export default function ProfilPublicPage() {
         .eq('is_primary', true)
         .maybeSingle()
 
+      // Récupérer la couleur de marque
+      let brandColor = '#823F91'
+      try {
+        const { data: brandData } = await freshSupabase
+          .from('prestataire_profiles')
+          .select('brand_color')
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (brandData?.brand_color) brandColor = brandData.brand_color
+      } catch {
+        // Fallback si table n'existe pas encore
+      }
+
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         return culture ? { id: c.culture_id, label: culture.label } : null
@@ -232,6 +247,7 @@ export default function ProfilPublicPage() {
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingData?.pricing_unit || undefined,
+        brand_color: brandColor,
         _timestamp: timestamp,
       }
       
@@ -354,6 +370,7 @@ export default function ProfilPublicPage() {
                 cultures={cultures}
                 zones={zones}
                 portfolio={portfolio}
+                brandColor={profile?.brand_color}
               />
             </div>
           </div>
@@ -457,6 +474,13 @@ export default function ProfilPublicPage() {
                         }}
                         onSave={reloadData}
                       />
+                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
+                        <BrandColorPicker
+                          userId={user.id}
+                          currentColor={profile?.brand_color}
+                          onSave={reloadData}
+                        />
+                      </div>
                       <div className="border-t pt-4 sm:pt-5 lg:pt-6">
                         <BoutiqueEditor
                           key={`boutique-${profile?._timestamp || 0}`}
