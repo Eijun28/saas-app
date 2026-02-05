@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Sparkles, Calendar, MessageSquare, DollarSign, ArrowRight, Search } from 'lucide-react'
+import { Sparkles, MessageSquare, DollarSign, ArrowRight, Search } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
@@ -21,7 +21,7 @@ const actions: Action[] = [
   },
   {
     label: "Nuply Matching",
-    description: "Parler à Nora IA",
+    description: "Parler a Nora IA",
     href: "/couple/matching",
     icon: Sparkles,
   },
@@ -33,7 +33,7 @@ const actions: Action[] = [
   },
   {
     label: "Budget",
-    description: "Gérer les dépenses",
+    description: "Gerer les depenses",
     href: "/couple/budget",
     icon: DollarSign,
   },
@@ -45,39 +45,43 @@ export function QuickActionsCouple() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.4 }}
-      className="bg-white rounded-xl p-4 sm:p-5 border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-all duration-300"
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
     >
-      <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4">Actions rapides</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {actions.map((action, index) => {
-          const Icon = action.icon
-          return (
-            <motion.div
-              key={action.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                href={action.href}
-                className="group relative overflow-hidden bg-gradient-to-br from-white to-gray-50/50 rounded-xl p-3 sm:p-4 transition-all duration-300 flex flex-col h-full border-0 shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.15)]"
+      {/* Header ivoire */}
+      <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+        <h2 className="text-base sm:text-lg font-bold text-gray-900">Actions rapides</h2>
+        <p className="text-xs text-gray-500 mt-0.5">Acces direct aux fonctionnalites</p>
+      </div>
+
+      <div className="p-4 sm:p-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {actions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <motion.div
+                key={action.label}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
               >
-                <div className="inline-flex p-2 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] rounded-lg mb-2.5 w-fit shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all">
-                  <Icon className="text-white" size={16} />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-0.5 text-sm group-hover:text-[#823F91] transition-colors">
-                  {action.label}
-                </h3>
-                <p className="text-xs text-gray-600">{action.description}</p>
-                
-                {/* Arrow indicator */}
-                <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-[#823F91] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
-              </Link>
-            </motion.div>
-          )
-        })}
+                <Link
+                  href={action.href}
+                  className="group relative overflow-hidden bg-gray-50/80 hover:bg-gray-100/80 rounded-xl p-3 sm:p-4 transition-all duration-200 flex flex-col h-full border border-transparent hover:border-[#823F91]/10"
+                >
+                  <div className="inline-flex p-2 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] rounded-lg mb-2.5 w-fit shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all">
+                    <Icon className="text-white" size={16} />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-0.5 text-sm group-hover:text-[#823F91] transition-colors">
+                    {action.label}
+                  </h3>
+                  <p className="text-xs text-gray-500">{action.description}</p>
+
+                  <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all duration-200" />
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
       </div>
     </motion.div>
   )
