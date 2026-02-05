@@ -161,12 +161,6 @@ export function AgendaPreview() {
         className="flex-1 p-4 sm:p-5 overflow-y-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (

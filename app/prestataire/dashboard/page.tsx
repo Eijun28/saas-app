@@ -550,16 +550,6 @@ export default function DashboardPrestatairePage() {
       <MonthlyPerformance />
       </div>
 
-      {/* Style global pour cacher les scrollbars */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   )
 }

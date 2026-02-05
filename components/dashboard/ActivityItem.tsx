@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { LucideIcon } from 'lucide-react'
+import { LucideIcon, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ActivityItemProps {
@@ -13,10 +13,10 @@ interface ActivityItemProps {
   delay?: number
 }
 
-export function ActivityItem({ 
-  icon: Icon, 
-  title, 
-  time, 
+export function ActivityItem({
+  icon: Icon,
+  title,
+  time,
   color = 'text-[#823F91]',
   onClick,
   delay = 0
@@ -27,24 +27,29 @@ export function ActivityItem({
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay }}
       className={cn(
-        "flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-white border-0",
-        "shadow-[0_1px_3px_rgba(130,63,145,0.08)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12)] transition-all",
-        onClick && "cursor-pointer"
+        "flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 transition-all group",
+        "border border-transparent",
+        onClick && "cursor-pointer hover:bg-gray-100/80 hover:border-[#823F91]/10"
       )}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && onClick) onClick()
+      }}
     >
-      <div className={cn(
-        "p-2 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 rounded-lg flex-shrink-0",
-        color
-      )}>
-        <Icon size={18} className={color} />
+      <div className="p-2 bg-white rounded-xl shadow-sm flex-shrink-0">
+        <Icon size={16} className={color} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">
           {title}
         </p>
-        <p className="text-xs text-gray-500 mt-1">{time}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{time}</p>
       </div>
+      {onClick && (
+        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+      )}
     </motion.div>
   )
 }
