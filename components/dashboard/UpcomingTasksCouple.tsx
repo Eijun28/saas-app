@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Circle, Clock, Filter } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 interface Task {
   id: number
@@ -13,6 +14,7 @@ interface Task {
   dueDate: string
   completed: boolean
   priority: 'high' | 'medium' | 'low'
+  href?: string
 }
 
 interface UpcomingTasksCoupleProps {
@@ -21,13 +23,16 @@ interface UpcomingTasksCoupleProps {
 }
 
 export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksCoupleProps) {
+  const router = useRouter()
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
-  
-  const filteredTasks = filter === 'all' 
-    ? tasks 
+
+  const filteredTasks = filter === 'all'
+    ? tasks
     : tasks.filter(t => t.priority === filter)
-  
-  const remainingCount = tasks.filter(t => !t.completed).length
+
+  const completedCount = tasks.filter(t => t.completed).length
+  const totalCount = tasks.length
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
   const priorityColors = {
     high: 'bg-red-50 text-red-700',
@@ -35,96 +40,142 @@ export function UpcomingTasksCouple({ tasks = [], onTaskToggle }: UpcomingTasksC
     low: 'bg-gray-50 text-gray-700',
   }
 
+  const handleTaskClick = (task: Task) => {
+    if (task.href && !task.completed) {
+      router.push(task.href)
+    } else if (onTaskToggle) {
+      onTaskToggle(task.id)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-xl p-4 sm:p-5 border-0 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-all duration-300"
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900">Tâches à venir</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {remainingCount} {remainingCount > 1 ? 'tâches' : 'tâche'} restante{remainingCount > 1 ? 's' : ''}
-          </p>
+      {/* Header avec fond ivoire */}
+      <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Preparatifs</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {completedCount}/{totalCount} etape{totalCount > 1 ? 's' : ''} completee{completedCount > 1 ? 's' : ''}
+            </p>
+          </div>
         </div>
+
+        {/* Barre de progression */}
+        {totalCount > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
+              />
+            </div>
+            <span className="text-xs font-semibold text-[#823F91] tabular-nums">{progress}%</span>
+          </div>
+        )}
       </div>
 
       {/* Filtres */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        {(['all', 'high', 'medium', 'low'] as const).map((priority) => (
-          <Button
-            key={priority}
-            variant={filter === priority ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(priority)}
-            className={cn(
-              "text-xs h-7",
-              filter === priority 
-                ? "bg-[#823F91] text-white border-0 hover:bg-[#6D3478] shadow-[0_2px_4px_rgba(130,63,145,0.2)]" 
-                : "border-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]"
-            )}
-          >
-            {priority === 'all' ? 'Toutes' : priority === 'high' ? 'Urgent' : priority === 'medium' ? 'Moyen' : 'Faible'}
-          </Button>
-        ))}
-      </div>
-
-      {/* Liste des tâches */}
-      <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">Aucune tâche trouvée</p>
-        ) : (
-          filteredTasks.map((task, index) => (
-            <motion.div
-              key={task.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+      <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-full w-fit">
+          {(['all', 'high', 'medium', 'low'] as const).map((priority) => (
+            <button
+              key={priority}
+              onClick={() => setFilter(priority)}
               className={cn(
-                "flex items-start gap-2.5 p-3 rounded-xl transition-all border-0",
-                task.completed
-                  ? "bg-gray-50/50 opacity-60 shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
-                  : "bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_6px_rgba(0,0,0,0.12)]"
+                "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                filter === priority
+                  ? "bg-[#823F91] text-white shadow-sm"
+                  : "text-gray-600 hover:text-[#823F91] hover:bg-gray-50"
               )}
             >
-              <button 
-                onClick={() => onTaskToggle?.(task.id)}
-                className="mt-0.5 flex-shrink-0"
-              >
-                {task.completed ? (
-                  <CheckCircle2 className="text-[#823F91]" size={20} />
-                ) : (
-                  <Circle className="text-gray-400 hover:text-[#823F91] transition-colors" size={20} />
-                )}
-              </button>
-              <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "font-medium text-sm sm:text-base",
-                  task.completed ? "text-gray-500 line-through" : "text-gray-900"
-                )}>
-                  {task.title}
-                </p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={14} className="text-gray-400" />
-                    <span className="text-xs text-gray-500">{task.dueDate}</span>
-                  </div>
-                  <Badge 
-                    variant="outline"
-                    className={cn(
-                      "text-xs px-2 py-0.5 h-5 border-0 shadow-[0_1px_2px_rgba(0,0,0,0.1)]",
-                      priorityColors[task.priority].replace('border-', 'shadow-[0_1px_2px_rgba(0,0,0,0.1)] ')
-                    )}
-                  >
-                    {task.priority === "high" ? "Urgent" : task.priority === "medium" ? "Moyen" : "Faible"}
-                  </Badge>
-                </div>
+              {priority === 'all' ? 'Toutes' : priority === 'high' ? 'Urgent' : priority === 'medium' ? 'Moyen' : 'Faible'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Liste des taches */}
+      <div className="flex-1 p-4 sm:p-5 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="space-y-2">
+          {filteredTasks.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-gray-300" />
               </div>
-            </motion.div>
-          ))
-        )}
+              <p className="text-sm font-medium text-gray-900 mb-1">Aucune tache trouvee</p>
+              <p className="text-xs text-gray-500">Vos preparatifs apparaitront ici</p>
+            </div>
+          ) : (
+            filteredTasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-xl transition-all group",
+                  task.completed
+                    ? "bg-gray-50/60 opacity-70"
+                    : "bg-gray-50/80 hover:bg-gray-100/80 border border-transparent hover:border-[#823F91]/10",
+                  task.href && !task.completed && "cursor-pointer"
+                )}
+                onClick={() => handleTaskClick(task)}
+                role={task.href && !task.completed ? "button" : undefined}
+                tabIndex={task.href && !task.completed ? 0 : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && task.href && !task.completed) {
+                    handleTaskClick(task)
+                  }
+                }}
+              >
+                {/* Status indicator */}
+                <div className="flex-shrink-0">
+                  {task.completed ? (
+                    <CheckCircle2 className="h-5 w-5 text-[#823F91]" />
+                  ) : (
+                    <Circle className="h-5 w-5 text-gray-300" />
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    "text-sm font-medium truncate",
+                    task.completed ? "text-gray-500 line-through" : "text-gray-900"
+                  )}>
+                    {task.title}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Clock size={12} className="text-gray-400 flex-shrink-0" />
+                    <span className="text-xs text-gray-500">{task.dueDate}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] px-1.5 py-0 h-4 border-0",
+                        priorityColors[task.priority]
+                      )}
+                    >
+                      {task.priority === "high" ? "Urgent" : task.priority === "medium" ? "Moyen" : "Faible"}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Arrow for navigable tasks */}
+                {task.href && !task.completed && (
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                )}
+              </motion.div>
+            ))
+          )}
+        </div>
       </div>
     </motion.div>
   )

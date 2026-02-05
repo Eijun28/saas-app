@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Bell, Calendar, MessageSquare, TrendingUp, Search, X } from 'lucide-react'
+import { Bell, Calendar, MessageSquare, TrendingUp, Search, X, RefreshCw } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
@@ -18,10 +19,12 @@ import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPe
 import { cn } from '@/lib/utils'
 
 export default function DashboardPrestatairePage() {
+  const router = useRouter()
   const { user } = useUser()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   // États
   const [stats, setStats] = useState<Stats>({
@@ -191,7 +194,8 @@ export default function DashboardPrestatairePage() {
           taux_reponse: tauxReponse,
           demandes_ce_mois: demandesCeMois || 0,
         })
-        
+
+        setLastUpdated(new Date())
         setUiState({ loading: 'success', error: null })
       } catch (error: any) {
         console.error('Erreur chargement stats:', error)
@@ -345,18 +349,29 @@ export default function DashboardPrestatairePage() {
     <div className="w-full">
       <div className="w-full space-y-5 sm:space-y-6">
 
-      {/* Header */}
+      {/* Header avec greeting */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+        className="flex items-start justify-between"
       >
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-          Tableau de bord
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Vue d'ensemble de votre activité
-        </p>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {prenom ? `Bonjour ${prenom}` : 'Tableau de bord'}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Vue d'ensemble de votre activite
+          </p>
+        </div>
+        {lastUpdated && (
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
+            <RefreshCw className="h-3 w-3" />
+            <span>
+              {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        )}
       </motion.div>
 
       {/* Barre de recherche améliorée */}
@@ -391,7 +406,7 @@ export default function DashboardPrestatairePage() {
         </motion.div>
       )}
 
-      {/* Stats Grid - Style Revolut/Stripe */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 xl:gap-5 w-full items-stretch">
         {[
           {
@@ -399,79 +414,55 @@ export default function DashboardPrestatairePage() {
             label: "Nouvelles demandes",
             value: stats.nouvelles_demandes,
             subtitle: "En attente de traitement",
-            description: stats.nouvelles_demandes > 0 
-              ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} nécessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention`
+            description: stats.nouvelles_demandes > 0
+              ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} necessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention`
               : "Aucune nouvelle demande pour le moment",
-            change: stats.nouvelles_demandes > 0 ? {
-              value: 12,
-              period: "vs mois dernier",
-              positive: true
-            } : undefined,
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.1,
-            onClick: () => window.location.href = '/prestataire/demandes-recues',
+            onClick: () => router.push('/prestataire/demandes-recues'),
             actionLabel: "Voir toutes les demandes",
             searchTerms: ['demandes', 'nouvelles', 'traiter', 'notifications']
           },
           {
             icon: Calendar,
-            label: "Événements à venir",
+            label: "Evenements a venir",
             value: stats.evenements_a_venir,
             subtitle: "Ce mois-ci",
             description: stats.evenements_a_venir > 0
-              ? `${stats.evenements_a_venir} événement${stats.evenements_a_venir > 1 ? 's' : ''} planifié${stats.evenements_a_venir > 1 ? 's' : ''}`
-              : "Aucun événement prévu ce mois",
-            change: stats.evenements_a_venir > 0 ? {
-              value: 8,
-              period: "vs mois dernier",
-              positive: true
-            } : undefined,
+              ? `${stats.evenements_a_venir} evenement${stats.evenements_a_venir > 1 ? 's' : ''} planifie${stats.evenements_a_venir > 1 ? 's' : ''}`
+              : "Aucun evenement prevu ce mois",
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.2,
-            onClick: () => window.location.href = '/prestataire/agenda',
-            actionLabel: "Gérer mon agenda",
-            searchTerms: ['événements', 'agenda', 'calendrier', 'rendez-vous']
+            onClick: () => router.push('/prestataire/agenda'),
+            actionLabel: "Gerer mon agenda",
+            searchTerms: ['evenements', 'agenda', 'calendrier', 'rendez-vous']
           },
           {
             icon: MessageSquare,
             label: "Messages non lus",
             value: stats.messages_non_lus,
-            subtitle: "Nécessitent une réponse",
+            subtitle: "Necessitent une reponse",
             description: stats.messages_non_lus > 0
-              ? `${stats.messages_non_lus} message${stats.messages_non_lus > 1 ? 's' : ''} en attente de réponse`
-              : "Tous vos messages sont à jour",
-            change: stats.messages_non_lus > 0 ? {
-              value: 15,
-              period: "vs semaine dernière",
-              positive: false
-            } : undefined,
+              ? `${stats.messages_non_lus} message${stats.messages_non_lus > 1 ? 's' : ''} en attente de reponse`
+              : "Tous vos messages sont a jour",
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.3,
-            onClick: () => window.location.href = '/prestataire/messagerie',
+            onClick: () => router.push('/prestataire/messagerie'),
             actionLabel: "Ouvrir la messagerie",
-            searchTerms: ['messages', 'messagerie', 'répondre', 'conversations']
+            searchTerms: ['messages', 'messagerie', 'repondre', 'conversations']
           },
           {
             icon: TrendingUp,
-            label: "Taux de réponse",
+            label: "Taux de reponse",
             value: `${stats.taux_reponse}%`,
             subtitle: "Taux d'acceptation",
             description: stats.taux_reponse > 0
-              ? `${stats.taux_reponse}% des demandes sont acceptées`
+              ? `${stats.taux_reponse}% des demandes sont acceptees`
               : "Aucune statistique disponible pour le moment",
-            trend: {
-              value: '+5% ce mois',
-              positive: true,
-            },
-            change: {
-              value: 5,
-              period: "vs mois dernier",
-              positive: true
-            },
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.4,
             actionLabel: "Voir les statistiques",
-            searchTerms: ['taux', 'réponse', 'statistiques', 'performance']
+            searchTerms: ['taux', 'reponse', 'statistiques', 'performance']
           }
         ]
           .filter(card => {
@@ -489,11 +480,9 @@ export default function DashboardPrestatairePage() {
               value={card.value}
               subtitle={card.subtitle}
               description={card.description}
-              change={card.change}
               colorClass={card.colorClass}
               delay={card.delay}
               onClick={card.onClick}
-              trend={card.trend}
               actionLabel={card.actionLabel}
             />
           ))}
@@ -542,7 +531,7 @@ export default function DashboardPrestatairePage() {
                   title={activity.title}
                   time={activity.time}
                   color={activity.color}
-                  onClick={activity.href ? () => window.location.href = activity.href : undefined}
+                  onClick={activity.href ? () => router.push(activity.href) : undefined}
                   delay={index * 0.05}
                 />
               ))}
