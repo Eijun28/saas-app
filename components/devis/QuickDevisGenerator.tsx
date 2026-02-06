@@ -37,6 +37,10 @@ import {
   Sparkles,
   FileCheck,
   ExternalLink,
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  Send,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { CoupleForDevis, DevisTemplate } from '@/types/billing'
@@ -227,9 +231,60 @@ export function QuickDevisGenerator({
     }).format(amount)
   }
 
+  const steps: { key: Step; label: string; icon: React.ReactNode }[] = [
+    { key: 'select_couple', label: 'Couple', icon: <User className="h-3.5 w-3.5" /> },
+    { key: 'fill_form', label: 'Détails', icon: <FileText className="h-3.5 w-3.5" /> },
+    { key: 'preview', label: 'Aperçu', icon: <Eye className="h-3.5 w-3.5" /> },
+    { key: 'success', label: 'Terminé', icon: <CheckCircle className="h-3.5 w-3.5" /> },
+  ]
+
+  const currentStepIndex = steps.findIndex(s => s.key === step)
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        {/* Indicateur d'étapes */}
+        <div className="flex items-center justify-between px-2 pt-2 pb-1">
+          {steps.map((s, i) => (
+            <div key={s.key} className="flex items-center flex-1">
+              <div className="flex flex-col items-center gap-1 flex-1">
+                <div
+                  className={cn(
+                    'flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300',
+                    i < currentStepIndex
+                      ? 'bg-[#823F91] text-white'
+                      : i === currentStepIndex
+                      ? 'bg-[#823F91]/15 text-[#823F91] ring-2 ring-[#823F91]/30'
+                      : 'bg-gray-100 text-gray-400'
+                  )}
+                >
+                  {i < currentStepIndex ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    s.icon
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] font-medium',
+                    i <= currentStepIndex ? 'text-[#823F91]' : 'text-gray-400'
+                  )}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div
+                  className={cn(
+                    'h-0.5 flex-1 mx-1 rounded-full transition-all duration-300 -mt-4',
+                    i < currentStepIndex ? 'bg-[#823F91]' : 'bg-gray-200'
+                  )}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
         {/* Étape 1: Sélection du couple */}
         {step === 'select_couple' && (
           <>
@@ -438,16 +493,27 @@ export function QuickDevisGenerator({
             </div>
 
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setStep('select_couple')}>
+              <Button variant="outline" onClick={() => setStep('select_couple')} className="gap-1.5">
+                <ArrowLeft className="h-4 w-4" />
                 Retour
               </Button>
               <Button
                 onClick={() => setStep('preview')}
                 disabled={!formData.title || !formData.description || !formData.amount}
+                className="gap-1.5 bg-[#823F91] hover:bg-[#6D3478]"
               >
                 Aperçu
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </DialogFooter>
+
+            {/* Aide contextuelle */}
+            {(!formData.title || !formData.description || !formData.amount) && (
+              <p className="text-xs text-amber-600 text-center mt-2 flex items-center justify-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Remplissez les champs obligatoires (*) pour continuer
+              </p>
+            )}
           </>
         )}
 
@@ -506,23 +572,24 @@ export function QuickDevisGenerator({
             </div>
 
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setStep('fill_form')}>
+              <Button variant="outline" onClick={() => setStep('fill_form')} className="gap-1.5">
+                <ArrowLeft className="h-4 w-4" />
                 Modifier
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-purple-700"
+                className="gap-1.5 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] shadow-lg"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Génération...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Génération en cours...
                   </>
                 ) : (
                   <>
-                    <FileCheck className="mr-2 h-4 w-4" />
-                    Générer le devis
+                    <Send className="h-4 w-4" />
+                    Générer et envoyer
                   </>
                 )}
               </Button>
@@ -540,18 +607,23 @@ export function QuickDevisGenerator({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="py-8 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <FileText className="h-8 w-8 text-green-600" />
+            <div className="py-8 text-center space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center shadow-lg shadow-green-100">
+                <FileCheck className="h-8 w-8 text-green-600" />
               </div>
-              <p className="text-muted-foreground mb-4">
-                Votre devis PDF a été généré et enregistré.
-              </p>
+              <div>
+                <p className="text-base font-semibold text-gray-900">
+                  Votre devis a été créé
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Le PDF a été généré et enregistré dans votre historique de devis.
+                </p>
+              </div>
               {generatedDevis.pdfUrl && (
                 <Button
                   variant="outline"
                   onClick={() => window.open(generatedDevis.pdfUrl, '_blank')}
-                  className="gap-2"
+                  className="gap-2 border-green-200 text-green-700 hover:bg-green-50"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Voir le PDF
@@ -560,7 +632,9 @@ export function QuickDevisGenerator({
             </div>
 
             <DialogFooter>
-              <Button onClick={handleClose}>Fermer</Button>
+              <Button onClick={handleClose} className="bg-[#823F91] hover:bg-[#6D3478]">
+                Fermer
+              </Button>
             </DialogFooter>
           </>
         )}

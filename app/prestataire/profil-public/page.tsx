@@ -25,6 +25,7 @@ import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
 import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
+import { SiretEditor } from '@/components/provider/SiretEditor'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -65,6 +66,7 @@ export default function ProfilPublicPage() {
     boutique_hours?: Record<string, { open: string; close: string; closed: boolean }> | null
     boutique_notes?: string | null
     boutique_appointment_only?: boolean
+    siret?: string | null
     pricing_unit?: string
     brand_color?: string
     _timestamp?: number
@@ -113,7 +115,7 @@ export default function ProfilPublicPage() {
       
       let { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
         .eq('id', userId)
         .maybeSingle()
 
@@ -233,6 +235,7 @@ export default function ProfilPublicPage() {
         website_url: socialLinks.website_url,
         linkedin_url: socialLinks.linkedin_url,
         tiktok_url: socialLinks.tiktok_url,
+        siret: profileData?.siret || null,
         // Boutique fields
         has_physical_location: profileData?.has_physical_location || false,
         boutique_name: profileData?.boutique_name || null,
@@ -478,6 +481,14 @@ export default function ProfilPublicPage() {
                         <BrandColorPicker
                           userId={user.id}
                           currentColor={profile?.brand_color}
+                          onSave={reloadData}
+                        />
+                      </div>
+                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
+                        <SiretEditor
+                          key={`siret-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          currentSiret={profile?.siret}
                           onSave={reloadData}
                         />
                       </div>

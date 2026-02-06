@@ -20,6 +20,7 @@ export async function signUp(
     prenom: string
     nom: string
     nomEntreprise?: string
+    referralCode?: string
   }
 ) {
   logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
@@ -444,6 +445,46 @@ export async function signUp(
         } catch (earlyAdopterError) {
           // Ne pas bloquer l'inscription si la logique Early Adopter échoue
           logger.warn('Erreur lors de l\'attribution du badge Early Adopter (non bloquant):', earlyAdopterError)
+        }
+
+        // Traiter le code de parrainage si fourni
+        if (profileData.referralCode) {
+          try {
+            const { data: referralData } = await adminClient
+              .from('provider_referrals')
+              .select('referral_code, provider_id, total_referrals')
+              .eq('referral_code', profileData.referralCode.toUpperCase())
+              .maybeSingle()
+
+            if (referralData) {
+              // Enregistrer l'usage du parrainage
+              await adminClient
+                .from('referral_usages')
+                .insert({
+                  referral_code: referralData.referral_code,
+                  referrer_id: referralData.provider_id,
+                  referred_user_id: data.user.id,
+                })
+
+              // Incrémenter le compteur
+              await adminClient
+                .from('provider_referrals')
+                .update({
+                  total_referrals: (referralData.total_referrals || 0) + 1,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('provider_id', referralData.provider_id)
+
+              logger.info('Parrainage enregistré', {
+                referrer: referralData.provider_id,
+                referred: data.user.id,
+                code: referralData.referral_code,
+              })
+            }
+          } catch (referralError) {
+            // Ne pas bloquer l'inscription si le parrainage échoue
+            logger.warn('Erreur parrainage (non bloquant):', referralError)
+          }
         }
       }
     } catch (err: any) {
