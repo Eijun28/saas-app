@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { AvatarUploader } from '@/components/provider/AvatarUploader'
 import { BusinessNameEditor } from '@/components/provider/BusinessNameEditor'
+import { SiretEditor } from '@/components/provider/SiretEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
@@ -67,6 +68,7 @@ export default function ProfilPublicPage() {
     boutique_appointment_only?: boolean
     pricing_unit?: string
     brand_color?: string
+    siret?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -198,6 +200,19 @@ export default function ProfilPublicPage() {
         // Fallback si table n'existe pas encore
       }
 
+      // Récupérer le SIRET depuis banking_info
+      let siretValue = ''
+      try {
+        const { data: bankingData } = await freshSupabase
+          .from('prestataire_banking_info')
+          .select('siret')
+          .eq('prestataire_id', userId)
+          .maybeSingle()
+        if (bankingData?.siret) siretValue = bankingData.siret
+      } catch {
+        // Fallback si table n'existe pas encore
+      }
+
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         return culture ? { id: c.culture_id, label: culture.label } : null
@@ -248,6 +263,7 @@ export default function ProfilPublicPage() {
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingData?.pricing_unit || undefined,
         brand_color: brandColor,
+        siret: siretValue || undefined,
         _timestamp: timestamp,
       }
       
@@ -371,6 +387,7 @@ export default function ProfilPublicPage() {
                 zones={zones}
                 portfolio={portfolio}
                 brandColor={profile?.brand_color}
+                hasSiret={!!profile?.siret}
               />
             </div>
           </div>
@@ -436,6 +453,12 @@ export default function ProfilPublicPage() {
                         key={`business-name-${profile?._timestamp || 0}`}
                         userId={user.id}
                         currentName={profile?.nom_entreprise}
+                        onSave={reloadData}
+                      />
+                      <SiretEditor
+                        key={`siret-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentSiret={profile?.siret}
                         onSave={reloadData}
                       />
                       <ProfileDescriptionEditor

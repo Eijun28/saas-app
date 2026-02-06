@@ -55,6 +55,7 @@ interface Provider {
   zones: Array<{ id: string; label: string }>
   tags: ProviderTag[]
   completionPercentage?: number
+  hasSiret?: boolean
 }
 
 // Utiliser la constante partagée (déjà importée)
@@ -411,6 +412,13 @@ export default function RecherchePage() {
         .select('id, image_url, title')
         .eq('profile_id', provider.id)
         .order('display_order', { ascending: true })
+
+      // Vérifier si le prestataire a un SIRET
+      const { data: bankingData } = await supabase
+        .from('prestataire_banking_info')
+        .select('siret')
+        .eq('prestataire_id', provider.id)
+        .maybeSingle()
       
       if (portfolioError) {
         console.error('Erreur chargement portfolio:', portfolioError)
@@ -431,6 +439,7 @@ export default function RecherchePage() {
           website_url: fullProfileData.website_url || null,
           linkedin_url: fullProfileData.linkedin_url || null,
           tiktok_url: fullProfileData.tiktok_url || null,
+          hasSiret: !!bankingData?.siret,
         } as Provider)
       }
     } catch (error) {
@@ -978,6 +987,7 @@ export default function RecherchePage() {
             showTriggerButton={false}
             isCoupleView={true}
             coupleId={user.id}
+            hasSiret={selectedProvider.hasSiret}
           />
         )}
       </div>
