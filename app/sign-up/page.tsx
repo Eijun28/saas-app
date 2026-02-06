@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Lock, Sparkles, Building2 } from 'lucide-react'
+import { Lock, Sparkles, Building2, Gift } from 'lucide-react'
 import Particles from '@/components/Particles'
 import { createClient } from '@/lib/supabase/client'
 
@@ -22,6 +22,9 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [earlyAdopterSlotsLeft, setEarlyAdopterSlotsLeft] = useState<number | null>(null)
+  const [referralCode, setReferralCode] = useState('')
+  const [referralValid, setReferralValid] = useState<boolean | null>(null)
+  const [referralChecking, setReferralChecking] = useState(false)
   const router = useRouter()
 
   const {
@@ -89,6 +92,28 @@ export default function SignUpPage() {
     checkSlots()
   }, [])
 
+  // Vérifier le code de parrainage
+  const validateReferralCode = async (code: string) => {
+    if (!code.trim()) {
+      setReferralValid(null)
+      return
+    }
+    setReferralChecking(true)
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('provider_referrals')
+        .select('referral_code')
+        .eq('referral_code', code.trim().toUpperCase())
+        .maybeSingle()
+      setReferralValid(!!data)
+    } catch {
+      setReferralValid(null)
+    } finally {
+      setReferralChecking(false)
+    }
+  }
+
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true)
     setError(null)
@@ -100,6 +125,7 @@ export default function SignUpPage() {
           prenom: data.prenom,
           nom: data.nom,
           nomEntreprise: data.nomEntreprise,
+          referralCode: referralCode.trim().toUpperCase() || undefined,
         })
       } catch (signUpError: any) {
         throw signUpError
@@ -334,6 +360,56 @@ export default function SignUpPage() {
                   <p className="text-xs text-neutral-500 text-center">
                     Vous pourrez compléter votre profil prestataire après l'inscription
                   </p>
+                </motion.div>
+              )}
+
+              {/* Code de parrainage (optionnel, visible pour tous les rôles) */}
+              {selectedRole === 'prestataire' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3 p-4 rounded-2xl bg-gradient-to-br from-purple-50/30 to-neutral-50 border border-purple-100/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-[#823F91]" />
+                    <span className="text-sm font-medium text-[#823F91]">Code de parrainage</span>
+                    <span className="text-xs text-neutral-400">(optionnel)</span>
+                  </div>
+                  <LabelInputContainer>
+                    <Input
+                      id="referralCode"
+                      placeholder="Ex: NUPLY-XXXXX"
+                      type="text"
+                      value={referralCode}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase()
+                        setReferralCode(value)
+                        setReferralValid(null)
+                      }}
+                      onBlur={() => {
+                        if (referralCode.trim()) {
+                          validateReferralCode(referralCode)
+                        }
+                      }}
+                      disabled={isLoading}
+                      className={cn(
+                        "h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base font-mono tracking-wider",
+                        referralValid === true && 'border-green-300 bg-green-50/50',
+                        referralValid === false && 'border-red-300 bg-red-50/50'
+                      )}
+                    />
+                    {referralChecking && (
+                      <p className="text-xs text-neutral-500 mt-1">Vérification du code...</p>
+                    )}
+                    {referralValid === true && (
+                      <p className="text-xs text-green-600 mt-1">Code de parrainage valide</p>
+                    )}
+                    {referralValid === false && (
+                      <p className="text-xs text-red-500 mt-1">Code de parrainage invalide</p>
+                    )}
+                  </LabelInputContainer>
                 </motion.div>
               )}
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Bell, Calendar, MessageSquare, TrendingUp, Search, X, RefreshCw } from 'lucide-react'
+import { Bell, Calendar, MessageSquare, TrendingUp, Search, X, RefreshCw, AlertTriangle, ArrowRight, Gift, Copy, Check } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
@@ -42,6 +42,11 @@ export default function DashboardPrestatairePage() {
 
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [activitiesLoading, setActivitiesLoading] = useState(true)
+  const [profileCompletion, setProfileCompletion] = useState<number | null>(null)
+  const [profileBannerDismissed, setProfileBannerDismissed] = useState(false)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [referralCount, setReferralCount] = useState(0)
+  const [referralCopied, setReferralCopied] = useState(false)
 
   // Vérifier le succès du paiement Stripe
   useEffect(() => {
@@ -90,6 +95,82 @@ export default function DashboardPrestatairePage() {
           if (data?.nom) setNom(data.nom)
         })
     }
+  }, [user])
+
+  // Calcul du pourcentage de complétion du profil
+  useEffect(() => {
+    if (!user) return
+
+    const fetchProfileCompletion = async () => {
+      try {
+        const supabase = createClient()
+
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('avatar_url, nom_entreprise, description_courte, budget_min, budget_max, ville_principale')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        const { data: culturesData } = await supabase
+          .from('provider_cultures')
+          .select('culture_id')
+          .eq('profile_id', user.id)
+
+        const { data: zonesData } = await supabase
+          .from('provider_zones')
+          .select('zone_id')
+          .eq('profile_id', user.id)
+
+        const { data: portfolioData } = await supabase
+          .from('provider_portfolio')
+          .select('id')
+          .eq('profile_id', user.id)
+
+        const checks = [
+          !!profileData?.avatar_url,
+          !!profileData?.nom_entreprise,
+          !!profileData?.description_courte && profileData.description_courte.length > 20,
+          !!(profileData?.budget_min || profileData?.budget_max),
+          !!profileData?.ville_principale,
+          (culturesData?.length || 0) > 0,
+          (zonesData?.length || 0) > 0,
+          (portfolioData?.length || 0) >= 3,
+        ]
+
+        const completed = checks.filter(Boolean).length
+        const percent = Math.round((completed / checks.length) * 100)
+        setProfileCompletion(percent)
+      } catch (error) {
+        console.error('Erreur calcul complétion profil:', error)
+      }
+    }
+
+    fetchProfileCompletion()
+  }, [user])
+
+  // Charger le code de parrainage
+  useEffect(() => {
+    if (!user) return
+
+    const fetchReferralCode = async () => {
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('provider_referrals')
+          .select('referral_code, total_referrals')
+          .eq('provider_id', user.id)
+          .maybeSingle()
+
+        if (data) {
+          setReferralCode(data.referral_code)
+          setReferralCount(data.total_referrals || 0)
+        }
+      } catch (error) {
+        // Silencieux si la table n'existe pas encore
+      }
+    }
+
+    fetchReferralCode()
   }, [user])
 
   useEffect(() => {
@@ -382,6 +463,42 @@ export default function DashboardPrestatairePage() {
         )}
       </motion.div>
 
+      {/* Bannière complétion profil < 70% */}
+      {profileCompletion !== null && profileCompletion < 70 && !profileBannerDismissed && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="relative flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl shadow-sm"
+        >
+          <div className="p-2 bg-amber-100 rounded-xl flex-shrink-0">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">
+              Votre profil est complété à {profileCompletion}%
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Pour être visible par les couples, votre profil doit être complété à au moins 70%. Complétez-le dès maintenant pour recevoir des demandes.
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/prestataire/profil-public')}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#823F91] hover:bg-[#6D3478] text-white text-sm font-medium rounded-xl transition-colors flex-shrink-0"
+          >
+            Compléter
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => setProfileBannerDismissed(true)}
+            className="absolute top-2 right-2 p-1 hover:bg-amber-100 rounded-lg transition-colors"
+            title="Masquer"
+          >
+            <X className="h-3.5 w-3.5 text-amber-400" />
+          </button>
+        </motion.div>
+      )}
+
       {/* Barre de recherche améliorée */}
       {searchQuery && (
         <motion.div
@@ -556,6 +673,63 @@ export default function DashboardPrestatairePage() {
 
       {/* Performance du mois */}
       <MonthlyPerformance />
+
+      {/* Parrainage */}
+      {referralCode && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+          className="bg-gradient-to-r from-[#823F91]/5 via-purple-50 to-[#9D5FA8]/5 rounded-2xl border border-[#823F91]/10 overflow-hidden"
+        >
+          <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#823F91]/10 rounded-xl">
+                <Gift className="h-5 w-5 text-[#823F91]" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">
+                  Parrainez des prestataires
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Partagez votre code et gagnez des avantages
+                  {referralCount > 0 && (
+                    <span className="ml-1 text-[#823F91] font-medium">
+                      • {referralCount} filleul{referralCount > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="px-4 py-2 bg-white rounded-xl border border-[#823F91]/20 font-mono text-sm font-bold text-[#823F91] tracking-wider">
+                {referralCode}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(referralCode)
+                  setReferralCopied(true)
+                  toast.success('Code de parrainage copié !')
+                  setTimeout(() => setReferralCopied(false), 2000)
+                }}
+                className={cn(
+                  'p-2.5 rounded-xl transition-all',
+                  referralCopied
+                    ? 'bg-green-100 text-green-600'
+                    : 'bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20'
+                )}
+                title="Copier le code"
+              >
+                {referralCopied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
       </div>
 
     </div>
