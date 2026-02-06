@@ -50,20 +50,14 @@ function SidebarToggleButton() {
         e.stopPropagation()
         handleToggle()
       }}
-      className={cn(
-        'h-8 w-8 rounded-lg transition-all duration-200 flex-shrink-0',
-        'hover:bg-[#823F91]/10',
-        'focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1',
-        'flex relative z-[100]',
-        isCollapsed ? 'bg-[#823F91]/5' : ''
-      )}
-      style={{ pointerEvents: 'auto', color: '#823F91' }}
+      className='h-8 w-8 rounded-lg flex-shrink-0 flex relative z-[100] hover:bg-transparent'
+      style={{ pointerEvents: 'auto', color: '#000000', background: 'transparent', border: 'none', boxShadow: 'none' }}
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <ChevronsRight className='h-4 w-4' style={{ color: '#823F91' }} />
+        <ChevronsRight className='h-4 w-4' style={{ color: '#000000' }} />
       ) : (
-        <ChevronsLeft className='h-4 w-4' style={{ color: '#823F91' }} />
+        <ChevronsLeft className='h-4 w-4' style={{ color: '#000000' }} />
       )}
     </Button>
   )
