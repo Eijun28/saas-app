@@ -14,10 +14,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "240px" // Réduit de 280px à 240px pour desktop
-const SIDEBAR_WIDTH_MOBILE = "75%"
-const SIDEBAR_WIDTH_TABLET = "220px" // Pour tablettes
-const SIDEBAR_WIDTH_ICON = "5rem" // 80px pour que les icônes soient entièrement visibles
+const SIDEBAR_WIDTH = "232px"
+const SIDEBAR_WIDTH_MOBILE = "280px"
+const SIDEBAR_WIDTH_TABLET = "220px"
+const SIDEBAR_WIDTH_ICON = "4rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {

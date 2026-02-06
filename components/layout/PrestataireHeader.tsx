@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Bell, PanelLeft, PanelLeftClose, Inbox, Calendar, MessageSquare } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/lib/auth/actions'
@@ -15,14 +16,32 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut } from 'lucide-react'
+import { User, LogOut, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
+
+const pageTitles: Record<string, string> = {
+  '/prestataire/dashboard': 'Dashboard',
+  '/prestataire/demandes-recues': 'Demandes reçues',
+  '/prestataire/agenda': 'Agenda',
+  '/prestataire/messagerie': 'Messagerie',
+  '/prestataire/devis-factures': 'Devis & Factures',
+  '/prestataire/profil-public': 'Profil public',
+}
+
+function getPageTitle(pathname: string): string {
+  if (pageTitles[pathname]) return pageTitles[pathname]
+  for (const [path, title] of Object.entries(pageTitles)) {
+    if (pathname.startsWith(path + '/')) return title
+  }
+  return 'Dashboard'
+}
 
 export function PrestataireHeader() {
   const { user } = useUser()
-  const { openMobile, setOpenMobile, toggleSidebar, state, isMobile } = useSidebar()
-  const isCollapsed = state === 'collapsed'
+  const pathname = usePathname()
+  const { openMobile, setOpenMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -42,7 +61,6 @@ export function PrestataireHeader() {
 
     const supabase = createClient()
 
-    // Récupérer le profil du prestataire
     const { data: profileData } = await supabase
       .from('profiles')
       .select('prenom, nom, email, avatar_url')
@@ -51,7 +69,7 @@ export function PrestataireHeader() {
 
     if (profileData) {
       const fullName = [profileData.prenom, profileData.nom].filter(Boolean).join(' ') || 'Prestataire'
-      
+
       setProfile({
         name: fullName,
         email: profileData.email || user.email || '',
@@ -70,7 +88,6 @@ export function PrestataireHeader() {
     loadProfile()
   }, [user])
 
-  // Écouter les événements de mise à jour d'avatar
   useEffect(() => {
     const handleAvatarUpdate = () => {
       loadProfile()
@@ -97,7 +114,6 @@ export function PrestataireHeader() {
       }> = []
 
       try {
-        // Récupérer les nouvelles demandes (requests)
         const { data: requests } = await supabase
           .from('requests')
           .select('id, created_at, couple_id, initial_message')
@@ -107,19 +123,18 @@ export function PrestataireHeader() {
           .limit(5)
 
         if (requests) {
-          // Récupérer les noms des couples
           const coupleIds = [...new Set(requests.map((r: any) => r.couple_id).filter(Boolean))]
           let couplesMap = new Map()
-          
+
           if (coupleIds.length > 0) {
             const { data: couplesData } = await supabase
               .from('couples')
               .select('user_id, partner_1_name, partner_2_name')
               .in('user_id', coupleIds)
-            
+
             if (couplesData) {
               couplesMap = new Map(couplesData.map((c: any) => {
-                const name = c.partner_1_name && c.partner_2_name 
+                const name = c.partner_1_name && c.partner_2_name
                   ? `${c.partner_1_name} & ${c.partner_2_name}`
                   : c.partner_1_name || c.partner_2_name || 'un couple'
                 return [c.user_id, name]
@@ -140,7 +155,6 @@ export function PrestataireHeader() {
           })
         }
 
-        // Récupérer les événements à venir
         const { data: evenements } = await supabase
           .from('events')
           .select('id, title, date, time')
@@ -162,9 +176,6 @@ export function PrestataireHeader() {
           })
         }
 
-        // Messages désactivés temporairement
-
-        // Trier par date (plus récent en premier)
         notificationsList.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         setNotifications(notificationsList.slice(0, 10))
       } catch (error) {
@@ -188,56 +199,65 @@ export function PrestataireHeader() {
   }
 
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
+  const pageTitle = getPageTitle(pathname || '/prestataire/dashboard')
 
   return (
-    <header className='h-14 sm:h-16 bg-white/95 backdrop-blur-md sticky top-0 z-[100] border-b border-[#E5E7EB] w-full shadow-sm shadow-black/5 flex items-center'>
-      <div className='w-full flex items-center justify-between gap-3 sm:gap-6 px-3 sm:px-5 md:px-6 relative z-[101]'>
-        {/* Sidebar toggle button - MOBILE uniquement */}
-        <div className='md:hidden'>
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              setOpenMobile(!openMobile)
-            }}
-            className={cn(
-              'h-9 w-9 sm:h-10 sm:w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-              'hover:bg-gray-100 active:bg-gray-200',
-              'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2'
-            )}
-            style={{ pointerEvents: 'auto' }}
-            aria-label={openMobile ? 'Fermer la sidebar' : 'Ouvrir la sidebar'}
-          >
-            {openMobile ? (
-              <PanelLeftClose className='h-5 w-5 sm:h-6 sm:w-6 text-gray-700' />
-            ) : (
-              <PanelLeft className='h-5 w-5 sm:h-6 sm:w-6 text-gray-700' />
-            )}
-          </Button>
+    <header className="h-14 bg-white/80 backdrop-blur-sm sticky top-0 z-[100] border-b border-gray-100 w-full flex items-center">
+      <div className="w-full flex items-center justify-between px-4 sm:px-6">
+        {/* Left side: mobile toggle + page title */}
+        <div className="flex items-center gap-3">
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setOpenMobile(!openMobile)
+              }}
+              className={cn(
+                'h-9 w-9 rounded-lg transition-all duration-150',
+                'hover:bg-gray-100 text-gray-500',
+                'focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1'
+              )}
+              style={{ pointerEvents: 'auto' }}
+              aria-label={openMobile ? 'Fermer la sidebar' : 'Ouvrir la sidebar'}
+            >
+              {openMobile ? (
+                <PanelLeftClose className="h-5 w-5" />
+              ) : (
+                <PanelLeft className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+          <h1 className="text-[15px] font-semibold text-gray-800 tracking-tight">
+            {pageTitle}
+          </h1>
         </div>
 
-        {/* Notifications et Avatar - alignés à droite */}
-        <div className='flex items-center gap-2 sm:gap-3 ml-auto'>
+        {/* Right side: notifications + user dropdown */}
+        <div className="flex items-center gap-1.5">
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button 
+              <button
                 suppressHydrationWarning
-                className='relative h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center cursor-pointer hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors'
+                className="relative h-9 w-9 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <Bell className='h-4 w-4 sm:h-5 sm:w-5 text-gray-700' />
+                <Bell className="h-[18px] w-[18px] text-gray-500" />
                 {unreadCount > 0 && (
-                  <span className='absolute -top-0.5 -right-0.5 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-[#823F91] text-white text-[10px] sm:text-xs font-semibold flex items-center justify-center'>
+                  <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[#823F91] text-white text-[9px] font-semibold flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='w-64'>
+            <DropdownMenuContent align="end" className="w-72 p-1">
+              <div className="px-3 py-2 border-b border-gray-100">
+                <p className="text-[13px] font-semibold text-gray-800">Notifications</p>
+              </div>
               {notifications.length === 0 ? (
-                <div className='px-4 py-6 text-center text-sm text-muted-foreground'>
+                <div className="px-4 py-6 text-center text-[13px] text-gray-400">
                   Aucune notification
                 </div>
               ) : (
@@ -247,15 +267,20 @@ export function PrestataireHeader() {
                   return (
                     <DropdownMenuItem
                       key={notification.id}
-                      className='flex items-center gap-2 cursor-pointer'
+                      className="flex items-start gap-2.5 cursor-pointer rounded-md px-2.5 py-2.5"
                       onClick={() => {
                         if (notification.link) {
                           window.location.href = notification.link
                         }
                       }}
                     >
-                      <Icon className='h-4 w-4 text-[#823F91]' />
-                      <span className='text-sm'>{notification.title}</span>
+                      <div className="h-7 w-7 rounded-md bg-[#823F91]/8 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon className="h-3.5 w-3.5 text-[#823F91]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-gray-800">{notification.title}</p>
+                        <p className="text-[12px] text-gray-500 truncate">{notification.message}</p>
+                      </div>
                     </DropdownMenuItem>
                   )
                 })
@@ -263,21 +288,21 @@ export function PrestataireHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Avatar */}
+          {/* User dropdown */}
           <div className="relative z-[103]">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button 
+                <button
                   suppressHydrationWarning
-                  className='h-auto gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1 sm:py-1.5 flex items-center cursor-pointer hover:opacity-80 active:opacity-70 transition-opacity'
+                  className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                 >
-                  <Avatar className='h-8 w-8 sm:h-9 sm:w-9 rounded-xl ring-1 ring-gray-100'>
-                    <AvatarImage 
-                      src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined} 
+                  <Avatar className="h-8 w-8 rounded-lg ring-1 ring-gray-100">
+                    <AvatarImage
+                      src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined}
                       alt={profile?.name}
-                      key={profile?.avatar} 
+                      key={profile?.avatar}
                     />
-                    <AvatarFallback className='bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs sm:text-sm font-semibold'>
+                    <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs font-semibold rounded-lg">
                       {profile?.name
                         ?.split(' ')
                         .map((n) => n[0])
@@ -286,18 +311,29 @@ export function PrestataireHeader() {
                         .slice(0, 2) || 'P'}
                     </AvatarFallback>
                   </Avatar>
+                  <div className="hidden sm:flex items-center gap-1.5">
+                    <span className="text-[13px] font-medium text-gray-700 max-w-[140px] truncate">
+                      {profile?.name || 'Prestataire'}
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                  </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52 p-1">
+                <div className="px-2.5 py-2 sm:hidden">
+                  <p className="text-sm font-medium text-gray-900 truncate">{profile?.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+                </div>
+                <DropdownMenuSeparator className="sm:hidden" />
                 <DropdownMenuItem asChild>
-                  <Link href="/prestataire/profil-public" className="flex items-center gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
-                    <span>Profil</span>
+                  <Link href="/prestataire/profil-public" className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-[13px]">Profil</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer text-red-600 focus:text-red-600">
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 cursor-pointer text-red-600 focus:text-red-600 rounded-md px-2.5 py-2">
                   <LogOut className="h-4 w-4" />
-                  <span>Déconnexion</span>
+                  <span className="text-[13px]">Déconnexion</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -307,4 +343,3 @@ export function PrestataireHeader() {
     </header>
   )
 }
-
