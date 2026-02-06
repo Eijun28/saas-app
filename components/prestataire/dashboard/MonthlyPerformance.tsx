@@ -173,12 +173,6 @@ export function MonthlyPerformance() {
         className="p-5 overflow-y-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <style jsx>{`
-          div::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-
         {loading ? (
           <div className="space-y-4">
             <div className="h-24 bg-gray-50 rounded-xl animate-pulse" />
@@ -204,9 +198,9 @@ export function MonthlyPerformance() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    {responseRate >= 70 ? 'Excellent taux de réponse !' :
-                     responseRate >= 50 ? 'Bon taux, continuez ainsi !' :
-                     'Améliorez votre taux de réponse'}
+                    {responseRate >= 70 ? 'Superieur a la moyenne de la plateforme' :
+                     responseRate >= 50 ? 'Dans la moyenne de la plateforme' :
+                     'En dessous de la moyenne de la plateforme'}
                   </p>
                 </div>
 

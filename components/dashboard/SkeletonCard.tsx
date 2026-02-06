@@ -16,35 +16,27 @@ export function SkeletonCard({ delay = 0, className }: SkeletonCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "relative border border-gray-200/60 bg-white rounded-xl overflow-hidden",
+        "relative border border-gray-100 bg-white rounded-2xl shadow-sm overflow-hidden",
         "flex flex-col h-full",
         className
       )}
     >
-      <div className="p-5 sm:p-6 md:p-7 space-y-5 flex flex-col flex-1">
+      <div className="p-4 sm:p-5 space-y-4 flex flex-col flex-1">
         {/* Header: Icon + Label */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl flex-shrink-0" />
-            <Skeleton className="h-4 w-24 flex-1" />
-          </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex-shrink-0" />
+          <Skeleton className="h-3 w-20" />
         </div>
 
         {/* Main Value */}
-        <div className="space-y-2">
-          <Skeleton className="h-12 sm:h-14 md:h-16 w-32" />
-          <Skeleton className="h-5 w-40" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-8 sm:h-10 w-24" />
+          <Skeleton className="h-4 w-28" />
         </div>
 
-        {/* Description */}
-        <div className="pt-3 border-t border-gray-100/80 flex-1 flex flex-col space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-        </div>
-
-        {/* Action button */}
-        <div className="pt-4 border-t border-gray-100/80">
-          <Skeleton className="h-6 w-32" />
+        {/* Action */}
+        <div className="pt-2 mt-auto border-t border-gray-100">
+          <Skeleton className="h-4 w-24" />
         </div>
       </div>
     </motion.div>
