@@ -14,13 +14,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useNotifications } from "@/hooks/use-notifications"
-import { Separator } from "@/components/ui/separator"
 
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
@@ -56,18 +54,18 @@ function SidebarToggleButton() {
       }}
       className={cn(
         'h-8 w-8 rounded-lg transition-all duration-200 flex-shrink-0',
-        'hover:bg-[#823F91]/8 text-gray-400 hover:text-[#823F91]',
+        'hover:bg-[#823F91]/10',
         'focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1',
         'flex relative z-[100]',
-        isCollapsed && 'bg-[#823F91]/5 text-[#823F91]'
+        isCollapsed ? 'bg-[#823F91]/5' : ''
       )}
-      style={{ pointerEvents: 'auto' }}
+      style={{ pointerEvents: 'auto', color: '#823F91' }}
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <ChevronsRight className='h-4 w-4' />
+        <ChevronsRight className='h-4 w-4' style={{ color: '#823F91' }} />
       ) : (
-        <ChevronsLeft className='h-4 w-4' />
+        <ChevronsLeft className='h-4 w-4' style={{ color: '#823F91' }} />
       )}
     </Button>
   )
@@ -92,7 +90,7 @@ export function CoupleSidebarWrapper() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-gray-200/80">
-      <SidebarHeader className="h-16 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-14 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <Link
           href="/couple/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"
@@ -158,13 +156,6 @@ export function CoupleSidebarWrapper() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:hidden">
-        <Separator className="mb-3 bg-gray-100" />
-        <div className="flex items-center gap-2 px-1">
-          <div className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span className="text-[11px] text-gray-400 font-medium">Nuply v1.0</span>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   )
 }
