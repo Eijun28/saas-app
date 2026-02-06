@@ -10,6 +10,8 @@ import {
   FileText,
   Heart,
   RefreshCw,
+  MessageSquare,
+  XCircle,
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { useState, useEffect, useMemo } from 'react'
@@ -123,7 +125,7 @@ export default function CoupleDashboardPage() {
               .eq('couple_id', user.id),
             supabase
               .from('requests')
-              .select('id, created_at, status')
+              .select('id, created_at, status, provider_id')
               .eq('couple_id', user.id)
               .order('created_at', { ascending: false })
               .limit(5),
@@ -134,6 +136,23 @@ export default function CoupleDashboardPage() {
               .order('created_at', { ascending: false })
               .limit(5),
           ])
+
+          // Recuperer les noms des prestataires pour les demandes recentes
+          let providerNames: Record<string, string> = {}
+          if (recentRequestsData && recentRequestsData.length > 0) {
+            const providerIds = [...new Set(recentRequestsData.map((r: any) => r.provider_id).filter(Boolean))]
+            if (providerIds.length > 0) {
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id, prenom, nom, business_name')
+                .in('id', providerIds)
+              if (profiles) {
+                profiles.forEach((p: any) => {
+                  providerNames[p.id] = p.business_name || [p.prenom, p.nom].filter(Boolean).join(' ') || 'Prestataire'
+                })
+              }
+            }
+          }
 
           if (budgetItemsData) {
             setBudgetItems(budgetItemsData)
@@ -146,18 +165,45 @@ export default function CoupleDashboardPage() {
 
           if (recentRequestsData) {
             recentRequestsData.forEach((req: any) => {
-              const statusLabel = req.status === 'accepted' ? 'acceptee'
-                : req.status === 'rejected' ? 'refusee'
-                : 'envoyee'
+              const providerName = providerNames[req.provider_id] || 'un prestataire'
+
+              // Label, icone et lien adaptes au statut reel
+              let title: string
+              let icon = FileText
+              let href = '/couple/demandes'
+              let color = 'text-[#823F91]'
+
+              switch (req.status) {
+                case 'accepted':
+                  title = `Conversation ouverte avec ${providerName}`
+                  icon = MessageSquare
+                  href = '/couple/messagerie'
+                  break
+                case 'rejected':
+                  title = `Demande refusee par ${providerName}`
+                  icon = XCircle
+                  color = 'text-gray-500'
+                  break
+                case 'cancelled':
+                  title = `Demande annulee - ${providerName}`
+                  icon = XCircle
+                  color = 'text-gray-500'
+                  break
+                default:
+                  title = `Demande envoyee a ${providerName}`
+                  icon = FileText
+                  break
+              }
+
               activities.push({
                 id: `req-${req.id}`,
                 type: 'request',
-                title: `Demande ${statusLabel}`,
+                title,
                 time: formatRelativeTime(req.created_at),
                 createdAt: req.created_at,
-                icon: FileText,
-                color: 'text-[#823F91]',
-                href: '/couple/demandes',
+                icon,
+                color,
+                href,
               })
             })
           }
