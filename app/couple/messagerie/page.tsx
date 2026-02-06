@@ -12,6 +12,7 @@ import { PageTitle } from '@/components/couple/shared/PageTitle'
 export default function MessageriePage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
+  const [coupleId, setCoupleId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<any[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messages, setMessages] = useState<any[]>([])
@@ -22,12 +23,29 @@ export default function MessageriePage() {
   const [prestataireAvatars, setPrestataireAvatars] = useState<Record<string, string>>({})
   const [lastMessages, setLastMessages] = useState<Record<string, { content: string; time: string; sender_id: string }>>({})
 
+  // Resolve couple_id from couples table (conversations.couple_id references couples.id, not auth user id)
+  useEffect(() => {
+    if (!user) return
+    const resolveCoupleId = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('couples')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      if (data?.id) {
+        setCoupleId(data.id)
+      }
+    }
+    resolveCoupleId()
+  }, [user])
+
   useEffect(() => {
     if (!userLoading && !user) {
       router.push('/sign-in')
       return
     }
-    if (user) {
+    if (user && coupleId) {
       loadConversations()
 
       // Écouter les nouveaux messages en temps réel
@@ -40,7 +58,7 @@ export default function MessageriePage() {
             event: '*',
             schema: 'public',
             table: 'conversations',
-            filter: `couple_id=eq.${user.id}`,
+            filter: `couple_id=eq.${coupleId}`,
           },
           () => {
             loadConversations()
@@ -63,29 +81,29 @@ export default function MessageriePage() {
         supabase.removeChannel(channel)
       }
     }
-  }, [user, userLoading, router])
+  }, [user, userLoading, router, coupleId])
 
   const loadConversations = async () => {
-    if (!user) {
+    if (!user || !coupleId) {
       return
     }
-    
+
     setLoading(true)
     const supabase = createClient()
-    
+
     try {
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      
+
       if (authError || !authUser) {
         setConversations([])
         setLoading(false)
         return
       }
-      
+
       const { data, error } = await supabase
         .from('conversations')
         .select('id, prestataire_id, couple_id, last_message, last_message_at, updated_at, created_at, status, unread_count_couple')
-        .eq('couple_id', user.id)
+        .eq('couple_id', coupleId)
         .eq('status', 'active')
         .order('last_message_at', { ascending: false, nullsFirst: false })
         .order('updated_at', { ascending: false })
