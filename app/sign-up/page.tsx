@@ -481,10 +481,6 @@ export default function SignUpPage() {
                         />
                         Création en cours...
                       </>
-                    ) : !isFormValid ? (
-                      <>
-                        Veuillez remplir tous les champs obligatoires
-                      </>
                     ) : (
                       <>
                         {selectedRole === 'prestataire' && earlyAdopterSlotsLeft !== null && earlyAdopterSlotsLeft > 0
@@ -502,18 +498,6 @@ export default function SignUpPage() {
                     )}
                   </span>
                 </motion.button>
-
-                {!isFormValid && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-amber-50 border border-amber-200 rounded-lg"
-                  >
-                    <p className="text-xs text-amber-700 text-center">
-                      <span className="font-semibold">Veuillez remplir tous les champs obligatoires</span> (marqués d'un <span className="text-red-500">*</span>) pour continuer.
-                    </p>
-                  </motion.div>
-                )}
                 
                 <motion.div
                   initial={{ opacity: 0 }}
