@@ -30,7 +30,7 @@ export default function DashboardPrestatairePage() {
   const [stats, setStats] = useState<Stats>({
     nouvelles_demandes: 0,
     evenements_a_venir: 0,
-    messages_non_lus: 0,
+    conversations_en_cours: 0,
     taux_reponse: 0,
     demandes_ce_mois: 0,
   })
@@ -106,7 +106,8 @@ export default function DashboardPrestatairePage() {
           { count: nouvellesDemandes, error: demandesError },
           { count: evenementsAvenir, error: eventsError },
           { count: demandesCeMois },
-          { count: totalDemandes }
+          { count: totalDemandes },
+          { count: conversationsEnCours }
         ] = await Promise.all([
           // Nouvelles demandes (requests.status = 'pending')
           supabase
@@ -114,26 +115,33 @@ export default function DashboardPrestatairePage() {
             .select('id', { count: 'exact', head: true })
             .eq('provider_id', user.id)
             .eq('status', 'pending'),
-          
-          // Événements à venir (date >= today)
+
+          // Evenements a venir (date >= today)
           supabase
             .from('evenements_prestataire')
             .select('id', { count: 'exact', head: true })
             .eq('prestataire_id', user.id)
             .gte('date', new Date().toISOString().split('T')[0]),
-          
-          // Demandes ce mois (créées ce mois)
+
+          // Demandes ce mois (creees ce mois)
           supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })
             .eq('provider_id', user.id)
             .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
-          
-          // Total demandes pour calculer le taux de réponse
+
+          // Total demandes pour calculer le taux de reponse
+          supabase
+            .from('requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('provider_id', user.id),
+
+          // Conversations en cours (demandes acceptees = conversation active)
           supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })
             .eq('provider_id', user.id)
+            .eq('status', 'accepted')
         ])
 
         // Fonction pour vérifier si une erreur est ignorable
@@ -190,7 +198,7 @@ export default function DashboardPrestatairePage() {
         setStats({
           nouvelles_demandes: nouvellesDemandes || 0,
           evenements_a_venir: evenementsAvenir || 0,
-          messages_non_lus: 0,
+          conversations_en_cours: conversationsEnCours || 0,
           taux_reponse: tauxReponse,
           demandes_ce_mois: demandesCeMois || 0,
         })
@@ -211,7 +219,7 @@ export default function DashboardPrestatairePage() {
           setStats({
             nouvelles_demandes: 0,
             evenements_a_venir: 0,
-            messages_non_lus: 0,
+            conversations_en_cours: 0,
             taux_reponse: 0,
             demandes_ce_mois: 0,
           })
@@ -230,7 +238,7 @@ export default function DashboardPrestatairePage() {
           setStats({
             nouvelles_demandes: 0,
             evenements_a_venir: 0,
-            messages_non_lus: 0,
+            conversations_en_cours: 0,
             taux_reponse: 0,
             demandes_ce_mois: 0,
           })
@@ -439,17 +447,17 @@ export default function DashboardPrestatairePage() {
           },
           {
             icon: MessageSquare,
-            label: "Messages non lus",
-            value: stats.messages_non_lus,
-            subtitle: "Necessitent une reponse",
-            description: stats.messages_non_lus > 0
-              ? `${stats.messages_non_lus} message${stats.messages_non_lus > 1 ? 's' : ''} en attente de reponse`
-              : "Tous vos messages sont a jour",
+            label: "Conversations",
+            value: stats.conversations_en_cours,
+            subtitle: "En cours avec des couples",
+            description: stats.conversations_en_cours > 0
+              ? `${stats.conversations_en_cours} conversation${stats.conversations_en_cours > 1 ? 's' : ''} active${stats.conversations_en_cours > 1 ? 's' : ''}`
+              : "Aucune conversation en cours",
             colorClass: "from-[#9D5FA8]/20 via-[#823F91]/20 to-[#6D3478]/20 text-[#823F91]",
             delay: 0.3,
             onClick: () => router.push('/prestataire/messagerie'),
             actionLabel: "Ouvrir la messagerie",
-            searchTerms: ['messages', 'messagerie', 'repondre', 'conversations']
+            searchTerms: ['messages', 'messagerie', 'conversations', 'couples']
           },
           {
             icon: TrendingUp,

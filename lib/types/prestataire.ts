@@ -69,7 +69,7 @@ export interface Message {
 export interface Stats {
   nouvelles_demandes: number
   evenements_a_venir: number
-  messages_non_lus: number
+  conversations_en_cours: number
   taux_reponse: number
   demandes_ce_mois: number
 }

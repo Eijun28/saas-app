@@ -107,12 +107,21 @@ const Particles = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer({
-      dpr: pixelRatio,
-      depth: false,
-      alpha: true
-    });
+    let renderer;
+    try {
+      renderer = new Renderer({
+        dpr: pixelRatio,
+        depth: false,
+        alpha: true
+      });
+    } catch (e) {
+      console.warn('WebGL non disponible, particules desactivees');
+      return;
+    }
+
     const gl = renderer.gl;
+    if (!gl || !gl.canvas) return;
+
     container.appendChild(gl.canvas);
     gl.clearColor(0, 0, 0, 0);
 
