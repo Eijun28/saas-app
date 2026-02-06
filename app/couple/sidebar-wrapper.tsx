@@ -14,11 +14,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useNotifications } from "@/hooks/use-notifications"
+import { Separator } from "@/components/ui/separator"
 
 const coupleNavItems = [
   { href: "/couple/dashboard", icon: Home, label: "Accueil" },
@@ -53,19 +55,19 @@ function SidebarToggleButton() {
         handleToggle()
       }}
       className={cn(
-        'h-10 w-10 rounded-xl transition-all duration-200 flex-shrink-0',
-        'hover:bg-gray-100',
-        'focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
-        'flex relative z-[100]', // Visible sur tous les écrans avec z-index élevé
-        isCollapsed && 'bg-gray-100'
+        'h-8 w-8 rounded-lg transition-all duration-200 flex-shrink-0',
+        'hover:bg-[#823F91]/8 text-gray-400 hover:text-[#823F91]',
+        'focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1',
+        'flex relative z-[100]',
+        isCollapsed && 'bg-[#823F91]/5 text-[#823F91]'
       )}
       style={{ pointerEvents: 'auto' }}
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <ChevronsRight className='h-5 w-5 text-black' />
+        <ChevronsRight className='h-4 w-4' />
       ) : (
-        <ChevronsLeft className='h-5 w-5 text-black' />
+        <ChevronsLeft className='h-4 w-4' />
       )}
     </Button>
   )
@@ -76,12 +78,11 @@ export function CoupleSidebarWrapper() {
   const { counts } = useNotifications()
   const { isMobile, setOpenMobile, openMobile } = useSidebar()
 
-  // Fermer la sidebar mobile automatiquement quand la route change
   React.useEffect(() => {
     if (isMobile && openMobile) {
       setOpenMobile(false)
     }
-  }, [pathname]) // Se déclenche à chaque changement de route
+  }, [pathname])
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -90,11 +91,10 @@ export function CoupleSidebarWrapper() {
   }
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="h-[63px] py-2 px-4 border-b border-[#E5E7EB] flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
-        {/* Logo - visible quand sidebar ouverte */}
-        <Link 
-          href="/couple/dashboard" 
+    <Sidebar collapsible="icon" className="border-r border-gray-200/80">
+      <SidebarHeader className="h-16 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+        <Link
+          href="/couple/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"
         >
           <Image
@@ -102,50 +102,49 @@ export function CoupleSidebarWrapper() {
             alt="NUPLY Logo"
             width={100}
             height={40}
-            className="h-8 w-auto"
+            className="h-7 w-auto"
           />
         </Link>
-        
-        {/* Toggle button */}
         <SidebarToggleButton />
       </SidebarHeader>
-      <SidebarContent className="px-5 md:px-6 py-5 md:py-4 group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:py-3">
+
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2 group-data-[collapsible=icon]:space-y-3">
+            <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-1">
               {coupleNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-                
-                // Déterminer le badge à afficher
+
                 let badgeCount = 0
                 if (item.href === '/couple/messagerie') {
                   badgeCount = counts.unreadMessages
                 } else if (item.href === '/couple/demandes') {
                   badgeCount = counts.newRequests
                 }
-                
+
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton 
-                      asChild 
+                    <SidebarMenuButton
+                      asChild
                       isActive={isActive}
-                      size="lg"
                       className={cn(
-                        "text-base font-semibold rounded-xl transition-all duration-200 h-12",
-                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:h-12 group-data-[collapsible=icon]:mx-auto",
-                        "group-data-[collapsible=icon]:rounded-xl",
-                        "active:scale-[0.98]",
-                        isActive 
-                          ? "bg-[#E8D4EF] text-[#823F91] font-bold hover:bg-[#E8D4EF]/90 group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-md" 
-                          : "hover:bg-[#823F91]/10 text-gray-700 group-data-[collapsible=icon]:hover:bg-gray-100"
+                        "text-[13.5px] font-medium rounded-lg transition-all duration-150 h-10",
+                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto",
+                        "group-data-[collapsible=icon]:rounded-lg",
+                        isActive
+                          ? "bg-[#823F91]/10 text-[#823F91] font-semibold hover:bg-[#823F91]/12 group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-sm"
+                          : "hover:bg-gray-100/80 text-gray-600 hover:text-gray-900 group-data-[collapsible=icon]:hover:bg-gray-100"
                       )}
                     >
                       <Link href={item.href} onClick={handleNavClick} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
-                        <Icon className="h-5 w-5 flex-shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
+                        <Icon className={cn(
+                          "h-[18px] w-[18px] flex-shrink-0 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5",
+                          isActive ? "text-[#823F91]" : "text-gray-400"
+                        )} />
                         <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
                         {badgeCount > 0 && (
-                          <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#007AFF] text-white text-xs font-semibold flex items-center justify-center shadow-sm group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:top-0 group-data-[collapsible=icon]:right-0 group-data-[collapsible=icon]:translate-x-1/2 group-data-[collapsible=icon]:-translate-y-1/2">
+                          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#823F91] text-white text-[10px] font-semibold flex items-center justify-center group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
                             {badgeCount > 99 ? '99+' : badgeCount}
                           </span>
                         )}
@@ -158,6 +157,14 @@ export function CoupleSidebarWrapper() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:hidden">
+        <Separator className="mb-3 bg-gray-100" />
+        <div className="flex items-center gap-2 px-1">
+          <div className="h-2 w-2 rounded-full bg-emerald-400" />
+          <span className="text-[11px] text-gray-400 font-medium">Nuply v1.0</span>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   )
 }
