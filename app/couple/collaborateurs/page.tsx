@@ -187,7 +187,7 @@ export default function CollaborateursPage() {
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-3">
                   {/* Images de couples - avatars circulaires */}
-                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-pink-200 to-purple-200 relative z-0">
+                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#E8C4F5] to-[#823F91]/20 relative z-0">
                     <img 
                       src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=100&h=100&fit=crop" 
                       alt="Couple 1" 
@@ -197,7 +197,7 @@ export default function CollaborateursPage() {
                       }}
                     />
                   </div>
-                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-blue-200 to-cyan-200 relative z-0">
+                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#D49FFD]/30 to-[#9D5FA8]/20 relative z-0">
                     <img 
                       src="https://images.unsplash.com/photo-1519741497674-611481863552?w=100&h=100&fit=crop" 
                       alt="Couple 2" 
@@ -207,7 +207,7 @@ export default function CollaborateursPage() {
                       }}
                     />
                   </div>
-                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-green-200 to-emerald-200 relative z-0">
+                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#B87FC0]/20 to-[#823F91]/15 relative z-0">
                     <img 
                       src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=100&h=100&fit=crop" 
                       alt="Couple 3" 
@@ -217,7 +217,7 @@ export default function CollaborateursPage() {
                       }}
                     />
                   </div>
-                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-yellow-200 to-orange-200 relative z-0">
+                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#C084FC]/20 to-[#A855F7]/15 relative z-0">
                     <img 
                       src="https://images.unsplash.com/photo-1518621012428-ef8be442a055?w=100&h=100&fit=crop" 
                       alt="Couple 4" 
@@ -227,7 +227,7 @@ export default function CollaborateursPage() {
                       }}
                     />
                   </div>
-                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-indigo-200 to-purple-200 relative z-0">
+                  <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#DDA0DD]/20 to-[#6D3478]/15 relative z-0">
                     <img 
                       src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop" 
                       alt="Couple 5" 

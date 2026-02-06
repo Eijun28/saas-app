@@ -380,18 +380,18 @@ export default function DevisFacturesPage() {
     type StatusConfig = { label: string; className: string }
 
     const devisConfig: Record<string, StatusConfig> = {
-      pending: { label: 'En attente', className: 'bg-yellow-100 text-yellow-800' },
-      accepted: { label: 'Accepté', className: 'bg-green-100 text-green-800' },
-      rejected: { label: 'Refusé', className: 'bg-red-100 text-red-800' },
-      negotiating: { label: 'Négociation', className: 'bg-blue-100 text-blue-800' },
+      pending: { label: 'En attente', className: 'bg-[#823F91]/10 text-[#823F91]' },
+      accepted: { label: 'Accepté', className: 'bg-[#823F91]/15 text-[#6D3478] font-medium' },
+      rejected: { label: 'Refusé', className: 'bg-gray-100 text-gray-500' },
+      negotiating: { label: 'Négociation', className: 'bg-[#9D5FA8]/10 text-[#9D5FA8]' },
     }
 
     const factureConfig: Record<string, StatusConfig> = {
-      draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-800' },
-      sent: { label: 'Envoyée', className: 'bg-blue-100 text-blue-800' },
-      paid: { label: 'Payée', className: 'bg-green-100 text-green-800' },
-      overdue: { label: 'En retard', className: 'bg-red-100 text-red-800' },
-      cancelled: { label: 'Annulée', className: 'bg-gray-100 text-gray-800' },
+      draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-600' },
+      sent: { label: 'Envoyée', className: 'bg-[#9D5FA8]/10 text-[#9D5FA8]' },
+      paid: { label: 'Payée', className: 'bg-[#823F91]/15 text-[#6D3478] font-medium' },
+      overdue: { label: 'En retard', className: 'bg-red-50 text-red-600' },
+      cancelled: { label: 'Annulée', className: 'bg-gray-100 text-gray-500' },
     }
 
     const config = type === 'devis' ? devisConfig : factureConfig
@@ -437,7 +437,7 @@ export default function DevisFacturesPage() {
           value={analytics.devis_emis_nombre}
           subtitle={formatAmount(analytics.devis_emis_montant)}
           description="Total des devis émis"
-          colorClass="from-purple-100 to-purple-50 text-purple-700"
+          colorClass="from-[#823F91]/10 to-[#823F91]/5 text-[#823F91]"
           delay={0.1}
         />
         <StatCard
@@ -446,7 +446,7 @@ export default function DevisFacturesPage() {
           value={analytics.devis_acceptes_nombre}
           subtitle={formatAmount(analytics.devis_acceptes_montant)}
           description="Devis acceptés"
-          colorClass="from-green-100 to-green-50 text-green-700"
+          colorClass="from-[#9D5FA8]/10 to-[#9D5FA8]/5 text-[#6D3478]"
           delay={0.2}
         />
         <StatCard
@@ -455,7 +455,7 @@ export default function DevisFacturesPage() {
           value={formatAmount(analytics.factures_payees_montant)}
           subtitle="Payé"
           description="Factures payées"
-          colorClass="from-blue-100 to-blue-50 text-blue-700"
+          colorClass="from-[#823F91]/15 to-[#823F91]/5 text-[#823F91]"
           delay={0.3}
         />
         <StatCard
@@ -468,7 +468,7 @@ export default function DevisFacturesPage() {
           }
           subtitle="Devis → Acceptés"
           description="Taux de conversion"
-          colorClass="from-amber-100 to-amber-50 text-amber-700"
+          colorClass="from-[#E8C4F5]/30 to-[#E8C4F5]/10 text-[#6D3478]"
           delay={0.4}
         />
       </div>

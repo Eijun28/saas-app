@@ -190,7 +190,7 @@ export function PendingRequests() {
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
     >
       {/* Header avec fond blanc ivoire et pills */}
-      <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+      <div className="bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-gray-900">Demandes en attente</h2>

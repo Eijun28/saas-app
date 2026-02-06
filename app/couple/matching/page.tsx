@@ -553,10 +553,10 @@ function LandingView({ onStart, savedConversations, loadingConversations, onSele
                             className={cn(
                               'text-xs px-2 py-0.5 rounded-full',
                               conversation.status === 'completed'
-                                ? 'bg-green-100 text-green-700'
+                                ? 'bg-[#823F91]/15 text-[#6D3478]'
                                 : conversation.status === 'in_progress'
-                                  ? 'bg-blue-100 text-blue-700'
-                                  : 'bg-gray-100 text-gray-700'
+                                  ? 'bg-[#9D5FA8]/10 text-[#9D5FA8]'
+                                  : 'bg-gray-100 text-gray-600'
                             )}
                           >
                             {conversation.status === 'completed'
