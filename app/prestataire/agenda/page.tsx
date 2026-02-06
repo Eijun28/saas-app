@@ -464,9 +464,9 @@ export default function AgendaPage() {
           defaultView="week"
           eventColor={(event) => {
             // Couleurs selon le status pour prestataire
-            if (event.status === 'confirmed') return 'bg-green-500'
-            if (event.status === 'pending') return 'bg-yellow-500'
-            return 'bg-[#823F91]'
+            if (event.status === 'confirmed') return 'bg-[#823F91]'
+            if (event.status === 'pending') return 'bg-[#9D5FA8]'
+            return 'bg-[#B87FC0]'
           }}
         />
       </motion.div>

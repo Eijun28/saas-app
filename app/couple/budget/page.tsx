@@ -400,7 +400,7 @@ export default function BudgetPage() {
             transition={{ duration: 0.4, delay: 0.4 }}
             className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+            <div className="bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100">
               <h2 className="text-base font-bold text-gray-900">Répartition par métier</h2>
               <p className="text-sm text-gray-500 mt-0.5">{chartData.length} catégorie{chartData.length > 1 ? 's' : ''}</p>
             </div>
@@ -491,7 +491,7 @@ export default function BudgetPage() {
           transition={{ duration: 0.4, delay: 0.5 }}
           className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
         >
-          <div className="bg-gradient-to-r from-[#FFFDF7] to-[#FFF9EE] px-5 py-4 border-b border-gray-100">
+          <div className="bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100">
             <h2 className="text-base font-bold text-gray-900">Dépenses</h2>
             <p className="text-sm text-gray-500 mt-0.5">
               {budgetItems.length} dépense{budgetItems.length > 1 ? 's' : ''} enregistrée{budgetItems.length > 1 ? 's' : ''}

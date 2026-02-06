@@ -601,18 +601,18 @@ export default function DemandesPage() {
                   {/* Header de catégorie */}
                   <button
                     onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between px-3 py-2 bg-gradient-to-r from-[#823F91]/10 to-[#9D5FA8]/5 rounded-lg hover:from-[#823F91]/15 hover:to-[#9D5FA8]/10 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-[#6D3478] rounded-xl hover:bg-[#823F91] transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[#823F91]">{category}</span>
-                      <Badge variant="secondary" className="bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20">
+                      <span className="font-semibold text-white text-sm">{category}</span>
+                      <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-0">
                         {categoryDemandes.length}
                       </Badge>
                     </div>
                     {isCollapsed ? (
-                      <ChevronDown className="h-5 w-5 text-[#823F91]" />
+                      <ChevronDown className="h-5 w-5 text-white/80" />
                     ) : (
-                      <ChevronUp className="h-5 w-5 text-[#823F91]" />
+                      <ChevronUp className="h-5 w-5 text-white/80" />
                     )}
                   </button>
 
