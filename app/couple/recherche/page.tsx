@@ -402,7 +402,7 @@ export default function RecherchePage() {
       // Charger TOUTES les données du profil complet
       const { data: fullProfileData, error: profileError } = await supabase
         .from('profiles')
-        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
+        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, siret')
         .eq('id', provider.id)
         .single()
       
@@ -413,13 +413,6 @@ export default function RecherchePage() {
         .eq('profile_id', provider.id)
         .order('display_order', { ascending: true })
 
-      // Vérifier si le prestataire a un SIRET
-      const { data: bankingData } = await supabase
-        .from('prestataire_banking_info')
-        .select('siret')
-        .eq('prestataire_id', provider.id)
-        .maybeSingle()
-      
       if (portfolioError) {
         console.error('Erreur chargement portfolio:', portfolioError)
         setPortfolio([])
@@ -439,7 +432,7 @@ export default function RecherchePage() {
           website_url: fullProfileData.website_url || null,
           linkedin_url: fullProfileData.linkedin_url || null,
           tiktok_url: fullProfileData.tiktok_url || null,
-          hasSiret: !!bankingData?.siret,
+          hasSiret: !!fullProfileData.siret,
         } as Provider)
       }
     } catch (error) {

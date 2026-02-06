@@ -66,9 +66,9 @@ export default function ProfilPublicPage() {
     boutique_hours?: Record<string, { open: string; close: string; closed: boolean }> | null
     boutique_notes?: string | null
     boutique_appointment_only?: boolean
+    siret?: string | null
     pricing_unit?: string
     brand_color?: string
-    siret?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -115,7 +115,7 @@ export default function ProfilPublicPage() {
       
       let { data: profileData, error: profileError } = await freshSupabase
         .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
+        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
         .eq('id', userId)
         .maybeSingle()
 
@@ -200,19 +200,6 @@ export default function ProfilPublicPage() {
         // Fallback si table n'existe pas encore
       }
 
-      // Récupérer le SIRET depuis banking_info
-      let siretValue = ''
-      try {
-        const { data: bankingData } = await freshSupabase
-          .from('prestataire_banking_info')
-          .select('siret')
-          .eq('prestataire_id', userId)
-          .maybeSingle()
-        if (bankingData?.siret) siretValue = bankingData.siret
-      } catch {
-        // Fallback si table n'existe pas encore
-      }
-
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         return culture ? { id: c.culture_id, label: culture.label } : null
@@ -248,6 +235,7 @@ export default function ProfilPublicPage() {
         website_url: socialLinks.website_url,
         linkedin_url: socialLinks.linkedin_url,
         tiktok_url: socialLinks.tiktok_url,
+        siret: profileData?.siret || null,
         // Boutique fields
         has_physical_location: profileData?.has_physical_location || false,
         boutique_name: profileData?.boutique_name || null,
@@ -263,7 +251,6 @@ export default function ProfilPublicPage() {
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingData?.pricing_unit || undefined,
         brand_color: brandColor,
-        siret: siretValue || undefined,
         _timestamp: timestamp,
       }
       

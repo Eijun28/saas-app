@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Hash, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ShieldCheck } from 'lucide-react'
 
 interface SiretEditorProps {
   userId: string
-  currentSiret?: string
+  currentSiret?: string | null
   onSave?: () => void
 }
 
 export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorProps) {
-  const [siret, setSiret] = useState(currentSiret)
-  const [initialSiret, setInitialSiret] = useState(currentSiret)
+  const [siret, setSiret] = useState(currentSiret || '')
+  const [initialSiret, setInitialSiret] = useState(currentSiret || '')
   const [isSaving, setIsSaving] = useState(false)
   const isEditingRef = useRef(false)
 
@@ -32,70 +32,54 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
 
   const hasChanges = siret.trim() !== initialSiret.trim()
 
-  // Format SIRET for display (### ### ### #####)
+  // Formater le SIRET (XXX XXX XXX XXXXX)
   const formatSiret = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 14)
-    return digits
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
+    if (digits.length <= 9) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`
   }
+
+  const isValidSiret = (value: string) => {
+    const digits = value.replace(/\D/g, '')
+    return digits.length === 14
+  }
+
+  const hasSavedSiret = initialSiret && isValidSiret(initialSiret)
 
   async function handleSave(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
 
-    const trimmedSiret = siret.trim().replace(/\s/g, '')
+    const cleanSiret = siret.replace(/\D/g, '')
 
-    // If not empty, validate format (14 digits)
-    if (trimmedSiret && !/^\d{14}$/.test(trimmedSiret)) {
-      toast.error('Erreur', {
-        description: 'Le SIRET doit contenir exactement 14 chiffres',
-      })
+    if (cleanSiret && !isValidSiret(siret)) {
+      toast.error('Le numéro SIRET doit contenir exactement 14 chiffres')
       return
     }
 
     setIsSaving(true)
     const supabase = createClient()
 
-    // Check if banking_info row exists
-    const { data: existing } = await supabase
-      .from('prestataire_banking_info')
-      .select('id')
-      .eq('prestataire_id', userId)
-      .maybeSingle()
-
-    let error
-    if (existing) {
-      // Update existing row
-      const result = await supabase
-        .from('prestataire_banking_info')
-        .update({ siret: trimmedSiret || null })
-        .eq('prestataire_id', userId)
-      error = result.error
-    } else {
-      // Insert new row
-      const result = await supabase
-        .from('prestataire_banking_info')
-        .insert({ prestataire_id: userId, siret: trimmedSiret || null })
-      error = result.error
-    }
+    const { error } = await supabase
+      .from('profiles')
+      .update({ siret: cleanSiret || null })
+      .eq('id', userId)
 
     if (error) {
-      console.error('SIRET update error:', error)
-      toast.error('Erreur', {
-        description: 'Erreur lors de la sauvegarde du SIRET',
-      })
+      console.error('Erreur sauvegarde SIRET:', error)
+      toast.error('Erreur lors de la sauvegarde du SIRET')
       setIsSaving(false)
       return
     }
 
-    const savedSiret = trimmedSiret
+    const savedSiret = cleanSiret ? formatSiret(cleanSiret) : ''
     setSiret(savedSiret)
     setInitialSiret(savedSiret)
     isEditingRef.current = false
 
-    toast.success('Succès', {
-      description: trimmedSiret ? 'SIRET mis à jour — badge Professionnel activé !' : 'SIRET supprimé',
-    })
-
+    toast.success(cleanSiret ? 'SIRET enregistré — badge Professionnel activé !' : 'SIRET supprimé')
     setTimeout(() => {
       onSave?.()
     }, 300)
@@ -107,10 +91,11 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
     <div className="space-y-4">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Label htmlFor="siret">
-            Numéro SIRET
+          <Label htmlFor="siret" className="flex items-center gap-2">
+            <Hash className="h-4 w-4 text-[#823F91]" />
+            Numéro de SIRET
           </Label>
-          {initialSiret && (
+          {hasSavedSiret && (
             <Badge className="text-[10px] px-2 py-0 bg-emerald-100 text-emerald-700 border-0 gap-1">
               <ShieldCheck className="h-3 w-3" />
               Professionnel
@@ -122,7 +107,7 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
         </p>
         <Input
           id="siret"
-          placeholder="Ex: 12345678901234"
+          placeholder="123 456 789 00012"
           value={siret}
           onChange={(e) => {
             isEditingRef.current = true
@@ -136,8 +121,13 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
           onFocus={() => {
             isEditingRef.current = true
           }}
-          maxLength={14}
+          maxLength={17}
         />
+        {siret && !isValidSiret(siret) && (
+          <p className="text-xs text-amber-600 mt-1">
+            Le SIRET doit contenir 14 chiffres ({siret.replace(/\D/g, '').length}/14)
+          </p>
+        )}
       </div>
 
       {hasChanges && (
