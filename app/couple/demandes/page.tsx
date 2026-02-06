@@ -76,26 +76,26 @@ const STATUS_CONFIG: Record<RequestStatus, { label: string; icon: any; className
   pending: {
     label: 'En attente',
     icon: Clock,
-    className: 'text-amber-600',
-    bgClass: 'bg-amber-50 border-amber-200',
+    className: 'text-[#823F91]',
+    bgClass: 'bg-white border-[#823F91]/15',
   },
   accepted: {
     label: 'Acceptée',
     icon: CheckCircle,
-    className: 'text-green-600',
-    bgClass: 'bg-green-50 border-green-200',
+    className: 'text-[#823F91]',
+    bgClass: 'bg-[#823F91]/[0.03] border-[#823F91]/20',
   },
   rejected: {
     label: 'Refusée',
     icon: XCircle,
-    className: 'text-red-600',
-    bgClass: 'bg-red-50 border-red-200',
+    className: 'text-gray-500',
+    bgClass: 'bg-white border-gray-200',
   },
   cancelled: {
     label: 'Annulée',
     icon: Ban,
-    className: 'text-gray-500',
-    bgClass: 'bg-gray-50 border-gray-200',
+    className: 'text-gray-400',
+    bgClass: 'bg-gray-50/50 border-gray-200',
   },
 }
 
@@ -632,7 +632,7 @@ export default function DemandesPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.03 }}
                           >
-                            <Card className={`border shadow-sm hover:shadow-md transition-shadow ${status.bgClass}`}>
+                            <Card className={`border shadow-sm hover:shadow-md transition-shadow rounded-2xl ${status.bgClass}`}>
                               <CardContent className="p-4 sm:p-5">
                                 {/* Header avec prestataire et statut */}
                                 <div className="flex items-start justify-between gap-4 mb-4">
@@ -648,11 +648,10 @@ export default function DemandesPage() {
                                       <h3 className="font-semibold text-gray-900 text-base sm:text-lg truncate">
                                         {name}
                                       </h3>
-                                      <p className="text-xs text-gray-400 mt-0.5">
+                                      <p className="text-xs text-gray-500 mt-0.5">
                                         {new Date(r.created_at).toLocaleDateString('fr-FR', {
                                           day: 'numeric',
-                                          month: 'long',
-                                          year: 'numeric'
+                                          month: 'long'
                                         })}
                                       </p>
                                     </div>
@@ -660,7 +659,7 @@ export default function DemandesPage() {
 
                                   {/* Statut et actions */}
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border ${status.className}`}>
+                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-gray-200 ${status.className}`}>
                                       <StatusIcon className="h-3.5 w-3.5" />
                                       <span className="text-xs font-medium">{status.label}</span>
                                     </div>
@@ -705,7 +704,7 @@ export default function DemandesPage() {
                                 </div>
 
                                 {/* Message */}
-                                <div className="bg-white/60 rounded-lg p-3 border border-white/80">
+                                <div className="bg-gray-50/60 rounded-xl p-3 border border-gray-100">
                                   <p className="text-sm text-gray-700 whitespace-pre-wrap break-words line-clamp-3">
                                     {r.initial_message}
                                   </p>
