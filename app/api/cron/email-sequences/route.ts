@@ -5,10 +5,21 @@ import {
   sendCoupleIncompleteProfileReminder,
   sendPendingRequestsReminder,
   sendInactivityReminder,
+  sendProviderLowCompletionReminder,
 } from '@/lib/email/sequences'
+import { getProviderProfileCompletion } from '@/lib/profile/completion'
 import { logger } from '@/lib/logger'
 
 const CRON_SECRET = process.env.CRON_SECRET
+
+// Jours après inscription pour chaque rappel de la séquence profil < 70%
+const LOW_COMPLETION_SCHEDULE: Record<number, 1 | 2 | 3 | 4 | 5> = {
+  1: 1,   // J+1
+  3: 2,   // J+3
+  5: 3,   // J+5
+  10: 4,  // J+10
+  20: 5,  // J+20
+}
 
 /**
  * API Cron pour envoyer les séquences d'emails automatiques
@@ -19,6 +30,7 @@ const CRON_SECRET = process.env.CRON_SECRET
  * - Relance profil incomplet couples (J+1, J+3, J+7)
  * - Rappel demandes en attente (prestataires)
  * - Relance inactivité (14 jours)
+ * - [NEW] Séquence profil < 70% prestataires (J+1, J+3, J+5, J+10, J+20)
  */
 export async function POST(request: NextRequest) {
   // Vérification du secret
@@ -34,6 +46,7 @@ export async function POST(request: NextRequest) {
     coupleIncomplete: 0,
     pendingRequests: 0,
     inactivity: 0,
+    providerLowCompletion: 0,
     errors: 0,
   }
 
@@ -182,6 +195,52 @@ export async function POST(request: NextRequest) {
         if (result.success) stats.inactivity++
         else stats.errors++
       }
+    }
+
+    // ========================================================================
+    // 5. SÉQUENCE PROFIL < 70% - PRESTATAIRES (onboarding terminé mais profil faible)
+    // ========================================================================
+    // Cible : prestataires qui ont terminé l'onboarding mais dont le profil
+    // pondéré est en dessous de 70%. Séquence J+1, J+3, J+5, J+10, J+20.
+    const { data: onboardedProviders } = await adminClient
+      .from('profiles')
+      .select('id, created_at')
+      .eq('role', 'prestataire')
+      .eq('onboarding_completed', true)
+      .gte('created_at', new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()) // inscrits < 30 jours
+
+    for (const provider of onboardedProviders || []) {
+      const daysSinceCreation = Math.floor(
+        (now.getTime() - new Date(provider.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      )
+
+      // Vérifier si aujourd'hui correspond à un jour de la séquence
+      const reminderToSend = LOW_COMPLETION_SCHEDULE[daysSinceCreation]
+      if (!reminderToSend) continue
+
+      // Vérifier si on n'a pas déjà envoyé ce rappel
+      const { data: existingLog } = await adminClient
+        .from('email_logs')
+        .select('id')
+        .eq('user_id', provider.id)
+        .eq('email_type', 'provider_low_completion')
+        .eq('reminder_number', reminderToSend)
+        .single()
+
+      if (existingLog) continue
+
+      // Calculer la complétion réelle du profil
+      const completion = await getProviderProfileCompletion(adminClient, provider.id)
+      if (!completion || completion.percentage >= 70) continue
+
+      const result = await sendProviderLowCompletionReminder(
+        provider.id,
+        reminderToSend,
+        completion.percentage,
+        completion.missingItems
+      )
+      if (result.success) stats.providerLowCompletion++
+      else stats.errors++
     }
 
     logger.info('Cron email sequences terminé', stats)
