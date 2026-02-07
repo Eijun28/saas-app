@@ -70,7 +70,7 @@ export async function signUp(
   logger.critical('✅ Client Supabase créé', { email, role })
 
   logger.critical('📧 Tentative signUp Supabase Auth...', { email, role })
-  const { data, error } = await supabase.auth.signUp({
+  let { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -99,6 +99,55 @@ export async function signUp(
     if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
       // On continue le processus même si l'email échoue
+    } else if (error.message?.toLowerCase().includes('database error')) {
+      // Le trigger handle_new_user() a probablement planté (colonne manquante, etc.)
+      // Fallback : créer le user via l'API admin SANS les metadata de rôle
+      // pour que le trigger ne tente pas de créer le profil
+      logger.critical('🔄 Erreur DB trigger détectée, fallback via admin API sans role metadata...', { email, role })
+      try {
+        const adminClient = createAdminClient()
+        // Ne PAS inclure le role dans user_metadata pour éviter que le trigger
+        // ne tente de créer un profil (le trigger check raw_user_meta_data->>'role')
+        const { data: adminData, error: adminError } = await adminClient.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: false,
+          user_metadata: {
+            prenom: profileData.prenom,
+            nom: profileData.nom,
+            nom_entreprise: profileData.nomEntreprise || null,
+            // role est volontairement OMIS ici pour bypasser le trigger
+          }
+        })
+        if (adminError) {
+          logger.critical('🚨 Fallback admin aussi en erreur', { error: adminError.message })
+          if (adminError.message?.toLowerCase().includes('already') || adminError.message?.toLowerCase().includes('exists')) {
+            return { error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous.' }
+          }
+          return { error: translateAuthError(adminError.message) }
+        }
+        if (adminData?.user) {
+          logger.critical('✅ User créé via admin API fallback (sans role dans metadata)', { userId: adminData.user.id })
+          data = { ...data, user: adminData.user }
+
+          // Maintenant, mettre à jour les metadata pour ajouter le rôle
+          // (le user est déjà créé, le trigger ne se redéclenche pas sur UPDATE)
+          await adminClient.auth.admin.updateUser(adminData.user.id, {
+            user_metadata: {
+              role: role,
+              prenom: profileData.prenom,
+              nom: profileData.nom,
+              nom_entreprise: profileData.nomEntreprise || null,
+            }
+          })
+          logger.critical('✅ Metadata mis à jour avec le rôle', { userId: adminData.user.id, role })
+        } else {
+          return { error: 'Échec de la création du compte. Veuillez réessayer.' }
+        }
+      } catch (adminFallbackError: any) {
+        logger.critical('🚨 Fallback admin exception', { error: adminFallbackError?.message })
+        return { error: 'Échec de la création du compte. Veuillez réessayer.' }
+      }
     } else {
       logger.critical('🚨 Erreur signUp - retour erreur', { email, role, error: error.message })
       return { error: translateAuthError(error.message) }
