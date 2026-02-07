@@ -304,7 +304,7 @@ export function ProfilePreviewDialog({
               {/* Avatar - larger, centered on the violet bar */}
               <div className="flex items-end gap-4">
                 <div className="relative flex-shrink-0">
-                  <Avatar className="h-20 w-20 ring-[3px] shadow-lg" style={{ ringColor: BEIGE }}>
+                  <Avatar className="h-20 w-20 ring-[3px] shadow-lg" style={{ '--tw-ring-color': BEIGE } as React.CSSProperties}>
                     <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
                     <AvatarFallback className="text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${bc}, ${bc}dd)` }}>
                       {getInitials(profile.nom_entreprise)}
@@ -315,8 +315,8 @@ export function ProfilePreviewDialog({
                       className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center ring-2"
                       style={{
                         background: hasSiret ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #f59e0b, #f97316)',
-                        ringColor: BEIGE
-                      }}
+                        '--tw-ring-color': BEIGE
+                      } as React.CSSProperties}
                     >
                       {hasSiret ? <ShieldCheck className="h-3.5 w-3.5 text-white" /> : <Sparkles className="h-3.5 w-3.5 text-white" />}
                     </div>
