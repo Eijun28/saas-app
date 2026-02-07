@@ -138,7 +138,8 @@ export default function SignUpPage() {
       }
 
       if (result && 'error' in result && result.error) {
-        setError(translateAuthError(result.error))
+        // Le serveur traduit déjà les erreurs, pas besoin de re-traduire
+        setError(result.error)
       } else if (result && 'success' in result && result.success) {
         // Redirection vers la page spécifiée ou confirmation par défaut
         if ('redirectTo' in result && result.redirectTo) {

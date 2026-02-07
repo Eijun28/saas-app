@@ -56,12 +56,14 @@ export async function GET(request: Request) {
             
             const { error: coupleError } = await adminClient
               .from('couples')
-              .insert({
+              .upsert({
                 id: user.id,
                 user_id: user.id,
                 email: user.email || '',
                 partner_1_name: fullName || null,
-                partner_2_name: null, // Sera complété dans le profil
+                partner_2_name: null,
+              }, {
+                onConflict: 'user_id'
               })
             
             if (!coupleError) {
@@ -70,7 +72,7 @@ export async function GET(request: Request) {
               try {
                 const { error: prefError, data: prefData } = await adminClient
                   .from('couple_preferences')
-                  .insert({
+                  .upsert({
                     couple_id: user.id,
                     languages: ['français'],
                     essential_services: [],
@@ -81,6 +83,8 @@ export async function GET(request: Request) {
                     profile_completed: false,
                     completion_percentage: 0,
                     onboarding_step: 0,
+                  }, {
+                    onConflict: 'couple_id'
                   })
                   .select()
                   .single()
