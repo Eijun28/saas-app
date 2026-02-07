@@ -112,6 +112,15 @@ export async function signUp(
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
 
+  // Détecter le cas "user already registered" : Supabase renvoie un user
+  // avec identities vide si l'email existe déjà (selon la config du projet)
+  if (data.user.identities && data.user.identities.length === 0) {
+    logger.critical('⚠️ Email déjà enregistré (identities vide)', { email, role })
+    return {
+      error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous. Sinon, utilisez une autre adresse email.'
+    }
+  }
+
   logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
 
   // Envoyer l'email de confirmation personnalisé (si l'utilisateur n'est pas encore confirmé)
@@ -216,15 +225,16 @@ export async function signUp(
         
         const { error: coupleError } = await adminClient
           .from('couples')
-          .insert({
+          .upsert({
             id: userId,
-            user_id: userId, // ✅ Utiliser user_id - référence auth.users(id)
+            user_id: userId,
             email: email,
             partner_1_name: fullName || null,
-            partner_2_name: null, // Sera complété dans le profil
+            partner_2_name: null,
+          }, {
+            onConflict: 'user_id'
           })
 
-        // ✅ NE PAS ignorer les erreurs silencieusement
         if (coupleError) {
           logger.critical('🚨 ÉCHEC: Erreur création couple', {
             userId,
@@ -235,14 +245,14 @@ export async function signUp(
           })
           // Rollback : supprimer l'utilisateur si couple échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: translateAuthError(`Erreur création couple: ${coupleError.message}`) }
+          return { error: 'Erreur lors de la création de votre compte couple. Veuillez réessayer.' }
         } else {
           logger.critical('✅ Couple créé avec succès', { userId })
           // Créer les préférences vides pour le nouveau couple
           try {
             const { error: prefError, data: prefData } = await adminClient
               .from('couple_preferences')
-              .insert({
+              .upsert({
                 couple_id: data.user.id,
                 languages: ['français'],
                 essential_services: [],
@@ -253,10 +263,12 @@ export async function signUp(
                 profile_completed: false,
                 completion_percentage: 0,
                 onboarding_step: 0,
+              }, {
+                onConflict: 'couple_id'
               })
               .select()
               .single()
-            
+
             if (prefError) {
               logger.error('Erreur création préférences couple:', {
                 userId,
@@ -265,21 +277,18 @@ export async function signUp(
                 details: prefError.details,
                 hint: prefError.hint
               })
-              // Ne pas bloquer l'inscription, mais logger l'erreur pour suivi
             } else {
-              logger.critical('✅ Préférences couple créées avec succès', { 
-                userId, 
-                preferencesId: prefData?.id 
+              logger.critical('✅ Préférences couple créées avec succès', {
+                userId,
+                preferencesId: prefData?.id
               })
             }
           } catch (prefError: any) {
-            // Erreur inattendue lors de la création des préférences
             logger.error('Erreur inattendue création préférences (non bloquant):', {
               userId,
               error: prefError?.message || String(prefError),
               stack: prefError?.stack
             })
-            // Ne pas bloquer l'inscription, les préférences pourront être créées plus tard
           }
         }
       } else {
@@ -383,18 +392,9 @@ export async function signUp(
             fullError: JSON.stringify(profileError, null, 2)
           })
           
-          // Créer un message d'erreur plus détaillé pour le développement
-          let errorMessage = profileError.message || 'Erreur inconnue'
-          if (profileError.hint) {
-            errorMessage += ` (${profileError.hint})`
-          }
-          if (profileError.code) {
-            errorMessage += ` [Code: ${profileError.code}]`
-          }
-          
           // Rollback : supprimer l'utilisateur si profil échoue
           await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: translateAuthError(`Erreur création profil: ${errorMessage}`) }
+          return { error: 'Erreur lors de la création de votre profil prestataire. Veuillez réessayer.' }
         } else {
           logger.critical('✅ Profil prestataire créé avec succès', { userId })
         }
@@ -570,7 +570,7 @@ export async function signUp(
         } catch (deleteError) {
           logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
         }
-        return { error: translateAuthError(err.message || 'Erreur inconnue') }
+        return { error: 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.' }
       }
     }
 

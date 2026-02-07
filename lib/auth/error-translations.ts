@@ -113,39 +113,15 @@ export function translateAuthError(errorMessage: string | null | undefined): str
 
   // Erreurs génériques Supabase
   if (message.includes('supabase') || message.includes('database')) {
-    // Si le message contient des détails spécifiques, les inclure
-    if (message.includes('Code:') || message.includes('hint:')) {
-      return `Erreur de base de données: ${message}`
-    }
     return 'Erreur de base de données. Veuillez réessayer dans quelques instants.'
   }
-  
-  // Erreurs de contrainte de clé étrangère
-  if (message.includes('foreign key') || message.includes('constraint') || message.includes('violates foreign key')) {
-    return 'Erreur de référence dans la base de données. Veuillez contacter le support technique.'
+
+  // Si le message est déjà traduit en français (contient des accents ou commence par un mot français courant),
+  // le retourner tel quel sans préfixer "Erreur:"
+  if (/^(erreur|échec|cet |votre |impossible|trop )/i.test(errorMessage)) {
+    return errorMessage
   }
 
-  // Erreurs de contrainte unique
-  if (message.includes('unique constraint') || message.includes('duplicate key') || message.includes('already exists')) {
-    return 'Cette information est déjà utilisée. Veuillez vérifier vos données.'
-  }
-
-  // Erreurs de colonne manquante
-  if (message.includes('column') && (message.includes('does not exist') || message.includes('missing'))) {
-    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
-  }
-
-  // Erreurs de table manquante
-  if (message.includes('relation') && message.includes('does not exist')) {
-    return 'Erreur de structure de base de données. Veuillez contacter le support technique.'
-  }
-
-  // Si aucun pattern ne correspond, retourner le message original avec un préfixe
-  // mais seulement si c'est un message technique court
-  if (message.length < 100) {
-    return `Erreur: ${errorMessage}`
-  }
-
-  // Pour les messages longs ou techniques, retourner un message générique
-  return 'Une erreur est survenue lors de l\'authentification. Veuillez réessayer ou contacter le support si le problème persiste.'
+  // Si aucun pattern ne correspond, retourner un message générique user-friendly
+  return 'Une erreur est survenue. Veuillez réessayer ou contacter le support si le problème persiste.'
 }
