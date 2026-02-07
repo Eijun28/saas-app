@@ -55,6 +55,14 @@ interface ProfilePreviewDialogProps {
   hasSiret?: boolean
 }
 
+// Palette
+const BEIGE = '#FBF7F0'
+const BEIGE_DARK = '#F0E9DE'
+const BEIGE_ACCENT = '#E8DFD0'
+const VIOLET = '#823F91'
+const VIOLET_LIGHT = '#F3EAF6'
+const VIOLET_SOFT = '#E9D5F0'
+
 export function ProfilePreviewDialog({
   userId,
   profile,
@@ -66,10 +74,10 @@ export function ProfilePreviewDialog({
   showTriggerButton = true,
   isCoupleView = false,
   coupleId,
-  brandColor = '#823F91',
+  brandColor = VIOLET,
   hasSiret = false,
 }: ProfilePreviewDialogProps) {
-  const bc = brandColor // shorthand
+  const bc = brandColor
   const router = useRouter()
   const { user } = useUser()
   const [internalOpen, setInternalOpen] = useState(false)
@@ -100,11 +108,11 @@ export function ProfilePreviewDialog({
       'forfait': 'forfait',
       'par_personne': '/ personne',
       'par_heure': '/ heure',
-      'par_demi_journee': '/ demi-journée',
-      'par_journee': '/ journée',
+      'par_demi_journee': '/ demi-journee',
+      'par_journee': '/ journee',
       'par_part': '/ part',
       'par_essayage': '/ essayage',
-      'par_piece': '/ pièce',
+      'par_piece': '/ piece',
       'par_km': '/ km',
       'sur_devis': 'sur devis'
     }
@@ -254,7 +262,7 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 text-white transition-colors shadow-sm border-0"
+          className="gap-2 text-white transition-colors shadow-sm border-0 hover:opacity-90"
           style={{ backgroundColor: bc }}
         >
           <Eye className="h-4 w-4 text-white" />
@@ -264,7 +272,8 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl bg-white border-0 shadow-2xl flex flex-col"
+          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl border-0 shadow-2xl flex flex-col overflow-hidden"
+          style={{ backgroundColor: BEIGE }}
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
@@ -276,115 +285,145 @@ export function ProfilePreviewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200"
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full hover:opacity-80"
+              style={{ backgroundColor: BEIGE_DARK }}
             >
-              <X className="h-4 w-4 text-gray-600" />
+              <X className="h-4 w-4 text-black" />
             </Button>
           </DialogClose>
 
-          {/* HEADER */}
-          <div className="p-5 pb-4 border-b border-gray-100">
-            <div className="flex items-start gap-4">
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <Avatar className="h-16 w-16 ring-2 ring-gray-100">
-                  <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-                  <AvatarFallback className="text-lg font-semibold text-white" style={{ background: `linear-gradient(135deg, ${bc}, ${bc}dd)` }}>
-                    {getInitials(profile.nom_entreprise)}
-                  </AvatarFallback>
-                </Avatar>
-                {(hasSiret || profile.is_early_adopter) && (
-                  <div
-                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white"
-                    style={{ background: hasSiret ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #f59e0b, #f97316)' }}
-                  >
-                    {hasSiret ? <ShieldCheck className="h-3 w-3 text-white" /> : <Sparkles className="h-3 w-3 text-white" />}
-                  </div>
-                )}
-              </div>
+          {/* HEADER - with violet gradient accent */}
+          <div className="relative">
+            {/* Violet accent bar */}
+            <div
+              className="absolute top-0 left-0 right-0 h-20 rounded-t-2xl"
+              style={{ background: `linear-gradient(135deg, ${bc}, ${bc}cc)` }}
+            />
 
-              {/* Info */}
-              <div className="flex-1 min-w-0 pt-0.5 pr-8">
-                <h2 className="text-lg font-bold text-gray-900 truncate">
-                  {profile.nom_entreprise}
-                </h2>
-                <p className="text-sm text-gray-500 mb-2">
-                  {profile.service_type}
-                </p>
-
-                {/* Key info badges */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {hasSiret && (
-                    <Badge className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 border-0 gap-1 font-medium">
-                      <ShieldCheck className="h-3 w-3" />
-                      Professionnel
-                    </Badge>
-                  )}
-                  {profile.is_early_adopter && (
-                    <Badge className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 border-0 gap-1 font-medium">
-                      <Sparkles className="h-3 w-3" />
-                      Early Adopter
-                    </Badge>
-                  )}
-                  {profile.ville_principale && (
-                    <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-600 border-0 py-0.5">
-                      <MapPin className="h-3 w-3 mr-0.5" />
-                      {profile.ville_principale}
-                    </Badge>
-                  )}
-                  {profile.annees_experience && (
-                    <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-600 border-0 py-0.5">
-                      <Briefcase className="h-3 w-3 mr-0.5" />
-                      {profile.annees_experience} ans
-                    </Badge>
+            <div className="relative px-5 pt-5 pb-4">
+              {/* Avatar - larger, centered on the violet bar */}
+              <div className="flex items-end gap-4">
+                <div className="relative flex-shrink-0">
+                  <Avatar className="h-20 w-20 ring-[3px] shadow-lg" style={{ ringColor: BEIGE }}>
+                    <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
+                    <AvatarFallback className="text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${bc}, ${bc}dd)` }}>
+                      {getInitials(profile.nom_entreprise)}
+                    </AvatarFallback>
+                  </Avatar>
+                  {(hasSiret || profile.is_early_adopter) && (
+                    <div
+                      className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center ring-2"
+                      style={{
+                        background: hasSiret ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #f59e0b, #f97316)',
+                        ringColor: BEIGE
+                      }}
+                    >
+                      {hasSiret ? <ShieldCheck className="h-3.5 w-3.5 text-white" /> : <Sparkles className="h-3.5 w-3.5 text-white" />}
+                    </div>
                   )}
                 </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0 pb-1 pr-8">
+                  <h2 className="text-xl font-bold text-white truncate drop-shadow-sm">
+                    {profile.nom_entreprise}
+                  </h2>
+                  <p className="text-sm text-white/80 font-medium">
+                    {profile.service_type}
+                  </p>
+                </div>
+              </div>
+
+              {/* Key info badges - below avatar area */}
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                {hasSiret && (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-white"
+                    style={{ backgroundColor: '#059669' }}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Professionnel
+                  </span>
+                )}
+                {profile.is_early_adopter && (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-white"
+                    style={{ backgroundColor: '#d97706' }}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Early Adopter
+                  </span>
+                )}
+                {profile.ville_principale && (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
+                    style={{ backgroundColor: BEIGE_DARK }}
+                  >
+                    <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
+                    {profile.ville_principale}
+                  </span>
+                )}
+                {profile.annees_experience && (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
+                    style={{ backgroundColor: BEIGE_DARK }}
+                  >
+                    <Briefcase className="h-3.5 w-3.5" style={{ color: bc }} />
+                    {profile.annees_experience} ans
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {/* TABS - Pills style */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <div className="px-5 pt-3 pb-2">
+            <div className="px-5 pt-2 pb-3" style={{ borderBottom: `1px solid ${BEIGE_ACCENT}` }}>
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setActiveTab('about')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                     activeTab === 'about'
-                      ? "text-white shadow-sm border-transparent"
-                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                      ? "text-white shadow-md"
+                      : "text-black hover:opacity-80"
                   )}
-                  style={activeTab === 'about' ? { backgroundColor: bc } : undefined}
+                  style={{
+                    backgroundColor: activeTab === 'about' ? bc : BEIGE_DARK,
+                  }}
                 >
-                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-gray-900")} />
+                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-black")} />
                   A propos
                 </button>
                 <button
                   onClick={() => setActiveTab('portfolio')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                     activeTab === 'portfolio'
-                      ? "text-white shadow-sm border-transparent"
-                      : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                      ? "text-white shadow-md"
+                      : "text-black hover:opacity-80"
                   )}
-                  style={activeTab === 'portfolio' ? { backgroundColor: bc } : undefined}
+                  style={{
+                    backgroundColor: activeTab === 'portfolio' ? bc : BEIGE_DARK,
+                  }}
                 >
-                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-gray-900")} />
+                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-black")} />
                   Portfolio
                 </button>
                 {hasSocialLinks && (
                   <button
                     onClick={() => setActiveTab('links')}
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                      "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                       activeTab === 'links'
-                        ? "text-white shadow-sm border-transparent"
-                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                        ? "text-white shadow-md"
+                        : "text-black hover:opacity-80"
                     )}
-                    style={activeTab === 'links' ? { backgroundColor: bc } : undefined}
+                    style={{
+                      backgroundColor: activeTab === 'links' ? bc : BEIGE_DARK,
+                    }}
                   >
-                    <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-gray-900")} />
+                    <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-black")} />
                     Liens
                   </button>
                 )}
@@ -392,14 +431,16 @@ export function ProfilePreviewDialog({
                   <button
                     onClick={() => setActiveTab('contact')}
                     className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                      "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                       activeTab === 'contact'
-                        ? "text-white shadow-sm border-transparent"
-                        : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                        ? "text-white shadow-md"
+                        : "text-black hover:opacity-80"
                     )}
-                    style={activeTab === 'contact' ? { backgroundColor: bc } : undefined}
+                    style={{
+                      backgroundColor: activeTab === 'contact' ? bc : BEIGE_DARK,
+                    }}
                   >
-                    <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-gray-900")} />
+                    <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-black")} />
                     Contact
                   </button>
                 )}
@@ -413,39 +454,54 @@ export function ProfilePreviewDialog({
             </TabsList>
 
             {/* SCROLLABLE CONTENT */}
-            <div className="flex-1 overflow-y-auto min-h-0" style={{ maxHeight: 'calc(85vh - 220px)' }}>
+            <div className="flex-1 overflow-y-auto min-h-0" style={{ maxHeight: 'calc(85vh - 260px)' }}>
               {/* TAB: A PROPOS */}
               <TabsContent value="about" className="m-0 p-5 space-y-5 data-[state=active]:block">
                 {/* Description */}
                 {profile.description_courte && (
                   <div>
-                    <p className="text-sm text-gray-700 leading-relaxed">
+                    <p className="text-sm text-black leading-relaxed">
                       {profile.description_courte}
                     </p>
+                    {(profile.prenom || profile.nom) && (
+                      <p className="text-sm font-semibold mt-2" style={{ color: bc }}>
+                        — {profile.prenom} {profile.nom}
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {/* Bio */}
                 {profile.bio && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Presentation</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                        <User className="h-3.5 w-3.5" style={{ color: bc }} />
+                      </div>
+                      <h4 className="text-sm font-bold text-black">Presentation</h4>
+                    </div>
+                    <p className="text-sm text-black/80 leading-relaxed whitespace-pre-line">
                       {profile.bio}
                     </p>
                   </div>
                 )}
 
-                {/* Tarifs */}
+                {/* Tarifs - highlighted card */}
                 {getBudgetDisplay() && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
-                      <Euro className="h-3.5 w-3.5" />
-                      Tarifs
-                    </h4>
-                    <p className="text-sm font-medium text-gray-900">
+                  <div
+                    className="rounded-xl p-4"
+                    style={{ backgroundColor: VIOLET_LIGHT, border: `1px solid ${VIOLET_SOFT}` }}
+                  >
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: bc }}>
+                        <Euro className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <h4 className="text-sm font-bold text-black">Tarifs</h4>
+                    </div>
+                    <p className="text-lg font-bold text-black ml-[38px]">
                       {getBudgetDisplay()}
                       {profile.pricing_unit && (
-                        <span className="text-gray-500 font-normal ml-1">
+                        <span className="text-sm font-medium ml-1" style={{ color: bc }}>
                           {getPricingUnitLabel(profile.pricing_unit)}
                         </span>
                       )}
@@ -455,20 +511,22 @@ export function ProfilePreviewDialog({
 
                 {/* Cultures */}
                 {cultures.length > 0 && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <Heart className="h-3.5 w-3.5" style={{ color: bc }} />
-                      Cultures maitrisees
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                        <Heart className="h-3.5 w-3.5" style={{ color: bc }} />
+                      </div>
+                      <h4 className="text-sm font-bold text-black">Cultures maitrisees</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2 ml-[38px]">
                       {cultures.map((culture) => (
-                        <Badge
+                        <span
                           key={culture.id}
-                          className="text-xs py-1.5 px-3 border-0 font-normal"
-                          style={{ backgroundColor: `${bc}15`, color: bc }}
+                          className="inline-flex items-center text-xs font-semibold py-1.5 px-3.5 rounded-full text-white"
+                          style={{ backgroundColor: bc }}
                         >
                           {culture.label}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -476,20 +534,22 @@ export function ProfilePreviewDialog({
 
                 {/* Zones */}
                 {zones.length > 0 && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5" />
-                      Zones d'intervention
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                        <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
+                      </div>
+                      <h4 className="text-sm font-bold text-black">Zones d'intervention</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2 ml-[38px]">
                       {zones.map((zone) => (
-                        <Badge
+                        <span
                           key={zone.id}
-                          variant="outline"
-                          className="text-xs py-1.5 px-3 bg-gray-50 text-gray-600 border-gray-200 font-normal"
+                          className="inline-flex items-center text-xs font-medium py-1.5 px-3.5 rounded-full text-black"
+                          style={{ backgroundColor: BEIGE_DARK, border: `1px solid ${BEIGE_ACCENT}` }}
                         >
                           {zone.label}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -497,7 +557,7 @@ export function ProfilePreviewDialog({
 
                 {/* Empty state */}
                 {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
-                  <div className="text-center py-8 text-gray-400 text-sm">
+                  <div className="text-center py-8 text-black/40 text-sm">
                     {isCoupleView
                       ? 'Ce prestataire n\'a pas encore complete son profil'
                       : 'Completez votre profil pour le rendre plus attractif'}
@@ -513,9 +573,10 @@ export function ProfilePreviewDialog({
                     <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => setPdfPreviewUrl(null)}
-                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: BEIGE_DARK }}
                       >
-                        <X className="h-4 w-4 text-gray-600" />
+                        <X className="h-4 w-4 text-black" />
                       </button>
                       <iframe
                         src={`${pdfPreviewUrl}#toolbar=0`}
@@ -547,8 +608,7 @@ export function ProfilePreviewDialog({
                 )}
 
                 {portfolio && portfolio.length > 0 ? (
-                  <div className="space-y-4">
-                    {/* Separation par type */}
+                  <div className="space-y-5">
                     {(() => {
                       const images = portfolio.filter(item => {
                         const isVideo = item.file_type === 'video' || /\.(mp4|webm|mov)$/i.test(item.image_url)
@@ -567,18 +627,27 @@ export function ProfilePreviewDialog({
                           {/* Images */}
                           {images.length > 0 && (
                             <div>
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${bc}15` }}>
-                                  <Image className="h-4 w-4" style={{ color: bc }} />
+                              <div className="flex items-center gap-2.5 mb-3">
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                  <Image className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
-                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Photos ({images.length})</span>
+                                <span className="text-sm font-bold text-black">Photos ({images.length})</span>
                               </div>
                               <div className="grid grid-cols-3 gap-2">
                                 {images.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative ring-1 ring-gray-200 hover:ring-2 transition-all"
-                                    style={{ '--tw-ring-color': `${bc}80` } as React.CSSProperties}
+                                    className="aspect-square rounded-xl overflow-hidden group cursor-pointer relative ring-1 transition-all hover:ring-2 hover:shadow-md"
+                                    style={{
+                                      backgroundColor: BEIGE_DARK,
+                                      '--tw-ring-color': BEIGE_ACCENT,
+                                    } as React.CSSProperties}
+                                    onMouseEnter={(e) => {
+                                      (e.currentTarget.style as any)['--tw-ring-color'] = `${bc}80`
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      (e.currentTarget.style as any)['--tw-ring-color'] = BEIGE_ACCENT
+                                    }}
                                   >
                                     <img
                                       src={item.image_url}
@@ -600,18 +669,22 @@ export function ProfilePreviewDialog({
                           {/* Videos */}
                           {videos.length > 0 && (
                             <div>
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="h-7 w-7 rounded-lg bg-pink-100 flex items-center justify-center">
-                                  <Play className="h-4 w-4 text-pink-600" />
+                              <div className="flex items-center gap-2.5 mb-3">
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                  <Play className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
-                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Videos ({videos.length})</span>
+                                <span className="text-sm font-bold text-black">Videos ({videos.length})</span>
                               </div>
                               <div className="grid grid-cols-2 gap-3">
                                 {videos.map((item) => (
                                   <button
                                     key={item.id}
                                     onClick={() => setVideoPreviewUrl(item.image_url)}
-                                    className="aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-pink-50 to-pink-100 group cursor-pointer relative ring-1 ring-pink-200 hover:ring-pink-400 transition-all"
+                                    className="aspect-video rounded-xl overflow-hidden group cursor-pointer relative ring-1 transition-all hover:ring-2"
+                                    style={{
+                                      backgroundColor: VIOLET_LIGHT,
+                                      '--tw-ring-color': VIOLET_SOFT,
+                                    } as React.CSSProperties}
                                   >
                                     <video
                                       src={item.image_url}
@@ -620,8 +693,8 @@ export function ProfilePreviewDialog({
                                       preload="metadata"
                                     />
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                                      <div className="h-12 w-12 rounded-full bg-white/90 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Play className="h-5 w-5 text-pink-600 ml-0.5" />
+                                      <div className="h-12 w-12 rounded-full shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform" style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}>
+                                        <Play className="h-5 w-5 ml-0.5" style={{ color: bc }} />
                                       </div>
                                     </div>
                                     {item.title && (
@@ -638,27 +711,31 @@ export function ProfilePreviewDialog({
                           {/* PDFs */}
                           {pdfs.length > 0 && (
                             <div>
-                              <div className="flex items-center gap-2 mb-3">
-                                <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center">
-                                  <FileText className="h-4 w-4 text-amber-600" />
+                              <div className="flex items-center gap-2.5 mb-3">
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                  <FileText className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
-                                <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Documents ({pdfs.length})</span>
+                                <span className="text-sm font-bold text-black">Documents ({pdfs.length})</span>
                               </div>
                               <div className="space-y-2">
                                 {pdfs.map((item) => (
                                   <button
                                     key={item.id}
                                     onClick={() => setPdfPreviewUrl(item.image_url)}
-                                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 ring-1 ring-amber-200 hover:ring-amber-400 transition-all group"
+                                    className="w-full flex items-center gap-3 p-3 rounded-xl ring-1 transition-all group hover:shadow-md"
+                                    style={{
+                                      backgroundColor: VIOLET_LIGHT,
+                                      '--tw-ring-color': VIOLET_SOFT,
+                                    } as React.CSSProperties}
                                   >
-                                    <div className="h-10 w-10 rounded-lg bg-white shadow-sm flex items-center justify-center flex-shrink-0">
-                                      <FileText className="h-5 w-5 text-amber-600" />
+                                    <div className="h-10 w-10 rounded-lg shadow-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: BEIGE }}>
+                                      <FileText className="h-5 w-5" style={{ color: bc }} />
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
-                                      <p className="text-sm font-medium text-gray-900 truncate">{item.title || 'Document PDF'}</p>
-                                      <p className="text-xs text-amber-600">Cliquez pour visualiser</p>
+                                      <p className="text-sm font-semibold text-black truncate">{item.title || 'Document PDF'}</p>
+                                      <p className="text-xs" style={{ color: bc }}>Cliquez pour visualiser</p>
                                     </div>
-                                    <ExternalLink className="h-4 w-4 text-amber-400 group-hover:text-amber-600 transition-colors flex-shrink-0" />
+                                    <ExternalLink className="h-4 w-4 flex-shrink-0 transition-colors" style={{ color: `${bc}80` }} />
                                   </button>
                                 ))}
                               </div>
@@ -670,10 +747,10 @@ export function ProfilePreviewDialog({
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <Camera className="h-8 w-8 text-gray-400" />
+                    <div className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: BEIGE_DARK }}>
+                      <Camera className="h-8 w-8" style={{ color: `${bc}80` }} />
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-black/50">
                       {isCoupleView
                         ? 'Aucun media dans le portfolio'
                         : 'Ajoutez des photos et videos a votre portfolio'}
@@ -692,16 +769,17 @@ export function ProfilePreviewDialog({
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-xl transition-all group hover:shadow-md"
+                        style={{ backgroundColor: BEIGE_DARK }}
                       >
-                        <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-                          <social.icon className="h-5 w-5 text-gray-600" />
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: BEIGE }}>
+                          <social.icon className="h-5 w-5" style={{ color: bc }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{social.label}</p>
-                          <p className="text-xs text-gray-500 truncate">{social.url}</p>
+                          <p className="text-sm font-semibold text-black">{social.label}</p>
+                          <p className="text-xs text-black/50 truncate">{social.url}</p>
                         </div>
-                        <ExternalLink className="h-4 w-4 text-gray-400 transition-colors" style={{ '--hover-color': bc } as React.CSSProperties} />
+                        <ExternalLink className="h-4 w-4" style={{ color: `${bc}80` }} />
                       </a>
                     ))}
                   </div>
@@ -713,20 +791,24 @@ export function ProfilePreviewDialog({
                 <TabsContent value="contact" className="m-0 p-5 data-[state=active]:block">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="message" className="text-sm font-medium text-gray-700 mb-2 block">
-                        Votre message <span className="text-red-500">*</span>
+                      <Label htmlFor="message" className="text-sm font-semibold text-black mb-2 block">
+                        Votre message <span style={{ color: bc }}>*</span>
                       </Label>
                       <Textarea
                         id="message"
                         placeholder="Decrivez votre projet, vos besoins..."
                         value={demandeMessage}
                         onChange={(e) => setDemandeMessage(e.target.value)}
-                        className="min-h-[120px] text-sm resize-none border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                        className="min-h-[120px] text-sm resize-none text-black placeholder:text-black/30"
+                        style={{
+                          backgroundColor: BEIGE_DARK,
+                          borderColor: BEIGE_ACCENT,
+                        }}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor="date" className="text-sm font-medium text-gray-700 mb-2 block">
+                        <Label htmlFor="date" className="text-sm font-semibold text-black mb-2 block">
                           Date du mariage
                         </Label>
                         <Input
@@ -734,11 +816,15 @@ export function ProfilePreviewDialog({
                           type="date"
                           value={demandeDate}
                           onChange={(e) => setDemandeDate(e.target.value)}
-                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                          className="text-sm text-black"
+                          style={{
+                            backgroundColor: BEIGE_DARK,
+                            borderColor: BEIGE_ACCENT,
+                          }}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="budget" className="text-sm font-medium text-gray-700 mb-2 block">
+                        <Label htmlFor="budget" className="text-sm font-semibold text-black mb-2 block">
                           Budget (€)
                         </Label>
                         <Input
@@ -747,7 +833,11 @@ export function ProfilePreviewDialog({
                           placeholder="2000"
                           value={demandeBudget}
                           onChange={(e) => setDemandeBudget(e.target.value)}
-                          className="text-sm border-gray-200 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91]"
+                          className="text-sm text-black placeholder:text-black/30"
+                          style={{
+                            backgroundColor: BEIGE_DARK,
+                            borderColor: BEIGE_ACCENT,
+                          }}
                         />
                       </div>
                     </div>
@@ -758,10 +848,10 @@ export function ProfilePreviewDialog({
           </Tabs>
 
           {/* FOOTER */}
-          <div className="border-t border-gray-100 p-4 bg-gray-50/50">
+          <div className="p-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}`, backgroundColor: BEIGE_DARK }}>
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-11 text-white text-sm gap-2"
+                className="w-full h-11 text-white text-sm font-semibold gap-2 border-0 hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: bc }}
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
@@ -780,7 +870,7 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-11 text-white text-sm gap-2"
+                className="w-full h-11 text-white text-sm font-semibold gap-2 border-0 hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: bc }}
                 onClick={() => setActiveTab('contact')}
               >
@@ -791,7 +881,8 @@ export function ProfilePreviewDialog({
             ) : (
               <Button
                 variant="outline"
-                className="w-full h-11 text-sm border-gray-200 text-gray-600 hover:bg-gray-100"
+                className="w-full h-11 text-sm font-semibold text-black hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: BEIGE, borderColor: BEIGE_ACCENT }}
                 onClick={() => setOpen(false)}
               >
                 Fermer l'apercu
