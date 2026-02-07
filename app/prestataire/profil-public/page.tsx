@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import { AvatarUploader } from '@/components/provider/AvatarUploader'
 import { BusinessNameEditor } from '@/components/provider/BusinessNameEditor'
+import { SiretEditor } from '@/components/provider/SiretEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
@@ -25,7 +26,6 @@ import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
 import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
-import { SiretEditor } from '@/components/provider/SiretEditor'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -374,6 +374,7 @@ export default function ProfilPublicPage() {
                 zones={zones}
                 portfolio={portfolio}
                 brandColor={profile?.brand_color}
+                hasSiret={!!profile?.siret}
               />
             </div>
           </div>
@@ -441,6 +442,12 @@ export default function ProfilPublicPage() {
                         currentName={profile?.nom_entreprise}
                         onSave={reloadData}
                       />
+                      <SiretEditor
+                        key={`siret-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentSiret={profile?.siret}
+                        onSave={reloadData}
+                      />
                       <ProfileDescriptionEditor
                         key={`profile-desc-${profile?._timestamp || 0}`}
                         userId={user.id}
@@ -481,14 +488,6 @@ export default function ProfilPublicPage() {
                         <BrandColorPicker
                           userId={user.id}
                           currentColor={profile?.brand_color}
-                          onSave={reloadData}
-                        />
-                      </div>
-                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
-                        <SiretEditor
-                          key={`siret-${profile?._timestamp || 0}`}
-                          userId={user.id}
-                          currentSiret={profile?.siret}
                           onSave={reloadData}
                         />
                       </div>

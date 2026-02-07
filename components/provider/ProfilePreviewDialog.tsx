@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag, Play, Image } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag, Play, Image, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -52,6 +52,7 @@ interface ProfilePreviewDialogProps {
   isCoupleView?: boolean
   coupleId?: string
   brandColor?: string
+  hasSiret?: boolean
 }
 
 export function ProfilePreviewDialog({
@@ -66,6 +67,7 @@ export function ProfilePreviewDialog({
   isCoupleView = false,
   coupleId,
   brandColor = '#823F91',
+  hasSiret = false,
 }: ProfilePreviewDialogProps) {
   const bc = brandColor // shorthand
   const router = useRouter()
@@ -291,9 +293,12 @@ export function ProfilePreviewDialog({
                     {getInitials(profile.nom_entreprise)}
                   </AvatarFallback>
                 </Avatar>
-                {profile.is_early_adopter && (
-                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-white">
-                    <Sparkles className="h-3 w-3 text-white" />
+                {(hasSiret || profile.is_early_adopter) && (
+                  <div
+                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex items-center justify-center ring-2 ring-white"
+                    style={{ background: hasSiret ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #f59e0b, #f97316)' }}
+                  >
+                    {hasSiret ? <ShieldCheck className="h-3 w-3 text-white" /> : <Sparkles className="h-3 w-3 text-white" />}
                   </div>
                 )}
               </div>
@@ -308,16 +313,28 @@ export function ProfilePreviewDialog({
                 </p>
 
                 {/* Key info badges */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {hasSiret && (
+                    <Badge className="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 border-0 gap-1 font-medium">
+                      <ShieldCheck className="h-3 w-3" />
+                      Professionnel
+                    </Badge>
+                  )}
+                  {profile.is_early_adopter && (
+                    <Badge className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 border-0 gap-1 font-medium">
+                      <Sparkles className="h-3 w-3" />
+                      Early Adopter
+                    </Badge>
+                  )}
                   {profile.ville_principale && (
-                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
-                      <MapPin className="h-3 w-3 mr-1" />
+                    <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-600 border-0 py-0.5">
+                      <MapPin className="h-3 w-3 mr-0.5" />
                       {profile.ville_principale}
                     </Badge>
                   )}
                   {profile.annees_experience && (
-                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 border-0">
-                      <Briefcase className="h-3 w-3 mr-1" />
+                    <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-600 border-0 py-0.5">
+                      <Briefcase className="h-3 w-3 mr-0.5" />
                       {profile.annees_experience} ans
                     </Badge>
                   )}
@@ -405,11 +422,6 @@ export function ProfilePreviewDialog({
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {profile.description_courte}
                     </p>
-                    {profile.prenom && profile.nom && (
-                      <p className="text-xs text-gray-400 mt-2">
-                        — {profile.prenom} {profile.nom}
-                      </p>
-                    )}
                   </div>
                 )}
 

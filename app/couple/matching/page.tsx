@@ -1088,13 +1088,29 @@ interface ValidationViewProps {
   matchingError: string | null;
 }
 
-function ValidationView({ 
-  criteria, 
-  serviceType, 
-  onBack, 
-  onConfirm, 
-  onGoToLanding, 
-  onSave, 
+function CriteriaCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm">
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <div className="h-8 w-8 rounded-lg bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+        <h4 className="text-sm font-semibold text-gray-700">{label}</h4>
+      </div>
+      <div className="text-sm sm:text-base text-gray-900 pl-[42px]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ValidationView({
+  criteria,
+  serviceType,
+  onBack,
+  onConfirm,
+  onGoToLanding,
+  onSave,
   isSaving,
   isMatchingLoading,
   matchingError,
@@ -1118,9 +1134,9 @@ function ValidationView({
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="hidden sm:inline text-sm font-medium">Retour</span>
           </button>
-          
+
           <h2 className="text-base sm:text-lg font-semibold text-gray-900">Validation</h2>
-          
+
           <button
             onClick={onSave}
             disabled={isSaving}
@@ -1134,79 +1150,96 @@ function ValidationView({
       </header>
 
       {/* Content scrollable */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      <div className="flex-1 overflow-y-auto bg-gray-50/50">
         <div className="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center mb-3 sm:mb-4 p-2 sm:p-3 rounded-full bg-green-100">
+            <div className="inline-flex items-center justify-center mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-full bg-green-50 ring-1 ring-green-200">
               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
             </div>
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
-              Critères extraits avec succès !
+              Critères extraits avec succès
             </h3>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-gray-500">
               Voici ce que nous avons compris de vos besoins
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+          <div className="grid gap-3 sm:gap-4 mb-6 sm:mb-8">
             {serviceType && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Service recherché</h4>
-                <p className="text-sm sm:text-base text-gray-900">{serviceType}</p>
-              </div>
+              <CriteriaCard
+                icon={<Search className="h-4 w-4 text-[#823F91]" />}
+                label="Service recherché"
+              >
+                <p>{serviceType}</p>
+              </CriteriaCard>
             )}
 
             {criteria.cultures && criteria.cultures.length > 0 && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Cultures</h4>
-                <ul className="list-disc list-inside space-y-0.5 sm:space-y-1">
+              <CriteriaCard
+                icon={<Sparkles className="h-4 w-4 text-[#823F91]" />}
+                label="Cultures"
+              >
+                <div className="flex flex-wrap gap-2">
                   {criteria.cultures.map((culture, idx) => (
-                    <li key={idx} className="text-sm sm:text-base text-gray-900">{culture}</li>
+                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-[#823F91] text-sm font-medium">
+                      {culture}
+                    </span>
                   ))}
-                </ul>
-              </div>
+                </div>
+              </CriteriaCard>
             )}
 
             {(criteria.budget_min || criteria.budget_max) && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Budget</h4>
-                <p className="text-sm sm:text-base text-gray-900">
-                  {criteria.budget_min ? `${criteria.budget_min}€` : 'Non spécifié'}
-                  {criteria.budget_min && criteria.budget_max ? ' - ' : ''}
-                  {criteria.budget_max ? `${criteria.budget_max}€` : ''}
+              <CriteriaCard
+                icon={<span className="text-[#823F91] text-sm font-bold">€</span>}
+                label="Budget"
+              >
+                <p className="text-lg font-semibold">
+                  {criteria.budget_min ? `${Number(criteria.budget_min).toLocaleString('fr-FR')}€` : 'Non spécifié'}
+                  {criteria.budget_min && criteria.budget_max ? ' — ' : ''}
+                  {criteria.budget_max ? `${Number(criteria.budget_max).toLocaleString('fr-FR')}€` : ''}
                 </p>
-              </div>
+              </CriteriaCard>
             )}
 
             {criteria.wedding_style && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Style</h4>
-                <p className="text-sm sm:text-base text-gray-900">{criteria.wedding_style}</p>
-              </div>
+              <CriteriaCard
+                icon={<Sparkles className="h-4 w-4 text-[#823F91]" />}
+                label="Style"
+              >
+                <p>{criteria.wedding_style}</p>
+              </CriteriaCard>
             )}
 
             {criteria.specific_requirements && criteria.specific_requirements.length > 0 && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Besoins spécifiques</h4>
-                <ul className="list-disc list-inside space-y-0.5 sm:space-y-1">
+              <CriteriaCard
+                icon={<Search className="h-4 w-4 text-[#823F91]" />}
+                label="Besoins spécifiques"
+              >
+                <ul className="space-y-1.5">
                   {criteria.specific_requirements.map((req, idx) => (
-                    <li key={idx} className="text-sm sm:text-base text-gray-900">{req}</li>
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#823F91] mt-2 flex-shrink-0" />
+                      <span>{req}</span>
+                    </li>
                   ))}
                 </ul>
-              </div>
+              </CriteriaCard>
             )}
 
             {criteria.vision_description && (
-              <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">Vision</h4>
-                <p className="text-sm sm:text-base text-gray-900">{criteria.vision_description}</p>
-              </div>
+              <CriteriaCard
+                icon={<Sparkles className="h-4 w-4 text-[#823F91]" />}
+                label="Vision"
+              >
+                <p className="text-gray-700 italic leading-relaxed">{criteria.vision_description}</p>
+              </CriteriaCard>
             )}
           </div>
 
           {/* Message d'erreur */}
           {matchingError && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-sm text-red-900 mb-2">{matchingError}</p>
               <Button
                 onClick={onConfirm}

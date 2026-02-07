@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Hash } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Hash, ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
@@ -45,6 +46,8 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
     return digits.length === 14
   }
 
+  const hasSavedSiret = initialSiret && isValidSiret(initialSiret)
+
   async function handleSave(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
@@ -76,7 +79,7 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
     setInitialSiret(savedSiret)
     isEditingRef.current = false
 
-    toast.success('Numéro SIRET enregistré')
+    toast.success(cleanSiret ? 'SIRET enregistré — badge Professionnel activé !' : 'SIRET supprimé')
     setTimeout(() => {
       onSave?.()
     }, 300)
@@ -87,12 +90,20 @@ export function SiretEditor({ userId, currentSiret = '', onSave }: SiretEditorPr
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="siret" className="flex items-center gap-2">
-          <Hash className="h-4 w-4 text-[#823F91]" />
-          Numéro de SIRET
-        </Label>
+        <div className="flex items-center gap-2 mb-1">
+          <Label htmlFor="siret" className="flex items-center gap-2">
+            <Hash className="h-4 w-4 text-[#823F91]" />
+            Numéro de SIRET
+          </Label>
+          {hasSavedSiret && (
+            <Badge className="text-[10px] px-2 py-0 bg-emerald-100 text-emerald-700 border-0 gap-1">
+              <ShieldCheck className="h-3 w-3" />
+              Professionnel
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground mb-3">
-          Votre numéro SIRET à 14 chiffres (obligatoire pour la facturation)
+          Optionnel — Ajouter votre SIRET active le badge &quot;Prestataire Professionnel&quot; sur votre profil
         </p>
         <Input
           id="siret"
