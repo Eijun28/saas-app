@@ -132,7 +132,7 @@ export async function signUp(
 
           // Maintenant, mettre à jour les metadata pour ajouter le rôle
           // (le user est déjà créé, le trigger ne se redéclenche pas sur UPDATE)
-          await adminClient.auth.admin.updateUser(adminData.user.id, {
+          await adminClient.auth.admin.updateUserById(adminData.user.id, {
             user_metadata: {
               role: role,
               prenom: profileData.prenom,
