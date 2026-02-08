@@ -546,7 +546,7 @@ export default function SignUpPage() {
                   disabled={isLoading || !isFormValid}
                   whileHover={{ scale: isLoading || !isFormValid ? 1 : 1.02 }}
                   whileTap={{ scale: isLoading || !isFormValid ? 1 : 0.98 }}
-                  className="group relative w-full h-14 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group relative w-full h-14 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isLoading ? (
