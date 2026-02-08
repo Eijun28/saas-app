@@ -54,7 +54,10 @@ export default function LegalPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">5. Protection des données personnelles</h2>
             <p className="text-muted-foreground">
-              NUPLY s'engage à protéger la confidentialité des données personnelles collectées sur le site. Les données sont traitées conformément à la réglementation en vigueur sur la protection des données personnelles (RGPD).
+              NUPLY s&apos;engage à protéger la confidentialité des données personnelles collectées sur le site. Les données sont traitées conformément à la réglementation en vigueur sur la protection des données personnelles (RGPD).
+            </p>
+            <p className="text-muted-foreground">
+              Consultez notre <Link href="/confidentialite" className="text-primary hover:underline">Politique de confidentialité</Link> et nos <Link href="/cgu" className="text-primary hover:underline">Conditions Générales d&apos;Utilisation</Link> pour en savoir plus.
             </p>
             <p className="text-muted-foreground">
               Pour toute question concernant le traitement de vos données personnelles, vous pouvez nous contacter via la page <Link href="/contact" className="text-primary hover:underline">Contact</Link>.

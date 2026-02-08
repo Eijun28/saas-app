@@ -8,6 +8,7 @@ import { inviteCollaborateurSchema } from '@/lib/validations/collaborateur.schem
 import { Resend } from 'resend'
 import { logger } from '@/lib/logger'
 import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
+import { escapeHtml } from '@/lib/email/templates'
 
 export async function POST(request: Request) {
   try {
@@ -142,18 +143,23 @@ export async function POST(request: Request) {
       try {
         const resend = new Resend(resendApiKey)
         
+        // Échapper les inputs utilisateur pour prévenir les injections XSS
+        const safeName = escapeHtml(name || 'votre mariage')
+        const safeRole = escapeHtml(role)
+        const safeMessage = message ? escapeHtml(message) : ''
+
         await resend.emails.send({
           from: fromEmail,
           to: email,
-          subject: `Invitation à collaborer sur ${name || 'votre mariage'}`,
+          subject: `Invitation à collaborer sur ${safeName}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #823F91;">Invitation à collaborer</h2>
               <p>Bonjour,</p>
-              <p>Vous avez été invité(e) à collaborer sur l'organisation d'un mariage en tant que <strong>${role}</strong>.</p>
-              ${message ? `<p><em>"${message}"</em></p>` : ''}
+              <p>Vous avez été invité(e) à collaborer sur l'organisation d'un mariage en tant que <strong>${safeRole}</strong>.</p>
+              ${safeMessage ? `<p><em>"${safeMessage}"</em></p>` : ''}
               <p>
-                <a href="${invitationUrl}" 
+                <a href="${invitationUrl}"
                    style="display: inline-block; padding: 12px 24px; background-color: #823F91; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">
                   Accepter l'invitation
                 </a>
