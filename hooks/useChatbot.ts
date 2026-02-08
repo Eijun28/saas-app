@@ -3,11 +3,34 @@
 import { useState, useRef } from 'react';
 import { ChatMessage, SearchCriteria } from '@/types/chatbot';
 
-export function useChatbot(serviceType?: string, coupleProfile?: any) {
+const DEFAULT_WELCOME_MESSAGE =
+  'Bonjour ! 👋 Quel type de prestataire recherchez-vous aujourd\'hui ?';
+
+export interface UseChatbotOptions {
+  serviceType?: string;
+  coupleProfile?: any;
+  initialMessage?: string;
+  assistantContext?: 'matching' | 'budget_planner';
+}
+
+export function useChatbot(
+  serviceTypeOrOptions?: string | UseChatbotOptions,
+  coupleProfileArg?: any
+) {
+  const options: UseChatbotOptions =
+    typeof serviceTypeOrOptions === 'object' && serviceTypeOrOptions !== null
+      ? serviceTypeOrOptions
+      : { serviceType: serviceTypeOrOptions, coupleProfile: coupleProfileArg };
+
+  const serviceType = options.serviceType;
+  const coupleProfile = options.coupleProfile ?? coupleProfileArg;
+  const initialMessage = options.initialMessage ?? DEFAULT_WELCOME_MESSAGE;
+  const assistantContext = options.assistantContext ?? 'matching';
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'bot',
-      content: 'Bonjour ! 👋 Quel type de prestataire recherchez-vous aujourd\'hui ?',
+      content: initialMessage,
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -57,6 +80,7 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
         messages: updatedMessages,
         service_type: currentServiceType,
         couple_profile: coupleProfile,
+        assistant_context: assistantContext,
       };
 
       // Appeler l'API chatbot avec les messages mis à jour
@@ -215,7 +239,7 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
     setMessages([
       {
         role: 'bot',
-        content: 'Bonjour ! 👋 Quel type de prestataire recherchez-vous aujourd\'hui ?',
+        content: initialMessage,
         timestamp: new Date().toISOString(),
       },
     ]);
@@ -224,7 +248,7 @@ export function useChatbot(serviceType?: string, coupleProfile?: any) {
     messagesRef.current = [
       {
         role: 'bot',
-        content: 'Bonjour ! 👋 Quel type de prestataire recherchez-vous aujourd\'hui ?',
+        content: initialMessage,
         timestamp: new Date().toISOString(),
       },
     ];
