@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, Calendar, FileText, Heart, ChevronRight, User, Link2, Tag, Play, Image, ShieldCheck } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -60,8 +59,6 @@ const BEIGE = '#FBF7F0'
 const BEIGE_DARK = '#F0E9DE'
 const BEIGE_ACCENT = '#E8DFD0'
 const VIOLET = '#823F91'
-const VIOLET_LIGHT = '#F3EAF6'
-const VIOLET_SOFT = '#E9D5F0'
 
 export function ProfilePreviewDialog({
   userId,
@@ -272,7 +269,7 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl border-0 shadow-2xl flex flex-col overflow-hidden"
+          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl border-0 shadow-2xl flex flex-col overflow-y-auto"
           style={{ backgroundColor: BEIGE }}
           showCloseButton={false}
         >
@@ -292,87 +289,76 @@ export function ProfilePreviewDialog({
             </Button>
           </DialogClose>
 
-          {/* HEADER - with violet gradient accent */}
-          <div className="relative">
-            {/* Violet accent bar */}
-            <div
-              className="absolute top-0 left-0 right-0 h-20 rounded-t-2xl"
-              style={{ background: `linear-gradient(135deg, ${bc}, ${bc}cc)` }}
-            />
-
-            <div className="relative px-5 pt-5 pb-4">
-              {/* Avatar - larger, centered on the violet bar */}
-              <div className="flex items-end gap-4">
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-20 w-20 ring-[3px] shadow-lg" style={{ '--tw-ring-color': BEIGE } as React.CSSProperties}>
-                    <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-                    <AvatarFallback className="text-xl font-bold text-white" style={{ background: `linear-gradient(135deg, ${bc}, ${bc}dd)` }}>
-                      {getInitials(profile.nom_entreprise)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {(hasSiret || profile.is_early_adopter) && (
-                    <div
-                      className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center ring-2"
-                      style={{
-                        background: hasSiret ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #f59e0b, #f97316)',
-                        '--tw-ring-color': BEIGE
-                      } as React.CSSProperties}
-                    >
-                      {hasSiret ? <ShieldCheck className="h-3.5 w-3.5 text-white" /> : <Sparkles className="h-3.5 w-3.5 text-white" />}
-                    </div>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 pb-1 pr-8">
-                  <h2 className="text-xl font-bold text-white truncate drop-shadow-sm">
-                    {profile.nom_entreprise}
-                  </h2>
-                  <p className="text-sm text-white/80 font-medium">
-                    {profile.service_type}
-                  </p>
-                </div>
-              </div>
-
-              {/* Key info badges - below avatar area */}
-              <div className="flex flex-wrap items-center gap-2 mt-4">
-                {hasSiret && (
-                  <span
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-white"
-                    style={{ backgroundColor: '#059669' }}
+          {/* HEADER */}
+          <div className="relative px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${BEIGE_ACCENT}` }}>
+            <div className="flex items-end gap-4">
+              <div className="relative flex-shrink-0">
+                <Avatar className="h-20 w-20 ring-[3px] shadow-sm" style={{ '--tw-ring-color': BEIGE_ACCENT } as React.CSSProperties}>
+                  <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
+                  <AvatarFallback className="text-xl font-bold text-black" style={{ backgroundColor: BEIGE_DARK }}>
+                    {getInitials(profile.nom_entreprise)}
+                  </AvatarFallback>
+                </Avatar>
+                {(hasSiret || profile.is_early_adopter) && (
+                  <div
+                    className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center ring-2"
+                    style={{
+                      backgroundColor: BEIGE_ACCENT,
+                      '--tw-ring-color': BEIGE
+                    } as React.CSSProperties}
                   >
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    Professionnel
-                  </span>
-                )}
-                {profile.is_early_adopter && (
-                  <span
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-white"
-                    style={{ backgroundColor: '#d97706' }}
-                  >
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Early Adopter
-                  </span>
-                )}
-                {profile.ville_principale && (
-                  <span
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
-                    style={{ backgroundColor: BEIGE_DARK }}
-                  >
-                    <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
-                    {profile.ville_principale}
-                  </span>
-                )}
-                {profile.annees_experience && (
-                  <span
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
-                    style={{ backgroundColor: BEIGE_DARK }}
-                  >
-                    <Briefcase className="h-3.5 w-3.5" style={{ color: bc }} />
-                    {profile.annees_experience} ans
-                  </span>
+                    {hasSiret ? <ShieldCheck className="h-3.5 w-3.5 text-black" /> : <Sparkles className="h-3.5 w-3.5 text-black" />}
+                  </div>
                 )}
               </div>
+
+              <div className="flex-1 min-w-0 pb-1 pr-8">
+                <h2 className="text-xl font-bold text-black truncate">
+                  {profile.nom_entreprise}
+                </h2>
+                <p className="text-sm text-black/70 font-medium">
+                  {profile.service_type}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              {hasSiret && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black"
+                  style={{ backgroundColor: BEIGE_DARK }}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" style={{ color: bc }} />
+                  Professionnel
+                </span>
+              )}
+              {profile.is_early_adopter && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black"
+                  style={{ backgroundColor: BEIGE_DARK }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" style={{ color: bc }} />
+                  Early Adopter
+                </span>
+              )}
+              {profile.ville_principale && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
+                  style={{ backgroundColor: BEIGE_DARK }}
+                >
+                  <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
+                  {profile.ville_principale}
+                </span>
+              )}
+              {profile.annees_experience && (
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black"
+                  style={{ backgroundColor: BEIGE_DARK }}
+                >
+                  <Briefcase className="h-3.5 w-3.5" style={{ color: bc }} />
+                  {profile.annees_experience} ans
+                </span>
+              )}
             </div>
           </div>
 
@@ -383,190 +369,171 @@ export function ProfilePreviewDialog({
                 <button
                   onClick={() => setActiveTab('about')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
                     activeTab === 'about'
-                      ? "text-white shadow-md"
+                      ? "text-black shadow-sm"
                       : "text-black hover:opacity-80"
                   )}
                   style={{
-                    backgroundColor: activeTab === 'about' ? bc : BEIGE_DARK,
+                    backgroundColor: activeTab === 'about' ? BEIGE_ACCENT : BEIGE_DARK,
+                    borderColor: BEIGE_ACCENT,
                   }}
                 >
-                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'about' ? "text-white" : "text-black")} />
+                  <User className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", "text-black")} />
                   A propos
                 </button>
                 <button
                   onClick={() => setActiveTab('portfolio')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
                     activeTab === 'portfolio'
-                      ? "text-white shadow-md"
+                      ? "text-black shadow-sm"
                       : "text-black hover:opacity-80"
                   )}
                   style={{
-                    backgroundColor: activeTab === 'portfolio' ? bc : BEIGE_DARK,
+                    backgroundColor: activeTab === 'portfolio' ? BEIGE_ACCENT : BEIGE_DARK,
+                    borderColor: BEIGE_ACCENT,
                   }}
                 >
-                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'portfolio' ? "text-white" : "text-black")} />
+                  <Camera className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", "text-black")} />
                   Portfolio
                 </button>
-                {hasSocialLinks && (
-                  <button
-                    onClick={() => setActiveTab('links')}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-semibold transition-all",
-                      activeTab === 'links'
-                        ? "text-white shadow-md"
-                        : "text-black hover:opacity-80"
-                    )}
-                    style={{
-                      backgroundColor: activeTab === 'links' ? bc : BEIGE_DARK,
-                    }}
-                  >
-                    <Link2 className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'links' ? "text-white" : "text-black")} />
-                    Liens
-                  </button>
-                )}
-                {isCoupleView && (
-                  <button
-                    onClick={() => setActiveTab('contact')}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-semibold transition-all",
-                      activeTab === 'contact'
-                        ? "text-white shadow-md"
-                        : "text-black hover:opacity-80"
-                    )}
-                    style={{
-                      backgroundColor: activeTab === 'contact' ? bc : BEIGE_DARK,
-                    }}
-                  >
-                    <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", activeTab === 'contact' ? "text-white" : "text-black")} />
-                    Contact
-                  </button>
-                )}
+                <button
+                  onClick={() => setActiveTab('contact')}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
+                    activeTab === 'contact'
+                      ? "text-black shadow-sm"
+                      : "text-black hover:opacity-80"
+                  )}
+                  style={{
+                    backgroundColor: activeTab === 'contact' ? BEIGE_ACCENT : BEIGE_DARK,
+                    borderColor: BEIGE_ACCENT,
+                  }}
+                >
+                  <Send className={cn("h-4 w-4 inline mr-1.5 -mt-0.5", "text-black")} />
+                  Contact
+                </button>
               </div>
             </div>
             <TabsList className="hidden">
               <TabsTrigger value="about">A propos</TabsTrigger>
               <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
-              <TabsTrigger value="links">Liens</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
             </TabsList>
 
-            {/* SCROLLABLE CONTENT */}
-            <div className="flex-1 overflow-y-auto min-h-0" style={{ maxHeight: 'calc(85vh - 260px)' }}>
-              {/* TAB: A PROPOS */}
-              <TabsContent value="about" className="m-0 p-5 space-y-5 data-[state=active]:block">
-                {/* Description */}
-                {profile.description_courte && (
-                  <div>
-                    <p className="text-sm text-black leading-relaxed">
-                      {profile.description_courte}
+            {/* TAB: A PROPOS */}
+            <TabsContent value="about" className="m-0 p-5 space-y-5 data-[state=active]:block">
+              {/* Description */}
+              {profile.description_courte && (
+                <div>
+                  <p className="text-sm text-black leading-relaxed">
+                    {profile.description_courte}
+                  </p>
+                  {(profile.prenom || profile.nom) && (
+                    <p className="text-sm font-semibold mt-2 text-black">
+                      — {profile.prenom} {profile.nom}
                     </p>
-                    {(profile.prenom || profile.nom) && (
-                      <p className="text-sm font-semibold mt-2" style={{ color: bc }}>
-                        — {profile.prenom} {profile.nom}
-                      </p>
+                  )}
+                </div>
+              )}
+
+              {/* Bio */}
+              {profile.bio && (
+                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
+                      <User className="h-3.5 w-3.5" style={{ color: bc }} />
+                    </div>
+                    <h4 className="text-sm font-bold text-black">Presentation</h4>
+                  </div>
+                  <p className="text-sm text-black/80 leading-relaxed whitespace-pre-line">
+                    {profile.bio}
+                  </p>
+                </div>
+              )}
+
+              {/* Tarifs */}
+              {getBudgetDisplay() && (
+                <div
+                  className="rounded-xl p-4"
+                  style={{ backgroundColor: BEIGE_DARK, border: `1px solid ${BEIGE_ACCENT}` }}
+                >
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_ACCENT }}>
+                      <Euro className="h-3.5 w-3.5 text-black" />
+                    </div>
+                    <h4 className="text-sm font-bold text-black">Tarifs</h4>
+                  </div>
+                  <p className="text-lg font-bold text-black ml-[38px]">
+                    {getBudgetDisplay()}
+                    {profile.pricing_unit && (
+                      <span className="text-sm font-medium ml-1 text-black">
+                        {getPricingUnitLabel(profile.pricing_unit)}
+                      </span>
                     )}
-                  </div>
-                )}
+                  </p>
+                </div>
+              )}
 
-                {/* Bio */}
-                {profile.bio && (
-                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
-                        <User className="h-3.5 w-3.5" style={{ color: bc }} />
-                      </div>
-                      <h4 className="text-sm font-bold text-black">Presentation</h4>
+              {/* Cultures */}
+              {cultures.length > 0 && (
+                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
+                      <Heart className="h-3.5 w-3.5" style={{ color: bc }} />
                     </div>
-                    <p className="text-sm text-black/80 leading-relaxed whitespace-pre-line">
-                      {profile.bio}
-                    </p>
+                    <h4 className="text-sm font-bold text-black">Cultures maitrisees</h4>
                   </div>
-                )}
-
-                {/* Tarifs - highlighted card */}
-                {getBudgetDisplay() && (
-                  <div
-                    className="rounded-xl p-4"
-                    style={{ backgroundColor: VIOLET_LIGHT, border: `1px solid ${VIOLET_SOFT}` }}
-                  >
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: bc }}>
-                        <Euro className="h-3.5 w-3.5 text-white" />
-                      </div>
-                      <h4 className="text-sm font-bold text-black">Tarifs</h4>
-                    </div>
-                    <p className="text-lg font-bold text-black ml-[38px]">
-                      {getBudgetDisplay()}
-                      {profile.pricing_unit && (
-                        <span className="text-sm font-medium ml-1" style={{ color: bc }}>
-                          {getPricingUnitLabel(profile.pricing_unit)}
-                        </span>
-                      )}
-                    </p>
+                  <div className="flex flex-wrap gap-2 ml-[38px]">
+                    {cultures.map((culture) => (
+                      <span
+                        key={culture.id}
+                        className="inline-flex items-center text-xs font-semibold py-1.5 px-3.5 rounded-full text-black"
+                        style={{ backgroundColor: BEIGE_ACCENT }}
+                      >
+                        {culture.label}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Cultures */}
-                {cultures.length > 0 && (
-                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
-                        <Heart className="h-3.5 w-3.5" style={{ color: bc }} />
-                      </div>
-                      <h4 className="text-sm font-bold text-black">Cultures maitrisees</h4>
+              {/* Zones */}
+              {zones.length > 0 && (
+                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
+                      <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
                     </div>
-                    <div className="flex flex-wrap gap-2 ml-[38px]">
-                      {cultures.map((culture) => (
-                        <span
-                          key={culture.id}
-                          className="inline-flex items-center text-xs font-semibold py-1.5 px-3.5 rounded-full text-white"
-                          style={{ backgroundColor: bc }}
-                        >
-                          {culture.label}
-                        </span>
-                      ))}
-                    </div>
+                    <h4 className="text-sm font-bold text-black">Zones d'intervention</h4>
                   </div>
-                )}
-
-                {/* Zones */}
-                {zones.length > 0 && (
-                  <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
-                        <MapPin className="h-3.5 w-3.5" style={{ color: bc }} />
-                      </div>
-                      <h4 className="text-sm font-bold text-black">Zones d'intervention</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-2 ml-[38px]">
-                      {zones.map((zone) => (
-                        <span
-                          key={zone.id}
-                          className="inline-flex items-center text-xs font-medium py-1.5 px-3.5 rounded-full text-black"
-                          style={{ backgroundColor: BEIGE_DARK, border: `1px solid ${BEIGE_ACCENT}` }}
-                        >
-                          {zone.label}
-                        </span>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2 ml-[38px]">
+                    {zones.map((zone) => (
+                      <span
+                        key={zone.id}
+                        className="inline-flex items-center text-xs font-medium py-1.5 px-3.5 rounded-full text-black"
+                        style={{ backgroundColor: BEIGE_DARK, border: `1px solid ${BEIGE_ACCENT}` }}
+                      >
+                        {zone.label}
+                      </span>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Empty state */}
-                {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
-                  <div className="text-center py-8 text-black/40 text-sm">
-                    {isCoupleView
-                      ? 'Ce prestataire n\'a pas encore complete son profil'
-                      : 'Completez votre profil pour le rendre plus attractif'}
-                  </div>
-                )}
-              </TabsContent>
+              {/* Empty state */}
+              {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
+                <div className="text-center py-8 text-black/40 text-sm">
+                  {isCoupleView
+                    ? 'Ce prestataire n\'a pas encore complete son profil'
+                    : 'Completez votre profil pour le rendre plus attractif'}
+                </div>
+              )}
+            </TabsContent>
 
-              {/* TAB: PORTFOLIO */}
-              <TabsContent value="portfolio" className="m-0 p-5 data-[state=active]:block">
+            {/* TAB: PORTFOLIO */}
+            <TabsContent value="portfolio" className="m-0 p-5 data-[state=active]:block">
                 {/* PDF Preview Modal */}
                 {pdfPreviewUrl && (
                   <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setPdfPreviewUrl(null)}>
@@ -628,7 +595,7 @@ export function ProfilePreviewDialog({
                           {images.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
                                   <Image className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
                                 <span className="text-sm font-bold text-black">Photos ({images.length})</span>
@@ -670,7 +637,7 @@ export function ProfilePreviewDialog({
                           {videos.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
                                   <Play className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
                                 <span className="text-sm font-bold text-black">Videos ({videos.length})</span>
@@ -682,8 +649,8 @@ export function ProfilePreviewDialog({
                                     onClick={() => setVideoPreviewUrl(item.image_url)}
                                     className="aspect-video rounded-xl overflow-hidden group cursor-pointer relative ring-1 transition-all hover:ring-2"
                                     style={{
-                                      backgroundColor: VIOLET_LIGHT,
-                                      '--tw-ring-color': VIOLET_SOFT,
+                                      backgroundColor: BEIGE_DARK,
+                                      '--tw-ring-color': BEIGE_ACCENT,
                                     } as React.CSSProperties}
                                   >
                                     <video
@@ -712,7 +679,7 @@ export function ProfilePreviewDialog({
                           {pdfs.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: VIOLET_LIGHT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center" style={{ backgroundColor: BEIGE_DARK }}>
                                   <FileText className="h-3.5 w-3.5" style={{ color: bc }} />
                                 </div>
                                 <span className="text-sm font-bold text-black">Documents ({pdfs.length})</span>
@@ -724,8 +691,8 @@ export function ProfilePreviewDialog({
                                     onClick={() => setPdfPreviewUrl(item.image_url)}
                                     className="w-full flex items-center gap-3 p-3 rounded-xl ring-1 transition-all group hover:shadow-md"
                                     style={{
-                                      backgroundColor: VIOLET_LIGHT,
-                                      '--tw-ring-color': VIOLET_SOFT,
+                                      backgroundColor: BEIGE_DARK,
+                                      '--tw-ring-color': BEIGE_ACCENT,
                                     } as React.CSSProperties}
                                   >
                                     <div className="h-10 w-10 rounded-lg shadow-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: BEIGE }}>
@@ -760,8 +727,10 @@ export function ProfilePreviewDialog({
               </TabsContent>
 
               {/* TAB: LIENS / RESEAUX */}
-              {hasSocialLinks && (
-                <TabsContent value="links" className="m-0 p-5 data-[state=active]:block">
+            {/* TAB: CONTACT */}
+            <TabsContent value="contact" className="m-0 p-5 data-[state=active]:block">
+              <div className="space-y-4">
+                {hasSocialLinks && (
                   <div className="space-y-3">
                     {socialLinks.map((social, i) => (
                       <a
@@ -783,16 +752,13 @@ export function ProfilePreviewDialog({
                       </a>
                     ))}
                   </div>
-                </TabsContent>
-              )}
+                )}
 
-              {/* TAB: CONTACT (couple view only) */}
-              {isCoupleView && (
-                <TabsContent value="contact" className="m-0 p-5 data-[state=active]:block">
+                {isCoupleView && (
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="message" className="text-sm font-semibold text-black mb-2 block">
-                        Votre message <span style={{ color: bc }}>*</span>
+                        Votre message <span className="text-black">*</span>
                       </Label>
                       <Textarea
                         id="message"
@@ -842,23 +808,29 @@ export function ProfilePreviewDialog({
                       </div>
                     </div>
                   </div>
-                </TabsContent>
-              )}
-            </div>
+                )}
+
+                {!hasSocialLinks && !isCoupleView && (
+                  <div className="text-center py-8 text-black/40 text-sm">
+                    Aucune information de contact disponible.
+                  </div>
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
 
           {/* FOOTER */}
           <div className="p-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}`, backgroundColor: BEIGE_DARK }}>
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-11 text-white text-sm font-semibold gap-2 border-0 hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: bc }}
+                className="w-full h-11 text-black text-sm font-semibold gap-2 border hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: BEIGE_ACCENT, borderColor: BEIGE_ACCENT }}
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
               >
                 {isCreatingDemande ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent" />
                     Envoi en cours...
                   </>
                 ) : (
@@ -870,8 +842,8 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-11 text-white text-sm font-semibold gap-2 border-0 hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: bc }}
+                className="w-full h-11 text-black text-sm font-semibold gap-2 border hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: BEIGE_ACCENT, borderColor: BEIGE_ACCENT }}
                 onClick={() => setActiveTab('contact')}
               >
                 <MessageCircle className="h-4 w-4" />
