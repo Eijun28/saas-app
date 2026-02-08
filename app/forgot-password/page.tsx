@@ -132,12 +132,12 @@ export default function ForgotPasswordPage() {
 
             <CardHeader className="text-center space-y-3 pb-2 relative z-10">
               <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent tracking-tight">
-                {isSuccess ? 'Email envoy\u00e9 !' : 'Mot de passe oubli\u00e9 ?'}
+                {isSuccess ? 'Email envoyé !' : 'Mot de passe oublié ?'}
               </CardTitle>
               <CardDescription className="text-[#6B7280] text-sm sm:text-[15px] leading-relaxed px-2">
                 {isSuccess
-                  ? 'V\u00e9rifiez votre bo\u00eete de r\u00e9ception et suivez les instructions pour r\u00e9initialiser votre mot de passe.'
-                  : 'Entrez votre adresse email et nous vous enverrons un lien pour r\u00e9initialiser votre mot de passe.'}
+                  ? 'Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.'
+                  : 'Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.'}
               </CardDescription>
             </CardHeader>
 
@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
                     className="p-4 bg-green-50 border border-green-100 rounded-xl text-center"
                   >
                     <p className="text-sm text-green-700">
-                      Si un compte existe avec cette adresse email, vous recevrez un lien de r&eacute;initialisation dans quelques instants.
+                      Si un compte existe avec cette adresse email, vous recevrez un lien de réinitialisation dans quelques instants.
                     </p>
                   </motion.div>
 
@@ -164,7 +164,7 @@ export default function ForgotPasswordPage() {
                       className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 text-sm sm:text-base"
                     >
                       <ArrowLeft className="h-4 w-4" />
-                      Retour \u00e0 la connexion
+                      Retour à la connexion
                     </Link>
                   </motion.div>
                 </motion.div>
@@ -231,7 +231,7 @@ export default function ForgotPasswordPage() {
                             Envoi en cours...
                           </>
                         ) : (
-                          'Envoyer le lien de r\u00e9initialisation'
+                          'Envoyer le lien de réinitialisation'
                         )}
                       </span>
                     </motion.button>
@@ -242,7 +242,7 @@ export default function ForgotPasswordPage() {
                     className="flex items-center justify-center gap-1.5 text-[13px] text-[#9CA3AF]"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Connexion s\u00e9curis\u00e9e et donn\u00e9es prot\u00e9g\u00e9es</span>
+                    <span>Connexion sécurisée et données protégées</span>
                   </motion.div>
 
                   <motion.div variants={itemVariants} className="pt-2">
@@ -262,7 +262,7 @@ export default function ForgotPasswordPage() {
                       className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors inline-flex items-center gap-1"
                     >
                       <ArrowLeft className="h-3.5 w-3.5" />
-                      Retour \u00e0 la connexion
+                      Retour à la connexion
                     </Link>
                   </motion.p>
                 </motion.form>
