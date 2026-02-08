@@ -9,18 +9,24 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
 
+  const type = requestUrl.searchParams.get('type')
+
   if (code) {
     const supabase = await createClient()
-    
+
     // Échanger le code pour une session
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (error) {
       logger.error('Erreur callback:', error)
       const translatedError = translateAuthError(error.message || 'callback_error')
-      // Encoder l'erreur pour l'URL
       const encodedError = encodeURIComponent(translatedError)
       return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodedError}`)
+    }
+
+    // Si c'est une récupération de mot de passe, rediriger vers le formulaire de reset
+    if (type === 'recovery') {
+      return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
     }
 
     // Récupérer l'utilisateur
