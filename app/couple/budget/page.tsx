@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select-radix'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
+import { BudgetAssistant } from '@/components/budget/BudgetAssistant'
 
 interface BudgetItem {
   id: string
@@ -305,6 +306,8 @@ export default function BudgetPage() {
             Ajouter une dépense
           </Button>
         </div>
+
+        <BudgetAssistant />
 
         {/* Budget summary cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

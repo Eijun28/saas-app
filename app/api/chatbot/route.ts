@@ -6,6 +6,7 @@ import { handleApiError } from '@/lib/api-error-handler';
 import { getServiceSpecificPrompt, shouldAskQuestion } from '@/lib/chatbot/service-prompts';
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 import { logger } from '@/lib/logger';
+import { getServiceTypeLabel } from '@/lib/constants/service-types';
 
 // Lazy initialization to avoid build-time errors
 let openaiClient: OpenAI | null = null;
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages, service_type, couple_profile } = body;
+    const { messages, service_type, couple_profile, assistant_context } = body;
 
     // Validation des messages
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -161,12 +162,16 @@ RÈGLES IMPORTANTES :
 - Référence ces infos naturellement dans tes réponses sans les répéter mot pour mot
 ` : '';
 
+    const isBudgetPlanner = assistant_context === 'budget_planner' || service_type === 'budget_planner';
+
     // Générer le prompt spécialisé selon le service
-    const serviceSpecificPrompt = service_type ? getServiceSpecificPrompt(service_type, couple_profile) : '';
+    const serviceSpecificPrompt = service_type && !isBudgetPlanner
+      ? getServiceSpecificPrompt(service_type, couple_profile)
+      : '';
     
     // Calculer les moyennes de marché pour guider le couple
     let marketAverageInfo = '';
-    if (service_type) {
+    if (service_type && !isBudgetPlanner) {
       const marketAvg = await calculateMarketAverage(service_type);
       if (marketAvg) {
         marketAverageInfo = `
@@ -184,9 +189,114 @@ Si le couple demande conseil sur le budget, référence ces moyennes.
 `;
       }
     }
-    
+
+    let budgetPlannerAverages = '';
+    if (isBudgetPlanner) {
+      const budgetPlannerServices = [
+        'traiteur',
+        'salle',
+        'photographe',
+        'videaste',
+        'dj',
+        'fleuriste',
+        'robe_mariee',
+        'patissier',
+      ];
+      const averages = await Promise.all(
+        budgetPlannerServices.map(async (service) => {
+          const marketAvg = await calculateMarketAverage(service);
+          return {
+            service,
+            message: formatBudgetGuideMessage(marketAvg, service),
+          };
+        })
+      );
+
+      budgetPlannerAverages = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REPÈRES DE PRIX (données moyennes NUPLY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+      ${averages.map((item) => `- ${getServiceTypeLabel(item.service)} : ${item.message}`).join('\n')}
+
+Utilise ces repères pour proposer des budgets cohérents au marché.
+Si une donnée manque, propose une fourchette raisonnable et indique qu'elle dépend du lieu, du nombre d'invités et des options.
+`;
+    }
+
     // System prompt pour le chatbot
-    const systemPrompt = `Tu es l'assistant IA de NUPLY, plateforme de matching entre couples et prestataires de mariage multiculturels.
+    const systemPrompt = isBudgetPlanner
+      ? `Tu es l'assistant IA budget mariage de NUPLY. Ta mission : aider un couple à construire un budget réaliste, réparti par postes, en tenant compte du marché et de leurs priorités.
+
+${coupleContext}
+
+${budgetPlannerAverages}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIF & INFOS À RECUEILLIR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Budget global (ou fourchette) et marge de flexibilité.
+2. Nombre d'invités (si manquant).
+3. Priorités du couple (top 3 postes importants).
+4. Lieu ou région (si manquant).
+5. Style/culture/ambiance (si utile pour les coûts).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RÈGLES ABSOLUES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Réponses COURTES (2-3 phrases max).
+- 1 question à la fois (jamais 2).
+- Proposer des fourchettes réalistes basées sur les repères.
+- Si le couple a un budget global : propose une répartition indicative (%).
+- Si le couple n'a pas de budget : propose un budget cible basé sur invités + priorités.
+- Toujours rappeler que les prix varient selon la ville, la saison, et les options.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXEMPLES (BUDGET PLANNER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Utilisateur : "On a 120 invités et 25k€"
+Toi : "Merci ! Vos 3 postes prioritaires ? (ex : traiteur, salle, photo)."
+
+Utilisateur : "Traiteur + déco + musique"
+Toi : "Parfait. Je vous propose une répartition : traiteur ~35-40%, salle ~20-25%, photo/vidéo ~10-12%, déco ~8-12%, musique ~5-8%, reste imprévus. Votre lieu de mariage ?"
+
+Utilisateur : "Quel budget pour un traiteur ?"
+Toi : "En moyenne ${couple_profile?.guest_count ? `comptez ~${couple_profile.guest_count * 40}€ à ${couple_profile.guest_count * 80}€ pour ${couple_profile.guest_count} invités` : "40-80€ par personne"}. Vous avez combien d'invités ?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{
+  "message": "Ta réponse courte (2-3 phrases max)",
+  "extracted_data": {
+    "service_type": "budget_planner",
+    "cultures": ["culture1"] ou [],
+    "cultural_importance": "essential|important|nice_to_have ou null",
+    "budget_min": number ou null,
+    "budget_max": number ou null,
+    "wedding_style": "moderne|traditionnel|fusion ou null",
+    "wedding_ambiance": "string ou null",
+    "specific_requirements": ["req1"] ou [],
+    "vision_description": "résumé court",
+    "must_haves": [] ou ["élément"],
+    "must_not_haves": [] ou ["élément"]
+  },
+  "next_action": "continue" | "validate",
+  "question_count": 1
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TON & STYLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Chaleureux, expert budget
+✅ Tutoiement naturel
+✅ Emojis UNIQUEMENT dans le message de bienvenue initial`
+      : `Tu es l'assistant IA de NUPLY, plateforme de matching entre couples et prestataires de mariage multiculturels.
 
 ${coupleContext}
 

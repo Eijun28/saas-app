@@ -53,6 +53,7 @@ import {
   SelectValue,
 
 } from '@/components/ui/select-radix'
+import { BudgetAssistant } from '@/components/budget/BudgetAssistant'
 
 // Types pour les options de sélection
 
@@ -1173,6 +1174,10 @@ export default function CoupleProfilPage() {
 
                     />
 
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <BudgetAssistant variant="compact" />
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
