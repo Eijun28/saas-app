@@ -65,8 +65,6 @@ export function BudgetAssistant({ variant = 'full', className }: BudgetAssistant
             budget_min: profile.budget_min,
             budget_max: profile.budget_max,
             guest_count: profile.guest_count,
-            wedding_style: profile.wedding_style,
-            ambiance: profile.ambiance,
           });
         }
       } catch (error) {
