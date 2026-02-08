@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Lock, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -15,7 +15,7 @@ import Link from 'next/link'
 import Particles from '@/components/Particles'
 
 const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caract\u00e8res'),
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Les mots de passe ne correspondent pas',
@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [isSessionReady, setIsSessionReady] = useState(false)
+  const [pageState, setPageState] = useState<'loading' | 'ready' | 'expired'>('loading')
 
   const {
     register,
@@ -71,24 +71,40 @@ export default function ResetPasswordPage() {
   })
 
   useEffect(() => {
-    // Supabase injects the session from the magic link hash automatically
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsSessionReady(true)
+    let resolved = false
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' && !resolved) {
+        resolved = true
+        setPageState('ready')
       }
     })
 
-    // Also check if session already exists
+    // Vérifier si une session existe déjà
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsSessionReady(true)
+      if (session && !resolved) {
+        resolved = true
+        setPageState('ready')
       }
     })
+
+    // Timeout après 5 secondes : le lien est invalide ou expiré
+    const timeout = setTimeout(() => {
+      if (!resolved) {
+        resolved = true
+        setPageState('expired')
+      }
+    }, 5000)
+
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const onSubmit = async (data: ResetPasswordInput) => {
@@ -106,53 +122,57 @@ export default function ResetPasswordPage() {
       })
 
       if (error) {
-        setError('Une erreur est survenue. Veuillez r\u00e9essayer ou demander un nouveau lien.')
+        setError('Une erreur est survenue. Veuillez réessayer ou demander un nouveau lien.')
         setIsLoading(false)
         return
       }
 
-      router.push('/sign-in?message=Mot+de+passe+modifi%C3%A9+avec+succ%C3%A8s')
+      router.push('/sign-in?message=password_updated')
     } catch {
-      setError('Une erreur est survenue. Veuillez r\u00e9essayer.')
+      setError('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (!isSessionReady) {
+  const particlesBlock = (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
+      <Particles
+        particleCount={200}
+        particleSpread={10}
+        speed={0.24}
+        particleColors={["#823F91","#c081e3","#823F91"]}
+        moveParticlesOnHover={false}
+        particleHoverFactor={1}
+        alphaParticles={false}
+        particleBaseSize={50}
+        sizeRandomness={0.5}
+        cameraDistance={20}
+        disableRotation={false}
+        className=""
+      />
+    </div>
+  )
+
+  if (pageState === 'loading') {
     return (
       <>
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-          <Particles
-            particleCount={200}
-            particleSpread={10}
-            speed={0.24}
-            particleColors={["#823F91","#c081e3","#823F91"]}
-            moveParticlesOnHover={false}
-            particleHoverFactor={1}
-            alphaParticles={false}
-            particleBaseSize={50}
-            sizeRandomness={0.5}
-            cameraDistance={20}
-            disableRotation={false}
-            className=""
-          />
-        </div>
+        {particlesBlock}
         <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10">
           <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden w-full max-w-md">
             <CardHeader className="text-center space-y-3 pb-2">
               <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent">
-                V\u00e9rification en cours...
+                Vérification en cours...
               </CardTitle>
               <CardDescription className="text-[#6B7280] text-sm sm:text-[15px] leading-relaxed px-2">
-                Nous v\u00e9rifions votre lien de r\u00e9initialisation.
+                Nous vérifions votre lien de réinitialisation.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center py-8">
               <motion.span
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="h-8 w-8 border-3 border-[#823F91] border-t-transparent rounded-full inline-block"
+                className="h-8 w-8 border-[3px] border-[#823F91] border-t-transparent rounded-full inline-block"
               />
             </CardContent>
           </Card>
@@ -161,25 +181,45 @@ export default function ResetPasswordPage() {
     )
   }
 
+  if (pageState === 'expired') {
+    return (
+      <>
+        {particlesBlock}
+        <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10">
+          <motion.div variants={cardVariants} initial="hidden" animate="visible" className="relative w-full max-w-full sm:max-w-md">
+            <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
+              <CardHeader className="text-center space-y-3 pb-2">
+                <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent">
+                  Lien expiré ou invalide
+                </CardTitle>
+                <CardDescription className="text-[#6B7280] text-sm sm:text-[15px] leading-relaxed px-2">
+                  Ce lien de réinitialisation n&apos;est plus valide. Veuillez en demander un nouveau.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <Link
+                  href="/forgot-password"
+                  className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 text-sm sm:text-base"
+                >
+                  Demander un nouveau lien
+                </Link>
+                <p className="text-center text-[15px] text-[#6B7280]">
+                  <Link href="/sign-in" className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors inline-flex items-center gap-1">
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Retour à la connexion
+                  </Link>
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
-        <Particles
-          particleCount={200}
-          particleSpread={10}
-          speed={0.24}
-          particleColors={["#823F91","#c081e3","#823F91"]}
-          moveParticlesOnHover={false}
-          particleHoverFactor={1}
-          alphaParticles={false}
-          particleBaseSize={50}
-          sizeRandomness={0.5}
-          cameraDistance={20}
-          disableRotation={false}
-          className=""
-        />
-      </div>
-
+      {particlesBlock}
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-24 bg-background relative z-10">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-[#823F91]/[0.03] to-transparent rounded-full blur-3xl" />
@@ -221,7 +261,7 @@ export default function ResetPasswordPage() {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Minimum 8 caract\u00e8res"
+                      placeholder="Minimum 8 caractères"
                       {...register('password')}
                       className="h-12 pl-11 pr-12 border-[#E5E7EB] bg-[#FAFAFA] rounded-xl text-[15px] placeholder:text-[#9CA3AF] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-[#D1D5DB]"
                       disabled={isLoading}
@@ -312,15 +352,16 @@ export default function ResetPasswordPage() {
                   className="flex items-center justify-center gap-1.5 text-[13px] text-[#9CA3AF]"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Connexion s\u00e9curis\u00e9e et donn\u00e9es prot\u00e9g\u00e9es</span>
+                  <span>Connexion sécurisée et données protégées</span>
                 </motion.div>
 
                 <motion.p variants={itemVariants} className="text-center text-[15px] text-[#6B7280]">
                   <Link
                     href="/sign-in"
-                    className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors"
+                    className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors inline-flex items-center gap-1"
                   >
-                    Retour \u00e0 la connexion
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Retour à la connexion
                   </Link>
                 </motion.p>
               </motion.form>
