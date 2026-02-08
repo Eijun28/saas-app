@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { contactFormSchema } from '@/lib/validations/contact.schema'
+import { escapeHtml } from '@/lib/email/templates'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
@@ -9,7 +10,7 @@ const contactEmail = 'contact@nuply.fr'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    
+
     // Validation avec Zod
     const validationResult = contactFormSchema.safeParse(body)
     if (!validationResult.success) {
@@ -19,7 +20,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const { name, email, subject, message } = validationResult.data
+    const { name: rawName, email: rawEmail, subject: rawSubject, message: rawMessage } = validationResult.data
+
+    // Échapper les inputs pour prévenir les injections XSS dans les emails HTML
+    const name = escapeHtml(rawName)
+    const email = escapeHtml(rawEmail)
+    const subject = escapeHtml(rawSubject)
+    const message = escapeHtml(rawMessage)
 
     if (!resendApiKey) {
       console.warn('RESEND_API_KEY non configurée - email de contact non envoyé')
