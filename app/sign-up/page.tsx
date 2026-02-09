@@ -44,6 +44,7 @@ export default function SignUpPage() {
       password: '',
       confirmPassword: '',
       nomEntreprise: '',
+      siret: '',
     },
     mode: 'onChange', // Validation en temps réel
   })
@@ -55,6 +56,7 @@ export default function SignUpPage() {
   const email = watch('email')
   const confirmPassword = watch('confirmPassword')
   const nomEntreprise = watch('nomEntreprise')
+  const siret = watch('siret')
   
   // Vérifier si le formulaire est valide : pas d'erreurs ET tous les champs requis remplis
   const hasRequiredFields = 
@@ -125,6 +127,7 @@ export default function SignUpPage() {
           prenom: data.prenom,
           nom: data.nom,
           nomEntreprise: data.nomEntreprise,
+          siret: data.siret,
           referralCode: referralCode.trim().toUpperCase() || undefined,
         })
       } catch (signUpError: any) {
@@ -235,6 +238,24 @@ export default function SignUpPage() {
           </CardHeader>
 
           <CardContent className="relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="mb-6 rounded-2xl border border-purple-200/70 bg-gradient-to-r from-purple-50/80 via-pink-50/70 to-white px-4 py-3 text-sm text-purple-900 shadow-sm"
+            >
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#823F91] shadow-sm">
+                  <Gift className="h-4 w-4" />
+                </span>
+                <div className="space-y-1">
+                  <p className="font-semibold">Jeu concours prestataires : tentez de gagner une mise en avant sur NUPLY.</p>
+                  <p className="text-xs text-purple-700">
+                    Pour participer, renseignez un SIRET valide (14 chiffres). Les prestataires sans SIRET restent bienvenus sur la plateforme.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
 
             <motion.form
               variants={containerVariants}
@@ -355,6 +376,28 @@ export default function SignUpPage() {
                     />
                     {errors.nomEntreprise && (
                       <p className="text-xs text-red-500 mt-1">{errors.nomEntreprise.message}</p>
+                    )}
+                  </LabelInputContainer>
+
+                  <LabelInputContainer>
+                    <Label htmlFor="siret" className="text-sm font-medium text-neutral-700">
+                      Numéro de SIRET <span className="text-xs text-neutral-400">(requis pour le concours)</span>
+                    </Label>
+                    <Input
+                      id="siret"
+                      placeholder="123 456 789 00012"
+                      type="text"
+                      {...register('siret')}
+                      disabled={isLoading}
+                      className="h-12 sm:h-12 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
+                    />
+                    {errors.siret && (
+                      <p className="text-xs text-red-500 mt-1">{errors.siret.message}</p>
+                    )}
+                    {siret && !errors.siret && (
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Format attendu : 14 chiffres. Ce champ active l&apos;éligibilité au concours.
+                      </p>
                     )}
                   </LabelInputContainer>
 
