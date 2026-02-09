@@ -193,10 +193,13 @@ export default function PricingSection() {
             className="w-full max-w-2xl"
           >
             <div className="relative overflow-hidden rounded-lg border border-[#823F91]/20 bg-gradient-to-r from-[#823F91]/5 via-[#E8D4EF]/10 to-[#823F91]/5 px-4 py-3 backdrop-blur-sm">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#823F91]" />
                 <span className="text-sm font-medium text-slate-700">
                   <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit pendant 3 mois
+                </span>
+                <span className="inline-flex items-center rounded-full border border-[#823F91]/30 bg-white/80 px-3 py-1 text-xs font-semibold text-[#823F91] shadow-sm">
+                  Gratuit pour tous jusqu’au 30 Juin
                 </span>
               </div>
             </div>
