@@ -20,6 +20,7 @@ export async function signUp(
     prenom: string
     nom: string
     nomEntreprise?: string
+    siret?: string
     referralCode?: string
   }
 ) {
@@ -63,6 +64,14 @@ export async function signUp(
     if (profileData.nomEntreprise) {
       profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
     }
+
+    if (profileData.siret) {
+      const sanitizedSiret = profileData.siret.replace(/\D/g, '')
+      if (sanitizedSiret.length !== 14) {
+        return { error: 'Le numéro SIRET doit contenir 14 chiffres' }
+      }
+      profileData.siret = sanitizedSiret
+    }
   }
 
   logger.critical('🔧 Création client Supabase...', { email, role })
@@ -80,6 +89,7 @@ export async function signUp(
         prenom: profileData.prenom,
         nom: profileData.nom,
         nom_entreprise: profileData.nomEntreprise || null,
+        siret: profileData.siret || null,
       }
     },
   })
@@ -116,6 +126,7 @@ export async function signUp(
             prenom: profileData.prenom,
             nom: profileData.nom,
             nom_entreprise: profileData.nomEntreprise || null,
+            siret: profileData.siret || null,
             // role est volontairement OMIS ici pour bypasser le trigger
           }
         })
@@ -138,6 +149,7 @@ export async function signUp(
               prenom: profileData.prenom,
               nom: profileData.nom,
               nom_entreprise: profileData.nomEntreprise || null,
+              siret: profileData.siret || null,
             }
           })
           logger.critical('✅ Metadata mis à jour avec le rôle', { userId: adminData.user.id, role })
@@ -421,6 +433,7 @@ export async function signUp(
           prenom: profileData.prenom || null,
           nom: profileData.nom || null,
           nom_entreprise: profileData.nomEntreprise || null,
+          siret: profileData.siret || null,
         }
         
         const { error: profileError } = await adminClient

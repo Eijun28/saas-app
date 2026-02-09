@@ -8,6 +8,7 @@ export const signUpSchema = z
     prenom: z.string().min(1, 'Le prénom est requis').min(2, 'Le prénom doit contenir au moins 2 caractères'),
     nom: z.string().min(1, 'Le nom est requis').min(2, 'Le nom doit contenir au moins 2 caractères'),
     nomEntreprise: z.string().optional(),
+    siret: z.string().optional(),
     email: z.string().min(1, 'L\'email est requis').email('Email invalide'),
     password: z
       .string()
@@ -30,6 +31,14 @@ export const signUpSchema = z
     message: 'Le nom de l\'entreprise est requis pour les prestataires (minimum 2 caractères)',
     path: ['nomEntreprise'],
   })
+  .refine((data) => {
+    if (!data.siret) return true
+    const digits = data.siret.replace(/\D/g, '')
+    return digits.length === 14
+  }, {
+    message: 'Le SIRET doit contenir 14 chiffres',
+    path: ['siret'],
+  })
 
 export const signInSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -38,4 +47,3 @@ export const signInSchema = z.object({
 
 export type SignUpInput = z.infer<typeof signUpSchema>
 export type SignInInput = z.infer<typeof signInSchema>
-
