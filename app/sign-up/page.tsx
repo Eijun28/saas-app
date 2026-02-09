@@ -302,6 +302,13 @@ export default function SignUpPage() {
                     Prestataire
                   </motion.button>
                 </div>
+                {selectedRole === 'prestataire' && (
+                  <div className="flex justify-center">
+                    <span className="inline-flex items-center rounded-full border border-[#823F91]/25 bg-purple-50/80 px-3 py-1 text-xs font-semibold text-[#823F91] shadow-sm">
+                      Gratuit pour tous jusqu’au 30 Juin
+                    </span>
+                  </div>
+                )}
                 <input type="hidden" {...register('role')} />
                 {errors.role && (
                   <p className="text-sm text-red-500 mt-2 text-center">{errors.role.message}</p>
