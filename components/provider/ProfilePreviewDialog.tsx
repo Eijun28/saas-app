@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck, Star } from 'lucide-react'
+import { ReviewsList } from '@/components/reviews/ReviewsList'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -523,6 +524,19 @@ export function ProfilePreviewDialog({
                   </div>
                 </div>
               )}
+
+              {/* Avis */}
+              <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <Star className="h-3.5 w-3.5 text-black" />
+                  </div>
+                  <h4 className="text-sm font-bold text-black">Avis</h4>
+                </div>
+                <div className="ml-[38px]">
+                  <ReviewsList providerId={userId} limit={5} />
+                </div>
+              </div>
 
               {/* Empty state */}
               {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
