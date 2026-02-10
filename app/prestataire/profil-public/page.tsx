@@ -390,38 +390,58 @@ export default function ProfilPublicPage() {
                 <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
                 <TabsTrigger
                   value="infos"
-                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'infos' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'infos' ? '#ffffff' : '#823F91',
+                  }}
                 >
-                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Infos</span>
+                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Infos</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="cultures"
-                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'cultures' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'cultures' ? '#ffffff' : '#823F91',
+                  }}
                 >
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Cultures</span>
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Cultures</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="zones"
-                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'zones' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'zones' ? '#ffffff' : '#823F91',
+                  }}
                 >
-                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Zones</span>
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Zones</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="tags"
-                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'tags' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'tags' ? '#ffffff' : '#823F91',
+                  }}
                 >
-                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Tags</span>
+                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Tags</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="portfolio"
-                  className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'portfolio' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'portfolio' ? '#ffffff' : '#823F91',
+                  }}
                 >
-                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                  <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Portfolio</span>
+                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Portfolio</span>
                 </TabsTrigger>
               </TabsList>
 

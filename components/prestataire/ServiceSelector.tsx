@@ -204,7 +204,7 @@ export function ServiceSelector() {
           <Button
             onClick={handleSave}
             disabled={!canSave || isSaving}
-            className={`${currentService ? 'flex-1' : 'w-full'} bg-[#823F91] hover:bg-[#6D3478]`}
+            className={`${currentService ? 'flex-1' : 'w-full'} bg-[#823F91] hover:bg-[#6D3478] text-white`}
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

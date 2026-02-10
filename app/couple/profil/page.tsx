@@ -892,40 +892,60 @@ export default function CoupleProfilPage() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
             <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-              <TabsTrigger 
-                value="base" 
-                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+              <TabsTrigger
+                value="base"
+                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                style={{
+                  background: activeTab === 'base' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                  color: activeTab === 'base' ? '#ffffff' : '#823F91',
+                }}
               >
-                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Infos</span>
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Infos</span>
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="mariage"
-                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                style={{
+                  background: activeTab === 'mariage' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                  color: activeTab === 'mariage' ? '#ffffff' : '#823F91',
+                }}
               >
-                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Mariage</span>
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Mariage</span>
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="culture"
-                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                style={{
+                  background: activeTab === 'culture' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                  color: activeTab === 'culture' ? '#ffffff' : '#823F91',
+                }}
               >
-                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Culture</span>
+                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Culture</span>
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="style"
-                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                style={{
+                  background: activeTab === 'style' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                  color: activeTab === 'style' ? '#ffffff' : '#823F91',
+                }}
               >
-                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Style</span>
+                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Style</span>
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="services"
-                className="!bg-white !text-[#823F91] data-[state=active]:!bg-gradient-to-r data-[state=active]:!from-[#823F91] data-[state=active]:!to-[#9D5FA8] data-[state=active]:!text-white data-[state=active]:shadow-sm text-xs sm:text-sm font-medium group"
+                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                style={{
+                  background: activeTab === 'services' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                  color: activeTab === 'services' ? '#ffffff' : '#823F91',
+                }}
               >
-                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5 !text-[#823F91] group-data-[state=active]:!text-white transition-colors" />
-                <span className="hidden sm:inline !text-[#823F91] group-data-[state=active]:!text-white transition-colors">Services</span>
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Services</span>
               </TabsTrigger>
             </TabsList>
 
