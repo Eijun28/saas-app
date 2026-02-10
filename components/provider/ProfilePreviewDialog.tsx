@@ -258,8 +258,8 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 text-black transition-colors shadow-sm border hover:opacity-90"
-          style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+          className="gap-2 text-black transition-colors shadow-sm hover:shadow-md hover:opacity-90"
+          style={{ backgroundColor: WHITE }}
         >
           <Eye className="h-4 w-4 text-black" />
           Apercu du profil
@@ -281,15 +281,14 @@ export function ProfilePreviewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full border shadow-md hover:opacity-80"
-              style={{ backgroundColor: WHITE, borderColor: '#ccc' }}
+              className="absolute top-2 right-2 z-20 h-8 w-8 rounded-full shadow-sm hover:bg-black/5"
             >
               <X className="h-4 w-4 text-black" />
             </Button>
           </DialogClose>
 
           {/* HEADER */}
-          <div className="relative px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${BEIGE_ACCENT}` }}>
+          <div className="relative px-5 pt-5 pb-4">
             <div className="flex items-end gap-4">
               <div className="relative flex-shrink-0">
                 <Avatar className="h-20 w-20 ring-[3px] shadow-sm" style={{ '--tw-ring-color': accentColor } as React.CSSProperties}>
@@ -324,8 +323,8 @@ export function ProfilePreviewDialog({
             <div className="flex flex-wrap items-center gap-2 mt-4">
               {hasSiret && (
                 <span
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black border"
-                  style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black shadow-sm"
+                  style={{ backgroundColor: WHITE }}
                 >
                   <ShieldCheck className="h-3.5 w-3.5 text-black" />
                   Professionnel
@@ -333,8 +332,8 @@ export function ProfilePreviewDialog({
               )}
               {profile.is_early_adopter && (
                 <span
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black border"
-                  style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-black shadow-sm"
+                  style={{ backgroundColor: WHITE }}
                 >
                   <Sparkles className="h-3.5 w-3.5 text-black" />
                   Early Adopter
@@ -342,8 +341,8 @@ export function ProfilePreviewDialog({
               )}
               {profile.ville_principale && (
                 <span
-                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black border"
-                  style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black shadow-sm"
+                  style={{ backgroundColor: WHITE }}
                 >
                   <MapPin className="h-3.5 w-3.5 text-black" />
                   {profile.ville_principale}
@@ -351,8 +350,8 @@ export function ProfilePreviewDialog({
               )}
               {profile.annees_experience && (
                 <span
-                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black border"
-                  style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full text-black shadow-sm"
+                  style={{ backgroundColor: WHITE }}
                 >
                   <Briefcase className="h-3.5 w-3.5 text-black" />
                   {profile.annees_experience} ans
@@ -363,19 +362,18 @@ export function ProfilePreviewDialog({
 
           {/* TABS - Pills style */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <div className="px-5 pt-2 pb-3" style={{ borderBottom: `1px solid ${BEIGE_ACCENT}` }}>
+            <div className="px-5 pt-2 pb-3">
               <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setActiveTab('about')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                     activeTab === 'about'
-                      ? "!text-white shadow-sm -translate-y-0.5"
-                      : "!text-black hover:shadow-sm"
+                      ? "!text-white shadow-md -translate-y-0.5"
+                      : "!text-black shadow-sm hover:shadow-md"
                   )}
                   style={{
                     backgroundColor: activeTab === 'about' ? accentColor : WHITE,
-                    borderColor: activeTab === 'about' ? accentColor : BEIGE_ACCENT,
                   }}
                 >
                   <User className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
@@ -384,14 +382,13 @@ export function ProfilePreviewDialog({
                 <button
                   onClick={() => setActiveTab('portfolio')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                     activeTab === 'portfolio'
-                      ? "!text-white shadow-sm -translate-y-0.5"
-                      : "!text-black hover:shadow-sm"
+                      ? "!text-white shadow-md -translate-y-0.5"
+                      : "!text-black shadow-sm hover:shadow-md"
                   )}
                   style={{
                     backgroundColor: activeTab === 'portfolio' ? accentColor : WHITE,
-                    borderColor: activeTab === 'portfolio' ? accentColor : BEIGE_ACCENT,
                   }}
                 >
                   <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
@@ -400,14 +397,13 @@ export function ProfilePreviewDialog({
                 <button
                   onClick={() => setActiveTab('contact')}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
+                    "px-4 py-2 rounded-full text-sm font-semibold transition-all",
                     activeTab === 'contact'
-                      ? "!text-white shadow-sm -translate-y-0.5"
-                      : "!text-black hover:shadow-sm"
+                      ? "!text-white shadow-md -translate-y-0.5"
+                      : "!text-black shadow-sm hover:shadow-md"
                   )}
                   style={{
                     backgroundColor: activeTab === 'contact' ? accentColor : WHITE,
-                    borderColor: activeTab === 'contact' ? accentColor : BEIGE_ACCENT,
                   }}
                 >
                   <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
@@ -439,9 +435,9 @@ export function ProfilePreviewDialog({
 
               {/* Bio */}
               {profile.bio && (
-                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                <div className="pt-4">
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                       <User className="h-3.5 w-3.5 text-black" />
                     </div>
                     <h4 className="text-sm font-bold text-black">Presentation</h4>
@@ -455,11 +451,11 @@ export function ProfilePreviewDialog({
               {/* Tarifs */}
               {getBudgetDisplay() && (
                 <div
-                  className="rounded-xl p-4 border"
-                  style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                  className="rounded-xl p-4 shadow-sm"
+                  style={{ backgroundColor: WHITE }}
                 >
                   <div className="flex items-center gap-2.5 mb-2">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                       <Euro className="h-3.5 w-3.5 text-black" />
                     </div>
                     <h4 className="text-sm font-bold text-black">Tarifs</h4>
@@ -477,9 +473,9 @@ export function ProfilePreviewDialog({
 
               {/* Cultures */}
               {cultures.length > 0 && (
-                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                <div className="pt-4">
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                       <Heart className="h-3.5 w-3.5 text-black" />
                     </div>
                     <h4 className="text-sm font-bold text-black">Cultures maitrisees</h4>
@@ -488,8 +484,8 @@ export function ProfilePreviewDialog({
                     {cultures.map((culture) => (
                       <span
                         key={culture.id}
-                        className="inline-flex items-center text-xs font-semibold py-1.5 px-3.5 rounded-full text-black border"
-                        style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                        className="inline-flex items-center text-xs font-semibold py-1.5 px-3.5 rounded-full text-black shadow-sm"
+                        style={{ backgroundColor: WHITE }}
                       >
                         {culture.label}
                       </span>
@@ -500,9 +496,9 @@ export function ProfilePreviewDialog({
 
               {/* Zones */}
               {zones.length > 0 && (
-                <div className="pt-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+                <div className="pt-4">
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                       <MapPin className="h-3.5 w-3.5 text-black" />
                     </div>
                     <h4 className="text-sm font-bold text-black">Zones d'intervention</h4>
@@ -511,8 +507,8 @@ export function ProfilePreviewDialog({
                     {zones.map((zone) => (
                       <span
                         key={zone.id}
-                        className="inline-flex items-center text-xs font-medium py-1.5 px-3.5 rounded-full text-black border"
-                        style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                        className="inline-flex items-center text-xs font-medium py-1.5 px-3.5 rounded-full text-black shadow-sm"
+                        style={{ backgroundColor: WHITE }}
                       >
                         {zone.label}
                       </span>
@@ -539,8 +535,8 @@ export function ProfilePreviewDialog({
                     <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => setPdfPreviewUrl(null)}
-                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full flex items-center justify-center border"
-                        style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                        className="absolute top-3 right-3 z-10 h-8 w-8 rounded-full flex items-center justify-center shadow-sm"
+                        style={{ backgroundColor: WHITE }}
                       >
                         <X className="h-4 w-4 text-black" />
                       </button>
@@ -594,7 +590,7 @@ export function ProfilePreviewDialog({
                           {images.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                                   <Image className="h-3.5 w-3.5 text-black" />
                                 </div>
                                 <span className="text-sm font-bold text-black">Photos ({images.length})</span>
@@ -636,7 +632,7 @@ export function ProfilePreviewDialog({
                           {videos.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                                   <Play className="h-3.5 w-3.5 text-black" />
                                 </div>
                                 <span className="text-sm font-bold text-black">Videos ({videos.length})</span>
@@ -678,7 +674,7 @@ export function ProfilePreviewDialog({
                           {pdfs.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2.5 mb-3">
-                                <div className="h-7 w-7 rounded-full flex items-center justify-center border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                                <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                                   <FileText className="h-3.5 w-3.5 text-black" />
                                 </div>
                                 <span className="text-sm font-bold text-black">Documents ({pdfs.length})</span>
@@ -694,7 +690,7 @@ export function ProfilePreviewDialog({
                                       '--tw-ring-color': BEIGE_ACCENT,
                                     } as React.CSSProperties}
                                   >
-                                    <div className="h-10 w-10 rounded-lg shadow-sm flex items-center justify-center flex-shrink-0 border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                                    <div className="h-10 w-10 rounded-lg shadow-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: WHITE }}>
                                       <FileText className="h-5 w-5 text-black" />
                                     </div>
                                     <div className="flex-1 min-w-0 text-left">
@@ -713,7 +709,7 @@ export function ProfilePreviewDialog({
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <div className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                    <div className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm" style={{ backgroundColor: WHITE }}>
                       <Camera className="h-8 w-8 text-black/50" />
                     </div>
                     <p className="text-sm text-black/50">
@@ -737,10 +733,10 @@ export function ProfilePreviewDialog({
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-xl transition-all group border hover:shadow-md"
-                        style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                        className="flex items-center gap-3 p-3 rounded-xl transition-all group shadow-sm hover:shadow-md"
+                        style={{ backgroundColor: WHITE }}
                       >
-                        <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-sm border" style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}>
+                        <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
                           <social.icon className="h-5 w-5 text-black" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -819,17 +815,16 @@ export function ProfilePreviewDialog({
           </Tabs>
 
           {/* FOOTER */}
-          <div className="px-5 py-3" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
+          <div className="px-5 py-3">
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-11 text-black text-sm font-semibold gap-2 border hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: WHITE, borderColor: '#000000' }}
+                className="w-full h-11 text-white text-sm font-semibold gap-2 rounded-full shadow-md hover:opacity-90 transition-opacity bg-[#823F91] hover:bg-[#6D3478]"
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
               >
                 {isCreatingDemande ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent" />
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                     Envoi en cours...
                   </>
                 ) : (
@@ -841,8 +836,7 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-11 text-black text-sm font-semibold gap-2 border hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: WHITE, borderColor: '#000000' }}
+                className="w-full h-11 text-white text-sm font-semibold gap-2 rounded-full shadow-md hover:opacity-90 transition-opacity bg-[#823F91] hover:bg-[#6D3478]"
                 onClick={() => setActiveTab('contact')}
               >
                 <MessageCircle className="h-4 w-4" />
@@ -851,9 +845,9 @@ export function ProfilePreviewDialog({
               </Button>
             ) : (
               <Button
-                variant="outline"
-                className="w-full h-11 text-sm font-semibold text-black hover:opacity-80 transition-opacity"
-                style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+                variant="ghost"
+                className="w-full h-11 text-sm font-semibold text-black rounded-full shadow-sm hover:shadow-md hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: WHITE }}
                 onClick={() => setOpen(false)}
               >
                 Fermer l'apercu
