@@ -281,8 +281,8 @@ export function ProfilePreviewDialog({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full border hover:opacity-80"
-              style={{ backgroundColor: WHITE, borderColor: BEIGE_ACCENT }}
+              className="absolute top-3 right-3 z-20 h-8 w-8 rounded-full border shadow-md hover:opacity-80"
+              style={{ backgroundColor: WHITE, borderColor: '#ccc' }}
             >
               <X className="h-4 w-4 text-black" />
             </Button>
