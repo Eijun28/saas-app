@@ -370,16 +370,15 @@ export function ProfilePreviewDialog({
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
                     activeTab === 'about'
-                      ? "shadow-sm -translate-y-0.5"
-                      : "text-black hover:shadow-sm"
+                      ? "!text-white shadow-sm -translate-y-0.5"
+                      : "!text-black hover:shadow-sm"
                   )}
                   style={{
                     backgroundColor: activeTab === 'about' ? accentColor : WHITE,
                     borderColor: activeTab === 'about' ? accentColor : BEIGE_ACCENT,
-                    color: activeTab === 'about' ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  <User className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
                   A propos
                 </button>
                 <button
@@ -387,16 +386,15 @@ export function ProfilePreviewDialog({
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
                     activeTab === 'portfolio'
-                      ? "shadow-sm -translate-y-0.5"
-                      : "text-black hover:shadow-sm"
+                      ? "!text-white shadow-sm -translate-y-0.5"
+                      : "!text-black hover:shadow-sm"
                   )}
                   style={{
                     backgroundColor: activeTab === 'portfolio' ? accentColor : WHITE,
                     borderColor: activeTab === 'portfolio' ? accentColor : BEIGE_ACCENT,
-                    color: activeTab === 'portfolio' ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  <Camera className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
                   Portfolio
                 </button>
                 <button
@@ -404,16 +402,15 @@ export function ProfilePreviewDialog({
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-semibold transition-all border",
                     activeTab === 'contact'
-                      ? "shadow-sm -translate-y-0.5"
-                      : "text-black hover:shadow-sm"
+                      ? "!text-white shadow-sm -translate-y-0.5"
+                      : "!text-black hover:shadow-sm"
                   )}
                   style={{
                     backgroundColor: activeTab === 'contact' ? accentColor : WHITE,
                     borderColor: activeTab === 'contact' ? accentColor : BEIGE_ACCENT,
-                    color: activeTab === 'contact' ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+                  <Send className="h-4 w-4 inline mr-1.5 -mt-0.5" style={{ color: 'inherit' }} />
                   Contact
                 </button>
               </div>
