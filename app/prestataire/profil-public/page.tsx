@@ -13,6 +13,7 @@ import { AvatarUploader } from '@/components/provider/AvatarUploader'
 import { BusinessNameEditor } from '@/components/provider/BusinessNameEditor'
 import { SiretEditor } from '@/components/provider/SiretEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
+import { BioEditor } from '@/components/provider/BioEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
 import { TagSelector } from '@/components/provider/TagSelector'
@@ -26,6 +27,7 @@ import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
 import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
+import { VisibilityStats } from '@/components/provider/VisibilityStats'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -100,7 +102,6 @@ export default function ProfilPublicPage() {
   const reloadData = async () => {
     if (!user) return
 
-    await new Promise(resolve => setTimeout(resolve, 500))
     await loadAllData(user.id, false)
     setRefreshKey(prev => prev + 1)
   }
@@ -112,12 +113,63 @@ export default function ProfilPublicPage() {
 
     try {
       const freshSupabase = createClient()
-      
-      let { data: profileData, error: profileError } = await freshSupabase
-        .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
-        .eq('id', userId)
-        .maybeSingle()
+
+      // Lancer toutes les requêtes en parallèle pour un chargement rapide
+      const [
+        profileResult,
+        socialResult,
+        culturesResult,
+        zonesResult,
+        portfolioResult,
+        pricingResult,
+        brandResult,
+      ] = await Promise.all([
+        // Profil principal
+        freshSupabase
+          .from('profiles')
+          .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
+          .eq('id', userId)
+          .maybeSingle(),
+        // Réseaux sociaux
+        freshSupabase
+          .from('profiles')
+          .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
+          .eq('id', userId)
+          .maybeSingle(),
+        // Cultures
+        freshSupabase
+          .from('provider_cultures')
+          .select('culture_id')
+          .eq('profile_id', userId),
+        // Zones
+        freshSupabase
+          .from('provider_zones')
+          .select('zone_id')
+          .eq('profile_id', userId),
+        // Portfolio
+        freshSupabase
+          .from('provider_portfolio')
+          .select('id, image_url, title')
+          .eq('profile_id', userId)
+          .order('display_order', { ascending: true }),
+        // Pricing principal
+        freshSupabase
+          .from('provider_pricing')
+          .select('pricing_unit')
+          .eq('provider_id', userId)
+          .eq('is_primary', true)
+          .maybeSingle(),
+        // Couleur de marque
+        freshSupabase
+          .from('prestataire_profiles')
+          .select('brand_color')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ])
+
+      // Traitement profil avec fallback si colonnes boutique manquantes
+      let profileData = profileResult.data
+      let profileError = profileResult.error
 
       if (profileError && profileError.code === '42703') {
         console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans boutique')
@@ -130,75 +182,26 @@ export default function ProfilPublicPage() {
         profileError = error
       }
 
-      let socialLinks = {
-        instagram_url: null as string | null,
-        facebook_url: null as string | null,
-        website_url: null as string | null,
-        linkedin_url: null as string | null,
-        tiktok_url: null as string | null,
-      }
-      
-      try {
-        const { data: socialData } = await freshSupabase
-          .from('profiles')
-          .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
-          .eq('id', userId)
-          .maybeSingle()
-        
-        if (socialData) {
-          socialLinks = {
-            instagram_url: socialData.instagram_url || null,
-            facebook_url: socialData.facebook_url || null,
-            website_url: socialData.website_url || null,
-            linkedin_url: socialData.linkedin_url || null,
-            tiktok_url: socialData.tiktok_url || null,
-          }
-        }
-      } catch (socialError: any) {
-        console.warn('⚠️ Colonnes réseaux sociaux non disponibles:', socialError?.message)
-      }
-
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
         console.error('Erreur profil:', profileError)
         throw new Error(`Erreur profil: ${profileError.message}`)
       }
 
-      const { data: culturesData } = await freshSupabase
-        .from('provider_cultures')
-        .select('culture_id')
-        .eq('profile_id', userId)
-
-      const { data: zonesData } = await freshSupabase
-        .from('provider_zones')
-        .select('zone_id')
-        .eq('profile_id', userId)
-
-      const { data: portfolioData } = await freshSupabase
-        .from('provider_portfolio')
-        .select('id, image_url, title')
-        .eq('profile_id', userId)
-        .order('display_order', { ascending: true })
-
-      // Récupérer le pricing_unit principal
-      const { data: pricingData } = await freshSupabase
-        .from('provider_pricing')
-        .select('pricing_unit')
-        .eq('provider_id', userId)
-        .eq('is_primary', true)
-        .maybeSingle()
-
-      // Récupérer la couleur de marque
-      let brandColor = '#823F91'
-      try {
-        const { data: brandData } = await freshSupabase
-          .from('prestataire_profiles')
-          .select('brand_color')
-          .eq('user_id', userId)
-          .maybeSingle()
-        if (brandData?.brand_color) brandColor = brandData.brand_color
-      } catch {
-        // Fallback si table n'existe pas encore
+      // Traitement réseaux sociaux
+      const socialData = socialResult.data
+      const socialLinks = {
+        instagram_url: socialData?.instagram_url || null,
+        facebook_url: socialData?.facebook_url || null,
+        website_url: socialData?.website_url || null,
+        linkedin_url: socialData?.linkedin_url || null,
+        tiktok_url: socialData?.tiktok_url || null,
       }
+
+      const culturesData = culturesResult.data
+      const zonesData = zonesResult.data
+      const portfolioData = portfolioResult.data
+      const pricingData = pricingResult.data
+      const brandColor = brandResult.data?.brand_color || '#823F91'
 
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
@@ -267,18 +270,6 @@ export default function ProfilPublicPage() {
       }
     }
   }
-
-  const completionChecks = [
-    { complete: !!profile?.avatar_url, label: 'Photo de profil' },
-    { complete: !!profile?.nom_entreprise, label: "Nom d'entreprise" },
-    { complete: !!profile?.description_courte, label: 'Description' },
-    { complete: cultures.length > 0, label: 'Cultures' },
-    { complete: zones.length > 0, label: 'Zones' },
-    { complete: portfolio.length > 0, label: 'Portfolio' },
-  ]
-
-  const completedCount = completionChecks.filter(c => c.complete).length
-  const completionPercent = Math.round((completedCount / completionChecks.length) * 100)
 
   if (isLoading) {
     return (
@@ -387,6 +378,12 @@ export default function ProfilPublicPage() {
         portfolio={portfolio}
       />
 
+      {/* Statistiques de visibilité */}
+      <VisibilityStats
+        userId={user.id}
+        serviceType={profile?.service_type}
+      />
+
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
@@ -452,6 +449,12 @@ export default function ProfilPublicPage() {
                         key={`profile-desc-${profile?._timestamp || 0}`}
                         userId={user.id}
                         currentDescription={profile?.description_courte}
+                        onSave={reloadData}
+                      />
+                      <BioEditor
+                        key={`bio-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        currentBio={profile?.bio}
                         onSave={reloadData}
                       />
                       <ProfessionalInfoEditor
