@@ -505,7 +505,7 @@ export default function SignUpPage() {
                   )}
                   {/* Aide pour les prérequis du mot de passe */}
                   {password && (
-                    <div className="mt-2 space-y-1 hidden sm:block">
+                    <div className="mt-2 space-y-1">
                       <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
                       <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
                         <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : ''}`}>

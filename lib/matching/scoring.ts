@@ -2,6 +2,7 @@
 
 import type { SearchCriteria } from '@/types/chatbot';
 import type { ScoreBreakdown } from '@/types/matching';
+import { CULTURE_CATEGORIES } from '@/lib/constants/cultures';
 
 /**
  * Configuration du systeme d'equite
@@ -40,8 +41,62 @@ export interface ExtendedSearchCriteria extends SearchCriteria {
   style_tags?: string[];
 }
 
+// ---------------------------------------------------------------------------
+// Matrice de proximité culturelle
+// Construite automatiquement depuis CULTURE_CATEGORIES :
+//   - Même culture (exact match) → 1.0
+//   - Même catégorie parent (ex: marocain ↔ algérien = maghrébin) → 0.7
+//   - Catégories proches (ex: maghrébin ↔ moyen-orient) → 0.3
+//   - Pas de lien → 0.0
+// ---------------------------------------------------------------------------
+
+// Index inversé : subcategory_id → parent_category_id
+const cultureToCategory = new Map<string, string>();
+CULTURE_CATEGORIES.forEach(cat => {
+  // La catégorie elle-même s'auto-référence
+  cultureToCategory.set(cat.id, cat.id);
+  cat.subcategories?.forEach(sub => {
+    cultureToCategory.set(sub.id, cat.id);
+  });
+});
+
+// Proximité inter-catégories (paires de catégories proches)
+const CROSS_CATEGORY_PROXIMITY: Record<string, number> = {
+  'maghrebin|moyen-orient': 0.35,
+  'maghrebin|turc': 0.3,
+  'moyen-orient|turc': 0.35,
+  'africain|antillais': 0.25,
+  'indien|pakistanais': 0.5,
+  'asiatique|indien': 0.15,
+  'europeen|amerique-nord': 0.2,
+  'amerique-latine|europeen': 0.15,
+  'antillais|amerique-latine': 0.2,
+};
+
+/**
+ * Retourne la proximité entre deux cultures (0.0 à 1.0).
+ */
+function getCulturalProximity(cultureA: string, cultureB: string): number {
+  if (cultureA === cultureB) return 1.0;
+
+  const catA = cultureToCategory.get(cultureA);
+  const catB = cultureToCategory.get(cultureB);
+
+  if (!catA || !catB) return 0;
+
+  // Même catégorie parent
+  if (catA === catB) return 0.7;
+
+  // Vérifier proximité inter-catégories (dans les deux ordres)
+  const key1 = `${catA}|${catB}`;
+  const key2 = `${catB}|${catA}`;
+  return CROSS_CATEGORY_PROXIMITY[key1] ?? CROSS_CATEGORY_PROXIMITY[key2] ?? 0;
+}
+
 /**
  * Calcule le score de match culturel (/30 points)
+ * Utilise la proximité culturelle : deux cultures de la même famille
+ * (ex: marocain ↔ algérien) obtiennent un score partiel au lieu de 0.
  */
 export function calculateCulturalScore(
   coupleCultures: string[],
@@ -52,12 +107,18 @@ export function calculateCulturalScore(
     return 0;
   }
 
-  // Match des cultures
-  const matchedCultures = coupleCultures.filter((c) =>
-    providerCultures.includes(c)
-  );
-  
-  const matchPercentage = matchedCultures.length / coupleCultures.length;
+  // Pour chaque culture du couple, trouver la meilleure proximité avec le prestataire
+  let totalProximity = 0;
+  for (const coupleCulture of coupleCultures) {
+    let bestProximity = 0;
+    for (const providerCulture of providerCultures) {
+      const proximity = getCulturalProximity(coupleCulture, providerCulture);
+      bestProximity = Math.max(bestProximity, proximity);
+    }
+    totalProximity += bestProximity;
+  }
+
+  const matchPercentage = totalProximity / coupleCultures.length;
 
   // Pondération selon importance
   const weights = {
@@ -65,9 +126,9 @@ export function calculateCulturalScore(
     important: 25,
     nice_to_have: 15,
   };
-  
+
   const maxScore = weights[culturalImportance as keyof typeof weights] || 20;
-  
+
   return Math.round(matchPercentage * maxScore);
 }
 
@@ -338,25 +399,27 @@ export function calculateFairnessMultiplier(
 }
 
 /**
- * Calcule un bonus base sur le CTR (Click-Through Rate)
- * Les prestataires avec un bon CTR sont plus pertinents
+ * Calcule un bonus basé sur le CTR (Click-Through Rate)
+ * Les prestataires avec un bon CTR sont plus pertinents.
+ * Les nouveaux prestataires (< 20 impressions) reçoivent un bonus d'exploration
+ * pour éviter une boucle de feedback positif (les populaires deviennent plus populaires).
  */
 export function calculateCTRBonus(
   fairnessData: FairnessData | undefined
 ): number {
+  // Nouveau prestataire sans données → bonus d'exploration
   if (!fairnessData || fairnessData.total_impressions < 20) {
-    return 0; // Pas assez de donnees pour etre significatif
+    return 3; // Exploration bonus pour donner une chance aux nouveaux
   }
 
   const ctr = fairnessData.click_through_rate;
 
-  // CTR moyen estime a 10-15%
-  // Bonus si au-dessus, malus si en-dessous
+  // CTR moyen estimé à 10-15%
   if (ctr >= 0.25) return 5;   // Excellent CTR
   if (ctr >= 0.15) return 3;   // Bon CTR
   if (ctr >= 0.10) return 0;   // CTR moyen
   if (ctr >= 0.05) return -2;  // CTR faible
-  return -3;                   // CTR tres faible
+  return -3;                   // CTR très faible
 }
 
 /**
