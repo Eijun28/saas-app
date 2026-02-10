@@ -165,7 +165,7 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
             </Button>
             <Button
               type="submit"
-              className="bg-[#823F91] hover:bg-[#6D3478]"
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
             >
               Enregistrer
             </Button>

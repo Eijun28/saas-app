@@ -389,7 +389,7 @@ export function PricingEditor({ providerId, initialPricing, onUpdate }: PricingE
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 bg-[#823F91] hover:bg-[#6D3478] gap-2"
+              className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
             >
               <Check className="h-4 w-4" />
               {isSaving ? 'Enregistrement...' : 'Enregistrer'}

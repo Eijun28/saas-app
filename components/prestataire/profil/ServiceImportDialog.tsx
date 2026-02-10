@@ -436,7 +436,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
           {extractedServices.length > 0 && (
             <Button
               onClick={handleImport}
-              className="bg-[#823F91] hover:bg-[#6D3478]"
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
             >
               <Check className="h-4 w-4 mr-2" />
               Importer {extractedServices.length} service{extractedServices.length > 1 ? 's' : ''}

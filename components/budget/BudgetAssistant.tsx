@@ -267,7 +267,7 @@ export function BudgetAssistant({ variant = 'full', className }: BudgetAssistant
                 />
                 <Button
                   type="button"
-                  className="h-11 w-11 rounded-full bg-[#823F91] hover:bg-[#6D3478]"
+                  className="h-11 w-11 rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white"
                   onClick={handleSend}
                   disabled={!userInput.trim() || isLoading}
                 >

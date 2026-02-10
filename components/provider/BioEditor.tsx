@@ -136,7 +136,7 @@ export function BioEditor({
             type="button"
             onClick={handleSave}
             disabled={isSaving || bioLength > MAX_BIO_LENGTH}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

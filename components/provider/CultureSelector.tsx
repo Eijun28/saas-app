@@ -205,7 +205,7 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
           <Button
             onClick={handleAddCulture}
             disabled={!selectedSubcategory && !selectedCategory}
-            className="w-full bg-[#823F91] hover:bg-[#6D3478]"
+            className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             Ajouter
           </Button>
@@ -305,7 +305,7 @@ export function CultureSelector({ userId, onSave }: CultureSelectorProps) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

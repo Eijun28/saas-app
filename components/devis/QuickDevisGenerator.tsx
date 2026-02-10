@@ -500,7 +500,7 @@ export function QuickDevisGenerator({
               <Button
                 onClick={() => setStep('preview')}
                 disabled={!formData.title || !formData.description || !formData.amount}
-                className="gap-1.5 bg-[#823F91] hover:bg-[#6D3478]"
+                className="gap-1.5 bg-[#823F91] hover:bg-[#6D3478] text-white"
               >
                 Aperçu
                 <ArrowRight className="h-4 w-4" />
@@ -632,7 +632,7 @@ export function QuickDevisGenerator({
             </div>
 
             <DialogFooter>
-              <Button onClick={handleClose} className="bg-[#823F91] hover:bg-[#6D3478]">
+              <Button onClick={handleClose} className="bg-[#823F91] hover:bg-[#6D3478] text-white">
                 Fermer
               </Button>
             </DialogFooter>

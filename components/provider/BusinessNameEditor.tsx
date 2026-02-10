@@ -166,7 +166,7 @@ export function BusinessNameEditor({ userId, currentName = '', onSave }: Busines
             type="button"
             onClick={handleSave}
             disabled={isSaving || !name.trim()}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

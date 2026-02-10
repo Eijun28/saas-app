@@ -583,7 +583,7 @@ export default function DemandesPage() {
                 Recherchez des prestataires et envoyez-leur une demande pour commencer.
               </p>
               <Button
-                className="mt-6 bg-[#823F91] hover:bg-[#6D3478]"
+                className="mt-6 bg-[#823F91] hover:bg-[#6D3478] text-white"
                 onClick={() => window.location.href = '/couple/recherche'}
               >
                 Rechercher des prestataires

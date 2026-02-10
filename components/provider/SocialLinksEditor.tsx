@@ -260,7 +260,7 @@ export function SocialLinksEditor({ userId, currentLinks = {}, onSave }: SocialL
             size="sm"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

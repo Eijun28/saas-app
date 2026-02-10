@@ -384,7 +384,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
         <Button
           onClick={createCustomTag}
           disabled={!newTagInput.trim() || isCreatingTag}
-          className="bg-[#823F91] hover:bg-[#6D3478]"
+          className="bg-[#823F91] hover:bg-[#6D3478] text-white"
         >
           <Plus className="h-4 w-4 mr-1" />
           Créer
@@ -439,7 +439,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
+            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>
