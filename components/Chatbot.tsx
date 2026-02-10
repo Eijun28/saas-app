@@ -344,10 +344,10 @@ export default function Chatbot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="nuply-chatbot-button fixed rounded-full text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[9998]"
+          className="nuply-chatbot-button fixed rounded-full text-[#8B7355] shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center z-[9998]"
           style={{
-            background: 'linear-gradient(135deg, #823F91 0%, #c081e3 50%, #9333ea 100%)',
-            boxShadow: '0 20px 25px -5px rgba(130, 63, 145, 0.4), 0 10px 10px -5px rgba(130, 63, 145, 0.3)',
+            background: '#E6D5BE',
+            boxShadow: '0 20px 25px -5px rgba(180, 160, 130, 0.35), 0 10px 10px -5px rgba(180, 160, 130, 0.25)',
             right: isMobile ? '16px' : '24px',
             bottom: isMobile ? '80px' : '24px', // Éviter la barre de navigation mobile
             position: 'fixed',
@@ -358,12 +358,12 @@ export default function Chatbot() {
           }}
           onMouseEnter={(e) => {
             if (!isMobile) {
-              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(130, 63, 145, 0.6), 0 10px 10px -5px rgba(130, 63, 145, 0.4)'
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(180, 160, 130, 0.5), 0 10px 10px -5px rgba(180, 160, 130, 0.35)'
             }
           }}
           onMouseLeave={(e) => {
             if (!isMobile) {
-              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(130, 63, 145, 0.4), 0 10px 10px -5px rgba(130, 63, 145, 0.3)'
+              e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(180, 160, 130, 0.35), 0 10px 10px -5px rgba(180, 160, 130, 0.25)'
             }
           }}
           aria-label="Ouvrir le chatbot"
