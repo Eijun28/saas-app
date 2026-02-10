@@ -8,15 +8,17 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { CityAutocompleteInput } from '@/components/provider/CityAutocompleteInput'
 import { getServiceTypeLabel, SERVICE_CATEGORIES, SERVICE_TYPES } from '@/lib/constants/service-types'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ProfessionalInfoEditorProps {
   userId: string
@@ -44,6 +46,7 @@ export function ProfessionalInfoEditor({
   const [serviceType, setServiceType] = useState(currentServiceType || '')
   const [initialData, setInitialData] = useState({ budgetMin: '', budgetMax: '', experience: '', ville: '', serviceType: '' })
   const [isSaving, setIsSaving] = useState(false)
+  const [professionOpen, setProfessionOpen] = useState(false)
   const isEditingRef = useRef(false)
 
   useEffect(() => {
@@ -203,41 +206,67 @@ export function ProfessionalInfoEditor({
 
   return (
     <div className="space-y-6">
-      {/* Profession (service_type) - Modifiable */}
+      {/* Profession (service_type) - Modifiable avec recherche */}
       <div className="space-y-2">
         <Label htmlFor="service-type">Profession</Label>
-        <Select 
-          value={serviceType || ''}
-          onValueChange={(value) => {
-            isEditingRef.current = true
-            setServiceType(value)
-            setTimeout(() => {
-              isEditingRef.current = false
-            }, 100)
-          }}
-        >
-          <SelectTrigger id="service-type" className="w-full">
-            <SelectValue placeholder="Sélectionnez votre profession" />
-          </SelectTrigger>
-          <SelectContent className="!bg-white !border-0 !shadow-[0_4px_12px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.08)] max-h-[300px] z-50">
-            {SERVICE_CATEGORIES.map((category) => (
-              <SelectGroup key={category.id}>
-                <SelectLabel className="text-xs font-normal text-gray-700 px-2 py-1 !bg-gray-50 sticky top-0 z-10">
-                  {category.label}
-                </SelectLabel>
-                {category.services.map((service) => (
-                  <SelectItem 
-                    key={service.value} 
-                    value={service.value}
-                    className="py-1 px-2 text-sm font-normal cursor-pointer hover:!bg-gray-50 focus:!bg-gray-50 min-h-[32px]"
-                  >
-                    {service.label}
-                  </SelectItem>
+        <Popover open={professionOpen} onOpenChange={setProfessionOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={professionOpen}
+              className="w-full justify-between font-normal"
+            >
+              {serviceType
+                ? getServiceTypeLabel(serviceType)
+                : 'Sélectionnez votre profession'}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+            <Command filter={(value, search) => {
+              const service = SERVICE_TYPES.find(s => s.value === value)
+              if (!service) return 0
+              const label = service.label.toLowerCase()
+              const category = SERVICE_CATEGORIES.find(c => c.services.some(s => s.value === value))
+              const categoryLabel = category?.label.toLowerCase() || ''
+              const s = search.toLowerCase()
+              if (label.includes(s) || categoryLabel.includes(s) || value.includes(s)) return 1
+              return 0
+            }}>
+              <CommandInput placeholder="Rechercher un métier..." />
+              <CommandList>
+                <CommandEmpty>Aucun métier trouvé.</CommandEmpty>
+                {SERVICE_CATEGORIES.map((category) => (
+                  <CommandGroup key={category.id} heading={category.label}>
+                    {category.services.map((service) => (
+                      <CommandItem
+                        key={service.value}
+                        value={service.value}
+                        onSelect={(value) => {
+                          isEditingRef.current = true
+                          setServiceType(value === serviceType ? '' : value)
+                          setProfessionOpen(false)
+                          setTimeout(() => {
+                            isEditingRef.current = false
+                          }, 100)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            serviceType === service.value ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {service.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
                 ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div className="space-y-2">

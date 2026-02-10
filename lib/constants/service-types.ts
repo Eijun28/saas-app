@@ -2,7 +2,8 @@ import {
   Camera, Video, UtensilsCrossed, Music, Flower2, ClipboardList, Building2,
   Scissors, Cake, Tent, UserRound, Music2, PenTool, Pen,
   Sparkles, Shirt, Gem, FileText, Scroll, Car, Sparkle, Crown, Star,
-  Drama, Palette, Heart, HandMetal, Lightbulb, Gift
+  Drama, Palette, Heart, HandMetal, Lightbulb, Gift,
+  Flame, Wine, Mic, Wand2, Zap, Feather, IceCreamCone, Bomb
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -24,6 +25,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     services: [
       { value: 'photographe', label: 'Photographe', icon: Camera },
       { value: 'videaste', label: 'Vidéaste', icon: Video },
+      { value: 'pilote_drone', label: 'Pilote de drone / Vidéo aérienne', icon: Video },
     ],
   },
   {
@@ -33,6 +35,10 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     services: [
       { value: 'traiteur', label: 'Traiteur', icon: UtensilsCrossed },
       { value: 'patissier', label: 'Pâtissier (Wedding cake)', icon: Cake },
+      { value: 'barman_cocktails', label: 'Barman / Bar à cocktails', icon: Wine },
+      { value: 'food_truck', label: 'Food truck', icon: UtensilsCrossed },
+      { value: 'candy_bar', label: 'Candy bar / Fontaine chocolat / Barbe à papa', icon: Cake },
+      { value: 'glacier', label: 'Glacier artisanal', icon: IceCreamCone },
     ],
   },
   {
@@ -41,7 +47,15 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     icon: Music,
     services: [
       { value: 'dj', label: 'DJ / Musicien', icon: Music },
+      { value: 'chanteur', label: 'Chanteur / Groupe live', icon: Mic },
+      { value: 'gospel_chorale', label: 'Gospel / Chorale', icon: Music2 },
       { value: 'animation', label: 'Animation (photobooth, jeux...)', icon: Sparkles },
+      { value: 'magicien', label: 'Magicien / Mentaliste', icon: Wand2 },
+      { value: 'caricaturiste', label: 'Caricaturiste / Portraitiste', icon: PenTool },
+      { value: 'tatoueur_ephemere', label: 'Tatoueur éphémère', icon: PenTool },
+      { value: 'flipbook', label: 'Flipbook maker', icon: Camera },
+      { value: 'sculpteur_glace', label: 'Sculpteur sur glace', icon: Sparkle },
+      { value: 'sosie_imitateur', label: 'Sosie / Imitateur', icon: Drama },
     ],
   },
   {
@@ -178,6 +192,20 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     ],
   },
   {
+    id: 'spectacle_effets',
+    label: 'Spectacle & Effets spéciaux',
+    icon: Flame,
+    services: [
+      { value: 'artificier', label: 'Artificier / Feux d\'artifice', icon: Flame },
+      { value: 'fontaine_etincelles', label: 'Fontaine à étincelles (cold sparks)', icon: Sparkles },
+      { value: 'fumigenes', label: 'Fumigènes / Effets spéciaux', icon: Bomb },
+      { value: 'spectacle_feu', label: 'Spectacle de feu / Cracheur / Jongleur', icon: Flame },
+      { value: 'laser_show', label: 'Spectacle laser / Mapping vidéo', icon: Zap },
+      { value: 'lacher_colombes', label: 'Lâcher de colombes / Papillons', icon: Feather },
+      { value: 'spectacle_acrobatique', label: 'Spectacle acrobatique / Cirque', icon: Drama },
+    ],
+  },
+  {
     id: 'services',
     label: 'Services',
     icon: ClipboardList,
@@ -185,6 +213,8 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
       { value: 'wedding_planner', label: 'Wedding Planner', icon: ClipboardList },
       { value: 'faire_part', label: 'Faire-part / Papeterie', icon: FileText },
       { value: 'officiant', label: 'Officiant de cérémonie', icon: Scroll },
+      { value: 'coach_ouverture_bal', label: 'Coach ouverture de bal', icon: Heart },
+      { value: 'voiturier', label: 'Voiturier / Service parking', icon: Car },
       { value: 'autre', label: 'Autre', icon: Sparkle },
     ],
   },
