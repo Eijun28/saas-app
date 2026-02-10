@@ -223,7 +223,7 @@ export function ProfessionalInfoEditor({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-white border border-gray-200 shadow-lg" align="start" side="bottom" sideOffset={4} avoidCollisions={false}>
             <Command filter={(value, search) => {
               const service = SERVICE_TYPES.find(s => s.value === value)
               if (!service) return 0
