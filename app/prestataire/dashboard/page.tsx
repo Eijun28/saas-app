@@ -17,6 +17,7 @@ import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
 import { PendingRequests } from '@/components/prestataire/dashboard/PendingRequests'
 import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPerformance'
 import { cn } from '@/lib/utils'
+import { calculateProviderProfileCompletion } from '@/lib/profile/completion'
 
 export default function DashboardPrestatairePage() {
   const router = useRouter()
@@ -97,7 +98,7 @@ export default function DashboardPrestatairePage() {
     }
   }, [user])
 
-  // Calcul du pourcentage de complétion du profil
+  // Calcul du pourcentage de complétion du profil (utilise la fonction centralisée)
   useEffect(() => {
     if (!user) return
 
@@ -105,41 +106,34 @@ export default function DashboardPrestatairePage() {
       try {
         const supabase = createClient()
 
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('avatar_url, nom_entreprise, description_courte, budget_min, budget_max, ville_principale')
-          .eq('id', user.id)
-          .maybeSingle()
+        const [profileResult, culturesResult, zonesResult, portfolioResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('avatar_url, nom_entreprise, description_courte, budget_min, budget_max, ville_principale, instagram_url, facebook_url, website_url')
+            .eq('id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('provider_cultures')
+            .select('culture_id')
+            .eq('profile_id', user.id),
+          supabase
+            .from('provider_zones')
+            .select('zone_id')
+            .eq('profile_id', user.id),
+          supabase
+            .from('provider_portfolio')
+            .select('id')
+            .eq('profile_id', user.id),
+        ])
 
-        const { data: culturesData } = await supabase
-          .from('provider_cultures')
-          .select('culture_id')
-          .eq('profile_id', user.id)
+        const result = calculateProviderProfileCompletion(
+          profileResult.data,
+          culturesResult.data?.length || 0,
+          zonesResult.data?.length || 0,
+          portfolioResult.data?.length || 0
+        )
 
-        const { data: zonesData } = await supabase
-          .from('provider_zones')
-          .select('zone_id')
-          .eq('profile_id', user.id)
-
-        const { data: portfolioData } = await supabase
-          .from('provider_portfolio')
-          .select('id')
-          .eq('profile_id', user.id)
-
-        const checks = [
-          !!profileData?.avatar_url,
-          !!profileData?.nom_entreprise,
-          !!profileData?.description_courte && profileData.description_courte.length > 20,
-          !!(profileData?.budget_min || profileData?.budget_max),
-          !!profileData?.ville_principale,
-          (culturesData?.length || 0) > 0,
-          (zonesData?.length || 0) > 0,
-          (portfolioData?.length || 0) >= 3,
-        ]
-
-        const completed = checks.filter(Boolean).length
-        const percent = Math.round((completed / checks.length) * 100)
-        setProfileCompletion(percent)
+        setProfileCompletion(result.percentage)
       } catch (error) {
         console.error('Erreur calcul complétion profil:', error)
       }

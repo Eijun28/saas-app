@@ -324,6 +324,25 @@ export default function DemandesRecuesPage() {
       }
     }
 
+    // Créer automatiquement un événement dans l'agenda si le couple a une date de mariage
+    try {
+      const allDemandes = [...demandes.nouvelles, ...demandes.en_cours, ...demandes.terminees]
+      const demande = allDemandes.find(d => d.id === requestId)
+      if (demande?.date_evenement) {
+        await supabase
+          .from('evenements_prestataire')
+          .insert({
+            prestataire_id: user.id,
+            titre: `Mariage - ${demande.couple_nom}`,
+            date: demande.date_evenement,
+            heure_debut: '09:00',
+            notes: demande.message ? `Demande initiale : ${demande.message.substring(0, 200)}` : null,
+          })
+      }
+    } catch (agendaError) {
+      console.error('Erreur création événement agenda:', agendaError)
+    }
+
     toast.success('Demande acceptée - La conversation est maintenant disponible dans la messagerie')
     fetchDemandes()
   }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag } from 'lucide-react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import { AvatarUploader } from '@/components/provider/AvatarUploader'
 import { BusinessNameEditor } from '@/components/provider/BusinessNameEditor'
 import { SiretEditor } from '@/components/provider/SiretEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
+import { BioEditor } from '@/components/provider/BioEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
 import { TagSelector } from '@/components/provider/TagSelector'
@@ -26,6 +27,7 @@ import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
 import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
+import { VisibilityStats } from '@/components/provider/VisibilityStats'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
@@ -100,7 +102,6 @@ export default function ProfilPublicPage() {
   const reloadData = async () => {
     if (!user) return
 
-    await new Promise(resolve => setTimeout(resolve, 500))
     await loadAllData(user.id, false)
     setRefreshKey(prev => prev + 1)
   }
@@ -112,12 +113,63 @@ export default function ProfilPublicPage() {
 
     try {
       const freshSupabase = createClient()
-      
-      let { data: profileData, error: profileError } = await freshSupabase
-        .from('profiles')
-        .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
-        .eq('id', userId)
-        .maybeSingle()
+
+      // Lancer toutes les requêtes en parallèle pour un chargement rapide
+      const [
+        profileResult,
+        socialResult,
+        culturesResult,
+        zonesResult,
+        portfolioResult,
+        pricingResult,
+        brandResult,
+      ] = await Promise.all([
+        // Profil principal
+        freshSupabase
+          .from('profiles')
+          .select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only')
+          .eq('id', userId)
+          .maybeSingle(),
+        // Réseaux sociaux
+        freshSupabase
+          .from('profiles')
+          .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
+          .eq('id', userId)
+          .maybeSingle(),
+        // Cultures
+        freshSupabase
+          .from('provider_cultures')
+          .select('culture_id')
+          .eq('profile_id', userId),
+        // Zones
+        freshSupabase
+          .from('provider_zones')
+          .select('zone_id')
+          .eq('profile_id', userId),
+        // Portfolio
+        freshSupabase
+          .from('provider_portfolio')
+          .select('id, image_url, title')
+          .eq('profile_id', userId)
+          .order('display_order', { ascending: true }),
+        // Pricing principal
+        freshSupabase
+          .from('provider_pricing')
+          .select('pricing_unit')
+          .eq('provider_id', userId)
+          .eq('is_primary', true)
+          .maybeSingle(),
+        // Couleur de marque
+        freshSupabase
+          .from('prestataire_profiles')
+          .select('brand_color')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ])
+
+      // Traitement profil avec fallback si colonnes boutique manquantes
+      let profileData = profileResult.data
+      let profileError = profileResult.error
 
       if (profileError && profileError.code === '42703') {
         console.warn('⚠️ Certaines colonnes n\'existent pas, réessai sans boutique')
@@ -130,75 +182,26 @@ export default function ProfilPublicPage() {
         profileError = error
       }
 
-      let socialLinks = {
-        instagram_url: null as string | null,
-        facebook_url: null as string | null,
-        website_url: null as string | null,
-        linkedin_url: null as string | null,
-        tiktok_url: null as string | null,
-      }
-      
-      try {
-        const { data: socialData } = await freshSupabase
-          .from('profiles')
-          .select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url')
-          .eq('id', userId)
-          .maybeSingle()
-        
-        if (socialData) {
-          socialLinks = {
-            instagram_url: socialData.instagram_url || null,
-            facebook_url: socialData.facebook_url || null,
-            website_url: socialData.website_url || null,
-            linkedin_url: socialData.linkedin_url || null,
-            tiktok_url: socialData.tiktok_url || null,
-          }
-        }
-      } catch (socialError: any) {
-        console.warn('⚠️ Colonnes réseaux sociaux non disponibles:', socialError?.message)
-      }
-
       if (profileError && profileError.code !== 'PGRST116' && !profileError.message?.includes('does not exist')) {
         console.error('Erreur profil:', profileError)
         throw new Error(`Erreur profil: ${profileError.message}`)
       }
 
-      const { data: culturesData } = await freshSupabase
-        .from('provider_cultures')
-        .select('culture_id')
-        .eq('profile_id', userId)
-
-      const { data: zonesData } = await freshSupabase
-        .from('provider_zones')
-        .select('zone_id')
-        .eq('profile_id', userId)
-
-      const { data: portfolioData } = await freshSupabase
-        .from('provider_portfolio')
-        .select('id, image_url, title')
-        .eq('profile_id', userId)
-        .order('display_order', { ascending: true })
-
-      // Récupérer le pricing_unit principal
-      const { data: pricingData } = await freshSupabase
-        .from('provider_pricing')
-        .select('pricing_unit')
-        .eq('provider_id', userId)
-        .eq('is_primary', true)
-        .maybeSingle()
-
-      // Récupérer la couleur de marque
-      let brandColor = '#823F91'
-      try {
-        const { data: brandData } = await freshSupabase
-          .from('prestataire_profiles')
-          .select('brand_color')
-          .eq('user_id', userId)
-          .maybeSingle()
-        if (brandData?.brand_color) brandColor = brandData.brand_color
-      } catch {
-        // Fallback si table n'existe pas encore
+      // Traitement réseaux sociaux
+      const socialData = socialResult.data
+      const socialLinks = {
+        instagram_url: socialData?.instagram_url || null,
+        facebook_url: socialData?.facebook_url || null,
+        website_url: socialData?.website_url || null,
+        linkedin_url: socialData?.linkedin_url || null,
+        tiktok_url: socialData?.tiktok_url || null,
       }
+
+      const culturesData = culturesResult.data
+      const zonesData = zonesResult.data
+      const portfolioData = portfolioResult.data
+      const pricingData = pricingResult.data
+      const brandColor = brandResult.data?.brand_color || '#823F91'
 
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
@@ -267,18 +270,6 @@ export default function ProfilPublicPage() {
       }
     }
   }
-
-  const completionChecks = [
-    { complete: !!profile?.avatar_url, label: 'Photo de profil' },
-    { complete: !!profile?.nom_entreprise, label: "Nom d'entreprise" },
-    { complete: !!profile?.description_courte, label: 'Description' },
-    { complete: cultures.length > 0, label: 'Cultures' },
-    { complete: zones.length > 0, label: 'Zones' },
-    { complete: portfolio.length > 0, label: 'Portfolio' },
-  ]
-
-  const completedCount = completionChecks.filter(c => c.complete).length
-  const completionPercent = Math.round((completedCount / completionChecks.length) * 100)
 
   if (isLoading) {
     return (
@@ -387,6 +378,12 @@ export default function ProfilPublicPage() {
         portfolio={portfolio}
       />
 
+      {/* Statistiques de visibilité */}
+      <VisibilityStats
+        userId={user.id}
+        serviceType={profile?.service_type}
+      />
+
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
@@ -428,90 +425,157 @@ export default function ProfilPublicPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="infos" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="infos" className="mt-3 xs:mt-4 sm:mt-6 space-y-4">
+                {/* Section 1 : Entreprise */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
                   <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
-                      <BusinessNameEditor
-                        key={`business-name-${profile?._timestamp || 0}`}
-                        userId={user.id}
-                        currentName={profile?.nom_entreprise}
-                        onSave={reloadData}
-                      />
-                      <SiretEditor
-                        key={`siret-${profile?._timestamp || 0}`}
-                        userId={user.id}
-                        currentSiret={profile?.siret}
-                        onSave={reloadData}
-                      />
-                      <ProfileDescriptionEditor
-                        key={`profile-desc-${profile?._timestamp || 0}`}
-                        userId={user.id}
-                        currentDescription={profile?.description_courte}
-                        onSave={reloadData}
-                      />
-                      <ProfessionalInfoEditor
-                        key={`professional-${profile?._timestamp || 0}`}
-                        userId={user.id}
-                        currentBudgetMin={profile?.budget_min}
-                        currentBudgetMax={profile?.budget_max}
-                        currentExperience={profile?.annees_experience}
-                        currentVille={profile?.ville_principale}
-                        currentServiceType={profile?.service_type}
-                        onSave={reloadData}
-                      />
-                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
-                        <PricingEditor
-                          key={`pricing-${refreshKey}`}
-                          providerId={user.id}
-                          initialPricing={pricings}
-                          onUpdate={reloadPricing}
-                        />
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                          <Briefcase className="h-4 w-4 text-[#823F91]" />
+                        </div>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Entreprise</h3>
                       </div>
-                      <SocialLinksEditor
-                        key={`social-${profile?._timestamp || 0}`}
-                        userId={user.id}
-                        currentLinks={{
-                          instagram_url: profile?.instagram_url,
-                          facebook_url: profile?.facebook_url,
-                          website_url: profile?.website_url,
-                          linkedin_url: profile?.linkedin_url,
-                          tiktok_url: profile?.tiktok_url,
-                        }}
-                        onSave={reloadData}
-                      />
-                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
-                        <BrandColorPicker
+                      <div className="space-y-4 sm:space-y-5">
+                        <BusinessNameEditor
+                          key={`business-name-${profile?._timestamp || 0}`}
                           userId={user.id}
-                          currentColor={profile?.brand_color}
+                          currentName={profile?.nom_entreprise}
+                          onSave={reloadData}
+                        />
+                        <SiretEditor
+                          key={`siret-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          currentSiret={profile?.siret}
+                          onSave={reloadData}
+                        />
+                        <ProfileDescriptionEditor
+                          key={`profile-desc-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          currentDescription={profile?.description_courte}
+                          onSave={reloadData}
+                        />
+                        <BioEditor
+                          key={`bio-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          currentBio={profile?.bio}
+                          onSave={reloadData}
+                        />
+                        <ProfessionalInfoEditor
+                          key={`professional-${profile?._timestamp || 0}`}
+                          userId={user.id}
+                          currentBudgetMin={profile?.budget_min}
+                          currentBudgetMax={profile?.budget_max}
+                          currentExperience={profile?.annees_experience}
+                          currentVille={profile?.ville_principale}
+                          currentServiceType={profile?.service_type}
                           onSave={reloadData}
                         />
                       </div>
-                      <div className="border-t pt-4 sm:pt-5 lg:pt-6">
-                        <BoutiqueEditor
-                          key={`boutique-${profile?._timestamp || 0}`}
+                    </div>
+                  </Card>
+                </motion.div>
+
+                {/* Section 2 : Tarifs */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                          <Euro className="h-4 w-4 text-[#823F91]" />
+                        </div>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Tarifs</h3>
+                      </div>
+                      <PricingEditor
+                        key={`pricing-${refreshKey}`}
+                        providerId={user.id}
+                        initialPricing={pricings}
+                        onUpdate={reloadPricing}
+                      />
+                    </div>
+                  </Card>
+                </motion.div>
+
+                {/* Section 3 : Réseaux & Apparence */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                          <Share2 className="h-4 w-4 text-[#823F91]" />
+                        </div>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Réseaux & Apparence</h3>
+                      </div>
+                      <div className="space-y-4 sm:space-y-5">
+                        <SocialLinksEditor
+                          key={`social-${profile?._timestamp || 0}`}
                           userId={user.id}
-                          initialData={{
-                            has_physical_location: profile?.has_physical_location || false,
-                            boutique_name: profile?.boutique_name,
-                            boutique_address: profile?.boutique_address,
-                            boutique_address_complement: profile?.boutique_address_complement,
-                            boutique_postal_code: profile?.boutique_postal_code,
-                            boutique_city: profile?.boutique_city,
-                            boutique_country: profile?.boutique_country,
-                            boutique_phone: profile?.boutique_phone,
-                            boutique_email: profile?.boutique_email,
-                            boutique_hours: profile?.boutique_hours,
-                            boutique_notes: profile?.boutique_notes,
-                            boutique_appointment_only: profile?.boutique_appointment_only || false,
+                          currentLinks={{
+                            instagram_url: profile?.instagram_url,
+                            facebook_url: profile?.facebook_url,
+                            website_url: profile?.website_url,
+                            linkedin_url: profile?.linkedin_url,
+                            tiktok_url: profile?.tiktok_url,
                           }}
                           onSave={reloadData}
                         />
+                        <div className="border-t pt-4">
+                          <BrandColorPicker
+                            userId={user.id}
+                            currentColor={profile?.brand_color}
+                            onSave={reloadData}
+                          />
+                        </div>
                       </div>
+                    </div>
+                  </Card>
+                </motion.div>
+
+                {/* Section 4 : Lieu physique */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                          <Store className="h-4 w-4 text-[#823F91]" />
+                        </div>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Lieu physique</h3>
+                      </div>
+                      <BoutiqueEditor
+                        key={`boutique-${profile?._timestamp || 0}`}
+                        userId={user.id}
+                        initialData={{
+                          has_physical_location: profile?.has_physical_location || false,
+                          boutique_name: profile?.boutique_name,
+                          boutique_address: profile?.boutique_address,
+                          boutique_address_complement: profile?.boutique_address_complement,
+                          boutique_postal_code: profile?.boutique_postal_code,
+                          boutique_city: profile?.boutique_city,
+                          boutique_country: profile?.boutique_country,
+                          boutique_phone: profile?.boutique_phone,
+                          boutique_email: profile?.boutique_email,
+                          boutique_hours: profile?.boutique_hours,
+                          boutique_notes: profile?.boutique_notes,
+                          boutique_appointment_only: profile?.boutique_appointment_only || false,
+                        }}
+                        onSave={reloadData}
+                      />
                     </div>
                   </Card>
                 </motion.div>
