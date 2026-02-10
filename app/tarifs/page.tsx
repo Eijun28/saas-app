@@ -23,7 +23,7 @@ export default function PricingSection() {
       name: "Gratuit",
       description: "Tout ce dont vous avez besoin pour trouver vos prestataires parfaits.",
       price: 0,
-      priceNote: "Gratuit pour toujours",
+      priceNote: "Gratuit jusqu'au 30 juin",
       billingPeriod: "month",
       cta: {
         variant: "default",
@@ -55,7 +55,7 @@ export default function PricingSection() {
       name: "PACK STARTER",
       description: "Pour tester NUPLY",
       monthlyPrice: 0,
-      priceNote: "Gratuit pour toujours",
+      priceNote: "Gratuit jusqu'au 30 juin",
       cta: {
         variant: "outline",
         label: user ? "Activer Starter" : "S'inscrire et activer Starter",
@@ -196,10 +196,10 @@ export default function PricingSection() {
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#823F91]" />
                 <span className="text-sm font-medium text-slate-700">
-                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit pendant 3 mois
+                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit jusqu'au 30 juin
                 </span>
                 <span className="inline-flex items-center rounded-full border border-[#823F91]/30 bg-white/80 px-3 py-1 text-xs font-semibold text-[#823F91] shadow-sm">
-                  Gratuit pour tous jusqu’au 30 Juin
+                  Gratuit pour tous jusqu'au 30 juin
                 </span>
               </div>
             </div>
@@ -344,7 +344,7 @@ export default function PricingSection() {
         >
           <p className="text-slate-600 text-sm">
             {userType === 'couples' 
-              ? "Aucune carte bancaire requise • Gratuit pour toujours"
+              ? "Aucune carte bancaire requise • Gratuit jusqu'au 30 juin"
               : "Annulez à tout moment • Aucun engagement"}
           </p>
         </motion.div>
