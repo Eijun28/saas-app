@@ -31,11 +31,13 @@ export async function sendEmail({
   subject,
   html,
   text,
+  replyTo,
 }: {
   to: string | string[]
   subject: string
   html: string
   text?: string
+  replyTo?: string
 }) {
   const client = getResendClient()
 
@@ -48,9 +50,14 @@ export async function sendEmail({
     const { data, error } = await client.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: Array.isArray(to) ? to : [to],
+      replyTo: replyTo || 'contact@nuply.fr',
       subject,
       html,
       text,
+      headers: {
+        'List-Unsubscribe': '<mailto:contact@nuply.fr?subject=Unsubscribe>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
     })
 
     if (error) {

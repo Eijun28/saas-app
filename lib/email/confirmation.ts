@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
 
 const resendApiKey = process.env.RESEND_API_KEY
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
 /**
@@ -162,10 +162,15 @@ export async function sendConfirmationEmail(
     `
 
     await resend.emails.send({
-      from: fromEmail,
+      from: `NUPLY <${fromEmail}>`,
       to: email,
+      replyTo: 'support@nuply.fr',
       subject,
       html,
+      headers: {
+        'List-Unsubscribe': '<mailto:contact@nuply.fr?subject=Unsubscribe>',
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      },
     })
 
     logger.info('✅ Email de confirmation envoyé avec succès', { email, userId })
