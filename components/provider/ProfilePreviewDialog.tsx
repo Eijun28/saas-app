@@ -822,7 +822,7 @@ export function ProfilePreviewDialog({
           </Tabs>
 
           {/* FOOTER */}
-          <div className="p-4" style={{ borderTop: `1px solid ${BEIGE_ACCENT}`, backgroundColor: BEIGE }}>
+          <div className="px-5 py-3" style={{ borderTop: `1px solid ${BEIGE_ACCENT}` }}>
             {isCoupleView && activeTab === 'contact' ? (
               <Button
                 className="w-full h-11 text-black text-sm font-semibold gap-2 border hover:opacity-90 transition-opacity"
