@@ -243,6 +243,17 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
               Tarifs
             </Link>
             <Link
+              href="/notre-vision"
+              className={cn(
+                'text-sm font-medium transition-colors duration-300',
+                isScrolled
+                  ? 'text-gray-700 hover:text-gray-900'
+                  : 'text-white hover:text-white/80'
+              )}
+            >
+              Notre vision
+            </Link>
+            <Link
               href="/blog"
               className={cn(
                 'text-sm font-medium transition-colors duration-300',
@@ -367,6 +378,13 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       className="block text-base font-medium text-gray-700 hover:text-gray-900 transition-colors"
                     >
                       Tarifs
+                    </Link>
+                    <Link
+                      href="/notre-vision"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block text-base font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                    >
+                      Notre vision
                     </Link>
                     <Link
                       href="/blog"

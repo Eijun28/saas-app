@@ -85,6 +85,11 @@ export const seoConfig = {
       description: "Découvrez nos articles sur les mariages multiculturels, les tendances et nos conseils pour organiser votre mariage de rêve.",
       keywords: ["blog mariage", "conseils mariage", "tendances mariage", "mariage multiculturel"],
     },
+    notreVision: {
+      title: "Notre vision - NUPLY",
+      description: "Découvrez la vision de NUPLY : relier diversité multiculturelle, IA et demandes qualifiées dans une plateforme centralisée.",
+      keywords: ["vision nuply", "mariage multiculturel", "IA mariage", "demandes qualifiées", "plateforme mariage"],
+    },
     contact: {
       title: "Contact - NUPLY",
       description: "Contactez l'équipe NUPLY pour toute question sur nos services de gestion de mariage.",

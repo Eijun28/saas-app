@@ -324,6 +324,24 @@ function Navbar({
             Tarifs
           </Link>
           <Link
+            href="/notre-vision"
+            onClick={() => setActive(null)}
+            className="text-base font-bold cursor-pointer transition-colors"
+            style={{
+              color: '#823F91',
+              pointerEvents: 'auto',
+              transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#a720f2'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#823F91'
+            }}
+          >
+            Notre vision
+          </Link>
+          <Link
             href="/blog"
             onClick={() => setActive(null)}
             className="text-base font-bold cursor-pointer transition-colors"
@@ -518,6 +536,23 @@ function Navbar({
                   Tarifs
                 </Link>
                 <Link
+                  href="/notre-vision"
+                  onClick={() => handleLinkClick("/notre-vision")}
+                  className="text-base py-2 transition-colors"
+                  style={{
+                    color: '#823F91',
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a720f2'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#823F91'
+                  }}
+                >
+                  Notre vision
+                </Link>
+                <Link
                   href="/blog"
                   onClick={() => handleLinkClick("/blog")}
                   className="text-base py-2 transition-colors"
@@ -621,4 +656,3 @@ function Navbar({
     </div>
   );
 }
-
