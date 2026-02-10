@@ -31,6 +31,7 @@ export interface ProviderMatch {
   rank: number;
   breakdown: ScoreBreakdown;
   explanation: string;
+  is_unavailable?: boolean;
 }
 
 export interface ScoreBreakdown {
@@ -52,6 +53,9 @@ export interface ScoreBreakdown {
   ctr_bonus?: number; // -3 a +5 points
   score_before_fairness?: number; // Score avant application de l'equite
 
+  // Disponibilité
+  availability_penalty?: number; // 0 ou -20
+
   // Bonus IA (futur)
   ai_bonus?: number; // -10 a +10
   ai_reasoning?: string;
@@ -67,6 +71,7 @@ export interface MatchingResult {
   matches: ProviderMatch[];
   all_matches?: ProviderMatch[]; // Tous les résultats pour pagination future
   total_candidates: number;
+  total_available?: number;
   created_at: string;
   suggestions?: {
     message: string;

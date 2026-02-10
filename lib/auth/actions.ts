@@ -12,6 +12,309 @@ import { revalidatePath } from 'next/cache'
 
 import { redirect } from 'next/navigation'
 
+// ---------------------------------------------------------------------------
+// Helpers extraits pour supprimer la duplication couple/prestataire
+// ---------------------------------------------------------------------------
+
+/**
+ * Crée un client admin Supabase de manière sûre.
+ * Retourne null si la création échoue (au lieu de planter).
+ */
+function getAdminClient(userId?: string): ReturnType<typeof createAdminClient> | null {
+  try {
+    return createAdminClient()
+  } catch (err: any) {
+    logger.critical('🚨 Erreur création client admin', { userId, error: err?.message })
+    return null
+  }
+}
+
+/**
+ * Attend que l'utilisateur soit disponible dans auth.users (réplication async Supabase).
+ * Utilise un backoff exponentiel au lieu d'un délai fixe.
+ */
+async function waitForUserInAuth(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string,
+  label: string
+): Promise<boolean> {
+  const MAX_RETRIES = 8
+  const BASE_DELAY = 100 // ms
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
+      if (userData?.user && !userCheckError) {
+        logger.info(`✅ Utilisateur trouvé dans auth.users (${label})`, { userId, attempt })
+        return true
+      }
+    } catch (err: any) {
+      logger.warn(`⏳ Tentative ${attempt}/${MAX_RETRIES} - ${label}`, {
+        userId,
+        error: err?.message || String(err)
+      })
+    }
+
+    if (attempt < MAX_RETRIES) {
+      // Backoff exponentiel : 100, 200, 400, 800, 1600, 3200, 6400 ms
+      await new Promise(resolve => setTimeout(resolve, BASE_DELAY * Math.pow(2, attempt - 1)))
+    }
+  }
+
+  logger.critical(`🚨 Utilisateur non trouvé après ${MAX_RETRIES} tentatives (${label})`, { userId })
+  return false
+}
+
+/**
+ * Rollback propre : supprime l'utilisateur si la création du profil échoue.
+ */
+async function rollbackUser(adminClient: ReturnType<typeof createAdminClient>, userId: string) {
+  try {
+    await adminClient.auth.admin.deleteUser(userId)
+    logger.warn('🧹 Utilisateur supprimé (rollback)', { userId })
+  } catch (deleteError) {
+    logger.error('Erreur rollback utilisateur:', deleteError)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sanitization commune
+// ---------------------------------------------------------------------------
+
+function sanitizeProfileData(profileData: {
+  prenom: string
+  nom: string
+  nomEntreprise?: string
+  siret?: string
+  referralCode?: string
+}): { error?: string } {
+  if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
+    return { error: 'Le prénom et le nom sont requis' }
+  }
+
+  // Protection XSS
+  profileData.prenom = profileData.prenom.trim().substring(0, 100)
+  profileData.nom = profileData.nom.trim().substring(0, 100)
+
+  if (profileData.nomEntreprise) {
+    profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
+  }
+
+  if (profileData.siret) {
+    const sanitizedSiret = profileData.siret.replace(/\D/g, '')
+    if (sanitizedSiret.length !== 14) {
+      return { error: 'Le numéro SIRET doit contenir 14 chiffres' }
+    }
+    profileData.siret = sanitizedSiret
+  }
+
+  return {}
+}
+
+// ---------------------------------------------------------------------------
+// Création de profil par rôle
+// ---------------------------------------------------------------------------
+
+async function createCoupleProfile(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string,
+  email: string,
+  profileData: { prenom: string; nom: string }
+): Promise<{ error?: string }> {
+  // Supprimer tout profil "profiles" créé par erreur par le trigger
+  try {
+    await adminClient.from('profiles').delete().eq('id', userId)
+  } catch {
+    // Non bloquant
+  }
+
+  const fullName = `${profileData.prenom} ${profileData.nom}`.trim()
+
+  const { error: coupleError } = await adminClient
+    .from('couples')
+    .upsert({
+      id: userId,
+      user_id: userId,
+      email,
+      partner_1_name: fullName || null,
+      partner_2_name: null,
+    }, { onConflict: 'user_id' })
+
+  if (coupleError) {
+    logger.critical('🚨 Erreur création couple', {
+      userId, email,
+      error: coupleError.message,
+      code: coupleError.code,
+    })
+    return { error: 'Erreur lors de la création de votre compte couple. Veuillez réessayer.' }
+  }
+
+  logger.info('✅ Couple créé avec succès', { userId })
+
+  // Créer les préférences vides (non bloquant)
+  try {
+    await adminClient
+      .from('couple_preferences')
+      .upsert({
+        couple_id: userId,
+        languages: ['français'],
+        essential_services: [],
+        optional_services: [],
+        cultural_preferences: {},
+        service_priorities: {},
+        budget_breakdown: {},
+        profile_completed: false,
+        completion_percentage: 0,
+        onboarding_step: 0,
+      }, { onConflict: 'couple_id' })
+  } catch (prefError: any) {
+    logger.warn('Erreur création préférences couple (non bloquant):', prefError?.message)
+  }
+
+  return {}
+}
+
+async function createPrestataireProfile(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string,
+  email: string,
+  profileData: { prenom: string; nom: string; nomEntreprise?: string; siret?: string; referralCode?: string }
+): Promise<{ error?: string }> {
+  const { error: profileError } = await adminClient
+    .from('profiles')
+    .upsert({
+      id: userId,
+      email,
+      role: 'prestataire' as const,
+      prenom: profileData.prenom || null,
+      nom: profileData.nom || null,
+      nom_entreprise: profileData.nomEntreprise || null,
+      siret: profileData.siret || null,
+    }, { onConflict: 'id' })
+
+  if (profileError) {
+    logger.critical('🚨 Erreur création profil prestataire', {
+      userId, email,
+      error: profileError.message,
+      code: profileError.code,
+    })
+    return { error: 'Erreur lors de la création de votre profil prestataire. Veuillez réessayer.' }
+  }
+
+  logger.info('✅ Profil prestataire créé avec succès', { userId })
+
+  // Early Adopter : incrément atomique pour éviter la race condition
+  await tryAssignEarlyAdopter(adminClient, userId)
+
+  // Parrainage
+  if (profileData.referralCode) {
+    await tryProcessReferral(adminClient, profileData.referralCode, userId)
+  }
+
+  return {}
+}
+
+/**
+ * Incrémente atomiquement le compteur Early Adopter.
+ * Utilise un optimistic lock (eq sur used_slots) pour éviter la race condition
+ * où deux inscriptions simultanées pourraient dépasser total_slots.
+ */
+async function tryAssignEarlyAdopter(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string
+) {
+  try {
+    const { data: programData } = await adminClient
+      .from('early_adopter_program')
+      .select('id, total_slots, used_slots, program_active')
+      .single()
+
+    if (!programData?.program_active || programData.used_slots >= programData.total_slots) {
+      return
+    }
+
+    // Optimistic lock : n'incrémente QUE si used_slots n'a pas changé entre-temps
+    const { data: updated } = await adminClient
+      .from('early_adopter_program')
+      .update({
+        used_slots: programData.used_slots + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', programData.id)
+      .eq('used_slots', programData.used_slots) // <-- verrou optimiste
+      .select('id')
+
+    // Si aucune row modifiée, un autre process a pris la place → pas de badge
+    if (!updated || updated.length === 0) {
+      logger.info('Early Adopter slot pris par un autre inscrit (race condition évitée)', { userId })
+      return
+    }
+
+    const trialEndDate = new Date()
+    trialEndDate.setDate(trialEndDate.getDate() + 90)
+
+    await adminClient
+      .from('profiles')
+      .update({
+        is_early_adopter: true,
+        early_adopter_enrolled_at: new Date().toISOString(),
+        early_adopter_trial_end_date: trialEndDate.toISOString(),
+        subscription_tier: 'early_adopter'
+      })
+      .eq('id', userId)
+
+    await adminClient
+      .from('early_adopter_notifications')
+      .insert({ user_id: userId, notification_type: 'welcome' })
+      .catch(() => {})
+
+    logger.info('✅ Badge Early Adopter attribué', { userId })
+  } catch (err) {
+    logger.warn('Erreur Early Adopter (non bloquant):', err)
+  }
+}
+
+async function tryProcessReferral(
+  adminClient: ReturnType<typeof createAdminClient>,
+  referralCode: string,
+  userId: string
+) {
+  try {
+    const { data: referralData } = await adminClient
+      .from('provider_referrals')
+      .select('referral_code, provider_id, total_referrals')
+      .eq('referral_code', referralCode.toUpperCase())
+      .maybeSingle()
+
+    if (!referralData) return
+
+    // Enregistrer l'usage et incrémenter en parallèle
+    await Promise.all([
+      adminClient.from('referral_usages').insert({
+        referral_code: referralData.referral_code,
+        referrer_id: referralData.provider_id,
+        referred_user_id: userId,
+      }),
+      adminClient.from('provider_referrals').update({
+        total_referrals: (referralData.total_referrals || 0) + 1,
+        updated_at: new Date().toISOString(),
+      }).eq('provider_id', referralData.provider_id),
+    ])
+
+    logger.info('Parrainage enregistré', {
+      referrer: referralData.provider_id,
+      referred: userId,
+      code: referralData.referral_code,
+    })
+  } catch (err) {
+    logger.warn('Erreur parrainage (non bloquant):', err)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fonction principale signUp
+// ---------------------------------------------------------------------------
+
 export async function signUp(
   email: string,
   password: string,
@@ -25,67 +328,37 @@ export async function signUp(
   }
 ) {
   logger.critical('🚀 DÉBUT INSCRIPTION', { email, role, timestamp: new Date().toISOString() })
-  
-  // ✅ VALIDATION 1: Vérifier format email
+
+  // --- Validations ---
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
     return { error: 'Email invalide' }
   }
 
-  // ✅ VALIDATION 2: Vérifier userType autorisé
   const ALLOWED_USER_TYPES = ['couple', 'prestataire']
   if (!ALLOWED_USER_TYPES.includes(role)) {
     return { error: 'Type utilisateur non autorisé' }
   }
 
-  // ✅ VALIDATION 3: Pour couples, vérifier noms requis
-  if (role === 'couple') {
-    if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
-      return { error: 'Les noms des partenaires sont requis' }
-    }
+  // Sanitize commune (couple ET prestataire)
+  const sanitizeResult = sanitizeProfileData(profileData)
+  if (sanitizeResult.error) return sanitizeResult
 
-    // Sanitize les noms (protection XSS)
-    profileData.prenom = profileData.prenom.trim().substring(0, 100)
-    profileData.nom = profileData.nom.trim().substring(0, 100)
+  // Validation prestataire-spécifique
+  if (role === 'prestataire' && (!profileData.nomEntreprise || profileData.nomEntreprise.trim().length < 2)) {
+    return { error: 'Le nom de l\'entreprise est requis pour les prestataires' }
   }
 
-  // ✅ VALIDATION 4: Pour prestataires, vérifier et sanitizer les données
-  if (role === 'prestataire') {
-    // Vérifier que prenom et nom sont fournis (requis pour prestataires aussi)
-    if (!profileData.prenom?.trim() || !profileData.nom?.trim()) {
-      return { error: 'Le prénom et le nom sont requis pour les prestataires' }
-    }
-    
-    // Sanitize les noms (protection XSS)
-    profileData.prenom = profileData.prenom.trim().substring(0, 100)
-    profileData.nom = profileData.nom.trim().substring(0, 100)
-    
-    // Sanitize nom entreprise si fourni
-    if (profileData.nomEntreprise) {
-      profileData.nomEntreprise = profileData.nomEntreprise.trim().substring(0, 200)
-    }
-
-    if (profileData.siret) {
-      const sanitizedSiret = profileData.siret.replace(/\D/g, '')
-      if (sanitizedSiret.length !== 14) {
-        return { error: 'Le numéro SIRET doit contenir 14 chiffres' }
-      }
-      profileData.siret = sanitizedSiret
-    }
-  }
-
-  logger.critical('🔧 Création client Supabase...', { email, role })
+  // --- Création auth user ---
   const supabase = await createClient()
-  logger.critical('✅ Client Supabase créé', { email, role })
 
-  logger.critical('📧 Tentative signUp Supabase Auth...', { email, role })
   let { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
       data: {
-        role: role,
+        role,
         prenom: profileData.prenom,
         nom: profileData.nom,
         nom_entreprise: profileData.nomEntreprise || null,
@@ -94,30 +367,19 @@ export async function signUp(
     },
   })
 
-  logger.critical('📧 Réponse signUp reçue', { 
-    email, 
-    role, 
-    hasUser: !!data?.user, 
-    hasError: !!error,
-    errorMessage: error?.message 
-  })
-
-  // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
+  // Gérer les erreurs Supabase Auth
   if (error) {
-    logger.critical('⚠️ Erreur lors du signUp', { email, role, error: error.message, hasUser: !!data?.user })
-    // Si l'utilisateur est créé mais l'email échoue, on continue quand même
+    logger.critical('⚠️ Erreur signUp', { email, role, error: error.message, hasUser: !!data?.user })
+
+    // Email échoué mais user créé → on continue
     if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
       logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
-      // On continue le processus même si l'email échoue
-    } else if (error.message?.toLowerCase().includes('database error')) {
-      // Le trigger handle_new_user() a probablement planté (colonne manquante, etc.)
-      // Fallback : créer le user via l'API admin SANS les metadata de rôle
-      // pour que le trigger ne tente pas de créer le profil
-      logger.critical('🔄 Erreur DB trigger détectée, fallback via admin API sans role metadata...', { email, role })
+    }
+    // Erreur DB trigger → fallback admin sans role metadata
+    else if (error.message?.toLowerCase().includes('database error')) {
+      logger.critical('🔄 Erreur DB trigger, fallback admin API...', { email, role })
       try {
         const adminClient = createAdminClient()
-        // Ne PAS inclure le role dans user_metadata pour éviter que le trigger
-        // ne tente de créer un profil (le trigger check raw_user_meta_data->>'role')
         const { data: adminData, error: adminError } = await adminClient.auth.admin.createUser({
           email,
           password,
@@ -127,551 +389,135 @@ export async function signUp(
             nom: profileData.nom,
             nom_entreprise: profileData.nomEntreprise || null,
             siret: profileData.siret || null,
-            // role est volontairement OMIS ici pour bypasser le trigger
           }
         })
         if (adminError) {
-          logger.critical('🚨 Fallback admin aussi en erreur', { error: adminError.message })
           if (adminError.message?.toLowerCase().includes('already') || adminError.message?.toLowerCase().includes('exists')) {
             return { error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous.' }
           }
           return { error: translateAuthError(adminError.message) }
         }
-        if (adminData?.user) {
-          logger.critical('✅ User créé via admin API fallback (sans role dans metadata)', { userId: adminData.user.id })
-          data = { ...data, user: adminData.user }
-
-          // Maintenant, mettre à jour les metadata pour ajouter le rôle
-          // (le user est déjà créé, le trigger ne se redéclenche pas sur UPDATE)
-          await adminClient.auth.admin.updateUserById(adminData.user.id, {
-            user_metadata: {
-              role: role,
-              prenom: profileData.prenom,
-              nom: profileData.nom,
-              nom_entreprise: profileData.nomEntreprise || null,
-              siret: profileData.siret || null,
-            }
-          })
-          logger.critical('✅ Metadata mis à jour avec le rôle', { userId: adminData.user.id, role })
-        } else {
+        if (!adminData?.user) {
           return { error: 'Échec de la création du compte. Veuillez réessayer.' }
         }
+
+        data = { ...data, user: adminData.user }
+
+        // Ajouter le rôle aux metadata (le trigger ne se re-déclenche pas sur UPDATE)
+        await adminClient.auth.admin.updateUserById(adminData.user.id, {
+          user_metadata: {
+            role,
+            prenom: profileData.prenom,
+            nom: profileData.nom,
+            nom_entreprise: profileData.nomEntreprise || null,
+            siret: profileData.siret || null,
+          }
+        })
       } catch (adminFallbackError: any) {
         logger.critical('🚨 Fallback admin exception', { error: adminFallbackError?.message })
         return { error: 'Échec de la création du compte. Veuillez réessayer.' }
       }
-    } else {
-      logger.critical('🚨 Erreur signUp - retour erreur', { email, role, error: error.message })
+    }
+    // Autre erreur → stop
+    else {
       return { error: translateAuthError(error.message) }
     }
   }
 
   // Vérifier que l'utilisateur a été créé
   if (!data?.user) {
-    logger.critical('🚨 Aucun utilisateur créé après signUp', { email, role })
-    logger.error('Aucun utilisateur créé après signUp')
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
 
-  // Détecter le cas "user already registered" : Supabase renvoie un user
-  // avec identities vide si l'email existe déjà (selon la config du projet)
+  // Détecter "user already registered" (Supabase renvoie identities vide)
   if (data.user.identities && data.user.identities.length === 0) {
-    logger.critical('⚠️ Email déjà enregistré (identities vide)', { email, role })
     return {
       error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous. Sinon, utilisez une autre adresse email.'
     }
   }
 
-  logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
+  const userId = data.user.id
+  logger.critical('👤 Utilisateur créé', { userId, role, email })
 
-  // Envoyer l'email de confirmation personnalisé (si l'utilisateur n'est pas encore confirmé)
-  if (data.user && !data.user.email_confirmed_at) {
-    try {
-      await sendConfirmationEmail(data.user.id, email, profileData.prenom)
-      logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
-    } catch (emailError: any) {
-      // Ne pas bloquer l'inscription si l'email échoue
-      logger.warn('⚠️ Erreur envoi email confirmation personnalisé (non bloquant):', emailError)
-    }
+  // --- Email de confirmation (non bloquant, fire-and-forget) ---
+  if (!data.user.email_confirmed_at) {
+    sendConfirmationEmail(userId, email, profileData.prenom).catch((err) => {
+      logger.warn('⚠️ Erreur envoi email confirmation (non bloquant):', err)
+    })
   }
 
-  // Créer le profil utilisateur selon le rôle
+  // --- Création du profil ---
   try {
-      if (role === 'couple') {
-        logger.critical('👥 Traitement inscription COUPLE', { userId: data.user.id })
-        // Créer le client admin pour contourner les politiques RLS
-        let adminClient
-        try {
-          adminClient = createAdminClient()
-        } catch (adminError: any) {
-          logger.error('Erreur création client admin:', adminError)
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const tempAdmin = createAdminClient()
-            await tempAdmin.auth.admin.deleteUser(data.user.id)
-          } catch {}
-          return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
-        }
-        
-        const userId = data.user.id
+    const adminClient = getAdminClient(userId)
+    if (!adminClient) {
+      return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
+    }
 
-        // Vérifier que l'utilisateur existe bien dans auth.users avant d'insérer
-        // (nécessaire pour la contrainte couples_user_id_fkey qui référence auth.users(id))
-        let userExists = false
-        let retries = 0
-        const maxRetries = 10 // Augmenté de 5 à 10 pour production mobile
-        const retryDelay = 200 // Augmenté de 100ms à 200ms pour latence réseau mobile
-        
-        logger.critical('🔍 Vérification existence utilisateur dans auth.users', { userId, email })
-        
-        while (!userExists && retries < maxRetries) {
-          try {
-            const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
-            if (userData && userData.user && !userCheckError) {
-              userExists = true
-              logger.critical('✅ Utilisateur trouvé dans auth.users', { userId, attemptNumber: retries + 1 })
-            } else {
-              retries++
-              logger.critical(`⏳ Tentative ${retries}/${maxRetries} - utilisateur non encore disponible`, {
-                userId,
-                error: userCheckError?.message
-              })
-              if (retries < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay))
-              }
-            }
-          } catch (err: any) {
-            retries++
-            logger.critical(`❌ Erreur tentative ${retries}/${maxRetries}`, {
-              userId,
-              error: err?.message || String(err)
-            })
-            if (retries < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, retryDelay))
-            }
-          }
-        }
+    // Attendre que le user soit disponible dans auth.users (réplication async)
+    const userReady = await waitForUserInAuth(adminClient, userId, role)
+    if (!userReady) {
+      await rollbackUser(adminClient, userId)
+      return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
+    }
 
-        if (!userExists) {
-          // #region agent log
-          logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives', {
-            userId,
-            email,
-            maxRetries,
-            totalWaitTime: maxRetries * retryDelay
-          })
-          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
-        }
+    // Créer le profil selon le rôle
+    let profileResult: { error?: string }
+    if (role === 'couple') {
+      profileResult = await createCoupleProfile(adminClient, userId, email, profileData)
+    } else {
+      profileResult = await createPrestataireProfile(adminClient, userId, email, profileData)
+    }
 
-        // ⚠️ PROTECTION: Supprimer tout profil créé par erreur dans profiles pour les couples
-        // (au cas où le trigger handle_new_user aurait créé un profil)
-        try {
-          await adminClient
-            .from('profiles')
-            .delete()
-            .eq('id', userId)
-          logger.critical('🧹 Nettoyage: Profil supprimé de profiles (si existait)', { userId })
-        } catch (cleanupError) {
-          // Ne pas bloquer si la suppression échoue (peut-être que le profil n'existe pas)
-          logger.warn('Nettoyage profil profiles (non bloquant):', cleanupError)
-        }
+    if (profileResult.error) {
+      await rollbackUser(adminClient, userId)
+      return profileResult
+    }
+  } catch (err: any) {
+    logger.error('Erreur lors de la création du profil', err)
+    const adminClient = getAdminClient()
 
-        // Créer directement dans couples (pas de profil dans profiles pour les couples)
-        logger.critical('📝 Tentative création enregistrement couple', { userId, email })
-        
-        // ✅ FIX: Stocker le prénom et nom dans partner_1_name uniquement
-        // Le partner_2_name sera complété plus tard dans le profil
-        const fullName = `${profileData.prenom || ''} ${profileData.nom || ''}`.trim()
-        
-        const { error: coupleError } = await adminClient
-          .from('couples')
-          .upsert({
-            id: userId,
-            user_id: userId,
-            email: email,
-            partner_1_name: fullName || null,
-            partner_2_name: null,
-          }, {
-            onConflict: 'user_id'
-          })
+    // Erreur RLS : vérifier si le profil existe quand même
+    if (err.message?.includes('row-level security') && adminClient) {
+      const table = role === 'couple' ? 'couples' : 'profiles'
+      const column = role === 'couple' ? 'user_id' : 'id'
 
-        if (coupleError) {
-          logger.critical('🚨 ÉCHEC: Erreur création couple', {
-            userId,
-            email,
-            error: coupleError.message,
-            code: coupleError.code,
-            details: coupleError.details
-          })
-          // Rollback : supprimer l'utilisateur si couple échoue
-          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: 'Erreur lors de la création de votre compte couple. Veuillez réessayer.' }
-        } else {
-          logger.critical('✅ Couple créé avec succès', { userId })
-          // Créer les préférences vides pour le nouveau couple
-          try {
-            const { error: prefError, data: prefData } = await adminClient
-              .from('couple_preferences')
-              .upsert({
-                couple_id: data.user.id,
-                languages: ['français'],
-                essential_services: [],
-                optional_services: [],
-                cultural_preferences: {},
-                service_priorities: {},
-                budget_breakdown: {},
-                profile_completed: false,
-                completion_percentage: 0,
-                onboarding_step: 0,
-              }, {
-                onConflict: 'couple_id'
-              })
-              .select()
-              .single()
+      const { data: profileCheck } = await adminClient
+        .from(table)
+        .select('id')
+        .eq(column, userId)
+        .maybeSingle()
 
-            if (prefError) {
-              logger.error('Erreur création préférences couple:', {
-                userId,
-                error: prefError.message,
-                code: prefError.code,
-                details: prefError.details,
-                hint: prefError.hint
-              })
-            } else {
-              logger.critical('✅ Préférences couple créées avec succès', {
-                userId,
-                preferencesId: prefData?.id
-              })
-            }
-          } catch (prefError: any) {
-            logger.error('Erreur inattendue création préférences (non bloquant):', {
-              userId,
-              error: prefError?.message || String(prefError),
-              stack: prefError?.stack
-            })
-          }
-        }
-      } else {
-        logger.critical('💼 Traitement inscription PRESTATAIRE', { userId: data.user.id, email })
-        // Créer le client admin
-        let adminClient
-        try {
-          logger.critical('🔧 Création client admin...', { userId: data.user.id })
-          adminClient = createAdminClient()
-          logger.critical('✅ Client admin créé avec succès', { userId: data.user.id })
-        } catch (adminError: any) {
-          logger.critical('🚨 Erreur création client admin:', { userId: data.user.id, error: adminError })
-          logger.error('Erreur création client admin:', adminError)
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const tempAdmin = createAdminClient()
-            await tempAdmin.auth.admin.deleteUser(data.user.id)
-          } catch {}
-          return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
-        }
-        
-        const userId = data.user.id
-
-        // Vérifier que l'utilisateur existe bien dans auth.users avant d'insérer
-        // (nécessaire pour la contrainte profiles_id_fkey qui référence auth.users(id))
-        let userExists = false
-        let retries = 0
-        const maxRetries = 10 // Augmenté de 5 à 10 pour production mobile
-        const retryDelay = 200 // Augmenté de 100ms à 200ms pour latence réseau mobile
-        
-        logger.critical('🔍 Vérification existence utilisateur dans auth.users (prestataire)', { userId, email })
-        
-        while (!userExists && retries < maxRetries) {
-          try {
-            const { data: userData, error: userCheckError } = await adminClient.auth.admin.getUserById(userId)
-            if (userData && userData.user && !userCheckError) {
-              userExists = true
-              logger.critical('✅ Utilisateur trouvé dans auth.users (prestataire)', { userId, attemptNumber: retries + 1 })
-            } else {
-              retries++
-              logger.critical(`⏳ Tentative ${retries}/${maxRetries} - utilisateur non encore disponible (prestataire)`, {
-                userId,
-                error: userCheckError?.message
-              })
-              if (retries < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, retryDelay))
-              }
-            }
-          } catch (err: any) {
-            retries++
-            logger.critical(`❌ Erreur tentative ${retries}/${maxRetries} (prestataire)`, {
-              userId,
-              error: err?.message || String(err)
-            })
-            if (retries < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, retryDelay))
-            }
-          }
-        }
-
-        if (!userExists) {
-          logger.critical('🚨 ÉCHEC: Utilisateur non trouvé après toutes les tentatives (prestataire)', {
-            userId,
-            email,
-            maxRetries,
-            totalWaitTime: maxRetries * retryDelay
-          })
-          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: 'Erreur lors de la création du compte. Veuillez réessayer ou contacter le support si le problème persiste.' }
-        }
-
-        // Insérer ou mettre à jour dans la table profiles (prestataires)
-        logger.critical('📝 Tentative création/mise à jour profil prestataire', { userId, email })
-        
-        // Préparer les données du profil (déjà sanitizées dans les validations)
-        // Note: Le trigger peut avoir déjà créé un profil basique, l'upsert le complétera
-        const profileInsertData = {
-          id: userId,
-          email: email,
-          role: 'prestataire' as const,
-          prenom: profileData.prenom || null,
-          nom: profileData.nom || null,
-          nom_entreprise: profileData.nomEntreprise || null,
-          siret: profileData.siret || null,
-        }
-        
-        const { error: profileError } = await adminClient
-          .from('profiles')
-          .upsert(profileInsertData, {
-            onConflict: 'id'
-          })
-
-        if (profileError) {
-          // Logger toutes les informations de l'erreur pour debugging
-          logger.critical('🚨 ÉCHEC: Erreur création profil prestataire', {
-            userId,
-            email,
-            error: profileError.message,
-            code: profileError.code,
-            details: profileError.details,
-            hint: profileError.hint,
-            fullError: JSON.stringify(profileError, null, 2)
-          })
-          
-          // Rollback : supprimer l'utilisateur si profil échoue
-          await adminClient.auth.admin.deleteUser(userId).catch(() => {})
-          return { error: 'Erreur lors de la création de votre profil prestataire. Veuillez réessayer.' }
-        } else {
-          logger.critical('✅ Profil prestataire créé avec succès', { userId })
-        }
-
-        // NOUVELLE LOGIQUE : Vérifier les places Early Adopter disponibles
-        try {
-          const { data: programData } = await adminClient
-            .from('early_adopter_program')
-            .select('id, total_slots, used_slots, program_active')
-            .single()
-          
-          const isEarlyAdopterSlotAvailable = 
-            programData?.program_active && 
-            programData.used_slots < programData.total_slots
-          
-          if (isEarlyAdopterSlotAvailable) {
-            // Ce prestataire obtient le badge !
-            const trialEndDate = new Date()
-            trialEndDate.setDate(trialEndDate.getDate() + 90) // +3 mois
-            
-            await adminClient
-              .from('profiles')
-              .update({
-                is_early_adopter: true,
-                early_adopter_enrolled_at: new Date().toISOString(),
-                early_adopter_trial_end_date: trialEndDate.toISOString(),
-                subscription_tier: 'early_adopter'
-              })
-              .eq('id', data.user.id)
-            
-            // Incrémenter le compteur
-            await adminClient
-              .from('early_adopter_program')
-              .update({ 
-                used_slots: programData.used_slots + 1,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', programData.id)
-            
-            // Créer notification de bienvenue
-            await adminClient
-              .from('early_adopter_notifications')
-              .insert({
-                user_id: data.user.id,
-                notification_type: 'welcome'
-              })
-          }
-        } catch (earlyAdopterError) {
-          // Ne pas bloquer l'inscription si la logique Early Adopter échoue
-          logger.warn('Erreur lors de l\'attribution du badge Early Adopter (non bloquant):', earlyAdopterError)
-        }
-
-        // Traiter le code de parrainage si fourni
-        if (profileData.referralCode) {
-          try {
-            const { data: referralData } = await adminClient
-              .from('provider_referrals')
-              .select('referral_code, provider_id, total_referrals')
-              .eq('referral_code', profileData.referralCode.toUpperCase())
-              .maybeSingle()
-
-            if (referralData) {
-              // Enregistrer l'usage du parrainage
-              await adminClient
-                .from('referral_usages')
-                .insert({
-                  referral_code: referralData.referral_code,
-                  referrer_id: referralData.provider_id,
-                  referred_user_id: data.user.id,
-                })
-
-              // Incrémenter le compteur
-              await adminClient
-                .from('provider_referrals')
-                .update({
-                  total_referrals: (referralData.total_referrals || 0) + 1,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq('provider_id', referralData.provider_id)
-
-              logger.info('Parrainage enregistré', {
-                referrer: referralData.provider_id,
-                referred: data.user.id,
-                code: referralData.referral_code,
-              })
-            }
-          } catch (referralError) {
-            // Ne pas bloquer l'inscription si le parrainage échoue
-            logger.warn('Erreur parrainage (non bloquant):', referralError)
-          }
-        }
-      }
-    } catch (err: any) {
-      logger.error('Erreur lors de la création du profil', err)
-      const userId = data.user.id
-      
-      // Si c'est une erreur RLS, vérifier si le profil a quand même été créé
-      if (err.message?.includes('row-level security')) {
-        logger.warn('Erreur RLS détectée, vérification si le profil existe quand même...', { userId, role })
-        
-        // Vérifier si le profil a été créé malgré l'erreur RLS
-        try {
-          const adminClient = createAdminClient()
-          let profileExists = false
-          
-          if (role === 'couple') {
-            const { data: coupleCheck } = await adminClient
-              .from('couples')
-              .select('id')
-              .eq('user_id', userId)
-              .maybeSingle()
-            profileExists = !!coupleCheck
-          } else {
-            const { data: profileCheck } = await adminClient
-              .from('profiles')
-              .select('id')
-              .eq('id', userId)
-              .maybeSingle()
-            profileExists = !!profileCheck
-          }
-          
-          if (profileExists) {
-            // Le profil existe malgré l'erreur RLS, l'inscription est réussie
-            logger.critical('✅ Profil vérifié et existant malgré erreur RLS', { userId, role })
-            const response = { success: true, redirectTo: '/auth/confirm' }
-            try {
-              revalidatePath('/', 'layout')
-            } catch (revalidateError: any) {
-              logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
-            }
-            return response
-          } else {
-            // Le profil n'existe pas, essayer de le créer avec le client admin
-            logger.warn('Profil non trouvé après erreur RLS, tentative de création avec client admin...', { userId, role })
-            
-            // La création avec adminClient a déjà été tentée dans le bloc try principal
-            // Si on arrive ici, c'est que ça a échoué
-            // Ne pas retourner succès si le profil n'existe pas
-            logger.critical('🚨 ÉCHEC: Profil non créé après erreur RLS', { userId, role, error: err.message })
-            
-            // Essayer de supprimer l'utilisateur créé pour éviter un compte orphelin
-            try {
-              await adminClient.auth.admin.deleteUser(userId)
-              logger.warn('Utilisateur supprimé car profil non créé', { userId })
-            } catch (deleteError) {
-              logger.error('Erreur lors de la suppression de l\'utilisateur orphelin:', deleteError)
-            }
-            
-            return { 
-              error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
-            }
-          }
-        } catch (checkError: any) {
-          // Erreur lors de la vérification, ne pas retourner succès
-          logger.error('Erreur lors de la vérification du profil après erreur RLS:', checkError)
-          
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const adminClient = createAdminClient()
-            await adminClient.auth.admin.deleteUser(userId)
-          } catch {}
-          
-          return { 
-            error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
-          }
-        }
-      } else {
-        // Erreur non-RLS, essayer de supprimer l'utilisateur créé en cas d'erreur
-        try {
-          const adminClient = createAdminClient()
-          await adminClient.auth.admin.deleteUser(data.user.id)
-          logger.warn('Utilisateur supprimé après erreur non-RLS', { userId: data.user.id })
-        } catch (deleteError) {
-          logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
-        }
-        return { error: 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.' }
+      if (profileCheck) {
+        logger.info('✅ Profil existant malgré erreur RLS', { userId, role })
+        try { revalidatePath('/', 'layout') } catch {}
+        return { success: true, redirectTo: '/auth/confirm' }
       }
     }
 
-    // Envoyer l'email de bienvenue avec Resend (non bloquant)
-    try {
-      logger.info('📧 Tentative d\'envoi email de bienvenue Resend pour:', email)
-      const emailResult = await sendWelcomeEmail(
-        email,
-        role,
-        profileData.prenom,
-        profileData.nom
-      )
-      if (emailResult.success) {
-        logger.info('✅ Email de bienvenue Resend envoyé avec succès')
-      } else {
-        logger.warn('⚠️ Email de bienvenue Resend non envoyé:', 'error' in emailResult ? emailResult.error : 'Erreur inconnue')
-      }
-    } catch (emailError) {
-      // Ne pas bloquer l'inscription si l'email échoue
-      logger.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant)', emailError)
+    // Rollback
+    if (adminClient) {
+      await rollbackUser(adminClient, userId)
     }
+    return { error: 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.' }
+  }
 
-    // Succès - retourner avec redirection
-    logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
-    
-    // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
-    const response = { success: true, redirectTo: '/auth/confirm' }
-    
-    
-    // Revalidate après avoir préparé la réponse
-    try {
-      revalidatePath('/', 'layout')
-    } catch (revalidateError: any) {
-      // Ne pas bloquer si revalidatePath échoue
-      logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
-    }
-    
-    
-    return response
+  // --- Email de bienvenue (non bloquant, fire-and-forget) ---
+  sendWelcomeEmail(email, role, profileData.prenom, profileData.nom).catch((err) => {
+    logger.warn('⚠️ Email de bienvenue non envoyé (non bloquant):', err)
+  })
+
+  // --- Succès ---
+  logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId })
+
+  const response = { success: true, redirectTo: '/auth/confirm' }
+
+  try {
+    revalidatePath('/', 'layout')
+  } catch {
+    // Non bloquant
+  }
+
+  return response
 }
 
 export async function signIn(email: string, password: string) {
@@ -687,18 +533,15 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
     const roleCheck = await getUserRoleServer(data.user.id)
-    
+
     revalidatePath('/', 'layout')
-    
+
     if (roleCheck.role) {
       const dashboardUrl = getDashboardUrl(roleCheck.role)
       return { success: true, redirectTo: dashboardUrl }
     }
 
-    // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
-    // (cas d'un compte auth créé mais profil non complété)
     return { success: true, redirectTo: '/' }
   }
 
