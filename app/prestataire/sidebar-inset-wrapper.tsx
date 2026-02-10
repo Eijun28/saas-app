@@ -2,6 +2,7 @@
 
 import { SidebarInset } from "@/components/ui/sidebar"
 import { PrestataireHeader } from "@/components/layout/PrestataireHeader"
+import { ChatbotAdvisor } from "@/components/prestataire/ChatbotAdvisor"
 
 export function SidebarInsetWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function SidebarInsetWrapper({ children }: { children: React.ReactNode })
       <main className="flex-1 w-full px-4 sm:px-5 md:px-6 lg:px-8 pt-5 md:pt-6 pb-6 md:pb-8 overflow-x-hidden">
         {children}
       </main>
+      <ChatbotAdvisor />
     </SidebarInset>
   )
 }
