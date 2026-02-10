@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react'
+import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare, ChevronDown, ChevronUp, Star } from 'lucide-react'
+import { ReviewDialog } from '@/components/reviews/ReviewDialog'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { useUser } from '@/hooks/use-user'
 import { extractSupabaseError } from '@/lib/utils'
@@ -19,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { motion } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 type RequestStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
 
@@ -116,6 +118,8 @@ export default function DemandesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const [reviewTarget, setReviewTarget] = useState<{ providerId: string; providerName: string; requestId: string } | null>(null)
+  const [existingReviews, setExistingReviews] = useState<Map<string, { rating: number; comment: string | null }>>(new Map())
 
   // Helper pour obtenir le couple_id depuis user_id
   async function getCoupleId(): Promise<string | null> {
@@ -412,6 +416,21 @@ export default function DemandesPage() {
     setFavoris(transformedData as FavoriRow[])
   }
 
+  // Charger les avis existants du couple
+  async function loadExistingReviews() {
+    if (!user?.id) return
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('reviews')
+      .select('provider_id, rating, comment')
+      .eq('couple_id', user.id)
+    if (data) {
+      const map = new Map<string, { rating: number; comment: string | null }>()
+      data.forEach(r => map.set(r.provider_id, { rating: r.rating, comment: r.comment }))
+      setExistingReviews(map)
+    }
+  }
+
   // Charger toutes les données au montage
   useEffect(() => {
     if (user?.id) {
@@ -419,7 +438,8 @@ export default function DemandesPage() {
       Promise.all([
         loadDemandes(),
         loadDevis(),
-        loadFavoris()
+        loadFavoris(),
+        loadExistingReviews()
       ]).finally(() => {
         setLoading(false)
       })
@@ -690,13 +710,26 @@ export default function DemandesPage() {
                                           </DropdownMenuItem>
                                         )}
                                         {r.status === 'accepted' && (
-                                          <DropdownMenuItem
-                                            className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
-                                            onClick={() => window.location.href = '/couple/messagerie'}
-                                          >
-                                            <MessageSquare className="h-4 w-4 mr-2" />
-                                            Envoyer un message
-                                          </DropdownMenuItem>
+                                          <>
+                                            <DropdownMenuItem
+                                              className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                              onClick={() => window.location.href = '/couple/messagerie'}
+                                            >
+                                              <MessageSquare className="h-4 w-4 mr-2" />
+                                              Envoyer un message
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                              className="text-amber-700 focus:text-amber-700 focus:bg-amber-50"
+                                              onClick={() => setReviewTarget({
+                                                providerId: r.provider_id,
+                                                providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as any).prestataire),
+                                                requestId: r.id,
+                                              })}
+                                            >
+                                              <Star className="h-4 w-4 mr-2" />
+                                              {existingReviews.has(r.provider_id) ? 'Modifier l\'avis' : 'Laisser un avis'}
+                                            </DropdownMenuItem>
+                                          </>
                                         )}
                                       </DropdownMenuContent>
                                     </DropdownMenu>
@@ -743,6 +776,19 @@ export default function DemandesPage() {
                                 {r.status === 'accepted' && (
                                   <div className="mt-4 flex items-center justify-end gap-2">
                                     <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 text-xs border-amber-200 text-amber-700 hover:bg-amber-50"
+                                      onClick={() => setReviewTarget({
+                                        providerId: r.provider_id,
+                                        providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as any).prestataire),
+                                        requestId: r.id,
+                                      })}
+                                    >
+                                      <Star className={cn("h-3.5 w-3.5 mr-1.5", existingReviews.has(r.provider_id) ? "fill-amber-400 text-amber-400" : "")} />
+                                      {existingReviews.has(r.provider_id) ? 'Modifier l\'avis' : 'Laisser un avis'}
+                                    </Button>
+                                    <Button
                                       size="sm"
                                       className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
                                       onClick={() => window.location.href = '/couple/messagerie'}
@@ -765,6 +811,20 @@ export default function DemandesPage() {
           </div>
         )}
       </div>
+
+      {/* Dialog avis */}
+      {reviewTarget && user && (
+        <ReviewDialog
+          open={!!reviewTarget}
+          onOpenChange={(open) => { if (!open) setReviewTarget(null) }}
+          providerId={reviewTarget.providerId}
+          providerName={reviewTarget.providerName}
+          coupleId={user.id}
+          requestId={reviewTarget.requestId}
+          existingReview={existingReviews.get(reviewTarget.providerId) || undefined}
+          onSubmitted={loadExistingReviews}
+        />
+      )}
     </div>
   )
 }
