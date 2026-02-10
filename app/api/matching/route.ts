@@ -456,13 +456,17 @@ export async function POST(request: NextRequest) {
     logger.debug('⚖️ Chargement des donnees d\'equite et specialites');
 
     // Charger les donnees d'equite pour tous les prestataires
-    let fairnessDataMap = new Map<string, FairnessData>();
+    const fairnessDataMap = new Map<string, FairnessData>();
     try {
-      const { data: fairnessData } = await supabase
+      const { data: fairnessData, error: fairnessError } = await supabase
         .from('provider_impressions')
         .select('profile_id, impressions_this_week, total_impressions, click_through_rate')
         .eq('service_type', normalizedServiceType)
         .in('profile_id', providerIds);
+
+      if (fairnessError) {
+        throw fairnessError;
+      }
 
       if (fairnessData) {
         // Calculer le score d'equite pour chaque prestataire
@@ -489,9 +493,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Charger les tags de specialite pour tous les prestataires
-    let specialtyTagsMap = new Map<string, string[]>();
+    const specialtyTagsMap = new Map<string, string[]>();
     try {
-      const { data: providerTagsData } = await supabase
+      const { data: providerTagsData, error: tagsError } = await supabase
         .from('provider_tags')
         .select(`
           profile_id,
@@ -501,6 +505,10 @@ export async function POST(request: NextRequest) {
           )
         `)
         .in('profile_id', providerIds);
+
+      if (tagsError) {
+        throw tagsError;
+      }
 
       if (providerTagsData) {
         // Le type de retour Supabase peut varier selon la relation
