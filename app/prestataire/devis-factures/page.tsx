@@ -843,7 +843,7 @@ export default function DevisFacturesPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveBankingInfo} disabled={isSaving}>
+                <Button onClick={handleSaveBankingInfo} disabled={isSaving} className="rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white px-6">
                   {isSaving ? 'Enregistrement...' : 'Enregistrer'}
                 </Button>
               </div>
@@ -888,7 +888,7 @@ export default function DevisFacturesPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-4 rounded-lg">
                   <div>
                     <Label>Afficher IBAN sur les devis</Label>
                     <p className="text-xs text-muted-foreground">
@@ -903,7 +903,7 @@ export default function DevisFacturesPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-4 rounded-lg">
                   <div>
                     <Label>Assujetti à la TVA</Label>
                     <p className="text-xs text-muted-foreground">
@@ -951,7 +951,7 @@ export default function DevisFacturesPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={handleSaveSettings} disabled={isSaving}>
+                <Button onClick={handleSaveSettings} disabled={isSaving} className="rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white px-6">
                   {isSaving ? 'Enregistrement...' : 'Enregistrer les paramètres'}
                 </Button>
               </div>
