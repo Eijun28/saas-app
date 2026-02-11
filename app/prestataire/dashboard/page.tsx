@@ -405,25 +405,26 @@ export default function DashboardPrestatairePage() {
               icon: Bell, label: "Nouvelles demandes", value: stats.nouvelles_demandes, subtitle: "En attente de traitement",
               description: stats.nouvelles_demandes > 0 ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} necessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention` : "Aucune nouvelle demande",
               delay: 0.1, onClick: () => router.push('/prestataire/demandes-recues'), actionLabel: "Voir toutes les demandes",
-              searchTerms: ['demandes', 'nouvelles', 'traiter'], delta: demandesDelta, sparkline: [2, 3, 1, 4, 2, 5, stats.nouvelles_demandes],
+              actionHref: '/prestataire/demandes-recues', searchTerms: ['demandes', 'nouvelles', 'traiter'], delta: demandesDelta, sparkline: [2, 3, 1, 4, 2, 5, stats.nouvelles_demandes],
               emptyStateAction: "Optimiser votre profil", alert: urgentDemandes > 0 ? `${urgentDemandes} demande${urgentDemandes > 1 ? 's' : ''} > 24h` : undefined,
             },
             {
               icon: Calendar, label: "Evenements a venir", value: stats.evenements_a_venir, subtitle: "Ce mois-ci",
               description: stats.evenements_a_venir > 0 ? `${stats.evenements_a_venir} evenement${stats.evenements_a_venir > 1 ? 's' : ''} planifie${stats.evenements_a_venir > 1 ? 's' : ''}` : "Aucun evenement prevu",
               delay: 0.2, onClick: () => router.push('/prestataire/agenda'), actionLabel: "Gerer mon agenda",
-              searchTerms: ['evenements', 'agenda', 'calendrier'], emptyStateAction: "Creer un evenement",
+              actionHref: '/prestataire/agenda', searchTerms: ['evenements', 'agenda', 'calendrier'], emptyStateAction: "Creer un evenement",
             },
             {
               icon: MessageSquare, label: "Conversations", value: stats.conversations_en_cours, subtitle: "En cours avec des couples",
               description: stats.conversations_en_cours > 0 ? `${stats.conversations_en_cours} conversation${stats.conversations_en_cours > 1 ? 's' : ''} active${stats.conversations_en_cours > 1 ? 's' : ''}` : "Aucune conversation",
               delay: 0.3, onClick: () => router.push('/prestataire/messagerie'), actionLabel: "Ouvrir la messagerie",
-              searchTerms: ['messages', 'messagerie', 'conversations'], emptyStateAction: "Accepter une demande",
+              actionHref: '/prestataire/messagerie', searchTerms: ['messages', 'messagerie', 'conversations'], emptyStateAction: "Accepter une demande",
             },
             {
               icon: TrendingUp, label: "Taux de reponse", value: `${stats.taux_reponse}%`, subtitle: "Taux d'acceptation",
               description: stats.taux_reponse > 0 ? `${stats.taux_reponse}% acceptees` : "Aucune statistique",
-              delay: 0.4, actionLabel: "Voir les statistiques", searchTerms: ['taux', 'reponse', 'statistiques'],
+              delay: 0.4, onClick: () => router.push('/prestataire/demandes-recues'), actionLabel: "Voir les statistiques",
+              actionHref: '/prestataire/demandes-recues', searchTerms: ['taux', 'reponse', 'statistiques'],
               sparkline: [20, 35, 40, 30, 45, 50, stats.taux_reponse],
             }
           ]
@@ -443,6 +444,7 @@ export default function DashboardPrestatairePage() {
                 delay={card.delay}
                 onClick={card.onClick}
                 actionLabel={card.actionLabel}
+                actionHref={card.actionHref}
                 delta={card.delta}
                 sparkline={card.sparkline}
                 emptyStateAction={card.emptyStateAction}
