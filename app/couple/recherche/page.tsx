@@ -519,7 +519,7 @@ export default function RecherchePage() {
                     >
                         <div className="space-y-1">
                           <button
-                            className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCategory === null ? "bg-gray-100" : ""}`}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCategory === null ? "bg-gray-100" : ""}`}
                             onClick={() => {
                               setSelectedCategory(null)
                               setOpenSubDropdown(null)
@@ -541,14 +541,14 @@ export default function RecherchePage() {
                                   return (
                                     <button
                                       key={service.value}
-                                      className={`w-full text-left px-6 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCategory === service.value ? "bg-gray-200" : ""}`}
+                                      className={`w-full text-left px-6 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCategory === service.value ? "bg-gray-200" : ""}`}
                                       onClick={() => {
                                         setSelectedCategory(service.value)
                                         setOpenSubDropdown(null)
                                       }}
                                     >
                                       <span className="flex items-center gap-2">
-                                        <ServiceIcon className="h-4 w-4 text-black" />
+                                        <ServiceIcon className="h-4 w-4 text-[#6B3FA0]" />
                                         {service.label}
                                       </span>
                                     </button>
@@ -590,7 +590,7 @@ export default function RecherchePage() {
                     >
                       <div className="space-y-1">
                         <button
-                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCulture === null ? "bg-gray-100" : ""}`}
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCulture === null ? "bg-gray-100" : ""}`}
                           onClick={() => {
                             setSelectedCulture(null)
                             setOpenSubDropdown(null)
@@ -601,7 +601,7 @@ export default function RecherchePage() {
                         {CULTURES.map((culture) => (
                           <button
                             key={culture.id}
-                            className={`w-full text-left px-3 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCulture === culture.id ? "bg-gray-200" : ""}`}
+                            className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCulture === culture.id ? "bg-gray-200" : ""}`}
                             onClick={() => {
                               setSelectedCulture(culture.id)
                               setOpenSubDropdown(null)
@@ -643,7 +643,7 @@ export default function RecherchePage() {
                     >
                       <div className="space-y-1">
                         <button
-                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedCountry === null ? "bg-gray-100" : ""}`}
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCountry === null ? "bg-gray-100" : ""}`}
                           onClick={() => {
                             setSelectedCountry(null)
                             setOpenSubDropdown(null)
@@ -659,7 +659,7 @@ export default function RecherchePage() {
                             {COUNTRIES_BY_CONTINENT[continent.id]?.map((country) => (
                               <button
                                 key={country}
-                                className={`w-full text-left px-4 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none ${selectedCountry === country ? "bg-gray-200" : ""}`}
+                                className={`w-full text-left px-4 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedCountry === country ? "bg-gray-200" : ""}`}
                                 onClick={() => {
                                   setSelectedCountry(country)
                                   setOpenSubDropdown(null)
@@ -703,7 +703,7 @@ export default function RecherchePage() {
                     >
                       <div className="space-y-1">
                         <button
-                          className={`w-full text-left px-3 py-2 text-sm font-medium text-black hover:bg-gray-100 rounded-md transition-none ${selectedTags.length === 0 ? "bg-gray-100" : ""}`}
+                          className={`w-full text-left px-3 py-2 text-sm font-medium text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedTags.length === 0 ? "bg-gray-100" : ""}`}
                           onClick={() => {
                             setSelectedTags([])
                             setOpenSubDropdown(null)
@@ -717,7 +717,7 @@ export default function RecherchePage() {
                           return (
                             <button
                               key={tag.id}
-                              className={`w-full text-left px-3 py-2 text-sm text-black hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
+                              className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
                               onClick={() => {
                                 if (isSelected) {
                                   setSelectedTags(prev => prev.filter(id => id !== tag.id))

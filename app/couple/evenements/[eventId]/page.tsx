@@ -207,7 +207,7 @@ export default function EventDetailPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="mb-6"
+        className="mb-6 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10 p-5 sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -218,12 +218,12 @@ export default function EventDetailPage() {
               <EventStatusBadge status={event.status} />
             </div>
             {event.event_type && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 {event.event_type.description}
               </p>
             )}
             {event.description && !event.event_type?.description && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-600 leading-relaxed">
                 {event.description}
               </p>
             )}
@@ -258,47 +258,63 @@ export default function EventDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <Card className="border-gray-200/80">
+          <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[#823F91]/70" />
+              <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-[#823F91]" />
+                </div>
                 Planning
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Date</p>
-                <p className="text-sm font-medium text-gray-900">{formatDate(event.event_date)}</p>
+              <div className="flex items-start gap-3">
+                <Calendar className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Date</p>
+                  <p className="text-sm font-medium text-gray-900">{formatDate(event.event_date)}</p>
+                </div>
               </div>
               {event.event_time && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Heure</p>
-                  <p className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-gray-400" />
-                    {event.event_time.slice(0, 5)}
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Clock className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Heure</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {event.event_time.slice(0, 5)}
+                    </p>
+                  </div>
                 </div>
               )}
               {event.venue && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Lieu</p>
-                  <p className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                    {event.venue}
-                  </p>
-                  {event.venue_address && (
-                    <p className="text-xs text-gray-500 ml-5">{event.venue_address}</p>
-                  )}
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Lieu</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {event.venue}
+                    </p>
+                    {event.venue_address && (
+                      <p className="text-xs text-gray-500 mt-0.5">{event.venue_address}</p>
+                    )}
+                  </div>
                 </div>
               )}
               {event.guest_count && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Invités</p>
-                  <p className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-gray-400" />
-                    {event.guest_count} personnes
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Users className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Invités</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {event.guest_count} personnes
+                    </p>
+                  </div>
                 </div>
+              )}
+              {!event.event_date && !event.event_time && !event.venue && !event.guest_count && (
+                <p className="text-sm text-gray-400 italic text-center py-2">
+                  Aucune information de planning renseignée
+                </p>
               )}
             </CardContent>
           </Card>
@@ -310,10 +326,12 @@ export default function EventDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
         >
-          <Card className="border-gray-200/80">
+          <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-[#823F91]/70" />
+              <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                  <Wallet className="h-4 w-4 text-[#823F91]" />
+                </div>
                 Budget
               </CardTitle>
             </CardHeader>
@@ -322,9 +340,9 @@ export default function EventDetailPage() {
                 {formatBudget(event.budget_min, event.budget_max)}
               </p>
               {event.budget_min && event.budget_max && (
-                <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="mt-3 h-2 bg-[#823F91]/10 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#823F91]/30 rounded-full"
+                    className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
                     style={{ width: '0%' }}
                   />
                 </div>
@@ -341,24 +359,26 @@ export default function EventDetailPage() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="sm:col-span-2"
           >
-            <Card className="border-gray-200/80">
+            <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-[#823F91]/70" />
-                  Détails
+                <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-[#823F91]" />
+                  </div>
+                  Détails & Notes
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 {event.description && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">Description</p>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{event.description}</p>
+                  <div className="rounded-lg bg-gray-50 p-3">
+                    <p className="text-xs font-medium text-[#823F91]/70 mb-1.5">Description</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{event.description}</p>
                   </div>
                 )}
                 {event.notes && (
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">Notes internes</p>
-                    <p className="text-sm text-gray-600 italic whitespace-pre-wrap">{event.notes}</p>
+                  <div className="rounded-lg bg-amber-50/50 border border-amber-100 p-3">
+                    <p className="text-xs font-medium text-amber-600 mb-1.5">Notes internes</p>
+                    <p className="text-sm text-gray-600 italic whitespace-pre-wrap leading-relaxed">{event.notes}</p>
                   </div>
                 )}
               </CardContent>
@@ -373,12 +393,14 @@ export default function EventDetailPage() {
           transition={{ duration: 0.4, delay: 0.25 }}
           className="sm:col-span-2"
         >
-          <Card className="border-gray-200/80 border-dashed">
+          <Card className="border-[#823F91]/15 border-dashed bg-[#823F91]/[0.02]">
             <CardContent className="py-8 text-center">
-              <Users className="h-8 w-8 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-gray-500 mb-1">Prestataires</p>
-              <p className="text-xs text-gray-400">
-                La gestion des prestataires par événement sera disponible prochainement.
+              <div className="h-12 w-12 rounded-xl bg-[#823F91]/10 flex items-center justify-center mx-auto mb-3">
+                <Users className="h-6 w-6 text-[#823F91]/40" />
+              </div>
+              <p className="text-sm font-semibold text-gray-600 mb-1">Prestataires associés</p>
+              <p className="text-xs text-gray-400 max-w-xs mx-auto">
+                Vous pourrez bientôt associer vos prestataires à chaque événement pour une organisation simplifiée.
               </p>
             </CardContent>
           </Card>

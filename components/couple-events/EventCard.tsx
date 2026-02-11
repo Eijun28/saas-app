@@ -43,17 +43,17 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
     >
       <Card
         className={cn(
-          'group cursor-pointer transition-all duration-200',
+          'group cursor-pointer transition-all duration-200 overflow-hidden',
           'hover:shadow-md hover:border-[#823F91]/30',
           'border-gray-200/80'
         )}
         onClick={onClick}
       >
-        <CardContent className="p-4 sm:p-5">
+        <CardContent className="p-4 sm:p-5 border-l-[3px] border-l-[#823F91]/40 group-hover:border-l-[#823F91]">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               {/* Title + Status */}
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                 <h3 className="text-base font-semibold text-gray-900 truncate">
                   {event.title}
                 </h3>
@@ -62,7 +62,7 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
 
               {/* Description */}
               {event.description && (
-                <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                <p className="text-sm text-gray-500 mb-3 line-clamp-2 leading-relaxed">
                   {event.description}
                 </p>
               )}
@@ -70,27 +70,27 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
               {/* Metadata row */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-gray-500">
                 <span className="inline-flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-[#823F91]/70" />
+                  <Calendar className="h-3.5 w-3.5 text-[#823F91]/60" />
                   {formatDate(event.event_date)}
                 </span>
 
                 {event.venue && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-[#823F91]/70" />
+                    <MapPin className="h-3.5 w-3.5 text-[#823F91]/60" />
                     <span className="truncate max-w-[200px]">{event.venue}</span>
                   </span>
                 )}
 
                 {event.guest_count && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-[#823F91]/70" />
+                    <Users className="h-3.5 w-3.5 text-[#823F91]/60" />
                     {event.guest_count} invités
                   </span>
                 )}
 
                 {budgetStr && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Wallet className="h-3.5 w-3.5 text-[#823F91]/70" />
+                    <Wallet className="h-3.5 w-3.5 text-[#823F91]/60" />
                     {budgetStr}
                   </span>
                 )}
