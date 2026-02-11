@@ -14,15 +14,41 @@
   --beige-800: 24 20% 24%;    /* #4A3A2E - Texte body */
   --beige-900: 20 30% 13%;    /* #2C1810 - Texte principal/titres */
 
-  /* === Violet (identité Nuply) === */
-  --violet-50: 279 64% 97%;   /* #F5F3FF */
-  --violet-500: 279 64% 70%;   /* #c081e3 - Violet principal */
-  --violet-600: 279 64% 60%;   /* Violet hover */
+  /* === Primary Violet Scale (v2) === */
+  --violet-50: 279 30% 96%;   /* #F5F0F7 */
+  --violet-100: 279 40% 88%;  /* #E8D4EF */
+  --violet-200: 279 40% 77%;  /* #D4ADE0 */
+  --violet-500: 283 40% 41%;  /* #823F91 — brand */
+  --violet-600: 283 40% 35%;  /* #6D3478 */
+  --violet-700: 283 42% 28%;  /* #5C2B66 */
 
-  /* === Variables Système (adaptées au beige) === */
+  /* === Neutral Scale (v2) === */
+  --neutral-50: 0 0% 98%;
+  --neutral-100: 0 0% 96%;
+  --neutral-200: 220 13% 91%;
+  --neutral-400: 220 9% 64%;
+  --neutral-600: 220 9% 43%;
+  --neutral-800: 220 13% 18%;
+  --neutral-900: 220 14% 8%;
+
+  /* === Semantic Colors === */
+  --color-success: #059669;
+  --color-success-light: #ECFDF5;
+  --color-success-text: #065F46;
+  --color-warning: #D97706;
+  --color-warning-light: #FFFBEB;
+  --color-warning-text: #92400E;
+  --color-danger: #DC2626;
+  --color-danger-light: #FEF2F2;
+  --color-danger-text: #991B1B;
+  --color-info: #2563EB;
+  --color-info-light: #EFF6FF;
+  --color-info-text: #1E40AF;
+
+  /* === Variables Système === */
   --background: var(--beige-100);
   --foreground: var(--beige-900);
-  --card: 0 0% 100%;  /* Blanc pour les cards */
+  --card: 0 0% 100%;
   --card-foreground: var(--beige-900);
   --popover: 0 0% 100%;
   --popover-foreground: var(--beige-900);
@@ -804,4 +830,138 @@ nav[class*="fixed"] {
   display: none;
   width: 0;
   height: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   NUPLY Design System v2 — Dashboard Utilities
+   ═══════════════════════════════════════════════ */
+
+/* Accessible focus ring for interactive elements */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid #823F91;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Sidebar active indicator bar */
+.sidebar-active-indicator {
+  position: relative;
+}
+.sidebar-active-indicator::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #823F91;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Sidebar section label */
+.sidebar-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9CA3AF;
+  padding: 8px 16px 4px;
+}
+
+/* KPI delta badge */
+.delta-positive {
+  color: #059669;
+  background: #ECFDF5;
+}
+.delta-negative {
+  color: #DC2626;
+  background: #FEF2F2;
+}
+.delta-neutral {
+  color: #6B7280;
+  background: #F3F4F6;
+}
+
+/* Sparkline container */
+.sparkline-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 32px;
+}
+.sparkline-bar {
+  flex: 1;
+  min-width: 3px;
+  max-width: 6px;
+  background: #E8D4EF;
+  border-radius: 2px 2px 0 0;
+  transition: background 150ms ease-out;
+}
+.sparkline-bar:last-child {
+  background: #823F91;
+}
+.sparkline-bar:hover {
+  background: #823F91;
+}
+
+/* Period filter pills */
+.period-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 150ms ease-out;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #6B7280;
+}
+.period-pill:hover {
+  background: #F5F5F5;
+  color: #111827;
+}
+.period-pill[data-active="true"] {
+  background: #823F91;
+  color: white;
+  box-shadow: 0 1px 3px rgba(130, 63, 145, 0.3);
+}
+
+/* Next-best-action card */
+.next-action-card {
+  background: linear-gradient(135deg, #F5F0F7 0%, #E8D4EF 100%);
+  border: 1px solid rgba(130, 63, 145, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* Empty state card */
+.empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+.empty-state-card .empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #F5F5F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+/* Minimum click target for accessibility (>= 44px) */
+.click-target-44 {
+  min-width: 44px;
+  min-height: 44px;
 }
