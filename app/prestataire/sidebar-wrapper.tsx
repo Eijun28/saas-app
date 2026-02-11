@@ -195,7 +195,9 @@ export function PrestataireSidebarWrapper() {
                           )}
                           <Icon className={cn(
                             "h-[18px] w-[18px] flex-shrink-0 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5 transition-colors duration-150",
-                            isActive ? "text-[#823F91]" : "text-gray-400"
+                            isActive
+                              ? "text-[#823F91] group-data-[collapsible=icon]:text-white"
+                              : "text-gray-400"
                           )} />
                           <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
                           {badgeCount > 0 && (

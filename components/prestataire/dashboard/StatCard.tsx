@@ -15,16 +15,12 @@ interface StatCardProps {
   onClick?: () => void
   description?: string
   actionLabel?: string
+  actionHref?: string
   variant?: 'default' | 'highlight'
-  /** Delta vs previous period: e.g. +12, -3, 0 */
   delta?: number | null
-  /** Label for the delta period, e.g. "vs mois dernier" */
   deltaLabel?: string
-  /** Simple sparkline data (array of 7 values) */
   sparkline?: number[]
-  /** CTA for empty state */
   emptyStateAction?: string
-  /** Alert text (e.g. "2 demandes > 24h") */
   alert?: string
 }
 
@@ -37,6 +33,7 @@ export function StatCard({
   onClick,
   description,
   actionLabel,
+  actionHref,
   variant = 'default',
   delta,
   deltaLabel = 'vs mois dernier',
@@ -232,11 +229,27 @@ export function StatCard({
           )}
 
           {/* Action button */}
-          {actionLabel && onClick && !showEmptyState && (
-            <div className={cn(
-              "pt-3 border-t",
-              isHighlight ? "border-white/15" : "border-gray-100"
-            )}>
+          {actionLabel && !showEmptyState && (
+            <div
+              className={cn(
+                "pt-3 border-t cursor-pointer",
+                isHighlight ? "border-white/15" : "border-gray-100"
+              )}
+              onClick={(e) => {
+                if (actionHref) {
+                  e.stopPropagation()
+                  window.location.href = actionHref
+                }
+              }}
+              role="link"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (actionHref) window.location.href = actionHref
+                  else if (onClick) onClick()
+                }
+              }}
+            >
               <span
                 className={cn(
                   "w-full flex items-center justify-between text-xs font-semibold transition-colors group/btn",
