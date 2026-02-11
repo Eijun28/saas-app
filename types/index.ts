@@ -13,4 +13,14 @@ export type {
   ScoreBreakdown,
   MatchingResult,
 } from './matching'
+export type {
+  CulturalEventType,
+  CoupleEvent,
+  CoupleEventWithType,
+  CoupleEventWithProviders,
+  CoupleEventProvider,
+  ProviderEventType,
+  CoupleEventStatus,
+  EventProviderStatus,
+} from './cultural-events.types'
 
