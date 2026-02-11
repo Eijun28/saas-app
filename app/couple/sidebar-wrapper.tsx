@@ -4,7 +4,7 @@ import * as React from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, ChevronsLeft, ChevronsRight, Search } from "lucide-react"
+import { Home, Sparkles, Calendar, MessageSquare, DollarSign, User, FileText, ChevronsLeft, ChevronsRight, Search, PartyPopper } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +25,7 @@ const coupleNavItems = [
   { href: "/couple/recherche", icon: Search, label: "Rechercher" },
   { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
   { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
+  { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
   { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },
   { href: "/couple/demandes", icon: FileText, label: "Demandes & Devis" },
   { href: "/couple/budget", icon: DollarSign, label: "Budget" },
