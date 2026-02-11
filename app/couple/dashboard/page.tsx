@@ -3,515 +3,435 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
+  Heart,
   Wallet,
   Calendar,
-  TrendingUp,
   ArrowRight,
-  FileText,
-  Heart,
-  RefreshCw,
   MessageSquare,
-  XCircle,
+  Search,
+  Sparkles,
+  CheckCircle2,
+  Clock,
+  Zap,
 } from 'lucide-react'
-import { useUser } from '@/hooks/use-user'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { cn } from '@/lib/utils'
-import { SkeletonCard } from '@/components/dashboard/SkeletonCard'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useUser } from '@/hooks/use-user'
 import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
 import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { cn } from '@/lib/utils'
 
-interface BudgetItem {
-  id: string
-  category: string
-  amount: number
-}
-
-// Formatage du temps relatif
-function formatRelativeTime(dateString: string) {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return "A l'instant"
-  if (diffMins < 60) return `Il y a ${diffMins} min`
-  if (diffHours < 24) return `Il y a ${diffHours}h`
-  if (diffDays === 1) return 'Hier'
-  if (diffDays < 7) return `Il y a ${diffDays} jours`
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
-}
+type PeriodFilter = '7d' | '30d' | 'month'
 
 export default function CoupleDashboardPage() {
   const router = useRouter()
-  const { user, loading } = useUser()
-  const [stats, setStats] = useState({
-    prestatairesTrouves: 0,
-    budgetAlloue: 0,
-    joursRestants: null as number | null,
-    messagesNonLus: 0,
-  })
-  const [coupleProfile, setCoupleProfile] = useState<any>(null)
-  const [prenom, setPrenom] = useState('')
-  const [statsLoading, setStatsLoading] = useState(true)
-  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([])
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [requestsSentCount, setRequestsSentCount] = useState(0)
+  const { user } = useUser()
+  const [coupleData, setCoupleData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [favoritesCount, setFavoritesCount] = useState(0)
+  const [budgetTotal, setBudgetTotal] = useState(0)
+  const [budgetItems, setBudgetItems] = useState<any[]>([])
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [shortlistedCount, setShortlistedCount] = useState(0)
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('30d')
   const [recentActivities, setRecentActivities] = useState<any[]>([])
-
-  const CHART_COLORS = [
-    '#823F91', '#9D5FA8', '#B87FC0', '#D49FFD', '#E8C4F5',
-    '#6D3478', '#A855F7', '#C084FC', '#DDA0DD', '#E9D5F5'
-  ]
 
   useEffect(() => {
     if (!user) return
 
     const fetchDashboardData = async () => {
-      const supabase = createClient()
-
       try {
-        const { data: coupleData, error: coupleError } = await supabase
-          .from('couples')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
+        const supabase = createClient()
 
-        if (coupleError) {
-          console.error('Erreur couple:', coupleError.message)
-          setStatsLoading(false)
-          return
+        // Fetch all data in parallel
+        const [coupleResult, favoritesResult, budgetResult, requestsResult] = await Promise.all([
+          supabase
+            .from('couples')
+            .select('partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
+            .eq('user_id', user.id)
+            .single(),
+          supabase
+            .from('favoris')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+          supabase
+            .from('budget_items')
+            .select('id, category, amount, paid')
+            .eq('user_id', user.id),
+          supabase
+            .from('requests')
+            .select('id, created_at, status, provider_id')
+            .eq('couple_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(10),
+        ])
+
+        if (coupleResult.data) {
+          setCoupleData(coupleResult.data)
+          setBudgetTotal(coupleResult.data.budget_total || 0)
         }
 
-        if (coupleData) {
-          if (coupleData.partner_1_name) {
-            const nameParts = coupleData.partner_1_name.trim().split(/\s+/)
-            setPrenom(nameParts[0] || '')
-          }
+        setFavoritesCount(favoritesResult.count || 0)
+        setShortlistedCount(favoritesResult.count || 0)
 
-          setCoupleProfile(coupleData)
+        if (budgetResult.data) {
+          setBudgetItems(budgetResult.data)
+        }
 
-          let joursRestants = null
-          if (coupleData.wedding_date) {
-            const dateMariage = new Date(coupleData.wedding_date)
-            const aujourdhui = new Date()
-            const diff = dateMariage.getTime() - aujourdhui.getTime()
-            joursRestants = Math.ceil(diff / (1000 * 60 * 60 * 24))
-          }
-
-          const [
-            { count: favorisCount },
-            { data: budgetItemsData },
-            { count: requestsCount },
-            { data: recentRequestsData },
-            { data: recentFavorisData },
-          ] = await Promise.all([
-            supabase
-              .from('favoris')
-              .select('id', { count: 'exact', head: true })
-              .eq('couple_id', coupleData.id),
-            supabase
-              .from('budget_items')
-              .select('id, category, amount')
-              .eq('couple_id', user.id),
-            supabase
-              .from('requests')
-              .select('id', { count: 'exact', head: true })
-              .eq('couple_id', user.id),
-            supabase
-              .from('requests')
-              .select('id, created_at, status, provider_id')
-              .eq('couple_id', user.id)
-              .order('created_at', { ascending: false })
-              .limit(5),
-            supabase
-              .from('favoris')
-              .select('id, created_at')
-              .eq('couple_id', coupleData.id)
-              .order('created_at', { ascending: false })
-              .limit(5),
-          ])
-
-          // Recuperer les noms des prestataires pour les demandes recentes
-          let providerNames: Record<string, string> = {}
-          if (recentRequestsData && recentRequestsData.length > 0) {
-            const providerIds = [...new Set(recentRequestsData.map((r: any) => r.provider_id).filter(Boolean))]
-            if (providerIds.length > 0) {
-              const { data: profiles } = await supabase
-                .from('profiles')
-                .select('id, prenom, nom, business_name')
-                .in('id', providerIds)
-              if (profiles) {
-                profiles.forEach((p: any) => {
-                  providerNames[p.id] = p.business_name || [p.prenom, p.nom].filter(Boolean).join(' ') || 'Prestataire'
-                })
-              }
-            }
-          }
-
-          if (budgetItemsData) {
-            setBudgetItems(budgetItemsData)
-          }
-
-          setRequestsSentCount(requestsCount || 0)
-
-          // Construire le fil d'activites a partir des donnees reelles
-          const activities: any[] = []
-
-          if (recentRequestsData) {
-            recentRequestsData.forEach((req: any) => {
-              const providerName = providerNames[req.provider_id] || 'un prestataire'
-
-              // Label, icone et lien adaptes au statut reel
-              let title: string
-              let icon = FileText
-              let href = '/couple/demandes'
-              let color = 'text-[#823F91]'
-
-              switch (req.status) {
-                case 'accepted':
-                  title = `Conversation ouverte avec ${providerName}`
-                  icon = MessageSquare
-                  href = '/couple/messagerie'
-                  break
-                case 'rejected':
-                  title = `Demande refusee par ${providerName}`
-                  icon = XCircle
-                  color = 'text-gray-500'
-                  break
-                case 'cancelled':
-                  title = `Demande annulee - ${providerName}`
-                  icon = XCircle
-                  color = 'text-gray-500'
-                  break
-                default:
-                  title = `Demande envoyee a ${providerName}`
-                  icon = FileText
-                  break
-              }
-
-              activities.push({
-                id: `req-${req.id}`,
-                type: 'request',
-                title,
-                time: formatRelativeTime(req.created_at),
-                createdAt: req.created_at,
-                icon,
-                color,
-                href,
-              })
-            })
-          }
-
-          if (recentFavorisData) {
-            recentFavorisData.forEach((fav: any) => {
-              activities.push({
-                id: `fav-${fav.id}`,
-                type: 'favorite',
-                title: 'Prestataire ajoute aux favoris',
-                time: formatRelativeTime(fav.created_at),
-                createdAt: fav.created_at,
-                icon: Heart,
-                color: 'text-[#823F91]',
-                href: '/couple/recherche',
-              })
-            })
-          }
-
-          activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        // Build recent activities from requests
+        if (requestsResult.data) {
+          const activities = requestsResult.data.map((req: any) => ({
+            id: req.id,
+            type: req.status === 'accepted' ? 'contact' : 'request',
+            title: req.status === 'accepted' ? 'Demande acceptee' : req.status === 'pending' ? 'Demande en attente' : 'Demande envoyee',
+            time: formatRelativeTime(req.created_at),
+            icon: req.status === 'accepted' ? CheckCircle2 : Clock,
+            color: req.status === 'accepted' ? 'text-emerald-500' : 'text-[#823F91]',
+            href: '/couple/demandes',
+          }))
           setRecentActivities(activities.slice(0, 5))
-
-          const budgetTotal = coupleData.budget_total || coupleData.budget_max || coupleData.budget_min || 0
-
-          setStats({
-            prestatairesTrouves: favorisCount || 0,
-            budgetAlloue: budgetTotal,
-            joursRestants,
-            messagesNonLus: 0,
-          })
-
-          setLastUpdated(new Date())
         }
-        setStatsLoading(false)
-      } catch (error: any) {
-        console.error('Erreur chargement dashboard:', error?.message)
-        setStatsLoading(false)
+
+        // Fetch unread messages count
+        try {
+          const { count: msgCount } = await supabase
+            .from('requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('couple_id', user.id)
+            .eq('status', 'accepted')
+          setUnreadMessages(msgCount || 0)
+        } catch {
+          // silent
+        }
+      } catch (error) {
+        console.error('Erreur chargement dashboard couple:', error)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchDashboardData()
   }, [user])
 
-  // Taches d'onboarding calculees a partir des donnees reelles du profil
-  const onboardingTasks = useMemo(() => {
-    if (!coupleProfile) return []
-    return [
-      {
-        id: 1,
-        title: 'Definir la date du mariage',
-        dueDate: 'Profil',
-        completed: !!coupleProfile.wedding_date,
-        priority: 'high' as const,
-        href: '/couple/profil',
-      },
-      {
-        id: 2,
-        title: 'Configurer votre budget',
-        dueDate: 'Budget',
-        completed: stats.budgetAlloue > 0,
-        priority: 'high' as const,
-        href: '/couple/budget',
-      },
-      {
-        id: 3,
-        title: 'Rechercher des prestataires',
-        dueDate: 'Recherche',
-        completed: stats.prestatairesTrouves > 0,
-        priority: 'medium' as const,
-        href: '/couple/recherche',
-      },
-      {
-        id: 4,
-        title: 'Envoyer une premiere demande',
-        dueDate: 'Demandes',
-        completed: requestsSentCount > 0,
-        priority: 'medium' as const,
-        href: '/couple/demandes',
-      },
-      {
-        id: 5,
-        title: 'Completer les informations du couple',
-        dueDate: 'Profil',
-        completed: !!coupleProfile.partner_1_name && !!coupleProfile.partner_2_name,
-        priority: 'low' as const,
-        href: '/couple/profil',
-      },
-    ]
-  }, [coupleProfile, stats, requestsSentCount])
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+    if (diffMins < 1) return "A l'instant"
+    if (diffMins < 60) return `Il y a ${diffMins} min`
+    if (diffHours < 24) return `Il y a ${diffHours}h`
+    if (diffDays === 1) return 'Hier'
+    if (diffDays < 7) return `Il y a ${diffDays} jours`
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+  }
+
+  // Compute days until wedding
+  const daysUntilWedding = useMemo(() => {
+    if (!coupleData?.wedding_date) return null
+    const weddingDate = new Date(coupleData.wedding_date)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    weddingDate.setHours(0, 0, 0, 0)
+    const diff = Math.ceil((weddingDate.getTime() - now.getTime()) / 86400000)
+    return diff > 0 ? diff : null
+  }, [coupleData?.wedding_date])
+
+  // Budget breakdown
+  const budgetSpent = useMemo(() => {
+    return budgetItems.reduce((sum, item) => sum + (item.paid ? item.amount : 0), 0)
+  }, [budgetItems])
+  const budgetRemaining = budgetTotal - budgetSpent
+
+  // Greeting
+  const greeting = coupleData?.partner_1_name
+    ? `Bonjour ${coupleData.partner_1_name}`
+    : 'Bienvenue'
+
+  // Next actions for couple
+  const nextActions: { text: string; cta: string; href: string }[] = []
+  if (!coupleData?.wedding_date) {
+    nextActions.push({ text: "Definissez votre date de mariage pour debloquer le compteur", cta: 'Ajouter la date', href: '/couple/profil' })
+  }
+  if (favoritesCount === 0) {
+    nextActions.push({ text: "Commencez a chercher des prestataires pour votre mariage", cta: 'Rechercher', href: '/couple/recherche' })
+  }
+  if (unreadMessages > 0) {
+    nextActions.push({ text: `${unreadMessages} conversation${unreadMessages > 1 ? 's' : ''} avec des prestataires`, cta: 'Voir les messages', href: '/couple/messagerie' })
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <motion.div
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <p className="text-muted-foreground">Chargement...</p>
-        </motion.div>
+      <div className="w-full space-y-5 sm:space-y-6">
+        {/* Skeleton header */}
+        <div className="h-8 w-64 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-4 w-48 bg-gray-100 rounded-lg animate-pulse" />
+        {/* Skeleton stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-40 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+          ))}
+        </div>
+        {/* Skeleton sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="h-64 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+          <div className="h-64 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+        </div>
       </div>
     )
   }
-
-  if (!user) {
-    router.push('/sign-in')
-    return null
-  }
-
-  // Donnees du camembert budget
-  const chartData = budgetItems.reduce((acc, item) => {
-    const existing = acc.find(d => d.name === item.category)
-    if (existing) {
-      existing.value += item.amount
-    } else {
-      acc.push({ name: item.category, value: item.amount })
-    }
-    return acc
-  }, [] as { name: string; value: number }[])
-    .sort((a, b) => b.value - a.value)
 
   return (
     <div className="w-full">
       <div className="w-full space-y-5 sm:space-y-6">
 
-        {/* Header : Greeting personnalise */}
+        {/* Header: greeting + period filters */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-start justify-between"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         >
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Bonjour{prenom ? ` ${prenom}` : ''}
+            <h1 className="text-[22px] sm:text-[26px] font-bold text-gray-900 tracking-tight">
+              {greeting}
+              {daysUntilWedding && (
+                <span className="ml-2 text-[16px] sm:text-[18px] font-semibold text-[#823F91]">
+                  J-{daysUntilWedding}
+                </span>
+              )}
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {stats.joursRestants !== null && stats.joursRestants > 0
-                ? `J-${stats.joursRestants} avant le grand jour`
-                : 'Vue d\'ensemble de vos preparatifs'}
+            <p className="text-sm text-gray-500 mt-0.5">
+              {coupleData?.wedding_date
+                ? `Mariage prevu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                : 'Organisez votre mariage en toute simplicite'
+              }
             </p>
           </div>
-          {lastUpdated && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
-              <RefreshCw className="h-3 w-3" />
-              <span>
-                {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-full">
+              {([
+                { value: '7d' as PeriodFilter, label: '7j' },
+                { value: '30d' as PeriodFilter, label: '30j' },
+                { value: 'month' as PeriodFilter, label: 'Ce mois' },
+              ]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setPeriodFilter(value)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
+                    periodFilter === value
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
         </motion.div>
 
-        {/* Statistiques rapides */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full items-stretch">
-          {statsLoading ? (
-            <>
-              <SkeletonCard delay={0.1} />
-              <SkeletonCard delay={0.2} />
-              <SkeletonCard delay={0.3} />
-            </>
-          ) : (
-            [
-              {
-                icon: TrendingUp,
-                label: "Prestataires",
-                value: stats.prestatairesTrouves,
-                subtitle: "Dans vos favoris",
-                description: `${stats.prestatairesTrouves} prestataire${stats.prestatairesTrouves > 1 ? 's' : ''} sauvegarde${stats.prestatairesTrouves > 1 ? 's' : ''}`,
-                onClick: () => router.push('/couple/recherche'),
-                actionLabel: "Voir les favoris",
-                delay: 0.1,
-              },
-              {
-                icon: Wallet,
-                label: "Budget",
-                value: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} \u20AC`,
-                subtitle: "Budget total",
-                description: `${stats.budgetAlloue > 0 ? stats.budgetAlloue.toLocaleString('fr-FR') : '0'} \u20AC alloues`,
-                onClick: () => router.push('/couple/budget'),
-                actionLabel: "Gerer",
-                delay: 0.2,
-                isBudgetCard: true,
-              },
-              {
-                icon: Calendar,
-                label: "Jours restants",
-                value: stats.joursRestants !== null ? stats.joursRestants : '-',
-                subtitle: "Avant le mariage",
-                description: stats.joursRestants !== null && stats.joursRestants > 0
-                  ? `${stats.joursRestants} jour${stats.joursRestants > 1 ? 's' : ''} restant${stats.joursRestants > 1 ? 's' : ''}`
-                  : "Date non definie",
-                onClick: () => router.push('/couple/profil'),
-                actionLabel: "Modifier",
-                delay: 0.3,
-              },
-            ].map((card) => {
-              const Icon = card.icon
-              const isBudget = 'isBudgetCard' in card && card.isBudgetCard
-
-              return (
-                <motion.div
-                  key={card.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: card.delay, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative bg-white rounded-2xl transition-all duration-300 ease-out overflow-hidden group cursor-pointer border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"
-                  onClick={card.onClick}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter') card.onClick() }}
+        {/* Next best action */}
+        {nextActions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="p-4 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/40 border border-[#823F91]/8 rounded-2xl"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-[#823F91]/10 rounded-xl flex-shrink-0">
+                <Zap className="h-4 w-4 text-[#823F91]" />
+              </div>
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action recommandee</p>
+                <p className="text-sm font-medium text-gray-800">{nextActions[0].text}</p>
+                <button
+                  onClick={() => router.push(nextActions[0].href)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] hover:text-[#5C2B66] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 rounded"
                 >
-                  <div className="p-4 sm:p-5 space-y-3 flex flex-col flex-1">
-                    {/* Header: Icon + Label */}
-                    <div className="flex items-center gap-3">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex-shrink-0 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center shadow-sm cursor-help">
-                            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-gray-900 text-white border-gray-700">
-                          <p className="text-xs">{card.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        {card.label}
-                      </p>
+                  {nextActions[0].cta} <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Stats Grid — 4 KPI cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
+
+          {/* Prestataires shortlistes */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => router.push('/couple/recherche')}
+            className="cursor-pointer group"
+          >
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
+                  <Heart className="h-[18px] w-[18px] text-[#823F91]" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Prestataires</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                  {shortlistedCount === 0 ? '—' : shortlistedCount}
+                </p>
+                <p className="text-sm font-medium text-gray-500 mt-1">
+                  {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
+                </p>
+                {shortlistedCount === 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                    <Search className="h-3 w-3" /> Rechercher des prestataires
+                  </span>
+                )}
+              </div>
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+                  <span>Voir les favoris</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Budget */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => router.push('/couple/budget')}
+            className="cursor-pointer group"
+          >
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
+                  <Wallet className="h-[18px] w-[18px] text-[#823F91]" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Budget</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                  {budgetTotal > 0 ? `${(budgetTotal / 1000).toFixed(0)}k` : '—'}
+                </p>
+                {budgetTotal > 0 ? (
+                  <>
+                    <p className="text-sm font-medium text-gray-500 mt-1">Budget total {budgetTotal.toLocaleString('fr-FR')} &euro;</p>
+                    {/* Mini budget bar */}
+                    <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full transition-all"
+                        style={{ width: `${Math.min((budgetSpent / budgetTotal) * 100, 100)}%` }}
+                      />
                     </div>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {budgetRemaining > 0 ? `${budgetRemaining.toLocaleString('fr-FR')} restant` : 'Budget depense'}
+                    </p>
+                  </>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                    <Zap className="h-3 w-3" /> Definir un budget
+                  </span>
+                )}
+              </div>
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+                  <span>Gerer le budget</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
-                    {/* Main Value + mini chart budget */}
-                    <div className="space-y-1 relative">
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: card.delay + 0.1 }}
-                        className="flex items-center gap-3"
-                      >
-                        <div className="flex-1">
-                          {typeof card.value === 'number' ? (
-                            <motion.p
-                              className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none"
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.5, delay: card.delay + 0.2 }}
-                            >
-                              {card.value}
-                            </motion.p>
-                          ) : (
-                            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">
-                              {card.value}
-                            </p>
-                          )}
-                        </div>
+          {/* Jours restants */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => router.push('/couple/timeline')}
+            className="cursor-pointer group"
+          >
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
+                  <Calendar className="h-[18px] w-[18px] text-[#823F91]" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Jours restants</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                  {daysUntilWedding ?? '—'}
+                </p>
+                <p className="text-sm font-medium text-gray-500 mt-1">
+                  {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
+                </p>
+                {!daysUntilWedding && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                    <Zap className="h-3 w-3" /> Definir la date
+                  </span>
+                )}
+              </div>
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+                  <span>{daysUntilWedding ? 'Voir le calendrier' : 'Modifier le profil'}</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
-                        {/* Mini camembert pour Budget - visible sur tous les ecrans */}
-                        {isBudget && chartData.length > 0 && (
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <PieChart>
-                                <Pie
-                                  data={chartData}
-                                  cx="50%"
-                                  cy="50%"
-                                  innerRadius="35%"
-                                  outerRadius="95%"
-                                  dataKey="value"
-                                  strokeWidth={0}
-                                >
-                                  {chartData.map((_, i) => (
-                                    <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                                  ))}
-                                </Pie>
-                              </PieChart>
-                            </ResponsiveContainer>
-                          </div>
-                        )}
-                      </motion.div>
-
-                      {card.subtitle && (
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          {card.subtitle}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Action button */}
-                    {card.actionLabel && (
-                      <div className="pt-2 mt-auto">
-                        <span className="w-full flex items-center justify-between text-xs font-semibold text-[#823F91] hover:text-[#6D3478] transition-colors group/btn">
-                          <span className="group-hover/btn:underline">{card.actionLabel}</span>
-                          <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )
-            })
-          )}
+          {/* Messages / Conversations */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            onClick={() => router.push('/couple/messagerie')}
+            className="cursor-pointer group"
+          >
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
+                  <MessageSquare className="h-[18px] w-[18px] text-[#823F91]" />
+                </div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Messages</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                  {unreadMessages === 0 ? '—' : unreadMessages}
+                </p>
+                <p className="text-sm font-medium text-gray-500 mt-1">
+                  {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
+                </p>
+                {unreadMessages === 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                    <Sparkles className="h-3 w-3" /> Envoyer une demande
+                  </span>
+                )}
+              </div>
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+                  <span>Ouvrir la messagerie</span>
+                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Grille 2 colonnes : Preparatifs (onboarding) + Activite recente */}
+        {/* Quick actions */}
+        <QuickActionsCouple />
+
+        {/* Tasks and Activity side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-          <UpcomingTasksCouple tasks={onboardingTasks} />
+          <UpcomingTasksCouple />
           <RecentActivityCouple activities={recentActivities} />
         </div>
-
-        {/* Actions rapides */}
-        <QuickActionsCouple />
       </div>
     </div>
   )
