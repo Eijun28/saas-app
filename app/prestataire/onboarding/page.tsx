@@ -188,7 +188,7 @@ export default function OnboardingPage() {
   }
 
   function toggleRegion(region: string) {
-    const regionDepts = DEPARTEMENTS.filter(d => d.region === region).map(d => d.id)
+    const regionDepts: string[] = DEPARTEMENTS.filter(d => d.region === region).map(d => d.id)
     const allSelected = regionDepts.every(d => selectedZones.includes(d))
     if (allSelected) {
       setSelectedZones(prev => prev.filter(z => !regionDepts.includes(z)))
