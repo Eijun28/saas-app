@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { UserPlus, Users, Edit2, X, Check, Mail, Loader2 } from 'lucide-react'
+import { UserPlus, Users, Edit2, X, Check, Mail, Loader2, Link2, Copy, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { toast } from 'sonner'
@@ -36,6 +36,14 @@ export default function CollaborateursPage() {
   const [isInviting, setIsInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [editingCollaborateur, setEditingCollaborateur] = useState<string | null>(null)
+  const [channel, setChannel] = useState<'email' | 'link'>('email')
+  const [invitationResult, setInvitationResult] = useState<{
+    invitationUrl: string
+    emailSent: boolean
+    email: string
+  } | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [copiedCollabId, setCopiedCollabId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -87,6 +95,7 @@ export default function CollaborateursPage() {
           name: formData.name,
           role: formData.role,
           message: formData.message,
+          channel,
         }),
       })
 
@@ -96,13 +105,27 @@ export default function CollaborateursPage() {
         throw new Error(data.error || 'Erreur lors de l\'invitation')
       }
 
-      // Succès - fermer la modal et recharger les collaborateurs
-      setIsDialogOpen(false)
-      setFormData({ name: '', email: '', role: 'Ami', message: '' })
-      setInviteError(null)
       loadCollaborateurs()
-      
-      toast.success(`Invitation envoyée à ${formData.email}`)
+
+      if (channel === 'link') {
+        // Mode lien : afficher le lien dans la modal
+        setInvitationResult({
+          invitationUrl: data.invitation.invitationUrl,
+          emailSent: false,
+          email: formData.email,
+        })
+        toast.success('Lien d\'invitation cr\u00e9\u00e9')
+      } else {
+        // Mode email : fermer la modal
+        setInvitationResult(null)
+        setIsDialogOpen(false)
+        setFormData({ name: '', email: '', role: 'Ami', message: '' })
+        setInviteError(null)
+        toast.success(data.invitation.emailSent
+          ? `Invitation envoy\u00e9e par email \u00e0 ${formData.email}`
+          : `Invitation cr\u00e9\u00e9e (email non envoy\u00e9 - copiez le lien depuis la fiche)`
+        )
+      }
     } catch (error: any) {
       console.error('Erreur invitation:', error)
       setInviteError(error.message || 'Erreur lors de l\'envoi de l\'invitation')
@@ -144,7 +167,47 @@ export default function CollaborateursPage() {
     }
   }
 
-  const roles = ['Témoin', 'Famille', 'Ami', 'Organisateur', 'Autre']
+  const copyInvitationLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(true)
+      toast.success('Lien copi\u00e9 dans le presse-papiers !')
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Impossible de copier le lien')
+    }
+  }
+
+  const shareWhatsApp = (url: string, name: string) => {
+    const text = encodeURIComponent(
+      `Salut ${name} ! Je t\u2019invite \u00e0 collaborer sur l\u2019organisation de notre mariage sur Nuply : ${url}`
+    )
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
+  const copyCollabLink = async (collab: any) => {
+    if (!collab.invitation_token) return
+    const baseUrl = window.location.origin
+    const url = `${baseUrl}/invitation/${collab.invitation_token}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedCollabId(collab.id)
+      toast.success(`Lien d\u2019invitation copi\u00e9 pour ${collab.name}`)
+      setTimeout(() => setCopiedCollabId(null), 2000)
+    } catch {
+      toast.error('Impossible de copier le lien')
+    }
+  }
+
+  const closeDialog = () => {
+    setIsDialogOpen(false)
+    setFormData({ name: '', email: '', role: 'Ami', message: '' })
+    setInviteError(null)
+    setInvitationResult(null)
+    setChannel('email')
+  }
+
+  const roles = ['T\u00e9moin', 'Famille', 'Ami', 'Organisateur', 'Autre']
 
   if (loading) {
     return (
@@ -247,12 +310,246 @@ export default function CollaborateursPage() {
           </Card>
         </motion.div>
 
+        {/* Modal d'invitation - toujours rendu */}
+        <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setIsDialogOpen(true) }}>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-semibold">
+                    Inviter un collaborateur
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-[#6B7280]">
+                    Envoyez une invitation par email ou générez un lien à partager directement
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Affichage du résultat : lien d'invitation généré */}
+                {invitationResult ? (
+                  <div className="space-y-4 py-4">
+                    <div className="rounded-md bg-green-50 border border-green-200 p-4 space-y-3">
+                      <p className="text-sm font-medium text-green-800">
+                        Lien d&apos;invitation créé pour {invitationResult.email}
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          value={invitationResult.invitationUrl}
+                          readOnly
+                          className="text-xs bg-white"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyInvitationLink(invitationResult.invitationUrl)}
+                          className="shrink-0"
+                        >
+                          {copied ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => shareWhatsApp(invitationResult.invitationUrl, formData.name)}
+                        >
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          WhatsApp
+                        </Button>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setInvitationResult(null)
+                          setFormData({ name: '', email: '', role: 'Ami', message: '' })
+                        }}
+                      >
+                        Nouvelle invitation
+                      </Button>
+                      <Button
+                        onClick={closeDialog}
+                        className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+                      >
+                        Fermer
+                      </Button>
+                    </DialogFooter>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4 py-4">
+                      {/* Sélection du canal d'envoi */}
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={channel === 'email' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setChannel('email')}
+                          className={channel === 'email' ? 'bg-[#823F91] hover:bg-[#6D3478]' : ''}
+                          disabled={isInviting}
+                        >
+                          <Mail className="h-4 w-4 mr-1" />
+                          Par email
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={channel === 'link' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setChannel('link')}
+                          className={channel === 'link' ? 'bg-[#823F91] hover:bg-[#6D3478]' : ''}
+                          disabled={isInviting}
+                        >
+                          <Link2 className="h-4 w-4 mr-1" />
+                          Générer un lien
+                        </Button>
+                      </div>
+
+                      {channel === 'link' && (
+                        <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
+                          <p className="text-xs text-blue-700">
+                            Un lien personnalisé sera généré que vous pourrez copier et envoyer par WhatsApp, SMS ou tout autre moyen.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Champ Email */}
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-email" className="text-sm font-medium">
+                          Email
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
+                          <Input
+                            id="invite-email"
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => {
+                              setFormData({ ...formData, email: e.target.value })
+                              setInviteError(null)
+                            }}
+                            placeholder="nom@example.com"
+                            className="pl-10"
+                            disabled={isInviting}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Champ Nom */}
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-name" className="text-sm font-medium">
+                          Nom
+                        </Label>
+                        <Input
+                          id="invite-name"
+                          value={formData.name}
+                          onChange={(e) => {
+                            setFormData({ ...formData, name: e.target.value })
+                            setInviteError(null)
+                          }}
+                          placeholder="Nom du collaborateur"
+                          disabled={isInviting}
+                        />
+                      </div>
+
+                      {/* Sélection du Rôle */}
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-role" className="text-sm font-medium">
+                          Rôle
+                        </Label>
+                        <Select
+                          value={formData.role}
+                          onValueChange={(value) => setFormData({ ...formData, role: value })}
+                          disabled={isInviting}
+                        >
+                          <SelectTrigger id="invite-role">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles.map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Message personnalisé (optionnel) */}
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-message" className="text-sm font-medium">
+                          Message personnalisé <span className="text-[#9CA3AF] font-normal">(optionnel)</span>
+                        </Label>
+                        <Textarea
+                          id="invite-message"
+                          value={formData.message}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          placeholder="Ajoutez un message personnalisé à votre invitation..."
+                          className="min-h-[100px] resize-none"
+                          disabled={isInviting}
+                        />
+                        {channel === 'email' && (
+                          <p className="text-xs text-[#9CA3AF]">
+                            Ce message sera inclus dans l&apos;email d&apos;invitation
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Message d'erreur */}
+                      {inviteError && (
+                        <div className="rounded-md bg-red-50 border border-red-200 p-3">
+                          <p className="text-sm text-red-600">{inviteError}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <DialogFooter className="flex-row justify-end gap-2 sm:gap-0">
+                      <Button
+                        variant="outline"
+                        onClick={closeDialog}
+                        disabled={isInviting}
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        onClick={handleInvite}
+                        className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+                        disabled={!formData.name || !formData.email || isInviting}
+                      >
+                        {isInviting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {channel === 'link' ? 'G\u00e9n\u00e9ration...' : 'Envoi...'}
+                          </>
+                        ) : (
+                          <>
+                            {channel === 'link' ? (
+                              <>
+                                <Link2 className="mr-2 h-4 w-4" />
+                                Générer le lien
+                              </>
+                            ) : (
+                              <>
+                                <Mail className="mr-2 h-4 w-4" />
+                                Envoyer l&apos;invitation
+                              </>
+                            )}
+                          </>
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
+
         {collaborateurs.length === 0 ? (
           <Card className="border-gray-200">
             <CardContent className="p-12 text-center">
               <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
               <p className="text-[#4A4A4A] mb-4">
-                Vous n'avez pas encore de collaborateurs
+                Vous n&apos;avez pas encore de collaborateurs
               </p>
               <Button
                 onClick={() => setIsDialogOpen(true)}
@@ -264,140 +561,6 @@ export default function CollaborateursPage() {
             </CardContent>
           </Card>
         ) : (
-          <>
-            {/* Modal d'invitation - Style Notion */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-semibold">
-                    Inviter un collaborateur
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-[#6B7280]">
-                    Envoyez une invitation par email pour collaborer sur votre mariage
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4 py-4">
-                  {/* Champ Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-email" className="text-sm font-medium">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
-                      <Input
-                        id="invite-email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => {
-                          setFormData({ ...formData, email: e.target.value })
-                          setInviteError(null)
-                        }}
-                        placeholder="nom@example.com"
-                        className="pl-10"
-                        disabled={isInviting}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Champ Nom */}
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-name" className="text-sm font-medium">
-                      Nom
-                    </Label>
-                    <Input
-                      id="invite-name"
-                      value={formData.name}
-                      onChange={(e) => {
-                        setFormData({ ...formData, name: e.target.value })
-                        setInviteError(null)
-                      }}
-                      placeholder="Nom du collaborateur"
-                      disabled={isInviting}
-                    />
-                  </div>
-
-                  {/* Sélection du Rôle */}
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-role" className="text-sm font-medium">
-                      Rôle
-                    </Label>
-                    <Select
-                      value={formData.role}
-                      onValueChange={(value) => setFormData({ ...formData, role: value })}
-                      disabled={isInviting}
-                    >
-                      <SelectTrigger id="invite-role">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Message personnalisé (optionnel) */}
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-message" className="text-sm font-medium">
-                      Message personnalisé <span className="text-[#9CA3AF] font-normal">(optionnel)</span>
-                    </Label>
-                    <Textarea
-                      id="invite-message"
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Ajoutez un message personnalisé à votre invitation..."
-                      className="min-h-[100px] resize-none"
-                      disabled={isInviting}
-                    />
-                    <p className="text-xs text-[#9CA3AF]">
-                      Ce message sera inclus dans l'email d'invitation
-                    </p>
-                  </div>
-
-                  {/* Message d'erreur */}
-                  {inviteError && (
-                    <div className="rounded-md bg-red-50 border border-red-200 p-3">
-                      <p className="text-sm text-red-600">{inviteError}</p>
-                    </div>
-                  )}
-                </div>
-
-                <DialogFooter className="flex-row justify-end gap-2 sm:gap-0">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsDialogOpen(false)
-                      setFormData({ name: '', email: '', role: 'Ami', message: '' })
-                      setInviteError(null)
-                    }}
-                    disabled={isInviting}
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    onClick={handleInvite}
-                    className="bg-[#823F91] hover:bg-[#6D3478] text-white"
-                    disabled={!formData.name || !formData.email || isInviting}
-                  >
-                    {isInviting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Envoi...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="mr-2 h-4 w-4" />
-                        Envoyer l'invitation
-                      </>
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {collaborateurs.map((collab) => (
               <motion.div
@@ -444,9 +607,44 @@ export default function CollaborateursPage() {
                   <CardContent className="space-y-4">
                     <p className="text-sm text-[#4A4A4A]">{collab.email}</p>
                     {collab.accepted_at ? (
-                      <p className="text-xs text-green-600">✓ Accepté</p>
+                      <p className="text-xs text-green-600">{'\u2713'} Accepté</p>
                     ) : (
-                      <p className="text-xs text-yellow-600">⏳ En attente</p>
+                      <p className="text-xs text-yellow-600">{'\u23F3'} En attente</p>
+                    )}
+                    {/* Bouton copier le lien pour les invitations en attente */}
+                    {!collab.accepted_at && collab.invitation_token && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-[#823F91] border-[#823F91]/30 hover:bg-[#823F91]/5"
+                          onClick={() => copyCollabLink(collab)}
+                        >
+                          {copiedCollabId === collab.id ? (
+                            <>
+                              <Check className="h-4 w-4 mr-1 text-green-500" />
+                              Lien copié
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-1" />
+                              Copier le lien
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const baseUrl = window.location.origin
+                            const url = `${baseUrl}/invitation/${collab.invitation_token}`
+                            shareWhatsApp(url, collab.name)
+                          }}
+                          title="Partager via WhatsApp"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                     <div className="flex gap-2">
                       <Button
@@ -473,7 +671,6 @@ export default function CollaborateursPage() {
               </motion.div>
             ))}
           </div>
-          </>
         )}
       </div>
     </div>

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { email, name, role, message } = validationResult.data
+    const { email, name, role, message, channel } = validationResult.data
 
     // ✅ VALIDATION 1: Vérifier que l'inviteur existe et est un couple
     const { data: inviter, error: inviterError } = await supabase
@@ -135,11 +135,12 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     const invitationUrl = `${baseUrl}/invitation/${invitationToken}`
 
-    // Envoyer l'email d'invitation via Resend
+    // Envoyer l'email d'invitation via Resend (seulement si canal = email)
+    let emailSent = false
     const resendApiKey = process.env.RESEND_API_KEY
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
 
-    if (resendApiKey) {
+    if (channel === 'email' && resendApiKey) {
       try {
         const resend = new Resend(resendApiKey)
         
@@ -172,12 +173,13 @@ export async function POST(request: Request) {
             </div>
           `,
         })
+        emailSent = true
       } catch (emailError: any) {
         logger.error('Erreur envoi email', emailError)
         // Ne pas faire échouer la requête si l'email échoue
         // L'invitation est quand même créée en DB
       }
-    } else {
+    } else if (channel === 'email') {
       logger.warn('RESEND_API_KEY non configurée - email non envoyé')
     }
 
@@ -186,7 +188,9 @@ export async function POST(request: Request) {
       invitation: {
         id: invitation.id,
         email: invitation.email,
-        ...(process.env.NODE_ENV === 'development' && { invitationUrl }),
+        invitationUrl,
+        emailSent,
+        channel,
       },
     })
   } catch (error) {
