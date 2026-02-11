@@ -188,7 +188,7 @@ export default function OnboardingPage() {
   }
 
   function toggleRegion(region: string) {
-    const regionDepts = DEPARTEMENTS.filter(d => d.region === region).map(d => d.id)
+    const regionDepts: string[] = DEPARTEMENTS.filter(d => d.region === region).map(d => d.id)
     const allSelected = regionDepts.every(d => selectedZones.includes(d))
     if (allSelected) {
       setSelectedZones(prev => prev.filter(z => !regionDepts.includes(z)))
@@ -367,7 +367,7 @@ export default function OnboardingPage() {
 
                     <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
                       {Object.entries(DEPARTEMENTS_BY_REGION).map(([region, depts]) => {
-                        const regionDeptIds = depts.map(d => d.id)
+                        const regionDeptIds: string[] = depts.map(d => d.id)
                         const allSelected = regionDeptIds.every(d => selectedZones.includes(d))
                         const someSelected = regionDeptIds.some(d => selectedZones.includes(d))
 
