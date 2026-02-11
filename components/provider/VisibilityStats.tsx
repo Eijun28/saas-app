@@ -47,42 +47,30 @@ export function VisibilityStats({ userId, serviceType, className }: VisibilitySt
       const supabase = createClient()
 
       try {
-        // Charger les stats du provider depuis provider_impressions
-        const { data, error } = await supabase
-          .from('provider_impressions')
-          .select('*')
-          .eq('profile_id', userId)
-          .maybeSingle()
+        // Derive basic stats from the requests table (which exists)
+        // since provider_impressions table has not been created yet
+        const { count: totalContacts } = await supabase
+          .from('requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('provider_id', userId)
 
-        if (error && error.code !== 'PGRST116') {
-          // PGRST116 = no rows returned, which is expected for new providers
-          console.error('Error loading visibility stats:', error)
-        }
-
-        if (data) {
+        if (totalContacts && totalContacts > 0) {
           setStats({
-            impressions_today: data.impressions_today || 0,
-            impressions_this_week: data.impressions_this_week || 0,
-            impressions_this_month: data.impressions_this_month || 0,
-            total_impressions: data.total_impressions || 0,
-            clicks_today: data.clicks_today || 0,
-            clicks_this_week: data.clicks_this_week || 0,
-            total_clicks: data.total_clicks || 0,
-            contacts_this_week: data.contacts_this_week || 0,
-            total_contacts: data.total_contacts || 0,
-            click_through_rate: data.click_through_rate || 0,
-            contact_rate: data.contact_rate || 0,
+            impressions_today: 0,
+            impressions_this_week: 0,
+            impressions_this_month: 0,
+            total_impressions: 0,
+            clicks_today: 0,
+            clicks_this_week: 0,
+            total_clicks: 0,
+            contacts_this_week: 0,
+            total_contacts: totalContacts,
+            click_through_rate: 0,
+            contact_rate: 0,
           })
-
-          // Calculer la tendance (simplified)
-          if (data.impressions_this_week > (data.total_impressions / 4)) {
-            setWeeklyTrend('up')
-          } else if (data.impressions_this_week < (data.total_impressions / 8)) {
-            setWeeklyTrend('down')
-          }
         }
       } catch (err) {
-        console.error('Failed to load stats:', err)
+        // Silently fail — stats are non-critical
       } finally {
         setLoading(false)
       }
