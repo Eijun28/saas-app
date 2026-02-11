@@ -18,9 +18,8 @@ export type {
   CoupleEvent,
   CoupleEventWithType,
   CoupleEventWithProviders,
-  CoupleEventProvider,
-  ProviderEventType,
   CoupleEventStatus,
-  EventProviderStatus,
+  TimelineEvent,
+  TimelineEventFormData,
 } from './cultural-events.types'
 
