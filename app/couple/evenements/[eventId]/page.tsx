@@ -6,10 +6,6 @@ import { motion } from 'framer-motion'
 import {
   ArrowLeft,
   Calendar,
-  Clock,
-  MapPin,
-  Users,
-  Wallet,
   Edit2,
   Trash2,
   FileText,
@@ -19,9 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { EventStatusBadge } from '@/components/couple-events/EventStatusBadge'
 import { EventForm } from '@/components/couple-events/EventForm'
-import type { CoupleEventWithProviders, CoupleEventFormData, CulturalEventType } from '@/types/cultural-events.types'
+import type { TimelineEvent, TimelineEventFormData } from '@/types/cultural-events.types'
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Non définie'
@@ -33,14 +28,6 @@ function formatDate(dateStr: string | null): string {
   })
 }
 
-function formatBudget(min: number | null, max: number | null): string {
-  if (!min && !max) return 'Non défini'
-  if (min && max) return `${min.toLocaleString('fr-FR')} - ${max.toLocaleString('fr-FR')} €`
-  if (min) return `À partir de ${min.toLocaleString('fr-FR')} €`
-  if (max) return `Jusqu'à ${max.toLocaleString('fr-FR')} €`
-  return 'Non défini'
-}
-
 export default function EventDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -48,8 +35,7 @@ export default function EventDetailPage() {
   const eventId = params.eventId as string
 
   const [loading, setLoading] = useState(true)
-  const [event, setEvent] = useState<CoupleEventWithProviders | null>(null)
-  const [eventTypes, setEventTypes] = useState<CulturalEventType[]>([])
+  const [event, setEvent] = useState<TimelineEvent | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   useEffect(() => {
@@ -63,38 +49,22 @@ export default function EventDetailPage() {
     const supabase = createClient()
 
     try {
-      const [eventResult, typesResult] = await Promise.all([
-        supabase
-          .from('couple_events')
-          .select(`
-            *,
-            event_type:cultural_event_types(*),
-            providers:couple_event_providers(
-              *,
-              provider:profiles(id, nom_entreprise, avatar_url, service_type)
-            )
-          `)
-          .eq('id', eventId)
-          .single(),
-        supabase
-          .from('cultural_event_types')
-          .select('*')
-          .eq('is_active', true)
-          .order('culture_category_id')
-          .order('display_order'),
-      ])
+      const { data, error } = await supabase
+        .from('timeline_events')
+        .select('*')
+        .eq('id', eventId)
+        .single()
 
-      if (eventResult.error) {
-        if (eventResult.error.code === 'PGRST116') {
+      if (error) {
+        if (error.code === 'PGRST116') {
           toast.error('Événement introuvable')
           router.push('/couple/evenements')
           return
         }
-        throw eventResult.error
+        throw error
       }
 
-      setEvent(eventResult.data as CoupleEventWithProviders)
-      setEventTypes((typesResult.data as CulturalEventType[]) || [])
+      setEvent(data as TimelineEvent)
     } catch (err) {
       console.error('Erreur chargement événement:', err)
       toast.error('Erreur lors du chargement')
@@ -103,31 +73,21 @@ export default function EventDetailPage() {
     }
   }
 
-  const handleFormSubmit = async (formData: CoupleEventFormData) => {
+  const handleFormSubmit = async (formData: TimelineEventFormData) => {
     if (!event) return
 
     const supabase = createClient()
     const payload = {
-      event_type_id: formData.event_type_id,
-      custom_event_name: formData.custom_event_name || null,
       title: formData.title,
       description: formData.description || null,
       event_date: formData.event_date
         ? formData.event_date.toISOString().split('T')[0]
-        : null,
-      event_time: formData.event_time || null,
-      venue: formData.venue || null,
-      venue_address: formData.venue_address || null,
-      guest_count: formData.guest_count ? parseInt(formData.guest_count) : null,
-      budget_min: formData.budget_min ? parseFloat(formData.budget_min) : null,
-      budget_max: formData.budget_max ? parseFloat(formData.budget_max) : null,
-      status: formData.status,
-      notes: formData.notes || null,
+        : event.event_date,
     }
 
     try {
       const { error } = await supabase
-        .from('couple_events')
+        .from('timeline_events')
         .update(payload)
         .eq('id', event.id)
 
@@ -149,7 +109,7 @@ export default function EventDetailPage() {
     const supabase = createClient()
     try {
       const { error } = await supabase
-        .from('couple_events')
+        .from('timeline_events')
         .delete()
         .eq('id', event.id)
 
@@ -211,18 +171,10 @@ export default function EventDetailPage() {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight">
-                {event.title}
-              </h1>
-              <EventStatusBadge status={event.status} />
-            </div>
-            {event.event_type && (
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {event.event_type.description}
-              </p>
-            )}
-            {event.description && !event.event_type?.description && (
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight mb-2">
+              {event.title}
+            </h1>
+            {event.description && (
               <p className="text-sm text-gray-600 leading-relaxed">
                 {event.description}
               </p>
@@ -250,7 +202,7 @@ export default function EventDetailPage() {
         </div>
       </motion.div>
 
-      {/* Cards grille */}
+      {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Planning */}
         <motion.div
@@ -264,100 +216,21 @@ export default function EventDetailPage() {
                 <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
                   <Calendar className="h-4 w-4 text-[#823F91]" />
                 </div>
-                Planning
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start gap-3">
-                <Calendar className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-400 mb-0.5">Date</p>
-                  <p className="text-sm font-medium text-gray-900">{formatDate(event.event_date)}</p>
-                </div>
-              </div>
-              {event.event_time && (
-                <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Heure</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {event.event_time.slice(0, 5)}
-                    </p>
-                  </div>
-                </div>
-              )}
-              {event.venue && (
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Lieu</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {event.venue}
-                    </p>
-                    {event.venue_address && (
-                      <p className="text-xs text-gray-500 mt-0.5">{event.venue_address}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {event.guest_count && (
-                <div className="flex items-start gap-3">
-                  <Users className="h-4 w-4 text-[#823F91]/50 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-400 mb-0.5">Invités</p>
-                    <p className="text-sm font-medium text-gray-900">
-                      {event.guest_count} personnes
-                    </p>
-                  </div>
-                </div>
-              )}
-              {!event.event_date && !event.event_time && !event.venue && !event.guest_count && (
-                <p className="text-sm text-gray-400 italic text-center py-2">
-                  Aucune information de planning renseignée
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Budget */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-        >
-          <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
-                  <Wallet className="h-4 w-4 text-[#823F91]" />
-                </div>
-                Budget
+                Date
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-semibold text-gray-900">
-                {formatBudget(event.budget_min, event.budget_max)}
-              </p>
-              {event.budget_min && event.budget_max && (
-                <div className="mt-3 h-2 bg-[#823F91]/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full"
-                    style={{ width: '0%' }}
-                  />
-                </div>
-              )}
+              <p className="text-sm font-medium text-gray-900">{formatDate(event.event_date)}</p>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Description / Notes */}
-        {(event.description || event.notes) && (
+        {/* Description */}
+        {event.description && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="sm:col-span-2"
+            transition={{ duration: 0.4, delay: 0.15 }}
           >
             <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
@@ -365,46 +238,17 @@ export default function EventDetailPage() {
                   <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
                     <FileText className="h-4 w-4 text-[#823F91]" />
                   </div>
-                  Détails & Notes
+                  Description
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {event.description && (
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-medium text-[#823F91]/70 mb-1.5">Description</p>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{event.description}</p>
-                  </div>
-                )}
-                {event.notes && (
-                  <div className="rounded-lg bg-amber-50/50 border border-amber-100 p-3">
-                    <p className="text-xs font-medium text-amber-600 mb-1.5">Notes internes</p>
-                    <p className="text-sm text-gray-600 italic whitespace-pre-wrap leading-relaxed">{event.notes}</p>
-                  </div>
-                )}
+              <CardContent>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  {event.description}
+                </p>
               </CardContent>
             </Card>
           </motion.div>
         )}
-
-        {/* Prestataires (placeholder pour le MVP) */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.25 }}
-          className="sm:col-span-2"
-        >
-          <Card className="border-[#823F91]/15 border-dashed bg-[#823F91]/[0.02]">
-            <CardContent className="py-8 text-center">
-              <div className="h-12 w-12 rounded-xl bg-[#823F91]/10 flex items-center justify-center mx-auto mb-3">
-                <Users className="h-6 w-6 text-[#823F91]/40" />
-              </div>
-              <p className="text-sm font-semibold text-gray-600 mb-1">Prestataires associés</p>
-              <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                Vous pourrez bientôt associer vos prestataires à chaque événement pour une organisation simplifiée.
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
       </div>
 
       {/* Dialog formulaire d'édition */}
@@ -413,7 +257,6 @@ export default function EventDetailPage() {
         onOpenChange={setIsFormOpen}
         onSubmit={handleFormSubmit}
         editingEvent={event}
-        eventTypes={eventTypes}
       />
     </div>
   )

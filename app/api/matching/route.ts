@@ -464,7 +464,8 @@ export async function POST(request: NextRequest) {
         .eq('service_type', normalizedServiceType)
         .in('profile_id', providerIds);
 
-      if (fairnessError) {
+      // PGRST205 = table not found in schema cache — migration not yet applied
+      if (fairnessError && fairnessError.code !== 'PGRST205') {
         throw fairnessError;
       }
 

@@ -1,14 +1,13 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, Users, Wallet, ChevronRight } from 'lucide-react'
+import { Calendar, ChevronRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { EventStatusBadge } from './EventStatusBadge'
-import type { CoupleEventWithType } from '@/types/cultural-events.types'
+import type { TimelineEvent } from '@/types/cultural-events.types'
 import { cn } from '@/lib/utils'
 
 interface EventCardProps {
-  event: CoupleEventWithType
+  event: TimelineEvent
   index: number
   onClick: () => void
 }
@@ -23,18 +22,7 @@ function formatDate(dateStr: string | null): string {
   })
 }
 
-function formatBudget(min: number | null, max: number | null): string | null {
-  if (!min && !max) return null
-  if (min && max) return `${min.toLocaleString('fr-FR')} - ${max.toLocaleString('fr-FR')} €`
-  if (min) return `À partir de ${min.toLocaleString('fr-FR')} €`
-  if (max) return `Jusqu'à ${max.toLocaleString('fr-FR')} €`
-  return null
-}
-
 export function EventCard({ event, index, onClick }: EventCardProps) {
-  const budgetStr = formatBudget(event.budget_min, event.budget_max)
-  const cultureBadge = event.event_type?.culture_category_id
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -52,12 +40,11 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
         <CardContent className="p-4 sm:p-5 border-l-[3px] border-l-[#823F91]/40 group-hover:border-l-[#823F91]">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              {/* Title + Status */}
+              {/* Title */}
               <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                 <h3 className="text-base font-semibold text-gray-900 truncate">
                   {event.title}
                 </h3>
-                <EventStatusBadge status={event.status} />
               </div>
 
               {/* Description */}
@@ -67,33 +54,12 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
                 </p>
               )}
 
-              {/* Metadata row */}
+              {/* Date */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-gray-500">
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 text-[#823F91]/60" />
                   {formatDate(event.event_date)}
                 </span>
-
-                {event.venue && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-[#823F91]/60" />
-                    <span className="truncate max-w-[200px]">{event.venue}</span>
-                  </span>
-                )}
-
-                {event.guest_count && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-[#823F91]/60" />
-                    {event.guest_count} invités
-                  </span>
-                )}
-
-                {budgetStr && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Wallet className="h-3.5 w-3.5 text-[#823F91]/60" />
-                    {budgetStr}
-                  </span>
-                )}
               </div>
             </div>
 

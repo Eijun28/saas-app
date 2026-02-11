@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       // Si la table n'existe pas, retourner des donnees vides
-      if (error.code === '42P01') {
+      if (error.code === '42P01' || error.code === 'PGRST205') {
         return NextResponse.json({
           provider_id: providerId,
           stats: [],
