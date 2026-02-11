@@ -41,23 +41,27 @@ export interface ExtendedSearchCriteria extends SearchCriteria {
 }
 
 /**
+ * Interface pour les cultures avec niveau d'expertise
+ */
+export interface ProviderCultureWithExpertise {
+  culture_id: string;
+  expertise_level: 'specialise' | 'experimente';
+}
+
+/**
  * Calcule le score de match culturel (/30 points)
+ * Supporte les cultures avec ou sans niveau d'expertise.
+ * - Match "specialise" = valeur pleine
+ * - Match "experimente" = 60% de la valeur
  */
 export function calculateCulturalScore(
   coupleCultures: string[],
   culturalImportance: string,
-  providerCultures: string[]
+  providerCultures: string[] | ProviderCultureWithExpertise[]
 ): number {
   if (!coupleCultures.length || !providerCultures.length) {
     return 0;
   }
-
-  // Match des cultures
-  const matchedCultures = coupleCultures.filter((c) =>
-    providerCultures.includes(c)
-  );
-  
-  const matchPercentage = matchedCultures.length / coupleCultures.length;
 
   // Pondération selon importance
   const weights = {
@@ -65,9 +69,36 @@ export function calculateCulturalScore(
     important: 25,
     nice_to_have: 15,
   };
-  
+
   const maxScore = weights[culturalImportance as keyof typeof weights] || 20;
-  
+
+  // Déterminer si on a des cultures avec expertise ou des simples strings
+  const isWithExpertise = typeof providerCultures[0] !== 'string';
+
+  if (isWithExpertise) {
+    const culturesWithExpertise = providerCultures as ProviderCultureWithExpertise[];
+    let totalWeight = 0;
+
+    for (const coupleCulture of coupleCultures) {
+      const match = culturesWithExpertise.find(c => c.culture_id === coupleCulture);
+      if (match) {
+        // Spécialisé = 100% de la valeur, Expérimenté = 60%
+        totalWeight += match.expertise_level === 'specialise' ? 1.0 : 0.6;
+      }
+    }
+
+    const matchPercentage = totalWeight / coupleCultures.length;
+    return Math.round(matchPercentage * maxScore);
+  }
+
+  // Fallback: ancien format (simple strings) - compatibilité ascendante
+  const simpleProviderCultures = providerCultures as string[];
+  const matchedCultures = coupleCultures.filter((c) =>
+    simpleProviderCultures.includes(c)
+  );
+
+  const matchPercentage = matchedCultures.length / coupleCultures.length;
+
   return Math.round(matchPercentage * maxScore);
 }
 
