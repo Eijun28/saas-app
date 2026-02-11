@@ -5,6 +5,7 @@ export const inviteCollaborateurSchema = z.object({
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères').max(100, 'Nom trop long'),
   role: z.enum(['Témoin', 'Famille', 'Ami', 'Organisateur', 'Autre']),
   message: z.string().max(1000, 'Message trop long').optional(),
+  channel: z.enum(['email', 'link']).default('email'),
 })
 
 export type InviteCollaborateurInput = z.infer<typeof inviteCollaborateurSchema>
