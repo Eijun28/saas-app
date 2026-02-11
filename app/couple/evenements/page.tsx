@@ -260,7 +260,7 @@ export default function EvenementsPage() {
     <div className="max-w-4xl mx-auto">
       <PageTitle
         title="Mes événements"
-        description="Organisez chaque événement de votre mariage : cérémonies, fêtes traditionnelles, réceptions..."
+        description="Organisez chaque cérémonie et fête de votre mariage : religieuse, culturelle, réception, henné..."
       />
 
       {/* Suggestions culturelles */}
