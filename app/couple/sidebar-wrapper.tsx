@@ -16,6 +16,7 @@ import {
   ChevronsRight,
   Search,
   PartyPopper,
+  UserPlus,
 } from "lucide-react"
 import {
   Sidebar,
@@ -57,6 +58,7 @@ const sections: NavSection[] = [
       { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
       { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
       { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
+      { href: "/couple/collaborateurs", icon: UserPlus, label: "Collaborateurs" },
     ],
   },
   {
