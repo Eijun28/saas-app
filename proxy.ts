@@ -1,10 +1,15 @@
 import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
+import { createServerClient } from '@supabase/ssr'
+import { getEnvConfig } from '@/lib/config/env'
 
 export default async function proxy(request: NextRequest) {
   const result = await updateSession(request) as UpdateSessionResult
   const { supabaseResponse, user } = result
+
+  // Set pathname header so layouts can detect the current route
+  supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname)
 
   const isAuthRoute =
     request.nextUrl.pathname.startsWith('/sign-in') ||
@@ -50,6 +55,31 @@ export default async function proxy(request: NextRequest) {
       if (isTryingToAccessCouple) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
       }
+
+      // Vérifier si l'onboarding guidé est terminé (sauf si déjà sur la page d'onboarding)
+      if (!request.nextUrl.pathname.startsWith('/prestataire/onboarding')) {
+        const config = getEnvConfig()
+        const supabaseCheck = createServerClient(
+          config.NEXT_PUBLIC_SUPABASE_URL,
+          config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          {
+            cookies: {
+              getAll() { return request.cookies.getAll() },
+              setAll() { /* read-only */ },
+            },
+          }
+        )
+        const { data: profile } = await supabaseCheck
+          .from('profiles')
+          .select('onboarding_step')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (profile && (profile.onboarding_step ?? 0) < 5) {
+          return NextResponse.redirect(new URL('/prestataire/onboarding', request.url))
+        }
+      }
+
       // Sinon, c'est bon, le prestataire accède à ses routes
       return supabaseResponse
     }

@@ -35,8 +35,22 @@ export async function GET(request: Request) {
     if (user) {
       // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
       const roleCheck = await getUserRoleServer(user.id)
-      
+
       if (roleCheck.role) {
+        // Pour les prestataires, vérifier si l'onboarding guidé est terminé
+        if (roleCheck.role === 'prestataire') {
+          const supabaseCheck = await createClient()
+          const { data: profile } = await supabaseCheck
+            .from('profiles')
+            .select('onboarding_step')
+            .eq('id', user.id)
+            .maybeSingle()
+
+          if (!profile || (profile.onboarding_step ?? 0) < 5) {
+            return NextResponse.redirect(`${requestUrl.origin}/prestataire/onboarding`)
+          }
+        }
+
         // Profil trouvé, rediriger vers le dashboard approprié
         const dashboardUrl = getDashboardUrl(roleCheck.role)
         return NextResponse.redirect(`${requestUrl.origin}${dashboardUrl}`)
@@ -136,7 +150,7 @@ export async function GET(request: Request) {
             
             if (!profileError) {
               logger.info('✅ Profil prestataire récupéré avec succès', { userId: user.id })
-              return NextResponse.redirect(`${requestUrl.origin}/prestataire/dashboard`)
+              return NextResponse.redirect(`${requestUrl.origin}/prestataire/onboarding`)
             } else {
               logger.error('Erreur lors de la récupération du profil prestataire:', profileError)
             }
