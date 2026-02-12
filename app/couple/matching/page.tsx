@@ -330,6 +330,81 @@ export default function MatchingPage() {
     }
   };
 
+  const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
+
+  const handleContactProvider = async (providerId: string) => {
+    if (!coupleId) {
+      toast.error('Profil couple non trouvé');
+      return;
+    }
+    try {
+      const supabase = createClient();
+      // Vérifier si une demande existe déjà
+      const { data: existing } = await supabase
+        .from('requests')
+        .select('id')
+        .eq('couple_id', coupleId)
+        .eq('provider_id', providerId)
+        .maybeSingle();
+
+      if (existing) {
+        toast.info('Vous avez deja envoye une demande a ce prestataire');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('requests')
+        .insert({
+          couple_id: coupleId,
+          provider_id: providerId,
+          status: 'pending',
+        });
+
+      if (error) throw error;
+      trackMatchingEvent(providerId, 'contact');
+      toast.success('Demande de contact envoyee !');
+    } catch (error) {
+      console.error('Erreur envoi demande:', error);
+      toast.error('Erreur lors de l\'envoi de la demande');
+    }
+  };
+
+  const handleFavorite = async (providerId: string) => {
+    if (!coupleId) {
+      toast.error('Profil couple non trouvé');
+      return;
+    }
+    try {
+      const supabase = createClient();
+      const isFav = favoritedIds.has(providerId);
+
+      if (isFav) {
+        await supabase
+          .from('favoris')
+          .delete()
+          .eq('couple_id', coupleId)
+          .eq('prestataire_id', providerId);
+        setFavoritedIds(prev => {
+          const next = new Set(prev);
+          next.delete(providerId);
+          return next;
+        });
+        toast.success('Retire des favoris');
+      } else {
+        const { error } = await supabase
+          .from('favoris')
+          .insert({ couple_id: coupleId, prestataire_id: providerId });
+        if (error) throw error;
+        setFavoritedIds(prev => new Set(prev).add(providerId));
+        trackMatchingEvent(providerId, 'favorite');
+        toast.success('Ajoute aux favoris !');
+      }
+    } catch (error) {
+      console.error('Erreur toggle favori:', error);
+      toast.error('Erreur lors de la mise a jour des favoris');
+    }
+  };
+
   const handleNewSearch = () => {
     // Reset tous les états pour une nouvelle recherche
     setVue('landing');
@@ -429,6 +504,9 @@ export default function MatchingPage() {
             onBack={handleNewSearch}
             router={router}
             onTrackEvent={trackMatchingEvent}
+            onContactProvider={handleContactProvider}
+            onFavorite={handleFavorite}
+            favoritedIds={favoritedIds}
           />
         )}
       </AnimatePresence>
@@ -1292,9 +1370,12 @@ interface ResultsViewProps {
   onSaveSearch?: () => void;
   isSaving?: boolean;
   onTrackEvent?: (providerId: string, eventType: 'click' | 'contact' | 'favorite' | 'hide') => void;
+  onContactProvider?: (providerId: string) => void;
+  onFavorite?: (providerId: string) => void;
+  favoritedIds?: Set<string>;
 }
 
-function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, onTrackEvent }: ResultsViewProps) {
+function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, onTrackEvent, onContactProvider, onFavorite, favoritedIds = new Set() }: ResultsViewProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1325,13 +1406,14 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, 
           matchingResult={matchingResults}
           onContactProvider={(id) => {
             onTrackEvent?.(id, 'contact');
-            // TODO: Ouvrir modal contact
-            toast.info('Fonctionnalité de contact à venir');
+            onContactProvider?.(id);
           }}
           onViewProfile={(id) => {
             onTrackEvent?.(id, 'click');
             router.push(`/prestataire/profil-public/${id}`);
           }}
+          onFavorite={onFavorite}
+          favoritedIds={favoritedIds}
           onNewSearch={onBack}
           onSaveSearch={onSaveSearch}
           isSaving={isSaving}

@@ -13,15 +13,20 @@ interface ProviderMatchCardProps {
   match: ProviderMatch;
   onContact: (providerId: string) => void;
   onViewProfile: (providerId: string) => void;
+  onFavorite?: (providerId: string) => void;
+  isFavorited?: boolean;
 }
 
 export default function ProviderMatchCard({
   match,
   onContact,
   onViewProfile,
+  onFavorite,
+  isFavorited = false,
 }: ProviderMatchCardProps) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+  const [favorited, setFavorited] = useState(isFavorited);
   const { provider, score, rank, breakdown, explanation } = match;
 
   const getRankBadge = (rank: number) => {
@@ -353,8 +358,16 @@ export default function ProviderMatchCard({
           <Mail className="h-4 w-4 mr-2" />
           Contacter
         </Button>
-        <Button variant="ghost" size="icon" className="flex-shrink-0">
-          <Heart className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0"
+          onClick={() => {
+            setFavorited(!favorited);
+            onFavorite?.(provider.id);
+          }}
+        >
+          <Heart className={cn('h-4 w-4 transition-colors', favorited ? 'fill-red-500 text-red-500' : '')} />
         </Button>
       </div>
 

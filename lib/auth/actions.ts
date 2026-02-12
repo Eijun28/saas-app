@@ -185,12 +185,14 @@ export async function signUp(
   logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
 
   // Envoyer l'email de confirmation personnalisé (si l'utilisateur n'est pas encore confirmé)
+  let confirmationEmailFailed = false
   if (data.user && !data.user.email_confirmed_at) {
     try {
       await sendConfirmationEmail(data.user.id, email, profileData.prenom)
       logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
     } catch (emailError: any) {
-      // Ne pas bloquer l'inscription si l'email échoue
+      // Ne pas bloquer l'inscription si l'email échoue, mais informer l'utilisateur
+      confirmationEmailFailed = true
       logger.warn('⚠️ Erreur envoi email confirmation personnalisé (non bloquant):', emailError)
     }
   }
@@ -644,7 +646,10 @@ export async function signUp(
     logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
     
     // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
-    const response = { success: true, redirectTo: '/auth/confirm' }
+    const response: { success: boolean; redirectTo: string; emailWarning?: string } = { success: true, redirectTo: '/auth/confirm' }
+    if (confirmationEmailFailed) {
+      response.emailWarning = "Votre compte a ete cree mais l'email de confirmation n'a pas pu etre envoye. Vous pouvez demander un renvoi depuis la page de connexion."
+    }
     
     
     // Revalidate après avoir préparé la réponse
