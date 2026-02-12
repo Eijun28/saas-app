@@ -29,6 +29,7 @@ export default function CoupleDashboardPage() {
   const { user } = useUser()
   const [coupleData, setCoupleData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [favoritesCount, setFavoritesCount] = useState(0)
   const [budgetTotal, setBudgetTotal] = useState(0)
   const [budgetItems, setBudgetItems] = useState<any[]>([])
@@ -45,7 +46,7 @@ export default function CoupleDashboardPage() {
         const supabase = createClient()
 
         // Fetch all data in parallel
-        const [coupleResult, favoritesResult, budgetResult, requestsResult] = await Promise.all([
+        const [coupleResult, favoritesResult, budgetResult, requestsResult, shortlistedResult] = await Promise.all([
           supabase
             .from('couples')
             .select('id, partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
@@ -65,6 +66,11 @@ export default function CoupleDashboardPage() {
             .eq('couple_id', user.id)
             .order('created_at', { ascending: false })
             .limit(10),
+          supabase
+            .from('requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('couple_id', user.id)
+            .in('status', ['pending', 'accepted']),
         ])
 
         if (coupleResult.data) {
@@ -73,7 +79,7 @@ export default function CoupleDashboardPage() {
         }
 
         setFavoritesCount(favoritesResult.count || 0)
-        setShortlistedCount(favoritesResult.count || 0)
+        setShortlistedCount(shortlistedResult.count || 0)
 
         if (budgetResult.data) {
           setBudgetItems(budgetResult.data)
@@ -104,8 +110,14 @@ export default function CoupleDashboardPage() {
         } catch {
           // silent
         }
-      } catch (error) {
-        console.error('Erreur chargement dashboard couple:', error)
+      } catch (err: any) {
+        console.error('Erreur chargement dashboard couple:', err)
+        const isNetwork = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('timeout')
+        if (isNetwork) {
+          setError('Erreur de connexion. Verifiez votre connexion internet.')
+        } else {
+          setError(null) // Erreurs non-réseau : afficher le dashboard avec des données vides
+        }
       } finally {
         setLoading(false)
       }
@@ -180,6 +192,24 @@ export default function CoupleDashboardPage() {
           <div className="h-64 bg-white rounded-2xl border border-gray-100 animate-pulse" />
           <div className="h-64 bg-white rounded-2xl border border-gray-100 animate-pulse" />
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center py-16 px-4">
+        <div className="p-3 bg-red-50 rounded-2xl mb-4">
+          <Zap className="h-8 w-8 text-red-500" />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Erreur de chargement</h2>
+        <p className="text-sm text-gray-500 mb-6 text-center max-w-md">{error}</p>
+        <button
+          onClick={() => { setError(null); setLoading(true); window.location.reload() }}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#823F91] text-white text-sm font-medium rounded-xl hover:bg-[#5C2B66] transition-colors"
+        >
+          Reessayer
+        </button>
       </div>
     )
   }

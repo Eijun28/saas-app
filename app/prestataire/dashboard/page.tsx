@@ -213,7 +213,7 @@ export default function DashboardPrestatairePage() {
           setUiState({ loading: 'success', error: null })
           return
         }
-        setUiState({ loading: 'success', error: null })
+        setUiState({ loading: 'error', error: error?.message || 'Erreur de chargement des statistiques' })
       }
     }
     fetchStats()

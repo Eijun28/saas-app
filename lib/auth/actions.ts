@@ -184,33 +184,33 @@ export async function signUp(
   logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
 
   // Envoyer l'email de confirmation personnalisé (si l'utilisateur n'est pas encore confirmé)
+  let confirmationEmailFailed = false
   if (data.user && !data.user.email_confirmed_at) {
     try {
       await sendConfirmationEmail(data.user.id, email, profileData.prenom)
       logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
     } catch (emailError: any) {
-      // Ne pas bloquer l'inscription si l'email échoue
+      // Ne pas bloquer l'inscription si l'email échoue, mais informer l'utilisateur
+      confirmationEmailFailed = true
       logger.warn('⚠️ Erreur envoi email confirmation personnalisé (non bloquant):', emailError)
     }
+  }
+
+  // Créer le client admin une seule fois pour toute la logique de profil
+  let adminClient: ReturnType<typeof createAdminClient> | null = null
+  try {
+    adminClient = createAdminClient()
+  } catch (adminError: any) {
+    logger.error('Erreur création client admin:', adminError)
+    // Impossible de nettoyer l'utilisateur sans client admin - loguer l'utilisateur orphelin
+    logger.error('UTILISATEUR ORPHELIN - suppression manuelle requise:', { userId: data.user.id, email })
+    return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
   }
 
   // Créer le profil utilisateur selon le rôle
   try {
       if (role === 'couple') {
         logger.critical('👥 Traitement inscription COUPLE', { userId: data.user.id })
-        // Créer le client admin pour contourner les politiques RLS
-        let adminClient
-        try {
-          adminClient = createAdminClient()
-        } catch (adminError: any) {
-          logger.error('Erreur création client admin:', adminError)
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const tempAdmin = createAdminClient()
-            await tempAdmin.auth.admin.deleteUser(data.user.id)
-          } catch {}
-          return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
-        }
         
         const userId = data.user.id
 
@@ -353,23 +353,7 @@ export async function signUp(
         }
       } else {
         logger.critical('💼 Traitement inscription PRESTATAIRE', { userId: data.user.id, email })
-        // Créer le client admin
-        let adminClient
-        try {
-          logger.critical('🔧 Création client admin...', { userId: data.user.id })
-          adminClient = createAdminClient()
-          logger.critical('✅ Client admin créé avec succès', { userId: data.user.id })
-        } catch (adminError: any) {
-          logger.critical('🚨 Erreur création client admin:', { userId: data.user.id, error: adminError })
-          logger.error('Erreur création client admin:', adminError)
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const tempAdmin = createAdminClient()
-            await tempAdmin.auth.admin.deleteUser(data.user.id)
-          } catch {}
-          return { error: 'Erreur de configuration serveur. Veuillez contacter le support.' }
-        }
-        
+
         const userId = data.user.id
 
         // Vérifier que l'utilisateur existe bien dans auth.users avant d'insérer
@@ -556,9 +540,8 @@ export async function signUp(
       if (err.message?.includes('row-level security')) {
         logger.warn('Erreur RLS détectée, vérification si le profil existe quand même...', { userId, role })
         
-        // Vérifier si le profil a été créé malgré l'erreur RLS
+        // Vérifier si le profil a été créé malgré l'erreur RLS (réutilise le client admin existant)
         try {
-          const adminClient = createAdminClient()
           let profileExists = false
           
           if (role === 'couple') {
@@ -612,24 +595,28 @@ export async function signUp(
           // Erreur lors de la vérification, ne pas retourner succès
           logger.error('Erreur lors de la vérification du profil après erreur RLS:', checkError)
           
-          // Essayer de supprimer l'utilisateur créé
-          try {
-            const adminClient = createAdminClient()
-            await adminClient.auth.admin.deleteUser(userId)
-          } catch {}
-          
-          return { 
-            error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
+          // Essayer de supprimer l'utilisateur créé avec le client admin déjà initialisé
+          if (adminClient) {
+            try {
+              await adminClient.auth.admin.deleteUser(userId)
+            } catch (deleteError) {
+              logger.error('Erreur suppression utilisateur orphelin:', deleteError)
+            }
+          }
+
+          return {
+            error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.'
           }
         }
       } else {
         // Erreur non-RLS, essayer de supprimer l'utilisateur créé en cas d'erreur
-        try {
-          const adminClient = createAdminClient()
-          await adminClient.auth.admin.deleteUser(data.user.id)
-          logger.warn('Utilisateur supprimé après erreur non-RLS', { userId: data.user.id })
-        } catch (deleteError) {
-          logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
+        if (adminClient) {
+          try {
+            await adminClient.auth.admin.deleteUser(data.user.id)
+            logger.warn('Utilisateur supprimé après erreur non-RLS', { userId: data.user.id })
+          } catch (deleteError) {
+            logger.error('Erreur lors de la suppression de l\'utilisateur:', deleteError)
+          }
         }
         return { error: 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer.' }
       }
@@ -644,7 +631,10 @@ export async function signUp(
     logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
     
     // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
-    const response = { success: true, redirectTo: '/auth/confirm' }
+    const response: { success: boolean; redirectTo: string; emailWarning?: string } = { success: true, redirectTo: '/auth/confirm' }
+    if (confirmationEmailFailed) {
+      response.emailWarning = "Votre compte a ete cree mais l'email de confirmation n'a pas pu etre envoye. Vous pouvez demander un renvoi depuis la page de connexion."
+    }
     
     
     // Revalidate après avoir préparé la réponse

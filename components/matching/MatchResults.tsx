@@ -12,6 +12,8 @@ interface MatchResultsProps {
   matchingResult?: MatchingResult; // Résultat complet pour suggestions
   onContactProvider: (providerId: string) => void;
   onViewProfile: (providerId: string) => void;
+  onFavorite?: (providerId: string) => void;
+  favoritedIds?: Set<string>;
   onNewSearch: () => void;
   onSaveSearch?: () => void;
   isSaving?: boolean;
@@ -23,6 +25,8 @@ export default function MatchResults({
   matchingResult,
   onContactProvider,
   onViewProfile,
+  onFavorite,
+  favoritedIds = new Set(),
   onNewSearch,
   onSaveSearch,
   isSaving = false,
@@ -174,6 +178,8 @@ export default function MatchResults({
               match={match}
               onContact={onContactProvider}
               onViewProfile={onViewProfile}
+              onFavorite={onFavorite}
+              isFavorited={favoritedIds.has(match.provider_id)}
             />
           </motion.div>
         ))}

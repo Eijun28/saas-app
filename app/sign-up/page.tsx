@@ -145,11 +145,11 @@ export default function SignUpPage() {
         setError(result.error)
       } else if (result && 'success' in result && result.success) {
         // Redirection vers la page spécifiée ou confirmation par défaut
-        if ('redirectTo' in result && result.redirectTo) {
-          router.push(result.redirectTo)
-        } else {
-          router.push('/auth/confirm')
+        let redirectUrl = ('redirectTo' in result && result.redirectTo) ? result.redirectTo : '/auth/confirm'
+        if ('emailWarning' in result && result.emailWarning) {
+          redirectUrl += `?emailWarning=${encodeURIComponent(String(result.emailWarning))}`
         }
+        router.push(redirectUrl)
       } else {
         // Cas où result existe mais n'a ni error ni success
         setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
