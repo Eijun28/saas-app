@@ -147,7 +147,7 @@ export default function SignUpPage() {
         // Redirection vers la page spécifiée ou confirmation par défaut
         let redirectUrl = ('redirectTo' in result && result.redirectTo) ? result.redirectTo : '/auth/confirm'
         if ('emailWarning' in result && result.emailWarning) {
-          redirectUrl += `?emailWarning=${encodeURIComponent(result.emailWarning)}`
+          redirectUrl += `?emailWarning=${encodeURIComponent(String(result.emailWarning))}`
         }
         router.push(redirectUrl)
       } else {
