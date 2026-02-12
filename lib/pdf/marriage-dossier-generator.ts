@@ -2,13 +2,37 @@
 
 // COPIE-COLLE TOUT CE CODE
 
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, PDFFont, rgb, StandardFonts } from 'pdf-lib'
+
+interface QuestionnaireData {
+  spouseAFirstName: string
+  spouseALastName: string
+  spouseABirthDate: string
+  spouseABirthPlace: string
+  spouseANationality: string
+  spouseAMaritalStatus: string
+  spouseBFirstName: string
+  spouseBLastName: string
+  spouseBBirthDate: string
+  spouseBBirthPlace: string
+  spouseBNationality: string
+  spouseBMaritalStatus: string
+  [key: string]: unknown
+}
+
+interface ChecklistDocument {
+  id: string
+  label: string
+  category: string
+  required: boolean
+  [key: string]: unknown
+}
 
 interface MarriageFileData {
-  questionnaire_data: any
+  questionnaire_data: QuestionnaireData
   municipality: string
   wedding_date: string
-  documents_checklist: any[]
+  documents_checklist: ChecklistDocument[]
   created_at: string
 }
 
@@ -56,8 +80,8 @@ export async function generateMarriageDossierPDF(
 async function addCoverPage(
   pdfDoc: PDFDocument,
   marriageFile: MarriageFileData,
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const page = pdfDoc.addPage([595, 842]) // A4
   const { width, height } = page.getSize()
@@ -203,8 +227,8 @@ async function addSummaryPage(
   pdfDoc: PDFDocument,
   marriageFile: MarriageFileData,
   uploadedDocs: UploadedDocument[],
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const page = pdfDoc.addPage([595, 842])
   const { width, height } = page.getSize()
@@ -305,8 +329,8 @@ async function addSummaryPage(
 async function addDetailsPage(
   pdfDoc: PDFDocument,
   marriageFile: MarriageFileData,
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const page = pdfDoc.addPage([595, 842])
   const { width, height } = page.getSize()
@@ -417,8 +441,8 @@ async function addChecklistPage(
   pdfDoc: PDFDocument,
   marriageFile: MarriageFileData,
   uploadedDocs: UploadedDocument[],
-  boldFont: any,
-  regularFont: any
+  boldFont: PDFFont,
+  regularFont: PDFFont
 ) {
   const page = pdfDoc.addPage([595, 842])
   const { width, height } = page.getSize()

@@ -1,6 +1,20 @@
 // lib/chatbot/service-prompts.ts
 // Prompts spécialisés par type de service pour des questions pertinentes
 
+export interface CoupleProfile {
+  guest_count?: number;
+  wedding_date?: string;
+  wedding_city?: string;
+  wedding_region?: string;
+  wedding_location?: string;
+  cultures?: string[];
+  budget_min?: number;
+  budget_max?: number;
+  wedding_style?: string;
+  ambiance?: string;
+  [key: string]: unknown;
+}
+
 export interface ServicePromptConfig {
   serviceType: string;
   questions: string[];
@@ -244,7 +258,7 @@ export const SERVICE_SPECIFIC_QUESTIONS: Record<string, ServicePromptConfig> = {
 /**
  * Génère le prompt spécialisé pour un type de service
  */
-export function getServiceSpecificPrompt(serviceType: string, coupleProfile?: any): string {
+export function getServiceSpecificPrompt(serviceType: string, coupleProfile?: CoupleProfile): string {
   const config = SERVICE_SPECIFIC_QUESTIONS[serviceType];
   
   if (!config) {
@@ -287,7 +301,7 @@ ${config.specificNotes ? `⚠️ IMPORTANT : ${config.specificNotes}` : ''}
 /**
  * Vérifie si une question doit être posée selon les données du couple
  */
-export function shouldAskQuestion(questionKey: string, coupleProfile?: any): boolean {
+export function shouldAskQuestion(questionKey: string, coupleProfile?: CoupleProfile): boolean {
   if (!coupleProfile) return true;
 
   // Ne pas redemander des infos déjà connues

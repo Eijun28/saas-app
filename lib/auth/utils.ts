@@ -61,10 +61,10 @@ export async function getUserRoleServer(userId: string): Promise<UserRoleCheckRe
       role: null,
       error: 'Aucun profil trouvé pour cet utilisateur',
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       role: null,
-      error: error?.message || 'Erreur lors de la vérification du rôle',
+      error: error instanceof Error ? error.message : 'Erreur lors de la vérification du rôle',
     }
   }
 }
@@ -113,10 +113,10 @@ export async function getUserRoleClient(userId: string): Promise<UserRoleCheckRe
       role: null,
       error: 'Aucun profil trouvé pour cet utilisateur',
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       role: null,
-      error: error?.message || 'Erreur lors de la vérification du rôle',
+      error: error instanceof Error ? error.message : 'Erreur lors de la vérification du rôle',
     }
   }
 }

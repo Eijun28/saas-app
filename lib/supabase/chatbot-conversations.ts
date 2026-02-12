@@ -66,8 +66,8 @@ export async function saveChatbotConversation(
       .insert({
         couple_id: couple.id, // Utiliser directement couples.id
         service_type: serviceType,
-        messages: messages as any,
-        extracted_criteria: extractedCriteria as any,
+        messages: messages as unknown as Record<string, unknown>[],
+        extracted_criteria: extractedCriteria as unknown as Record<string, unknown>,
         status,
       })
       .select('id')
@@ -98,9 +98,9 @@ export async function saveChatbotConversation(
     }
 
     return { success: true, conversationId: data.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error saving chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la sauvegarde' };
+    return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de la sauvegarde' };
   }
 }
 
@@ -252,12 +252,12 @@ export async function updateChatbotConversation(
     }
 
     // Préparer les données de mise à jour
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (updates.messages !== undefined) {
-      updateData.messages = updates.messages as any;
+      updateData.messages = updates.messages as unknown as Record<string, unknown>[];
     }
     if (updates.extracted_criteria !== undefined) {
-      updateData.extracted_criteria = updates.extracted_criteria as any;
+      updateData.extracted_criteria = updates.extracted_criteria as unknown as Record<string, unknown>;
     }
     if (updates.status !== undefined) {
       updateData.status = updates.status;
@@ -275,9 +275,9 @@ export async function updateChatbotConversation(
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la mise à jour' };
+    return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour' };
   }
 }
 
@@ -314,8 +314,8 @@ export async function deleteChatbotConversation(
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la suppression' };
+    return { success: false, error: error instanceof Error ? error.message : 'Erreur lors de la suppression' };
   }
 }

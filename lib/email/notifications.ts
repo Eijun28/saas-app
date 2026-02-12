@@ -268,7 +268,7 @@ export async function sendNewMessageEmail(
     const adminClient = createAdminClient()
 
     // Récupérer les informations du destinataire
-    let recipient: { email: string; [key: string]: any } | null = null
+    let recipient: { email: string; partner_1_name?: string; partner_2_name?: string; prenom?: string; nom?: string } | null = null
     
     if (isRecipientCouple) {
       const { data: coupleRecipient } = await adminClient
@@ -315,8 +315,8 @@ export async function sendNewMessageEmail(
     }
 
     const recipientName = isRecipientCouple
-      ? `${(recipient as any).partner_1_name || ''}${(recipient as any).partner_2_name ? ` et ${(recipient as any).partner_2_name}` : ''}`
-      : ((recipient as any).prenom || '')
+      ? `${recipient.partner_1_name || ''}${recipient.partner_2_name ? ` et ${recipient.partner_2_name}` : ''}`
+      : (recipient.prenom || '')
 
     const resend = new Resend(resendApiKey)
     const subject = `💬 Nouveau message de ${senderName}`
