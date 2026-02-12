@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        inter: ['var(--font-inter)', 'sans-serif'],
+        inter: ['var(--font-geist-sans)', 'sans-serif'],
       },
       screens: {
         'xs': '475px',
