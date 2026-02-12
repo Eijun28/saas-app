@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { PrestataireSidebarWrapper } from "./sidebar-wrapper"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
+import { getUserRoleServer } from "@/lib/auth/utils"
 
 export default async function PrestataireLayout({
   children,
@@ -14,6 +15,15 @@ export default async function PrestataireLayout({
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
+    redirect("/sign-in")
+  }
+
+  // Vérifier que l'utilisateur est bien un prestataire
+  const roleCheck = await getUserRoleServer(user.id)
+  if (roleCheck.role !== 'prestataire') {
+    if (roleCheck.role === 'couple') {
+      redirect("/couple/dashboard")
+    }
     redirect("/sign-in")
   }
 

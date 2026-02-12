@@ -313,6 +313,23 @@ export default function MatchingPage() {
     await startMatchingSearch();
   };
 
+  const trackMatchingEvent = async (providerId: string, eventType: 'click' | 'contact' | 'favorite' | 'hide') => {
+    try {
+      await fetch('/api/matching/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider_id: providerId,
+          service_type: extractedServiceType || 'unknown',
+          event_type: eventType,
+          couple_id: coupleId || undefined,
+        }),
+      });
+    } catch (error) {
+      console.error('Erreur tracking matching event:', error);
+    }
+  };
+
   const handleNewSearch = () => {
     // Reset tous les états pour une nouvelle recherche
     setVue('landing');
@@ -411,6 +428,7 @@ export default function MatchingPage() {
             matchingResults={matchingResults}
             onBack={handleNewSearch}
             router={router}
+            onTrackEvent={trackMatchingEvent}
           />
         )}
       </AnimatePresence>
@@ -1273,9 +1291,10 @@ interface ResultsViewProps {
   router: ReturnType<typeof useRouter>;
   onSaveSearch?: () => void;
   isSaving?: boolean;
+  onTrackEvent?: (providerId: string, eventType: 'click' | 'contact' | 'favorite' | 'hide') => void;
 }
 
-function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving }: ResultsViewProps) {
+function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, onTrackEvent }: ResultsViewProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1305,10 +1324,12 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving }
           totalCandidates={matchingResults.total_candidates}
           matchingResult={matchingResults}
           onContactProvider={(id) => {
+            onTrackEvent?.(id, 'contact');
             // TODO: Ouvrir modal contact
             toast.info('Fonctionnalité de contact à venir');
           }}
           onViewProfile={(id) => {
+            onTrackEvent?.(id, 'click');
             router.push(`/prestataire/profil-public/${id}`);
           }}
           onNewSearch={onBack}

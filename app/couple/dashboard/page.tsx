@@ -45,7 +45,7 @@ export default function CoupleDashboardPage() {
         const supabase = createClient()
 
         // Fetch all data in parallel
-        const [coupleResult, favoritesResult, budgetResult, requestsResult] = await Promise.all([
+        const [coupleResult, favoritesResult, budgetResult, requestsResult, shortlistedResult] = await Promise.all([
           supabase
             .from('couples')
             .select('id, partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
@@ -65,6 +65,11 @@ export default function CoupleDashboardPage() {
             .eq('couple_id', user.id)
             .order('created_at', { ascending: false })
             .limit(10),
+          supabase
+            .from('requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('couple_id', user.id)
+            .in('status', ['pending', 'accepted']),
         ])
 
         if (coupleResult.data) {
@@ -73,7 +78,7 @@ export default function CoupleDashboardPage() {
         }
 
         setFavoritesCount(favoritesResult.count || 0)
-        setShortlistedCount(favoritesResult.count || 0)
+        setShortlistedCount(shortlistedResult.count || 0)
 
         if (budgetResult.data) {
           setBudgetItems(budgetResult.data)
