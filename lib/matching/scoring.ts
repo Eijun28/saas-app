@@ -222,6 +222,54 @@ export function calculateExperienceScore(
 }
 
 /**
+ * Table de correspondance département → région (France métropolitaine + DOM-TOM)
+ */
+const DEPARTMENT_TO_REGION: Record<string, string> = {
+  '01': 'auvergne-rhone-alpes', '03': 'auvergne-rhone-alpes', '07': 'auvergne-rhone-alpes',
+  '15': 'auvergne-rhone-alpes', '26': 'auvergne-rhone-alpes', '38': 'auvergne-rhone-alpes',
+  '42': 'auvergne-rhone-alpes', '43': 'auvergne-rhone-alpes', '63': 'auvergne-rhone-alpes',
+  '69': 'auvergne-rhone-alpes', '73': 'auvergne-rhone-alpes', '74': 'auvergne-rhone-alpes',
+  '21': 'bourgogne-franche-comte', '25': 'bourgogne-franche-comte', '39': 'bourgogne-franche-comte',
+  '58': 'bourgogne-franche-comte', '70': 'bourgogne-franche-comte', '71': 'bourgogne-franche-comte',
+  '89': 'bourgogne-franche-comte', '90': 'bourgogne-franche-comte',
+  '22': 'bretagne', '29': 'bretagne', '35': 'bretagne', '56': 'bretagne',
+  '18': 'centre-val-de-loire', '28': 'centre-val-de-loire', '36': 'centre-val-de-loire',
+  '37': 'centre-val-de-loire', '41': 'centre-val-de-loire', '45': 'centre-val-de-loire',
+  '2A': 'corse', '2B': 'corse',
+  '08': 'grand-est', '10': 'grand-est', '51': 'grand-est', '52': 'grand-est',
+  '54': 'grand-est', '55': 'grand-est', '57': 'grand-est', '67': 'grand-est', '68': 'grand-est', '88': 'grand-est',
+  '02': 'hauts-de-france', '59': 'hauts-de-france', '60': 'hauts-de-france',
+  '62': 'hauts-de-france', '80': 'hauts-de-france',
+  '75': 'ile-de-france', '77': 'ile-de-france', '78': 'ile-de-france', '91': 'ile-de-france',
+  '92': 'ile-de-france', '93': 'ile-de-france', '94': 'ile-de-france', '95': 'ile-de-france',
+  '14': 'normandie', '27': 'normandie', '50': 'normandie', '61': 'normandie', '76': 'normandie',
+  '16': 'nouvelle-aquitaine', '17': 'nouvelle-aquitaine', '19': 'nouvelle-aquitaine',
+  '23': 'nouvelle-aquitaine', '24': 'nouvelle-aquitaine', '33': 'nouvelle-aquitaine',
+  '40': 'nouvelle-aquitaine', '47': 'nouvelle-aquitaine', '64': 'nouvelle-aquitaine',
+  '79': 'nouvelle-aquitaine', '86': 'nouvelle-aquitaine', '87': 'nouvelle-aquitaine',
+  '09': 'occitanie', '11': 'occitanie', '12': 'occitanie', '30': 'occitanie',
+  '31': 'occitanie', '32': 'occitanie', '34': 'occitanie', '46': 'occitanie',
+  '48': 'occitanie', '65': 'occitanie', '66': 'occitanie', '81': 'occitanie', '82': 'occitanie',
+  '44': 'pays-de-la-loire', '49': 'pays-de-la-loire', '53': 'pays-de-la-loire',
+  '72': 'pays-de-la-loire', '85': 'pays-de-la-loire',
+  '04': 'provence-alpes-cote-d-azur', '05': 'provence-alpes-cote-d-azur',
+  '06': 'provence-alpes-cote-d-azur', '13': 'provence-alpes-cote-d-azur',
+  '83': 'provence-alpes-cote-d-azur', '84': 'provence-alpes-cote-d-azur',
+  '971': 'guadeloupe', '972': 'martinique', '973': 'guyane', '974': 'reunion', '976': 'mayotte',
+};
+
+function getRegionForDepartment(dept: string): string | null {
+  // Essayer le code exact d'abord
+  if (DEPARTMENT_TO_REGION[dept]) return DEPARTMENT_TO_REGION[dept];
+  // Essayer avec padding (ex: "6" -> "06")
+  if (dept.length === 1 && DEPARTMENT_TO_REGION[`0${dept}`]) return DEPARTMENT_TO_REGION[`0${dept}`];
+  // Essayer d'extraire un code numérique du début (ex: "75-Paris" -> "75")
+  const match = dept.match(/^(\d{2,3})/);
+  if (match && DEPARTMENT_TO_REGION[match[1]]) return DEPARTMENT_TO_REGION[match[1]];
+  return null;
+}
+
+/**
  * Calcule le score de localisation (/10 points)
  */
 export function calculateLocationScore(
@@ -246,15 +294,17 @@ export function calculateLocationScore(
     }
   }
 
-  // Match région approximatif (Île-de-France, PACA, etc.)
-  // À améliorer avec une vraie correspondance région
-  const coupleRegion = coupleDepartment?.split('-')[0];
-  const hasRegionMatch = providerZones.some((zone) =>
-    zone.startsWith(coupleRegion || '')
-  );
+  // Match région via table de correspondance département → région
+  const coupleRegion = coupleDepartment ? getRegionForDepartment(coupleDepartment) : null;
+  if (coupleRegion) {
+    const hasRegionMatch = providerZones.some((zone) => {
+      const zoneRegion = getRegionForDepartment(zone);
+      return zoneRegion === coupleRegion;
+    });
 
-  if (hasRegionMatch) {
-    return 6;
+    if (hasRegionMatch) {
+      return 6;
+    }
   }
 
   return 2; // Score minimal si pas de match

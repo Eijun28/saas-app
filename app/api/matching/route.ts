@@ -183,19 +183,15 @@ export async function POST(request: NextRequest) {
     // Si pas de résultats, on pourra essayer une recherche partielle (à implémenter si nécessaire)
 
     // Filtre budget si défini - LOGIQUE OPTIMISÉE
-    // Un prestataire correspond si sa fourchette chevauche celle du couple
-    // Chevauchement : (couple_min <= provider_max) ET (provider_min <= couple_max)
+    // Chevauchement : (provider_min <= couple_max) ET (provider_max >= couple_min OR provider_max IS NULL)
     if (search_criteria.budget_max) {
       // Le prestataire doit avoir un budget_min <= budget_max du couple
-      // (sinon il est trop cher même au minimum)
       query = query.lte('budget_min', search_criteria.budget_max);
-      
-      // Si le couple a un budget_min, filtrer les prestataires dont le budget_max est trop bas
-      // On garde ceux qui n'ont pas de budget_max OU dont budget_max >= budget_min du couple
+
+      // Si le couple a un budget_min, exclure les prestataires dont le budget_max est trop bas
+      // On garde ceux qui n'ont pas de budget_max (NULL) OU dont budget_max >= budget_min du couple
       if (search_criteria.budget_min) {
-        // Utiliser OR avec une requête conditionnelle
-        // Note: Supabase ne supporte pas directement OR, donc on filtre côté serveur après
-        // Le filtrage strict se fera dans le scoring pour plus de précision
+        query = query.or(`budget_max.gte.${search_criteria.budget_min},budget_max.is.null`);
       }
     }
 
@@ -469,15 +465,18 @@ export async function POST(request: NextRequest) {
         throw fairnessError;
       }
 
-      if (fairnessData) {
-        // Calculer le score d'equite pour chaque prestataire
-        const maxImpressions = Math.max(...fairnessData.map(f => f.impressions_this_week || 0), 1);
+      if (fairnessData && fairnessData.length > 0) {
+        // Calculer le max d'impressions pour normaliser les scores
+        // Garantir un minimum de 1 pour eviter toute division par zero
+        const impressionValues = fairnessData.map(f => f.impressions_this_week || 0);
+        const maxImpressions = Math.max(...impressionValues);
+        const safeMaxImpressions = maxImpressions > 0 ? maxImpressions : 1;
 
         fairnessData.forEach((item) => {
           const impressions = item.impressions_this_week || 0;
           // Score d'equite: moins d'impressions = meilleur score
           const fairnessScore = impressions > 0
-            ? 1.0 - Math.pow(impressions / maxImpressions, 0.5)
+            ? 1.0 - Math.pow(impressions / safeMaxImpressions, 0.5)
             : 1.0;
 
           fairnessDataMap.set(item.profile_id, {
