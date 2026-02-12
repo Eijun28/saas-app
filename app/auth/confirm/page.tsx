@@ -2,15 +2,33 @@
 
 'use client';
 
+import { Suspense } from 'react'
 import Particles from '@/components/Particles'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useSearchParams } from 'next/navigation'
 
-export default function ConfirmEmail() {
+function ConfirmEmailContent() {
   const searchParams = useSearchParams()
   const emailWarning = searchParams.get('emailWarning')
 
+  return (
+    <>
+      {emailWarning ? (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
+          <p className="text-sm text-orange-800">{emailWarning}</p>
+        </div>
+      ) : (
+        <p className="text-sm sm:text-base text-gray-600 mb-4">
+          Nous vous avons envoyé un email de confirmation.
+          Cliquez sur le lien dans l'email pour activer votre compte.
+        </p>
+      )}
+    </>
+  );
+}
+
+export default function ConfirmEmail() {
   return (
     <>
       {/* Background de particules - couvre toute la page */}
@@ -39,16 +57,14 @@ export default function ConfirmEmail() {
           Vérifiez votre email
         </h1>
 
-        {emailWarning ? (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
-            <p className="text-sm text-orange-800">{emailWarning}</p>
-          </div>
-        ) : (
+        <Suspense fallback={
           <p className="text-sm sm:text-base text-gray-600 mb-4">
             Nous vous avons envoyé un email de confirmation.
             Cliquez sur le lien dans l'email pour activer votre compte.
           </p>
-        )}
+        }>
+          <ConfirmEmailContent />
+        </Suspense>
 
         <p className="text-sm text-gray-500 mb-6">
           Vous n'avez pas reçu l'email ? Vérifiez vos spams.
