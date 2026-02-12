@@ -48,7 +48,7 @@ export default function CoupleDashboardPage() {
         const [coupleResult, favoritesResult, budgetResult, requestsResult] = await Promise.all([
           supabase
             .from('couples')
-            .select('partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
+            .select('id, partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
             .eq('user_id', user.id)
             .single(),
           supabase
@@ -429,7 +429,7 @@ export default function CoupleDashboardPage() {
 
         {/* Tasks and Activity side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-          <UpcomingTasksCouple />
+          <UpcomingTasksCouple coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
           <RecentActivityCouple activities={recentActivities} />
         </div>
       </div>
