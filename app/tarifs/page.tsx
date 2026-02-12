@@ -55,7 +55,7 @@ export default function PricingSection() {
       name: "PACK STARTER",
       description: "Pour tester NUPLY",
       monthlyPrice: 0,
-      priceNote: "Gratuit jusqu'au 30 juin",
+      priceNote: "",
       cta: {
         variant: "outline",
         label: user ? "Activer Starter" : "S'inscrire et activer Starter",
@@ -196,10 +196,7 @@ export default function PricingSection() {
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#823F91]" />
                 <span className="text-sm font-medium text-slate-700">
-                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit jusqu'au 30 juin
-                </span>
-                <span className="inline-flex items-center rounded-full border border-[#823F91]/30 bg-white/80 px-3 py-1 text-xs font-semibold text-[#823F91] shadow-sm">
-                  Gratuit pour tous jusqu'au 30 juin
+                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit pour tous jusqu'au 30 juin
                 </span>
               </div>
             </div>

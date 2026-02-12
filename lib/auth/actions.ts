@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendWelcomeEmail } from '@/lib/email/resend'
 import { sendConfirmationEmail } from '@/lib/email/confirmation'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
@@ -636,24 +635,10 @@ export async function signUp(
       }
     }
 
-    // Envoyer l'email de bienvenue avec Resend (non bloquant)
-    try {
-      logger.info('📧 Tentative d\'envoi email de bienvenue Resend pour:', email)
-      const emailResult = await sendWelcomeEmail(
-        email,
-        role,
-        profileData.prenom,
-        profileData.nom
-      )
-      if (emailResult.success) {
-        logger.info('✅ Email de bienvenue Resend envoyé avec succès')
-      } else {
-        logger.warn('⚠️ Email de bienvenue Resend non envoyé:', 'error' in emailResult ? emailResult.error : 'Erreur inconnue')
-      }
-    } catch (emailError) {
-      // Ne pas bloquer l'inscription si l'email échoue
-      logger.error('❌ Erreur lors de l\'envoi email de bienvenue (non bloquant)', emailError)
-    }
+    // Note: L'email de bienvenue n'est plus envoyé ici pour éviter un doublon.
+    // L'email de confirmation (sendConfirmationEmail) sert déjà de bienvenue.
+    // Si Supabase envoie aussi un email natif, le désactiver dans le dashboard :
+    // Authentication > Settings > décocher "Enable email confirmations" (géré par sendConfirmationEmail).
 
     // Succès - retourner avec redirection
     logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })

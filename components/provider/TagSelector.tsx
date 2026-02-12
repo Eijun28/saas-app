@@ -62,19 +62,18 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
     setIsLoading(true);
     const supabase = createClient();
 
-    // Load all available tags
-    const { data: tagsData, error: tagsError } = await supabase
+    // Load only predefined tags (shared) — custom tags are private per user
+    const { data: predefinedTags, error: tagsError } = await supabase
       .from('tags')
       .select('*')
+      .eq('is_predefined', true)
       .order('usage_count', { ascending: false });
 
     if (tagsError) {
       console.error('Error loading tags:', tagsError);
-    } else {
-      setAllTags(tagsData || []);
     }
 
-    // Load user's selected tags
+    // Load user's selected tags (includes their own custom tags)
     const { data: userTagsData, error: userTagsError } = await supabase
       .from('provider_tags')
       .select('tag_id, tags(*)')
@@ -82,13 +81,26 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
 
     if (userTagsError) {
       console.error('Error loading user tags:', userTagsError);
-    } else {
-      const tags: Tag[] = (userTagsData || [])
-        .filter((pt): pt is ProviderTagJoinResult & { tags: Tag } => pt.tags !== null)
-        .map(pt => pt.tags);
-      setSelectedTags(tags);
-      setInitialTagIds(tags.map(t => t.id));
     }
+
+    const userTags: Tag[] = (userTagsData || [])
+      .filter((pt): pt is ProviderTagJoinResult & { tags: Tag } => pt.tags !== null)
+      .map(pt => pt.tags);
+
+    // Merge: predefined tags + user's own custom tags (deduplicated)
+    const predefined = predefinedTags || [];
+    const userCustomTags = userTags.filter(t => !t.is_predefined);
+    const mergedTagIds = new Set(predefined.map(t => t.id));
+    const allMerged = [...predefined];
+    for (const tag of userCustomTags) {
+      if (!mergedTagIds.has(tag.id)) {
+        allMerged.push(tag);
+      }
+    }
+    setAllTags(allMerged);
+
+    setSelectedTags(userTags);
+    setInitialTagIds(userTags.map(t => t.id));
 
     setIsLoading(false);
   }

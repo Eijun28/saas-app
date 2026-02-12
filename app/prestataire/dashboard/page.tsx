@@ -279,7 +279,8 @@ export default function DashboardPrestatairePage() {
   // Next best actions
   const nextActions: { text: string; cta: string; href: string }[] = []
   if (urgentDemandes > 0) nextActions.push({ text: `${urgentDemandes} demande${urgentDemandes > 1 ? 's' : ''} en attente depuis plus de 24h`, cta: 'Repondre maintenant', href: '/prestataire/demandes-recues' })
-  if (profileCompletion !== null && profileCompletion < 70) nextActions.push({ text: `Votre profil est a ${profileCompletion}% — completez-le pour etre visible`, cta: 'Completer le profil', href: '/prestataire/profil-public' })
+  // Ne pas dupliquer l'info profil ici car le bandeau dédié (amber) l'affiche déjà
+  if (profileCompletion !== null && profileCompletion < 70 && profileBannerDismissed) nextActions.push({ text: `Votre profil est a ${profileCompletion}% — completez-le pour etre visible`, cta: 'Completer le profil', href: '/prestataire/profil-public' })
   if (stats.conversations_en_cours > 0) nextActions.push({ text: `${stats.conversations_en_cours} conversation${stats.conversations_en_cours > 1 ? 's' : ''} en cours`, cta: 'Ouvrir la messagerie', href: '/prestataire/messagerie' })
 
   return (
@@ -335,7 +336,7 @@ export default function DashboardPrestatairePage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="relative flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl"
+            className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl"
           >
             <div className="p-2 bg-amber-100 rounded-xl flex-shrink-0">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
@@ -350,7 +351,7 @@ export default function DashboardPrestatairePage() {
             >
               Completer <ArrowRight className="h-3.5 w-3.5" />
             </button>
-            <button onClick={() => setProfileBannerDismissed(true)} className="absolute top-2 right-2 p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center" title="Masquer">
+            <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0" title="Masquer">
               <X className="h-3.5 w-3.5 text-amber-400" />
             </button>
           </motion.div>
