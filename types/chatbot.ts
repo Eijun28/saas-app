@@ -53,6 +53,9 @@ export interface SearchCriteria {
   must_haves?: string[];
   must_not_haves?: string[];
 
+  // Événement culturel spécifique (matching par événement)
+  event_type_slug?: string;
+
   // Données extraites du profil couple
   auto_filled_from_profile?: boolean;
 

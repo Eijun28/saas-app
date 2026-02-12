@@ -339,6 +339,34 @@ export function calculateSpecialtyScore(
 }
 
 /**
+ * Calcule le score de correspondance événement culturel (bonus 0-20 points)
+ * Si le couple cherche un prestataire pour un événement spécifique (ex: Henné),
+ * les prestataires qui couvrent cet événement reçoivent un bonus significatif.
+ */
+export function calculateEventTypeScore(
+  eventTypeSlug: string | undefined,
+  providerEventTypeSlugs: string[] | undefined
+): number {
+  // Si pas d'événement spécifique demandé, pas de bonus/malus
+  if (!eventTypeSlug) {
+    return 0;
+  }
+
+  // Si le prestataire n'a pas déclaré d'événements, léger malus
+  if (!providerEventTypeSlugs || providerEventTypeSlugs.length === 0) {
+    return -5;
+  }
+
+  // Le prestataire couvre cet événement
+  if (providerEventTypeSlugs.includes(eventTypeSlug)) {
+    return 20;
+  }
+
+  // Le prestataire couvre d'autres événements mais pas celui-ci
+  return -3;
+}
+
+/**
  * Calcule le facteur d'equite (multiplicateur 0.85-1.15)
  * Ce facteur permet de favoriser les prestataires moins exposes
  */
@@ -404,6 +432,7 @@ export interface ProviderWithFairness {
   ville_principale?: string;
   tags?: string[];
   specialty_tags?: string[];
+  event_type_slugs?: string[];
   fairness_data?: FairnessData;
   [key: string]: unknown;
 }
@@ -413,6 +442,7 @@ export interface ProviderWithFairness {
  */
 export interface ExtendedScoreBreakdown extends ScoreBreakdown {
   specialty_match?: number;
+  event_type_match?: number;
   fairness_multiplier?: number;
   ctr_bonus?: number;
   score_before_fairness?: number;
@@ -469,6 +499,12 @@ export function calculateTotalScore(
     provider.specialty_tags
   );
 
+  // Calculate event type match bonus (up to +20 points)
+  const eventTypeScore = calculateEventTypeScore(
+    criteria.event_type_slug,
+    provider.event_type_slugs
+  );
+
   // Calculate CTR bonus/malus (-3 to +5 points)
   const ctrBonus = calculateCTRBonus(provider.fairness_data);
 
@@ -481,6 +517,7 @@ export function calculateTotalScore(
     locationScore +
     tagsScore +
     specialtyScore +
+    eventTypeScore +
     ctrBonus;
 
   // Score avant application de l'equite (cap a 100)
@@ -504,6 +541,7 @@ export function calculateTotalScore(
     location_match: locationScore,
     tags_match: tagsScore,
     specialty_match: specialtyScore,
+    event_type_match: eventTypeScore,
     fairness_multiplier: fairnessMultiplier,
     ctr_bonus: ctrBonus,
     score_before_fairness: scoreBeforeFairness,

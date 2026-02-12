@@ -47,6 +47,9 @@ export interface ScoreBreakdown {
   // Specialty match (bonus pour besoins specifiques)
   specialty_match?: number; // 0 a +15 points bonus
 
+  // Event type match (bonus pour événement culturel spécifique)
+  event_type_match?: number; // -5 a +20 points bonus
+
   // Equite (pour eviter de toujours montrer les memes)
   fairness_multiplier?: number; // 0.85 a 1.15
   ctr_bonus?: number; // -3 a +5 points

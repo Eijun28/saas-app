@@ -15,6 +15,7 @@ import { SiretEditor } from '@/components/provider/SiretEditor'
 import { ProfileDescriptionEditor } from '@/components/provider/ProfileDescriptionEditor'
 import { BioEditor } from '@/components/provider/BioEditor'
 import { CultureSelector } from '@/components/provider/CultureSelector'
+import { ProviderEventTypesSelector } from '@/components/provider/ProviderEventTypesSelector'
 import { ZoneSelector } from '@/components/provider/ZoneSelector'
 import { TagSelector } from '@/components/provider/TagSelector'
 import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
@@ -601,7 +602,7 @@ export default function ProfilPublicPage() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="cultures" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="cultures" className="mt-3 xs:mt-4 sm:mt-6 space-y-4">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -610,6 +611,17 @@ export default function ProfilPublicPage() {
                   <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
                     <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
                       <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
+                    </div>
+                  </Card>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <ProviderEventTypesSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
                 </motion.div>

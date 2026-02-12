@@ -493,6 +493,31 @@ export async function POST(request: NextRequest) {
       logger.warn('⚠️ Impossible de charger les donnees d\'equite (table peut-etre inexistante):', fairnessError);
     }
 
+    // Charger les event types couverts par chaque prestataire
+    const eventTypeSlugsMap = new Map<string, string[]>();
+    if (search_criteria.event_type_slug) {
+      try {
+        const { data: providerEventTypes } = await supabase
+          .from('provider_event_types')
+          .select('profile_id, cultural_event_types(slug)')
+          .in('profile_id', providerIds);
+
+        if (providerEventTypes) {
+          providerEventTypes.forEach((item: Record<string, unknown>) => {
+            const profileId = item.profile_id as string;
+            const joined = item.cultural_event_types as { slug: string } | null;
+            if (joined?.slug) {
+              const existing = eventTypeSlugsMap.get(profileId) || [];
+              existing.push(joined.slug);
+              eventTypeSlugsMap.set(profileId, existing);
+            }
+          });
+        }
+      } catch (eventTypeError) {
+        logger.warn('⚠️ Impossible de charger les event types prestataires:', eventTypeError);
+      }
+    }
+
     // Charger les tags de specialite pour tous les prestataires
     const specialtyTagsMap = new Map<string, string[]>();
     try {
@@ -538,11 +563,12 @@ export async function POST(request: NextRequest) {
     const scoredProviders = enrichedProviders.map((provider) => {
       const providerId = typeof provider.id === 'string' ? provider.id : String(provider.id);
 
-      // Enrichir le provider avec les donnees d'equite et specialites
+      // Enrichir le provider avec les donnees d'equite, specialites et event types
       const enrichedProvider = enrichProviderWithFairness(
         {
           ...provider,
           specialty_tags: specialtyTagsMap.get(providerId) || [],
+          event_type_slugs: eventTypeSlugsMap.get(providerId) || [],
         },
         fairnessDataMap.get(providerId) || null
       );
