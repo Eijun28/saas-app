@@ -166,7 +166,9 @@ export default function OnboardingPage() {
         if (error) throw error
 
         toast.success('Bienvenue sur NUPLY !')
-        router.push('/prestataire/dashboard')
+        // Full page reload pour que le layout Server Component se re-rende
+        // avec la sidebar (router.push ne suffit pas car le layout persiste)
+        window.location.href = '/prestataire/dashboard'
         return
       }
 
