@@ -23,58 +23,101 @@ function getOpenAI(): OpenAI {
 // Fonction utilitaire pour corriger l'encodage UTF-8 des caractères accentués
 function fixUtf8Encoding(text: string): string {
   if (!text || typeof text !== 'string') return text;
-  
+
   try {
     let fixed = text;
-    
+
     // Décoder les séquences d'échappement Unicode (\uXXXX)
     fixed = fixed.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
       return String.fromCharCode(parseInt(code, 16));
     });
-    
+
+    // Tentative de réparation double-encodage UTF-8 (Latin-1 → UTF-8)
+    // Quand un texte UTF-8 est interprété comme Latin-1 puis ré-encodé
+    try {
+      if (/[\xC0-\xFF]/.test(fixed)) {
+        const bytes = new Uint8Array([...fixed].map(c => c.charCodeAt(0)));
+        const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+        if (decoded && !decoded.includes('\uFFFD')) {
+          fixed = decoded;
+        }
+      }
+    } catch {
+      // Pas du double-encodage, continuer normalement
+    }
+
     // Normaliser les caractères Unicode (NFC - Canonical Composition)
     fixed = fixed.normalize('NFC');
-    
-    // Remplacer les patterns courants de mots français mal encodés
-    const wordReplacements: Record<string, string> = {
-      'r�sume': 'résume',
-      'r�sum�': 'résumé',
-      'alg�rien': 'algérien',
-      'sp�cifique': 'spécifique',
-      'allerg�nes': 'allergènes',
-      'r�gime': 'régime',
-      'v�g�tarien': 'végétarien',
-      'pr�ciser': 'préciser',
-      'pr�f�r�': 'préféré',
-      'pr�f�r�e': 'préférée',
-      'pr�f�r�es': 'préférées',
-      'pr�f�r�s': 'préférés',
-      'd�j�': 'déjà',
-      'tr�s': 'très',
-      'apr�s': 'après',
-      'm�me': 'même',
-      'c�r�monie': 'cérémonie',
-      'c�r�monies': 'cérémonies',
-    };
-    
-    // Remplacer les mots connus
-    for (const [wrong, correct] of Object.entries(wordReplacements)) {
-      const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-      fixed = fixed.replace(regex, correct);
+
+    // Si le texte contient des caractères de remplacement (�), appliquer les corrections
+    if (fixed.includes('\uFFFD') || fixed.includes('�')) {
+      // Remplacer les patterns courants de mots français mal encodés
+      const wordReplacements: Record<string, string> = {
+        // Verbes et formes courantes
+        'r\uFFFDsume': 'résume', 'r\uFFFDsum\uFFFD': 'résumé',
+        'pr\uFFFDciser': 'préciser', 'pr\uFFFDcis\uFFFDment': 'précisément',
+        'pr\uFFFDf\uFFFDr\uFFFD': 'préféré', 'pr\uFFFDf\uFFFDr\uFFFDe': 'préférée',
+        'pr\uFFFDf\uFFFDr\uFFFDes': 'préférées', 'pr\uFFFDf\uFFFDr\uFFFDs': 'préférés',
+        'pr\uFFFDf\uFFFDrence': 'préférence', 'pr\uFFFDf\uFFFDrences': 'préférences',
+        'd\uFFFDj\uFFFD': 'déjà', 'tr\uFFFDs': 'très',
+        'apr\uFFFDs': 'après', 'm\uFFFDme': 'même',
+        // Noms communs mariage
+        'c\uFFFDr\uFFFDmonie': 'cérémonie', 'c\uFFFDr\uFFFDmonies': 'cérémonies',
+        'allerg\uFFFDnes': 'allergènes', 'r\uFFFDgime': 'régime',
+        'v\uFFFDg\uFFFDtarien': 'végétarien', 'v\uFFFDg\uFFFDtarienne': 'végétarienne',
+        'sp\uFFFDcifique': 'spécifique', 'sp\uFFFDcifiques': 'spécifiques',
+        'sp\uFFFDcialit\uFFFD': 'spécialité', 'sp\uFFFDcialit\uFFFDs': 'spécialités',
+        'sp\uFFFDcialis\uFFFD': 'spécialisé',
+        // Cultures
+        'alg\uFFFDrien': 'algérien', 'alg\uFFFDrienne': 'algérienne',
+        'maghr\uFFFDbin': 'maghrébin', 'maghr\uFFFDbine': 'maghrébine',
+        's\uFFFDn\uFFFDgalais': 'sénégalais',
+        'europ\uFFFDen': 'européen', 'europ\uFFFDenne': 'européenne',
+        'm\uFFFDditerran\uFFFDen': 'méditerranéen',
+        // Adjectifs courants
+        '\uFFFDl\uFFFDgant': 'élégant', '\uFFFDl\uFFFDgante': 'élégante',
+        'cr\uFFFDatif': 'créatif', 'cr\uFFFDative': 'créative',
+        'g\uFFFDn\uFFFDral': 'général', 'g\uFFFDn\uFFFDrale': 'générale',
+        'd\uFFFDcoration': 'décoration', 'd\uFFFDcorateur': 'décorateur',
+        'r\uFFFDception': 'réception', 'r\uFFFDserver': 'réserver',
+        'r\uFFFDservation': 'réservation',
+        'compl\uFFFDter': 'compléter', 'compl\uFFFDtement': 'complètement',
+        'diff\uFFFDrent': 'différent', 'diff\uFFFDrente': 'différente',
+        'int\uFFFDress\uFFFD': 'intéressé', 'int\uFFFDressant': 'intéressant',
+        'n\uFFFDcessaire': 'nécessaire', 'qualit\uFFFD': 'qualité',
+        'quantit\uFFFD': 'quantité', 'beaut\uFFFD': 'beauté',
+        'march\uFFFD': 'marché', 'id\uFFFDe': 'idée', 'id\uFFFDes': 'idées',
+        'num\uFFFDro': 'numéro', 'priv\uFFFD': 'privé',
+        '\uFFFDv\uFFFDnement': 'événement', '\uFFFDv\uFFFDnements': 'événements',
+        'exp\uFFFDrience': 'expérience', 'exp\uFFFDriment\uFFFD': 'expérimenté',
+        'atmosph\uFFFDre': 'atmosphère', 'mani\uFFFDre': 'manière',
+        'premi\uFFFDre': 'première', 'derni\uFFFDre': 'dernière',
+        'enti\uFFFDre': 'entière', 'enti\uFFFDrement': 'entièrement',
+        'particuli\uFFFDre': 'particulière', 'particuli\uFFFDrement': 'particulièrement',
+        'l\uFFFDg\uFFFDret\uFFFD': 'légèreté',
+      };
+
+      for (const [wrong, correct] of Object.entries(wordReplacements)) {
+        const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        fixed = fixed.replace(regex, correct);
+      }
+
+      // Dernier recours : supprimer les caractères de remplacement isolés restants
+      // (plutôt que d'afficher des '�' dans l'interface)
+      if (fixed.includes('\uFFFD')) {
+        console.warn('Caractères de remplacement restants après correction:', {
+          original: text.substring(0, 200),
+          fixed: fixed.substring(0, 200),
+        });
+        // Remplacer les � isolés par rien (les supprimer proprement)
+        fixed = fixed.replace(/\uFFFD/g, '');
+      }
     }
-    
-    // Si le texte contient encore des caractères de remplacement, logger pour déboguer
-    if (fixed.includes('�')) {
-      console.warn('Caractères de remplacement détectés après correction:', {
-        original: text.substring(0, 100),
-        fixed: fixed.substring(0, 100),
-      });
-    }
-    
+
     return fixed;
   } catch (error) {
     console.error('Erreur lors de la correction UTF-8:', error);
-    return text; // Retourner le texte original en cas d'erreur
+    return text;
   }
 }
 
@@ -295,7 +338,8 @@ TON & STYLE
 
 ✅ Chaleureux, expert budget
 ✅ Tutoiement naturel
-✅ Emojis UNIQUEMENT dans le message de bienvenue initial`
+✅ Emojis UNIQUEMENT dans le message de bienvenue initial
+✅ IMPÉRATIF : Utilise TOUJOURS les caractères accentués français corrects (é, è, ê, ë, à, â, ù, û, ç, î, ï, ô, ñ). Ne JAMAIS omettre les accents.`
       : `Tu es l'assistant IA de NUPLY, plateforme de matching entre couples et prestataires de mariage multiculturels.
 
 ${coupleContext}
@@ -494,7 +538,9 @@ Exemple bon ton :
 
 Exemple mauvais ton :
 "Super ! C'est génial ! 🎉 Maintenant parlons budget..."
-"Wouah, excellente question ! Alors concernant le budget..."`;
+"Wouah, excellente question ! Alors concernant le budget..."
+
+✅ IMPÉRATIF : Utilise TOUJOURS les caractères accentués français corrects (é, è, ê, ë, à, â, ù, û, ç, î, ï, ô, ñ). Ne JAMAIS omettre les accents.`;
 
     // Convertir les messages au format OpenAI avec validation
     const openaiMessages: ChatCompletionMessageParam[] = messages

@@ -413,7 +413,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
                     e.stopPropagation();
                     removeTag(tag.id);
                   }}
-                  className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
+                  className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-gray-900 transition-colors"
                   title="Supprimer"
                 >
                   <X className="h-3.5 w-3.5" />

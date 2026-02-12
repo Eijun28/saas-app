@@ -376,7 +376,7 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
                           e.stopPropagation();
                           removeCulture(c.culture_id);
                         }}
-                        className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-purple-400 transition-colors"
+                        className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-gray-900 transition-colors"
                         title="Supprimer"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -409,7 +409,7 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
                           e.stopPropagation();
                           removeCulture(c.culture_id);
                         }}
-                        className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-blue-400 transition-colors"
+                        className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-gray-900 transition-colors"
                         title="Supprimer"
                       >
                         <X className="h-3.5 w-3.5" />

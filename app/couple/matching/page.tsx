@@ -911,30 +911,8 @@ function ChatView({
                   {/* Message bot - avec style amélioré */}
                   {message.role === 'bot' && (
                     <div className="flex-1 bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
-                      {(() => {
-                        // Fonction pour corriger les accents mal encodés
-                        let corrected = message.content;
-                        // Remplacer les patterns courants de mots français mal encodés
-                        const fixes: [RegExp, string][] = [
-                          [/r�sume/gi, 'résume'],
-                          [/r�sum�/gi, 'résumé'],
-                          [/alg�rien/gi, 'algérien'],
-                          [/sp�cifique/gi, 'spécifique'],
-                          [/allerg�nes/gi, 'allergènes'],
-                          [/r�gime/gi, 'régime'],
-                          [/v�g�tarien/gi, 'végétarien'],
-                          [/pr�ciser/gi, 'préciser'],
-                          [/pr�f�r�/gi, 'préféré'],
-                          [/d�j�/gi, 'déjà'],
-                          [/tr�s/gi, 'très'],
-                          [/apr�s/gi, 'après'],
-                          [/m�me/gi, 'même'],
-                        ];
-                        fixes.forEach(([pattern, replacement]) => {
-                          corrected = corrected.replace(pattern, replacement);
-                        });
-                        return corrected;
-                      })()}
+                      {/* Les accents sont corrigés côté API (fixUtf8Encoding) */}
+                      {message.content.replace(/\uFFFD/g, '')}
                     </div>
                   )}
 
