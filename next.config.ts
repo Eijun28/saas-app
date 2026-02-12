@@ -1,5 +1,6 @@
 // deploy trigger - force new deployment after promote
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 import path from "path";
 
 const nextConfig: NextConfig = {
@@ -63,4 +64,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Hide source maps from the client
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Disable Sentry telemetry
+  telemetry: false,
+});
