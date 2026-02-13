@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   stripe_price_id TEXT NOT NULL,
   
   -- Subscription details
-  plan_type TEXT NOT NULL CHECK (plan_type IN ('free', 'premium', 'pro')),
+  plan_type TEXT NOT NULL CHECK (plan_type IN ('discovery', 'pro', 'expert')),
   status TEXT NOT NULL CHECK (status IN ('active', 'canceled', 'past_due', 'trialing', 'incomplete')),
   
   -- Dates
