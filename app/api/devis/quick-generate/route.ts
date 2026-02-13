@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger'
 import { z } from 'zod'
 import { generateDevisPdf } from '@/lib/pdf/devis-generator'
 import type { DevisPdfData } from '@/types/billing'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 // Schema de validation
 const quickDevisSchema = z.object({
@@ -37,6 +38,12 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier le plan (PDF requiert Pro ou supérieur)
+    const subscriptionCheck = await checkSubscriptionAccess(user.id, 'pro')
+    if (!subscriptionCheck.authorized) {
+      return subscriptionCheck.response
     }
 
     // Vérifier que l'utilisateur est un prestataire

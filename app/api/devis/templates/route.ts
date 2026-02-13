@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
+import { getUserPlanType } from '@/lib/subscription-guard'
 
 // Schema de validation pour créer/modifier un template
 const templateSchema = z.object({
@@ -70,6 +71,27 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier la limite de templates selon le plan
+    const planType = await getUserPlanType(user.id)
+    if (planType === 'discovery') {
+      const { count } = await supabase
+        .from('devis_templates')
+        .select('*', { count: 'exact', head: true })
+        .eq('prestataire_id', user.id)
+
+      if (count && count >= 1) {
+        return NextResponse.json(
+          {
+            error: 'Le plan Découverte est limité à 1 template de devis',
+            requiredPlan: 'pro',
+            currentPlan: 'discovery',
+            upgradeUrl: '/tarifs',
+          },
+          { status: 403 },
+        )
+      }
     }
 
     const body = await request.json()

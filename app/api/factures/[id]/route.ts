@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 // Schema de validation pour modifier une facture
 const updateFactureSchema = z.object({
@@ -39,6 +40,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier le plan (factures requièrent Pro ou supérieur)
+    const subscriptionCheck = await checkSubscriptionAccess(user.id, 'pro')
+    if (!subscriptionCheck.authorized) {
+      return subscriptionCheck.response
     }
 
     const { data: facture, error } = await supabase
@@ -86,6 +93,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier le plan (factures requièrent Pro ou supérieur)
+    const subscriptionCheckPatch = await checkSubscriptionAccess(user.id, 'pro')
+    if (!subscriptionCheckPatch.authorized) {
+      return subscriptionCheckPatch.response
     }
 
     const body = await request.json()

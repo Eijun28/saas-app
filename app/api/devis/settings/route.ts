@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 // Schema de validation pour les paramètres
 const settingsSchema = z.object({
@@ -38,6 +39,12 @@ export async function GET() {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier le plan (paramètres devis requièrent Pro ou supérieur)
+    const subscriptionCheck = await checkSubscriptionAccess(user.id, 'pro')
+    if (!subscriptionCheck.authorized) {
+      return subscriptionCheck.response
     }
 
     const { data: settings, error } = await supabase
@@ -92,6 +99,12 @@ export async function PUT(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Vérifier le plan (paramètres devis requièrent Pro ou supérieur)
+    const subscriptionCheckPut = await checkSubscriptionAccess(user.id, 'pro')
+    if (!subscriptionCheckPut.authorized) {
+      return subscriptionCheckPut.response
     }
 
     const body = await request.json()

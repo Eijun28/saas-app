@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
             session.subscription as string
           )
           const priceId = subscription.items.data[0]?.price.id
-          const planType = priceId === STRIPE_PRICE_IDS.premium ? 'premium' : 
-                          priceId === STRIPE_PRICE_IDS.pro ? 'pro' : 'premium'
+          const planType = priceId === STRIPE_PRICE_IDS.expert ? 'expert' :
+                          priceId === STRIPE_PRICE_IDS.pro ? 'pro' : 'expert'
 
           await adminClient
             .from('subscriptions')
