@@ -46,8 +46,15 @@ export function Sparkles({
       canvas.height = rect.height;
     };
 
+    // Debounce resize to avoid excessive repaints
+    let resizeTimeout: ReturnType<typeof setTimeout>;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resize, 150);
+    };
+
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", debouncedResize);
 
     // Initialize sparkles
     const initSparkles = () => {
@@ -115,7 +122,8 @@ export function Sparkles({
     animate();
 
     return () => {
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", debouncedResize);
+      clearTimeout(resizeTimeout);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -127,7 +135,7 @@ export function Sparkles({
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
-        style={{ pointerEvents: "none" }}
+        style={{ pointerEvents: "none", willChange: "contents" }}
       />
     </div>
   );

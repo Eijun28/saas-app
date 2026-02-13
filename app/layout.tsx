@@ -49,6 +49,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <meta name="theme-color" content="#FAF9F6" />
+      </head>
       <body className={`${GeistSans.className} ${GeistSans.variable} antialiased bg-background`} suppressHydrationWarning>
         {/* Données structurées pour le SEO */}
         <JsonLd data={[generateOrganizationSchema(), generateWebSiteSchema()]} />

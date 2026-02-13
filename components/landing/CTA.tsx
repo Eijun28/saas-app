@@ -41,7 +41,7 @@ export default function CTA({
       }}
     >
       <div className="max-w-container relative z-10 mx-auto flex flex-col items-center gap-6 text-center sm:gap-8">
-        <h2 className="max-w-[900px] text-3xl leading-[1.1] font-black sm:text-[90px] sm:leading-[1.1]" style={{ color: '#823F91' }}>
+        <h2 className="max-w-[900px] text-3xl leading-[1.1] font-black sm:text-5xl md:text-7xl lg:text-[90px] sm:leading-[1.1]" style={{ color: '#823F91' }}>
           {typeof title === 'string' ? (
             <>
               <span className="block">Commencez votre</span>

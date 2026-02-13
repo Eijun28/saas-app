@@ -58,7 +58,7 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
     >
       <div
         className={cn(
-          'relative h-[380px] w-full max-w-sm mx-auto',
+          'relative h-[340px] sm:h-[380px] w-full max-w-sm mx-auto',
           'transition-transform duration-1000 ease-in-out [transform-style:preserve-3d]',
           isFlipped ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'
         )}
@@ -119,9 +119,10 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
 
           {/* Indicateur hover */}
           <div className="absolute bottom-4 left-0 right-0 text-center z-10">
-            <div className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: '#823F91' }}>
+            <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium" style={{ color: '#823F91' }}>
               <Sparkles className="w-4 h-4" />
-              <span>Survolez pour voir les avantages</span>
+              <span className="hidden sm:inline">Survolez pour voir les avantages</span>
+              <span className="sm:hidden">Appuyez pour voir les avantages</span>
             </div>
           </div>
         </div>
@@ -315,7 +316,7 @@ export default function MatchingExplainerCards() {
     <div className="w-full py-8 bg-background relative overflow-hidden">
       {/* Cartes */}
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 max-w-5xl mx-auto">
           {cardsData.map((card, index) => (
             <FlipCard key={index} data={card} delay={index * 0.2} />
           ))}
