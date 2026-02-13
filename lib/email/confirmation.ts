@@ -23,8 +23,11 @@ export async function sendConfirmationEmail(
   try {
     const adminClient = createAdminClient()
     
-    // Générer un lien de confirmation via l'API admin
-    // Utiliser 'magiclink' pour un utilisateur existant (pas 'signup' qui nécessite password)
+    // Générer un lien magiclink via l'API admin
+    // Note: generateLink({ type: 'magiclink' }) a un effet de bord connu :
+    // il marque email_confirmed_at immédiatement côté Supabase.
+    // On annule cet effet juste après pour que la confirmation ne se fasse
+    // que lorsque l'utilisateur clique réellement sur le lien.
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
@@ -37,6 +40,12 @@ export async function sendConfirmationEmail(
       logger.error('Erreur génération lien confirmation:', linkError)
       return { success: false, error: 'Erreur lors de la génération du lien de confirmation' }
     }
+
+    // Annuler la confirmation automatique causée par generateLink
+    // L'email ne sera confirmé que lorsque l'utilisateur cliquera sur le lien
+    await adminClient.auth.admin.updateUserById(userId, {
+      email_confirm: false,
+    })
 
     const confirmationUrl = linkData.properties.action_link
 
