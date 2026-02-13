@@ -56,8 +56,11 @@ export async function POST(request: Request) {
       || undefined
 
     // Vérifier si le prestataire est déjà inscrit
-    const { data: existingUsers } = await adminClient.auth.admin.listUsers()
-    const existingUser = existingUsers?.users?.find((u: { email?: string }) => u.email === email.toLowerCase())
+    const { data: existingUsers } = await adminClient.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    })
+    const existingUser = existingUsers?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === email.toLowerCase())
 
     if (existingUser) {
       // Vérifier si c'est déjà un prestataire
@@ -124,9 +127,14 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      logger.error('Erreur création invitation prestataire', error)
+      logger.error('Erreur création invitation prestataire', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
       return NextResponse.json(
-        { error: 'Erreur lors de la création de l\'invitation' },
+        { error: `Erreur lors de la création de l'invitation: ${error.message}` },
         { status: 500 }
       )
     }

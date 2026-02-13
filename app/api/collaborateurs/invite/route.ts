@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    
+
     // Validation avec Zod
     const validationResult = inviteCollaborateurSchema.safeParse(body)
     if (!validationResult.success) {
@@ -56,15 +56,18 @@ export async function POST(request: Request) {
       )
     }
 
+    const adminClient = createAdminClient()
+
     // ✅ VALIDATION 2: Limiter nombre d'invitations par couple
-    const { count, error: countError } = await supabase
+    const { count, error: countError } = await adminClient
       .from('collaborateurs')
       .select('*', { count: 'exact', head: true })
       .eq('couple_id', user.id)
 
     if (countError) {
+      logger.error('Erreur vérification nombre invitations', countError)
       return NextResponse.json(
-        { error: 'Erreur lors de la vérification des invitations' },
+        { error: `Erreur lors de la vérification des invitations: ${countError.message}` },
         { status: 500 }
       )
     }
@@ -77,9 +80,13 @@ export async function POST(request: Request) {
     }
 
     // ✅ VALIDATION 3: Vérifier que l'email n'existe pas déjà comme utilisateur
-    const adminClient = createAdminClient()
-    const { data: existingUsers } = await adminClient.auth.admin.listUsers()
-    const emailExists = existingUsers?.users?.some(u => u.email === email.toLowerCase())
+    const { data: existingUsers } = await adminClient.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    })
+    const emailExists = existingUsers?.users?.some(
+      u => u.email?.toLowerCase() === email.toLowerCase()
+    )
 
     if (emailExists) {
       return NextResponse.json(
@@ -92,13 +99,13 @@ export async function POST(request: Request) {
     const invitationToken = randomBytes(32).toString('hex')
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7) // Expire dans 7 jours
-    
+
     // Vérifier si une invitation existe déjà pour cet email
     const { data: existingInvitation } = await adminClient
       .from('collaborateurs')
       .select('id')
       .eq('couple_id', user.id)
-      .eq('email', email)
+      .eq('email', email.toLowerCase())
       .single()
 
     if (existingInvitation) {
@@ -113,9 +120,10 @@ export async function POST(request: Request) {
       .from('collaborateurs')
       .insert({
         couple_id: user.id,
-        email,
+        email: email.toLowerCase(),
         name,
         role,
+        message: message || null,
         invitation_token: invitationToken,
         invitation_expires_at: expiresAt.toISOString(),
         invited_at: new Date().toISOString(),
@@ -124,9 +132,14 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      logger.error('Erreur lors de la création de l\'invitation', error)
+      logger.error('Erreur lors de la création de l\'invitation', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
       return NextResponse.json(
-        { error: 'Erreur lors de la création de l\'invitation' },
+        { error: `Erreur lors de la création de l'invitation: ${error.message}` },
         { status: 500 }
       )
     }
@@ -143,7 +156,7 @@ export async function POST(request: Request) {
     if (channel === 'email' && resendApiKey) {
       try {
         const resend = new Resend(resendApiKey)
-        
+
         // Échapper les inputs utilisateur pour prévenir les injections XSS
         const safeName = escapeHtml(name || 'votre mariage')
         const safeRole = escapeHtml(role)
@@ -198,4 +211,3 @@ export async function POST(request: Request) {
     return handleApiError(error)
   }
 }
-
