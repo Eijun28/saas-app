@@ -1,58 +1,31 @@
-# Comment désactiver l'email automatique de Supabase
+# Emails de confirmation : Resend uniquement
 
-## Problème actuel
+## Architecture actuelle
 
-Actuellement, **les deux systèmes** envoient des emails :
-1. **Supabase** envoie automatiquement un email (template cassé)
-2. **Resend** envoie notre email personnalisé (qui fonctionne)
+L'inscription utilise **uniquement Resend** pour l'envoi des emails de confirmation.
 
-Résultat : L'utilisateur reçoit **2 emails** de confirmation.
+- L'utilisateur est créé via `admin.createUser({ email_confirm: false })` pour éviter que Supabase envoie son email natif.
+- Le lien de confirmation est généré via `admin.generateLink({ type: 'magiclink' })`, puis l'auto-confirmation est annulée via `updateUserById({ email_confirm: false })`.
+- L'email est envoyé via **Resend** avec le template custom Nuply.
 
-## Solution : Désactiver l'email Supabase
+## Action requise dans le dashboard Supabase
 
-### Option 1 : Désactiver via les paramètres Supabase (Recommandé)
-
-1. Allez dans votre **Supabase Dashboard**
-2. **Settings** > **Auth** > **Email Auth**
-3. Décochez **"Enable email confirmations"**
-   - ⚠️ **ATTENTION** : Cela désactive complètement la confirmation d'email
-   - Vous devrez alors gérer la confirmation uniquement via Resend
-
-### Option 2 : Modifier le template Supabase pour qu'il soit vide (Meilleure solution)
+Même si le code ne déclenche plus l'email natif, il est recommandé de **désactiver les emails de confirmation Supabase** pour éviter tout envoi accidentel :
 
 1. Allez dans **Supabase Dashboard**
 2. **Authentication** > **Email Templates**
 3. Sélectionnez le template **"Confirm signup"**
-4. Remplacez le contenu par un template minimal qui ne sera jamais utilisé :
+4. Remplacez le contenu par :
 
 ```html
-<!-- Email désactivé - Utilisation de Resend pour emails personnalisés -->
-<p>Votre compte a été créé. Vous recevrez un email de confirmation séparément.</p>
+<!-- Email désactivé - Utilisation de Resend -->
+<p>Ce message ne devrait pas être envoyé. Contactez support@nuply.fr si vous le recevez.</p>
 ```
-
-Mais en fait, mieux vaut laisser Supabase envoyer son email par défaut et simplement ignorer qu'il existe, car notre email Resend sera envoyé après.
-
-### Option 3 : Utiliser un webhook Supabase (Avancé)
-
-Créer un webhook qui intercepte l'événement `auth.user.created` et empêche l'envoi de l'email Supabase.
-
-## Recommandation
-
-**Pour l'instant, laissez les deux actifs** car :
-- L'email Supabase peut servir de backup si Resend échoue
-- Notre email Resend est celui qui sera utilisé (plus joli, avec prénom)
-- Les utilisateurs recevront les deux, mais cliqueront sur celui de Resend
-
-**Plus tard, vous pourrez désactiver Supabase** une fois que vous êtes sûr que Resend fonctionne à 100%.
 
 ## Vérification
 
-Pour vérifier quel système envoie quoi :
+Pour vérifier que tout fonctionne :
 
 1. Créez un compte de test
-2. Vérifiez votre boîte email
-3. Vous devriez voir :
-   - 1 email de Supabase (design basique, peut-être cassé)
-   - 1 email de Resend (design personnalisé avec prénom, fonctionnel)
-
-L'utilisateur peut utiliser **n'importe lequel des deux** pour confirmer son compte, mais celui de Resend est plus professionnel.
+2. Vous devriez recevoir **un seul email** de Resend (design Nuply avec prénom)
+3. L'email ne doit **pas** être marqué comme confirmé avant le clic sur le lien

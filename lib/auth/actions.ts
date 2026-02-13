@@ -73,113 +73,45 @@ export async function signUp(
     }
   }
 
-  logger.critical('🔧 Création client Supabase...', { email, role })
-  const supabase = await createClient()
-  logger.critical('✅ Client Supabase créé', { email, role })
+  // Créer l'utilisateur via l'API admin pour éviter l'envoi automatique
+  // de l'email de confirmation par Supabase (on utilise Resend à la place)
+  logger.critical('📧 Création utilisateur via admin API (sans email natif)...', { email, role })
+  const signupAdminClient = createAdminClient()
 
-  logger.critical('📧 Tentative signUp Supabase Auth...', { email, role })
-  let { data, error } = await supabase.auth.signUp({
+  let data: { user: any } = { user: null }
+
+  const { data: adminData, error: adminError } = await signupAdminClient.auth.admin.createUser({
     email,
     password,
-    options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
-      data: {
-        role: role,
-        prenom: profileData.prenom,
-        nom: profileData.nom,
-        nom_entreprise: profileData.nomEntreprise || null,
-        siret: profileData.siret || null,
-      }
-    },
-  })
-
-  logger.critical('📧 Réponse signUp reçue', { 
-    email, 
-    role, 
-    hasUser: !!data?.user, 
-    hasError: !!error,
-    errorMessage: error?.message 
-  })
-
-  // Gérer les erreurs d'envoi d'email (ne pas bloquer l'inscription si l'utilisateur est créé)
-  if (error) {
-    logger.critical('⚠️ Erreur lors du signUp', { email, role, error: error.message, hasUser: !!data?.user })
-    // Si l'utilisateur est créé mais l'email échoue, on continue quand même
-    if (data?.user && error.message?.includes('email') && error.message?.includes('send')) {
-      logger.warn('Email de confirmation non envoyé mais utilisateur créé:', error.message)
-      // On continue le processus même si l'email échoue
-    } else if (error.message?.toLowerCase().includes('database error')) {
-      // Le trigger handle_new_user() a probablement planté (colonne manquante, etc.)
-      // Fallback : créer le user via l'API admin SANS les metadata de rôle
-      // pour que le trigger ne tente pas de créer le profil
-      logger.critical('🔄 Erreur DB trigger détectée, fallback via admin API sans role metadata...', { email, role })
-      try {
-        const adminClient = createAdminClient()
-        // Ne PAS inclure le role dans user_metadata pour éviter que le trigger
-        // ne tente de créer un profil (le trigger check raw_user_meta_data->>'role')
-        const { data: adminData, error: adminError } = await adminClient.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: false,
-          user_metadata: {
-            prenom: profileData.prenom,
-            nom: profileData.nom,
-            nom_entreprise: profileData.nomEntreprise || null,
-            siret: profileData.siret || null,
-            // role est volontairement OMIS ici pour bypasser le trigger
-          }
-        })
-        if (adminError) {
-          logger.critical('🚨 Fallback admin aussi en erreur', { error: adminError.message })
-          if (adminError.message?.toLowerCase().includes('already') || adminError.message?.toLowerCase().includes('exists')) {
-            return { error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous.' }
-          }
-          return { error: translateAuthError(adminError.message) }
-        }
-        if (adminData?.user) {
-          logger.critical('✅ User créé via admin API fallback (sans role dans metadata)', { userId: adminData.user.id })
-          data = { ...data, user: adminData.user }
-
-          // Maintenant, mettre à jour les metadata pour ajouter le rôle
-          // (le user est déjà créé, le trigger ne se redéclenche pas sur UPDATE)
-          await adminClient.auth.admin.updateUserById(adminData.user.id, {
-            user_metadata: {
-              role: role,
-              prenom: profileData.prenom,
-              nom: profileData.nom,
-              nom_entreprise: profileData.nomEntreprise || null,
-              siret: profileData.siret || null,
-            }
-          })
-          logger.critical('✅ Metadata mis à jour avec le rôle', { userId: adminData.user.id, role })
-        } else {
-          return { error: 'Échec de la création du compte. Veuillez réessayer.' }
-        }
-      } catch (adminFallbackError: any) {
-        logger.critical('🚨 Fallback admin exception', { error: adminFallbackError?.message })
-        return { error: 'Échec de la création du compte. Veuillez réessayer.' }
-      }
-    } else {
-      logger.critical('🚨 Erreur signUp - retour erreur', { email, role, error: error.message })
-      return { error: translateAuthError(error.message) }
+    email_confirm: false, // Ne PAS confirmer l'email automatiquement
+    user_metadata: {
+      role: role,
+      prenom: profileData.prenom,
+      nom: profileData.nom,
+      nom_entreprise: profileData.nomEntreprise || null,
+      siret: profileData.siret || null,
     }
+  })
+
+  if (adminError) {
+    logger.critical('⚠️ Erreur lors de la création utilisateur', { email, role, error: adminError.message })
+    if (adminError.message?.toLowerCase().includes('already') || adminError.message?.toLowerCase().includes('exists')) {
+      return { error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous.' }
+    }
+    return { error: translateAuthError(adminError.message) }
   }
 
-  // Vérifier que l'utilisateur a été créé
-  if (!data?.user) {
-    logger.critical('🚨 Aucun utilisateur créé après signUp', { email, role })
-    logger.error('Aucun utilisateur créé après signUp')
+  if (!adminData?.user) {
     return { error: 'Échec de la création du compte. Veuillez réessayer.' }
   }
 
-  // Détecter le cas "user already registered" : Supabase renvoie un user
-  // avec identities vide si l'email existe déjà (selon la config du projet)
-  if (data.user.identities && data.user.identities.length === 0) {
-    logger.critical('⚠️ Email déjà enregistré (identities vide)', { email, role })
-    return {
-      error: 'Cet email est déjà utilisé. Si vous avez déjà un compte, connectez-vous. Sinon, utilisez une autre adresse email.'
-    }
-  }
+  data.user = adminData.user
+
+  logger.critical('📧 Utilisateur créé avec succès', {
+    email,
+    role,
+    userId: data.user.id,
+  })
 
   logger.critical('👤 Utilisateur créé, rôle:', { userId: data.user.id, role, email })
 
