@@ -17,4 +17,4 @@ export interface EarlyAdopterNotification {
   created_at: string
 }
 
-export type SubscriptionTier = 'free' | 'early_adopter' | 'pro' | 'premium'
+export type SubscriptionTier = 'discovery' | 'early_adopter' | 'pro' | 'expert'

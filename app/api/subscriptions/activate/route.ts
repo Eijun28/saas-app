@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { planType } = body
 
-    if (!planType || !['premium', 'pro'].includes(planType)) {
+    if (!planType || !['discovery', 'pro', 'expert'].includes(planType)) {
       return NextResponse.json(
-        { error: 'Type de plan invalide' },
+        { error: 'Type de plan invalide. Plans acceptés : discovery, pro, expert' },
         { status: 400 }
       )
     }

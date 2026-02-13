@@ -9,6 +9,7 @@ import { Resend } from 'resend'
 import { logger } from '@/lib/logger'
 import { validateSupabaseConfig, handleApiError } from '@/lib/api-error-handler'
 import { escapeHtml } from '@/lib/email/templates'
+import { checkSubscriptionAccess } from '@/lib/subscription-guard'
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +28,12 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
+
+    // Vérifier le plan (collaborateurs requièrent Expert)
+    const subscriptionCheck = await checkSubscriptionAccess(user.id, 'expert')
+    if (!subscriptionCheck.authorized) {
+      return subscriptionCheck.response
     }
 
     const body = await request.json()

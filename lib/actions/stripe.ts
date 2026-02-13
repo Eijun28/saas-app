@@ -1,7 +1,7 @@
 'use server'
 
 // Activer un plan gratuitement (sans Stripe)
-export async function activateFreePlan(planType: 'premium' | 'pro') {
+export async function activateFreePlan(planType: 'discovery' | 'pro' | 'expert') {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/subscriptions/activate`, {
       method: 'POST',
@@ -24,7 +24,7 @@ export async function activateFreePlan(planType: 'premium' | 'pro') {
 }
 
 // Fonction Stripe (désactivée pour l'instant)
-export async function createCheckoutSession(planType: 'premium' | 'pro') {
+export async function createCheckoutSession(planType: 'pro' | 'expert') {
   // Pour l'instant, utiliser l'activation gratuite
   return activateFreePlan(planType)
   

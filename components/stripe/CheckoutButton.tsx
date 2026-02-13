@@ -8,7 +8,7 @@ import { Loader2, Check } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface CheckoutButtonProps {
-  planType: 'premium' | 'pro'
+  planType: 'discovery' | 'pro' | 'expert'
   children: React.ReactNode
   className?: string
   variant?: 'default' | 'outline'

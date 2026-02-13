@@ -10,8 +10,8 @@ export const stripe = new Stripe(stripeKey, {
 
 // Plan IDs - À configurer dans Stripe Dashboard
 export const STRIPE_PRICE_IDS = {
-  premium: process.env.STRIPE_PRICE_ID_PREMIUM || 'price_premium_monthly',
   pro: process.env.STRIPE_PRICE_ID_PRO || 'price_pro_monthly',
+  expert: process.env.STRIPE_PRICE_ID_PREMIUM || 'price_expert_monthly',
 } as const
 
-export type PlanType = 'premium' | 'pro'
+export type PlanType = 'pro' | 'expert'

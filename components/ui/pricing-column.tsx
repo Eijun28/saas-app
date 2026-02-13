@@ -15,7 +15,7 @@ export interface PricingColumnProps {
     variant: "default" | "outline";
     label: string;
     href?: string;
-    planType?: "premium" | "pro";
+    planType?: "discovery" | "pro" | "expert";
     onClick?: () => void;
   };
   features: string[];
