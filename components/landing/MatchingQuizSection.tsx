@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Sparkles, Users, Send, HeartHandshake } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import MatchingExplainerCards from './MatchingExplainerCards'
 
 // Composant SkeletonMatching adapté pour pleine largeur
@@ -251,7 +252,7 @@ const SkeletonMatchingFullWidth = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className="w-full max-w-7xl mx-auto h-full min-h-[400px] sm:min-h-[500px] bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl border border-gray-100 p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden flex flex-col"
+      className="w-full max-w-7xl mx-auto h-[420px] sm:h-[500px] md:h-[520px] bg-white rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl border border-gray-100 p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden flex flex-col"
     >
       <div className="absolute inset-0 blur-3xl opacity-5" style={{ background: 'linear-gradient(to bottom right, rgba(192, 129, 227, 0.1), rgba(130, 63, 145, 0.1), rgba(192, 129, 227, 0.1))' }} />
       <div className="relative z-10 flex flex-col flex-1 min-h-0">
@@ -263,23 +264,14 @@ const SkeletonMatchingFullWidth = () => {
         >
           {displayedMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 bg-gray-100 overflow-hidden">
-                <img
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center mb-3 bg-gray-100 overflow-hidden relative">
+                <Image
                   src="/images/ai-assistant-avatar-3d.png"
                   alt="Assistant IA"
-                  className="w-full h-full object-cover object-center"
-                  onError={(e) => {
-                    // Fallback vers l'icône Sparkles si l'image ne charge pas
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.sparkles-fallback')) {
-                      const sparkles = document.createElement('div');
-                      sparkles.className = 'sparkles-fallback';
-                      sparkles.innerHTML = '<svg class="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>';
-                      parent.appendChild(sparkles.firstChild!);
-                    }
-                  }}
+                  width={56}
+                  height={56}
+                  className="object-cover object-center"
+                  priority={false}
                 />
               </div>
               <p className="text-sm sm:text-base font-medium mb-1 text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif' }}>
@@ -295,22 +287,13 @@ const SkeletonMatchingFullWidth = () => {
                 >
                   {/* Avatar pour les messages de l'IA */}
                   {msg.from === "ai" && (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      <img
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                      <Image
                         src="/images/ai-assistant-avatar-3d.png"
                         alt="Assistant IA"
-                        className="w-full h-full object-cover object-center"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.sparkles-fallback')) {
-                            const sparkles = document.createElement('div');
-                            sparkles.className = 'sparkles-fallback';
-                            sparkles.innerHTML = '<svg class="w-4 h-4 text-[#823F91]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>';
-                            parent.appendChild(sparkles.firstChild!);
-                          }
-                        }}
+                        width={32}
+                        height={32}
+                        className="object-cover object-center"
                       />
                     </div>
                   )}

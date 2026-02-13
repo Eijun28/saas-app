@@ -9,7 +9,7 @@ export function CulturesMarquee() {
   ]
 
   return (
-    <section className="w-full py-14 overflow-hidden">
+    <section className="w-full py-14 overflow-hidden min-h-[140px]">
       {/* Titre */}
       <div className="text-center mb-8 px-4">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2">

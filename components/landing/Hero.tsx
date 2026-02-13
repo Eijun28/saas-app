@@ -6,7 +6,7 @@ import { TypingAnimation } from '@/components/magicui/typing-animation';
 
 export default function Hero() {
   return (
-    <section className="relative pt-24 md:pt-28 pb-12 md:pb-16 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6">
+    <section className="relative pt-24 md:pt-28 pb-12 md:pb-16 flex items-center justify-center overflow-hidden bg-transparent px-4 md:px-6 min-h-[420px] sm:min-h-[480px] md:min-h-[520px]">
       <div className="container mx-auto text-center max-w-4xl relative z-10">
         {/* Titre - beige foncé */}
         <motion.h1

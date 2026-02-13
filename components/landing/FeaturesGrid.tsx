@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Sparkles, MessageSquare, PiggyBank, Shield, Calendar, Users, Lock, Music } from "lucide-react";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { FadeInOnScroll } from '@/components/landing/animations';
+import Image from "next/image";
 
 // Skeleton Nuply Matching - Rotation conversation toutes les 10s
 const SkeletonMatching = () => {
@@ -66,10 +67,12 @@ const SkeletonMatching = () => {
                     {msg.avatar === "couple" ? (
                       <Users className="w-4 h-4 text-white" />
                     ) : (
-                      <img
+                      <Image
                         src="/images/ai-assistant-avatar-3d.png"
                         alt="Assistant IA"
-                        className="w-full h-full object-cover object-center"
+                        width={32}
+                        height={32}
+                        className="object-cover object-center"
                       />
                     )}
                   </div>
@@ -420,9 +423,9 @@ const items = [
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="py-12 md:py-16 lg:py-20 bg-transparent">
-      <div className="max-w-7xl mx-auto px-6">
-        <FadeInOnScroll className="text-center mb-16">
+    <section id="features" className="py-12 md:py-16 lg:py-20 bg-transparent" style={{ containIntrinsicSize: '0 800px', contentVisibility: 'auto' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <FadeInOnScroll className="text-center mb-8 sm:mb-12 md:mb-16">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 mb-4">
             <span

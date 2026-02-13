@@ -1,31 +1,46 @@
 'use client'
 
-// 🚀 DEPLOYMENT MARKER - Commit 5dabfc9 - Date: 2026-01-27
-// ✅ Sparkles 60 particules, speed 0.15
-// ✅ Toggle HowItWorks w-fit
-// ✅ Conversation landing messages courts
-// ✅ Section HowItWorks complète
-// ✅ Profil couple couleurs corrigées
-// ✅ Fix cron job schedule pour plan Hobby
+import dynamic from 'next/dynamic'
 import Hero from '@/components/landing/Hero'
-import { PrestatairesMarquee } from '@/components/landing/PrestatairesMarquee'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
-import { HowItWorks } from '@/components/landing/HowItWorks'
-import MatchingQuizSection from '@/components/landing/MatchingQuizSection'
-import MatchingExplainerCards from '@/components/landing/MatchingExplainerCards'
-import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
-import CTA from '@/components/landing/CTA'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
 import { Sparkles } from '@/components/ui/sparkles'
+import { useEffect, useState } from 'react'
+
+// Lazy load below-the-fold components to improve initial load time
+const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks').then(mod => ({ default: mod.HowItWorks })), {
+  loading: () => <div className="min-h-[400px]" />,
+})
+const MatchingQuizSection = dynamic(() => import('@/components/landing/MatchingQuizSection'), {
+  loading: () => <div className="min-h-[600px]" />,
+})
+const PrestatairesMarquee = dynamic(() => import('@/components/landing/PrestatairesMarquee').then(mod => ({ default: mod.PrestatairesMarquee })), {
+  loading: () => <div className="min-h-[120px]" />,
+})
+const FeaturesGrid = dynamic(() => import('@/components/landing/FeaturesGrid').then(mod => ({ default: mod.FeaturesGrid })), {
+  loading: () => <div className="min-h-[400px]" />,
+})
+const CTA = dynamic(() => import('@/components/landing/CTA'), {
+  loading: () => <div className="min-h-[200px]" />,
+})
+const MatchingExplainerCards = dynamic(() => import('@/components/landing/MatchingExplainerCards'))
 
 export default function HomePage() {
+  // Reduce particle count on mobile for better performance
+  const [particleCount, setParticleCount] = useState(15)
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768
+    setParticleCount(isMobile ? 15 : 30)
+  }, [])
+
   return (
     <SmoothScrollProvider>
-      {/* Background de sparkles - léger et animé - Version actuelle */}
+      {/* Background de sparkles - léger et animé */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Sparkles
-          particleCount={30}
+          particleCount={particleCount}
           particleColors={["#823F91","#c081e3","#823F91"]}
           speed={0.15}
         />
