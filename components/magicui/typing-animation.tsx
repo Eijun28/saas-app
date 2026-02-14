@@ -26,34 +26,31 @@ export function TypingAnimation({
   const [currentText, setCurrentText] = useState("")
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Si children est fourni directement, l'afficher
-  if (children && words.length === 0) {
-    return <span className={cn(className)}>{children}</span>
-  }
+  const hasWords = words.length > 0
 
   // Initialiser avec le premier caractère du premier mot
   useEffect(() => {
-    if (words.length > 0 && currentText === "" && currentWordIndex === 0) {
+    if (hasWords && currentText === "" && currentWordIndex === 0) {
       setCurrentText(words[0][0] || "")
     }
-  }, [words, currentText, currentWordIndex])
+  }, [hasWords, words, currentText, currentWordIndex])
 
   // Quand on change de mot, initialiser avec le premier caractère
   useEffect(() => {
-    if (words.length > 0 && currentText === "" && currentWordIndex < words.length) {
+    if (hasWords && currentText === "" && currentWordIndex < words.length) {
       const currentWord = words[currentWordIndex]
       if (currentWord && currentWord.length > 0) {
         setCurrentText(currentWord[0])
       }
     }
-  }, [currentWordIndex, words, currentText])
+  }, [currentWordIndex, words, currentText, hasWords])
 
   useEffect(() => {
-    if (words.length === 0) return
+    if (!hasWords) return
 
     const currentWord = words[currentWordIndex]
     if (!currentWord) return
-    
+
     const timeout = setTimeout(() => {
       // Ajouter caractère par caractère
       if (currentText.length < currentWord.length) {
@@ -83,7 +80,12 @@ export function TypingAnimation({
         clearTimeout(pauseTimeoutRef.current)
       }
     }
-  }, [currentText, currentWordIndex, words, speed, delay, loop])
+  }, [currentText, currentWordIndex, words, speed, delay, loop, hasWords])
+
+  // Si children est fourni directement, l'afficher
+  if (children && !hasWords) {
+    return <span className={cn(className)}>{children}</span>
+  }
 
   return (
     <span className={cn(className)}>

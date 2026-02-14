@@ -24,7 +24,6 @@ const FeaturesGrid = dynamic(() => import('@/components/landing/FeaturesGrid').t
 const CTA = dynamic(() => import('@/components/landing/CTA'), {
   loading: () => <div className="min-h-[200px]" />,
 })
-const MatchingExplainerCards = dynamic(() => import('@/components/landing/MatchingExplainerCards'))
 
 export default function HomePage() {
   // Reduce particle count on mobile for better performance
