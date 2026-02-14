@@ -119,7 +119,7 @@ export default function DemandesPage() {
   const [error, setError] = useState<string | null>(null)
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
   const [reviewTarget, setReviewTarget] = useState<{ providerId: string; providerName: string; requestId: string } | null>(null)
-  const [existingReviews, setExistingReviews] = useState<Map<string, { rating: number; comment: string | null }>>(new Map())
+  const [existingReviews, setExistingReviews] = useState<Map<string, { rating: number; comment: string | null; rating_quality?: number | null; rating_communication?: number | null; rating_value?: number | null; rating_punctuality?: number | null }>>(new Map())
 
   // Helper pour obtenir le couple_id depuis user_id
   async function getCoupleId(): Promise<string | null> {
@@ -422,11 +422,11 @@ export default function DemandesPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('reviews')
-      .select('provider_id, rating, comment')
+      .select('provider_id, rating, comment, rating_quality, rating_communication, rating_value, rating_punctuality')
       .eq('couple_id', user.id)
     if (data) {
-      const map = new Map<string, { rating: number; comment: string | null }>()
-      data.forEach(r => map.set(r.provider_id, { rating: r.rating, comment: r.comment }))
+      const map = new Map<string, { rating: number; comment: string | null; rating_quality?: number | null; rating_communication?: number | null; rating_value?: number | null; rating_punctuality?: number | null }>()
+      data.forEach((r: any) => map.set(r.provider_id, { rating: r.rating, comment: r.comment, rating_quality: r.rating_quality, rating_communication: r.rating_communication, rating_value: r.rating_value, rating_punctuality: r.rating_punctuality }))
       setExistingReviews(map)
     }
   }
