@@ -255,7 +255,7 @@ export default function SignUpPage() {
                       250€ a gagner pour les pros du mariage !
                     </p>
                     <p className="text-xs text-purple-700 leading-relaxed">
-                      Inscrivez-vous et <strong>completez votre profil</strong> pour participer au tirage au sort. C'est simple, rapide et gratuit.
+                      Inscrivez-vous et <strong>complétez votre profil</strong> pour participer au tirage au sort. C'est simple, rapide et gratuit.
                     </p>
                   </div>
                 </div>

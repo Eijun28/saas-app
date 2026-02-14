@@ -142,7 +142,7 @@ export async function sendConfirmationEmail(
                     </p>
        
                     <p style="margin: 0 0 10px 0; color: #a0aec0; font-size: 12px;">
-                      © 2025 Nuply. Tous droits réservés.
+                      © 2026 Nuply. Tous droits réservés.
                     </p>
        
                     <p style="margin: 0; color: #cbd5e0; font-size: 12px;">

@@ -600,6 +600,19 @@ export async function signIn(email: string, password: string) {
     revalidatePath('/', 'layout')
     
     if (roleCheck.role) {
+      // Pour les prestataires, vérifier si l'onboarding est terminé
+      if (roleCheck.role === 'prestataire') {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_step')
+          .eq('id', data.user.id)
+          .maybeSingle()
+
+        if (!profile || (profile.onboarding_step ?? 0) < 5) {
+          return { success: true, redirectTo: '/prestataire/onboarding' }
+        }
+      }
+
       const dashboardUrl = getDashboardUrl(roleCheck.role)
       return { success: true, redirectTo: dashboardUrl }
     }
