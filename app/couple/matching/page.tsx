@@ -50,6 +50,7 @@ export default function MatchingPage() {
   const [savedConversations, setSavedConversations] = useState<ChatbotConversation[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [chatKey, setChatKey] = useState(0); // Key pour forcer le remontage du composant chat
+  const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -329,8 +330,6 @@ export default function MatchingPage() {
       console.error('Erreur tracking matching event:', error);
     }
   };
-
-  const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
 
   const handleContactProvider = async (providerId: string) => {
     if (!coupleId) {
