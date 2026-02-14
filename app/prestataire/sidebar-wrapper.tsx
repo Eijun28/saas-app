@@ -14,6 +14,7 @@ import {
   ChevronsRight,
   FileText,
   Settings,
+  BarChart3,
 } from "lucide-react"
 import {
   Sidebar,
@@ -65,6 +66,7 @@ const sections: NavSection[] = [
     title: "Finances",
     items: [
       { href: "/prestataire/devis-factures", icon: FileText, label: "Devis & Factures" },
+      { href: "/prestataire/analytics", icon: BarChart3, label: "Statistiques" },
     ],
   },
   {
