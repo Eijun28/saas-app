@@ -37,6 +37,27 @@ interface Stats {
   contact_rate: number
 }
 
+function AnimatedCounter({ value, duration = 1000 }: { value: number; duration?: number }) {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    let start = 0
+    const end = value
+    if (start === end) return
+
+    const incrementTime = duration / end
+    const timer = setInterval(() => {
+      start += 1
+      setCount(start)
+      if (start === end) clearInterval(timer)
+    }, Math.max(incrementTime, 20))
+
+    return () => clearInterval(timer)
+  }, [value, duration])
+
+  return <span>{count}</span>
+}
+
 export function VisibilityStats({ userId, serviceType, className }: VisibilityStatsProps) {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -78,28 +99,6 @@ export function VisibilityStats({ userId, serviceType, className }: VisibilitySt
 
     loadStats()
   }, [userId])
-
-  // Animation counter
-  const AnimatedCounter = ({ value, duration = 1000 }: { value: number; duration?: number }) => {
-    const [count, setCount] = useState(0)
-
-    useEffect(() => {
-      let start = 0
-      const end = value
-      if (start === end) return
-
-      const incrementTime = duration / end
-      const timer = setInterval(() => {
-        start += 1
-        setCount(start)
-        if (start === end) clearInterval(timer)
-      }, Math.max(incrementTime, 20))
-
-      return () => clearInterval(timer)
-    }, [value, duration])
-
-    return <span>{count}</span>
-  }
 
   const formatRate = (rate: number) => {
     return `${(rate * 100).toFixed(1)}%`
