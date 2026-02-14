@@ -37,7 +37,7 @@ export default function SignUpPage() {
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      role: 'couple',
+      role: 'prestataire',
       prenom: '',
       nom: '',
       email: '',
@@ -238,24 +238,29 @@ export default function SignUpPage() {
           </CardHeader>
 
           <CardContent className="relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="mb-6 rounded-2xl border border-purple-200/70 bg-gradient-to-r from-purple-50/80 via-pink-50/70 to-white px-4 py-3 text-sm text-purple-900 shadow-sm"
-            >
-              <div className="flex items-start gap-3">
-                <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#823F91] shadow-sm">
-                  <Gift className="h-4 w-4" />
-                </span>
-                <div className="space-y-1">
-                  <p className="font-semibold">Jeu concours prestataires : tentez de gagner une mise en avant sur NUPLY.</p>
-                  <p className="text-xs text-purple-700">
-                    Pour participer, renseignez un SIRET valide (14 chiffres). Les prestataires sans SIRET restent bienvenus sur la plateforme.
-                  </p>
+            {selectedRole === 'prestataire' && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className="mb-6 rounded-2xl border-2 border-[#823F91]/30 bg-gradient-to-r from-[#823F91]/10 via-purple-50 to-pink-50/80 px-4 py-4 text-sm text-purple-900 shadow-md relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#823F91]/10 to-transparent rounded-bl-full" />
+                <div className="flex items-start gap-3 relative z-10">
+                  <span className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#823F91] to-[#B855D6] text-white shadow-md shadow-purple-500/25 shrink-0">
+                    <Gift className="h-5 w-5" />
+                  </span>
+                  <div className="space-y-1.5">
+                    <p className="font-bold text-[#823F91] text-base leading-tight">
+                      Jeu concours : gagnez 3 mois de mise en avant offerts !
+                    </p>
+                    <p className="text-xs text-purple-700 leading-relaxed">
+                      Inscrivez-vous avec un <strong>SIRET valide</strong> et tentez votre chance. Sans SIRET ? Pas de souci, vous pouvez quand meme rejoindre NUPLY.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
             <motion.form
               variants={containerVariants}
@@ -273,22 +278,6 @@ export default function SignUpPage() {
                   <motion.button
                     type="button"
                     onClick={() => {
-                      setValue('role', 'couple', { shouldValidate: false })
-                    }}
-                    whileTap={{ scale: 0.97 }}
-                    className={cn(
-                      "px-5 sm:px-6 py-3 sm:py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] min-w-[100px]",
-                      selectedRole === 'couple'
-                        ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
-                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                    )}
-                  >
-                    Couple
-                  </motion.button>
-
-                  <motion.button
-                    type="button"
-                    onClick={() => {
                       setValue('role', 'prestataire', { shouldValidate: false })
                     }}
                     whileTap={{ scale: 0.97 }}
@@ -300,6 +289,22 @@ export default function SignUpPage() {
                     )}
                   >
                     Prestataire
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setValue('role', 'couple', { shouldValidate: false })
+                    }}
+                    whileTap={{ scale: 0.97 }}
+                    className={cn(
+                      "px-5 sm:px-6 py-3 sm:py-2.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[44px] min-w-[100px]",
+                      selectedRole === 'couple'
+                        ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                    )}
+                  >
+                    Couple
                   </motion.button>
                 </div>
                 {selectedRole === 'prestataire' && (
