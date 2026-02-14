@@ -252,10 +252,10 @@ export default function SignUpPage() {
                   </span>
                   <div className="space-y-1.5">
                     <p className="font-bold text-[#823F91] text-base leading-tight">
-                      Jeu concours : gagnez 3 mois de mise en avant offerts !
+                      250€ a gagner pour les pros du mariage !
                     </p>
                     <p className="text-xs text-purple-700 leading-relaxed">
-                      Inscrivez-vous avec un <strong>SIRET valide</strong> et tentez votre chance. Sans SIRET ? Pas de souci, vous pouvez quand meme rejoindre NUPLY.
+                      Inscrivez-vous et <strong>completez votre profil</strong> pour participer au tirage au sort. C'est simple, rapide et gratuit.
                     </p>
                   </div>
                 </div>
