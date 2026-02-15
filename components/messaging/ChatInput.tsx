@@ -78,8 +78,8 @@ export function ChatInput({
       }
 
       onMessageSent?.()
-    } catch (error: any) {
-      console.error('Erreur envoi message:', error)
+    } catch (err) {
+      console.error('Erreur envoi message:', err)
       toast.error("Erreur lors de l'envoi du message")
       setContent(messageContent) // Restore content on error
     } finally {
@@ -102,36 +102,82 @@ export function ChatInput({
 
   const handleFileSelect = (type: 'image' | 'document' | 'camera') => {
     if (type === 'camera') {
-      // TODO: Ouvrir la caméra pour prendre une photo
-      toast.info('Fonctionnalité caméra à venir')
+      // Ouvrir la caméra native sur mobile via l'attribut capture
+      if (fileInputRef.current) {
+        fileInputRef.current.accept = 'image/*'
+        fileInputRef.current.setAttribute('capture', 'environment')
+        fileInputRef.current.click()
+        setTimeout(() => {
+          fileInputRef.current?.removeAttribute('capture')
+          if (fileInputRef.current) fileInputRef.current.accept = 'image/*,video/*,.pdf,.doc,.docx'
+        }, 100)
+      }
       return
     }
 
+    if (type === 'image' && fileInputRef.current) {
+      fileInputRef.current.accept = 'image/*,video/*'
+    } else if (type === 'document' && fileInputRef.current) {
+      fileInputRef.current.accept = '.pdf,.doc,.docx,.xls,.xlsx,.txt'
+    }
     fileInputRef.current?.click()
-    // TODO: Gérer l'upload des fichiers vers Supabase Storage
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // TODO: Upload vers Supabase Storage et créer message avec media
-    toast.info('Fonctionnalité d\'upload à venir')
-    e.target.value = '' // Reset input
+    const MAX_SIZE = 10 * 1024 * 1024 // 10 Mo
+    if (file.size > MAX_SIZE) {
+      toast.error('Le fichier ne doit pas dépasser 10 Mo')
+      e.target.value = ''
+      return
+    }
+
+    setIsSending(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${conversationId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('message-attachments')
+        .upload(fileName, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: urlData } = supabase.storage
+        .from('message-attachments')
+        .getPublicUrl(uploadData.path)
+
+      const isImage = file.type.startsWith('image/')
+      const messageContent = isImage
+        ? `[Image] ${urlData.publicUrl}`
+        : `[Fichier: ${file.name}] ${urlData.publicUrl}`
+
+      const { error } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        content: messageContent,
+      })
+
+      if (error) throw error
+
+      onMessageSent?.()
+      toast.success('Fichier envoyé')
+    } catch (err) {
+      console.error('Erreur upload fichier:', err)
+      toast.error("Erreur lors de l'envoi du fichier")
+    } finally {
+      setIsSending(false)
+      e.target.value = ''
+      if (fileInputRef.current) {
+        fileInputRef.current.accept = 'image/*,video/*,.pdf,.doc,.docx'
+      }
+    }
   }
 
   const handleVoiceRecord = () => {
-    if (isRecording) {
-      // Arrêter l'enregistrement
-      setIsRecording(false)
-      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
-      // TODO: Implémenter l'enregistrement vocal
-    } else {
-      // Démarrer l'enregistrement
-      setIsRecording(true)
-      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
-      // TODO: Implémenter l'enregistrement vocal
-    }
+    toast.info('Enregistrement vocal bientôt disponible')
   }
 
   const hasContent = content.trim().length > 0

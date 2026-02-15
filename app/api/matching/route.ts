@@ -9,6 +9,7 @@ import {
 } from '@/lib/matching/scoring';
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
 import { logger } from '@/lib/logger';
+import { apiLimiter, withRateLimit } from '@/lib/rate-limit';
 
 /**
  * Normalise le service_type extrait par le chatbot pour correspondre au format de la base
@@ -109,6 +110,9 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = withRateLimit(request, apiLimiter)
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient();
     const body: MatchingRequest = await request.json();

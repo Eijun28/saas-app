@@ -78,10 +78,12 @@ export function ChatList({
     return conversation.unread_count || 0
   }
 
-  // Vérifier si l'utilisateur est en ligne (pour l'instant false, à implémenter avec user_presence)
+  // Statut en ligne basé sur last_seen_at (actif dans les 5 dernières minutes)
   const isOnline = (conversation: Conversation) => {
-    // TODO: Vérifier user_presence
-    return false
+    const otherParty = conversation.other_party
+    if (!otherParty?.last_seen_at) return false
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
+    return new Date(otherParty.last_seen_at).getTime() > fiveMinutesAgo
   }
 
   if (conversations.length === 0) {

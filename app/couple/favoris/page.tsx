@@ -76,7 +76,7 @@ export default function FavorisPage() {
         return
       }
 
-      const providerIds = favsData.map((f: any) => f.prestataire_id)
+      const providerIds = favsData.map((f) => f.prestataire_id)
 
       // Fetch provider profiles and ratings in parallel
       const [profilesResult, ratingsResult, culturesResult] = await Promise.all([
@@ -94,32 +94,32 @@ export default function FavorisPage() {
           .in('profile_id', providerIds),
       ])
 
-      const profileMap = new Map((profilesResult.data || []).map((p: any) => [p.id, p]))
-      const ratingMap = new Map((ratingsResult.data || []).map((r: any) => [r.profile_id, r]))
+      const profileMap = new Map((profilesResult.data || []).map((p) => [p.id, p]))
+      const ratingMap = new Map((ratingsResult.data || []).map((r) => [r.profile_id, r]))
       const culturesByProvider = new Map<string, string[]>()
-      for (const c of (culturesResult.data || []) as any[]) {
+      for (const c of culturesResult.data || []) {
         const existing = culturesByProvider.get(c.profile_id) || []
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
         if (culture) existing.push(culture.label)
         culturesByProvider.set(c.profile_id, existing)
       }
 
-      const enriched: FavProvider[] = favsData.map((fav: any) => {
-        const profile = profileMap.get(fav.prestataire_id) || {} as any
+      const enriched: FavProvider[] = favsData.map((fav) => {
+        const profile = profileMap.get(fav.prestataire_id)
         const rating = ratingMap.get(fav.prestataire_id)
         return {
           id: fav.id,
           prestataire_id: fav.prestataire_id,
           note: fav.note,
           created_at: fav.created_at,
-          nom_entreprise: profile.nom_entreprise,
-          avatar_url: profile.avatar_url,
-          service_type: profile.service_type,
-          ville_principale: profile.ville_principale,
-          budget_min: profile.budget_min,
-          budget_max: profile.budget_max,
-          description_courte: profile.description_courte,
-          annees_experience: profile.annees_experience,
+          nom_entreprise: profile?.nom_entreprise ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+          service_type: profile?.service_type ?? null,
+          ville_principale: profile?.ville_principale ?? null,
+          budget_min: profile?.budget_min ?? null,
+          budget_max: profile?.budget_max ?? null,
+          description_courte: profile?.description_courte ?? null,
+          annees_experience: profile?.annees_experience ?? null,
           avgRating: rating ? Number(rating.rating) : 0,
           reviewCount: rating ? rating.total_reviews : 0,
           cultures: culturesByProvider.get(fav.prestataire_id) || [],

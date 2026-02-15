@@ -103,9 +103,14 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
   };
 
   const handleLaunchMatching = () => {
-    // TODO: Implémenter le lancement du matching avec les critères extraits
-    console.log('Lancer le matching avec:', extractedCriteria);
     onClose();
+    // Naviguer vers la page matching avec les critères en query params
+    const params = new URLSearchParams()
+    if (extractedCriteria.service_type) params.set('service_type', extractedCriteria.service_type)
+    if (extractedCriteria.budget_max) params.set('budget_max', String(extractedCriteria.budget_max))
+    if (extractedCriteria.location) params.set('location', extractedCriteria.location)
+    if (extractedCriteria.wedding_date) params.set('wedding_date', extractedCriteria.wedding_date)
+    window.location.href = `/couple/matching${params.toString() ? `?${params.toString()}` : ''}`
   };
 
   const handleModifyCriteria = () => {

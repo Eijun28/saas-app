@@ -261,8 +261,7 @@ export function BudgetCategoriesSection({
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            // TODO: Ouvrir modal pour ajouter prestataire
-                            toast.info('Fonctionnalité à venir')
+                            window.location.href = '/couple/matching'
                           }}
                         >
                           Ajouter un prestataire
@@ -271,8 +270,7 @@ export function BudgetCategoriesSection({
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            // TODO: Voir détails
-                            toast.info('Fonctionnalité à venir')
+                            window.location.href = '/couple/demandes'
                           }}
                         >
                           Voir détails

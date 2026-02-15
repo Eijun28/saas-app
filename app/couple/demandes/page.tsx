@@ -74,7 +74,9 @@ type FavoriRow = {
   type_prestation?: string | null
 }
 
-const STATUS_CONFIG: Record<RequestStatus, { label: string; icon: any; className: string; bgClass: string }> = {
+type EnrichedRequest = RequestRow & { prestataire?: ProviderProfile }
+
+const STATUS_CONFIG: Record<RequestStatus, { label: string; icon: React.ComponentType<{ className?: string }>; className: string; bgClass: string }> = {
   pending: {
     label: 'En attente',
     icon: Clock,
@@ -169,7 +171,7 @@ export default function DemandesPage() {
 
     // Extraire tous les IDs de prestataires uniques
     const prestataireIds = [...new Set(
-      demandesData.map(d => d.provider_id || (d as any).prestataire_id).filter(Boolean)
+      demandesData.map(d => d.provider_id || (d as RequestRow & { prestataire_id?: string }).prestataire_id).filter(Boolean)
     )]
 
     if (prestataireIds.length === 0) {
@@ -200,8 +202,8 @@ export default function DemandesPage() {
       const profile = profileMap.get(prestataireId)
 
       // Priorité: prestataire_profiles.nom_entreprise > profiles.nom_entreprise > prénom nom
-      const nomEntreprise = prestataireProfile?.nom_entreprise || (profile as any)?.nom_entreprise || null
-      const serviceType = prestataireProfile?.type_prestation || (profile as any)?.service_type || null
+      const nomEntreprise = prestataireProfile?.nom_entreprise || profile?.nom_entreprise || null
+      const serviceType = prestataireProfile?.type_prestation || profile?.service_type || null
 
       return {
         ...demande,
@@ -426,7 +428,7 @@ export default function DemandesPage() {
       .eq('couple_id', user.id)
     if (data) {
       const map = new Map<string, { rating: number; comment: string | null; rating_quality?: number | null; rating_communication?: number | null; rating_value?: number | null; rating_punctuality?: number | null }>()
-      data.forEach((r: any) => map.set(r.provider_id, { rating: r.rating, comment: r.comment, rating_quality: r.rating_quality, rating_communication: r.rating_communication, rating_value: r.rating_value, rating_punctuality: r.rating_punctuality }))
+      data.forEach((r) => map.set(r.provider_id, { rating: r.rating, comment: r.comment, rating_quality: r.rating_quality, rating_communication: r.rating_communication, rating_value: r.rating_value, rating_punctuality: r.rating_punctuality }))
       setExistingReviews(map)
     }
   }
@@ -547,8 +549,9 @@ export default function DemandesPage() {
 
   // Remplir le Map avec les données des demandes
   demandes.forEach(d => {
-    if (d.provider_id && (d as any).prestataire) {
-      providerById.set(d.provider_id, (d as any).prestataire)
+    const prestataire = (d as EnrichedRequest).prestataire
+    if (d.provider_id && prestataire) {
+      providerById.set(d.provider_id, prestataire)
     }
   })
 
@@ -640,7 +643,7 @@ export default function DemandesPage() {
                   {!isCollapsed && (
                     <div className="space-y-3 pl-0 sm:pl-2">
                       {categoryDemandes.map((r, index) => {
-                        const provider = providerById.get(r.provider_id) || (r as any).prestataire
+                        const provider = providerById.get(r.provider_id) || (r as EnrichedRequest).prestataire
                         const name = getProviderDisplayName(provider)
                         const status = STATUS_CONFIG[r.status]
                         const StatusIcon = status.icon
@@ -722,7 +725,7 @@ export default function DemandesPage() {
                                               className="text-amber-700 focus:text-amber-700 focus:bg-amber-50"
                                               onClick={() => setReviewTarget({
                                                 providerId: r.provider_id,
-                                                providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as any).prestataire),
+                                                providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as EnrichedRequest).prestataire),
                                                 requestId: r.id,
                                               })}
                                             >
@@ -781,7 +784,7 @@ export default function DemandesPage() {
                                       className="h-8 text-xs border-amber-200 text-amber-700 hover:bg-amber-50"
                                       onClick={() => setReviewTarget({
                                         providerId: r.provider_id,
-                                        providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as any).prestataire),
+                                        providerName: getProviderDisplayName(providerById.get(r.provider_id) || (r as EnrichedRequest).prestataire),
                                         requestId: r.id,
                                       })}
                                     >

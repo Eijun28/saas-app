@@ -39,7 +39,7 @@ export default function MatchingPage() {
   const { user, loading: userLoading } = useUser();
   const [vue, setVue] = useState<Vue>('landing');
   const [showBackDialog, setShowBackDialog] = useState(false);
-  const [coupleProfile, setCoupleProfile] = useState<any>(null);
+  const [coupleProfile, setCoupleProfile] = useState<Record<string, unknown> | null>(null);
   const [userInput, setUserInput] = useState('');
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -59,7 +59,7 @@ export default function MatchingPage() {
   // Initialiser le hook useChatbot sans serviceType
   const { messages, extractedCriteria, isLoading, sendMessage, extractedServiceType, resetChat } = useChatbot(
     undefined,
-    coupleProfile
+    coupleProfile ?? undefined
   );
 
   // Ref pour vérifier si le composant est monté
@@ -443,8 +443,18 @@ export default function MatchingPage() {
   };
 
   const handleSelectConversation = (conversation: ChatbotConversation) => {
-    // TODO: Charger la conversation sélectionnée
-    toast.info('Fonctionnalité de reprise de conversation à venir');
+    // Charger les critères extraits de la conversation sauvegardée et lancer le matching
+    if (conversation.extracted_criteria) {
+      const params = new URLSearchParams()
+      const criteria = conversation.extracted_criteria
+      if (criteria.service_type) params.set('service_type', criteria.service_type)
+      if (criteria.budget_max) params.set('budget_max', String(criteria.budget_max))
+      if (criteria.wedding_department) params.set('department', criteria.wedding_department)
+      if (criteria.wedding_date) params.set('wedding_date', criteria.wedding_date)
+      window.location.href = `/couple/matching${params.toString() ? `?${params.toString()}` : ''}`
+    } else {
+      toast.info('Aucun critère sauvegardé pour cette conversation')
+    }
   };
 
   return (

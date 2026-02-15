@@ -1,15 +1,18 @@
 /**
  * Logger conditionnel - Ne log qu'en développement
+ * En production, les erreurs et critiques sont envoyés à Sentry
  */
+
+import * as Sentry from '@sentry/nextjs'
 
 const isDev = process.env.NODE_ENV === 'development'
 
 export const logger = {
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (isDev) console.log('[INFO]', ...args)
   },
 
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     if (isDev) console.warn('[WARN]', ...args)
   },
 
@@ -17,21 +20,21 @@ export const logger = {
     if (isDev) {
       console.error('[ERROR]', message, error)
     } else {
-      // En production : logger le message et les détails de l'erreur pour debugging
       console.error('[ERROR]', message, error)
-
-      // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
-      // Exemple : Sentry.captureException(error)
+      if (error instanceof Error) {
+        Sentry.captureException(error, { extra: { message } })
+      } else {
+        Sentry.captureMessage(message, { level: 'error', extra: { error } })
+      }
     }
   },
 
-  // Logger critique - toujours actif même en production
-  critical: (message: string, details?: any) => {
+  critical: (message: string, details?: Record<string, unknown>) => {
     console.error('[CRITICAL]', message, details)
-    // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
+    Sentry.captureMessage(message, { level: 'fatal', extra: details })
   },
 
-  debug: (...args: any[]) => {
+  debug: (...args: unknown[]) => {
     if (isDev) console.debug('[DEBUG]', ...args)
   }
 }

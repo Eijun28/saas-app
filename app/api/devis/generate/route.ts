@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { generateDevisPdf } from '@/lib/pdf/devis-generator'
 import type { DevisPdfData } from '@/types/billing'
 import { checkSubscriptionAccess } from '@/lib/subscription-guard'
+import { devisLimiter, withRateLimit } from '@/lib/rate-limit'
 
 // Schema de validation
 const createDevisSchema = z.object({
@@ -26,6 +27,10 @@ const createDevisSchema = z.object({
  * POST - Générer un devis PDF
  */
 export async function POST(request: NextRequest) {
+  // Rate limiting : 10 req/min pour la génération de devis
+  const rateLimitResponse = withRateLimit(request, devisLimiter)
+  if (rateLimitResponse) return rateLimitResponse
+
   try {
     const supabase = await createClient()
 

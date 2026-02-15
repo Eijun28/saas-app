@@ -1,13 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { contactFormSchema } from '@/lib/validations/contact.schema'
 import { escapeHtml } from '@/lib/email/templates'
+import { formLimiter, withRateLimit } from '@/lib/rate-limit'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const contactEmail = 'contact@nuply.fr'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting : 3 req/min pour le formulaire de contact
+  const rateLimitResponse = withRateLimit(request, formLimiter)
+  if (rateLimitResponse) return rateLimitResponse
   try {
     const body = await request.json()
 
@@ -119,7 +123,7 @@ export async function POST(request: Request) {
       success: true,
       message: 'Votre message a été envoyé avec succès',
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erreur envoi email de contact:', error)
     return NextResponse.json(
       { error: 'Une erreur est survenue lors de l\'envoi de votre message. Veuillez réessayer plus tard.' },

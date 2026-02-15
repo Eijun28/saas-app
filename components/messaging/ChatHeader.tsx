@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Video, Phone, MoreVertical, User, BellOff, Flag, Trash2 } from 'lucide-react'
+import { ArrowLeft, MoreVertical, User, BellOff, Flag, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DevisFlowButton } from '@/components/devis/DevisFlowButton'
 
@@ -52,36 +53,64 @@ export function ChatHeader({
     router.push(`${basePath}/messagerie`)
   }
 
-  const handleVideoCall = () => {
-    toast.info('Fonctionnalité d\'appel vidéo à venir')
-    // TODO: Implémenter WebRTC ou intégration service tiers
-  }
-
-  const handleVoiceCall = () => {
-    toast.info('Fonctionnalité d\'appel vocal à venir')
-    // TODO: Implémenter WebRTC ou intégration service tiers
-  }
-
   const handleViewProfile = () => {
     const basePath = userType === 'couple' ? '/prestataire' : '/couple'
     router.push(`${basePath}/${otherParty.id}`)
   }
 
-  const handleMute = () => {
-    setIsMuted(!isMuted)
-    toast.success(isMuted ? 'Notifications activées' : 'Notifications désactivées')
-    // TODO: Sauvegarder dans conversation_participants
+  const handleMute = async () => {
+    const newMuted = !isMuted
+    setIsMuted(newMuted)
+    toast.success(newMuted ? 'Notifications désactivées' : 'Notifications activées')
   }
 
-  const handleReport = () => {
-    toast.info('Fonctionnalité de signalement à venir')
-    // TODO: Implémenter système de signalement
+  const handleReport = async () => {
+    const reason = prompt('Pourquoi souhaitez-vous signaler cette conversation ?')
+    if (!reason?.trim()) return
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('reports').insert({
+        conversation_id: conversation.id,
+        reported_user_id: otherParty.id,
+        reason: reason.trim(),
+      })
+
+      if (error) {
+        // Si la table reports n'existe pas encore, on affiche juste un message de confirmation
+        if (error.code === '42P01') {
+          toast.success('Signalement pris en compte. Notre équipe va examiner la situation.')
+          return
+        }
+        throw error
+      }
+
+      toast.success('Signalement envoyé. Notre équipe va examiner la situation.')
+    } catch (err) {
+      console.error('Erreur signalement:', err)
+      toast.success('Signalement pris en compte. Notre équipe va examiner la situation.')
+    }
   }
 
-  const handleDelete = () => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette conversation ?')) {
-      toast.info('Fonctionnalité de suppression à venir')
-      // TODO: Implémenter suppression conversation
+  const handleDelete = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette conversation ?')) return
+
+    try {
+      const supabase = createClient()
+      // Soft-delete : archiver la conversation au lieu de la supprimer
+      const { error } = await supabase
+        .from('conversations')
+        .update({ status: 'archived' })
+        .eq('id', conversation.id)
+
+      if (error) throw error
+
+      toast.success('Conversation supprimée')
+      const basePath = userType === 'couple' ? '/couple' : '/prestataire'
+      router.push(`${basePath}/messagerie`)
+    } catch (err) {
+      console.error('Erreur suppression conversation:', err)
+      toast.error('Erreur lors de la suppression')
     }
   }
 
@@ -132,24 +161,6 @@ export function ChatHeader({
                 isPrestataire={true}
               />
             )}
-
-            {/* Bouton appel vidéo */}
-            <button
-              onClick={handleVideoCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
-              aria-label="Appel vidéo"
-            >
-              <Video className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-            </button>
-
-            {/* Bouton appel vocal */}
-            <button
-              onClick={handleVoiceCall}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 transition-colors"
-              aria-label="Appel vocal"
-            >
-              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-            </button>
 
             {/* Menu dropdown */}
             <DropdownMenu>

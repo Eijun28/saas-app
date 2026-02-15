@@ -8,14 +8,14 @@ const DEFAULT_WELCOME_MESSAGE =
 
 export interface UseChatbotOptions {
   serviceType?: string;
-  coupleProfile?: any;
+  coupleProfile?: Record<string, unknown>;
   initialMessage?: string;
   assistantContext?: 'matching' | 'budget_planner';
 }
 
 export function useChatbot(
   serviceTypeOrOptions?: string | UseChatbotOptions,
-  coupleProfileArg?: any
+  coupleProfileArg?: Record<string, unknown>
 ) {
   const options: UseChatbotOptions =
     typeof serviceTypeOrOptions === 'object' && serviceTypeOrOptions !== null
@@ -98,7 +98,7 @@ export function useChatbot(
       if (!response.ok) {
         // Essayer de récupérer le message d'erreur de l'API
         let errorMessage = `Erreur HTTP ${response.status}`;
-        let errorDetails: any = null;
+        let errorDetails: Record<string, unknown> | null = null;
         let userFriendlyMessage: string | null = null;
         
         try {
@@ -146,10 +146,10 @@ export function useChatbot(
         });
         
         // Créer une erreur avec le message utilisateur-friendly si disponible
-        const error = new Error(finalErrorMessage);
-        (error as any).userFriendlyMessage = userFriendlyMessage || finalErrorMessage;
-        (error as any).status = response.status;
-        throw error;
+        const chatError = new Error(finalErrorMessage) as Error & { userFriendlyMessage?: string; status?: number };
+        chatError.userFriendlyMessage = userFriendlyMessage || finalErrorMessage;
+        chatError.status = response.status;
+        throw chatError;
       }
 
       // S'assurer que la réponse est bien en UTF-8
@@ -192,32 +192,30 @@ export function useChatbot(
       }
 
       return data.next_action;
-    } catch (error: any) {
-      console.error('Error sending message:', error);
+    } catch (error: unknown) {
+      console.error('Error sending message:', error)
+      const err = error as Error & { userFriendlyMessage?: string; status?: number; message?: string };
       
       // Utiliser le message utilisateur-friendly si disponible, sinon construire un message approprié
       let errorContent: string;
       
-      if (error.userFriendlyMessage) {
-        // Utiliser directement le message utilisateur-friendly de l'API
-        errorContent = error.userFriendlyMessage;
-      } else if (error.message) {
-        // Construire un message basé sur le type d'erreur
-        if (error.message.includes('503') || error.message.includes('Service temporairement indisponible')) {
+      if (err.userFriendlyMessage) {
+        errorContent = err.userFriendlyMessage;
+      } else if (err.message) {
+        if (err.message.includes('503') || err.message.includes('Service temporairement indisponible')) {
           errorContent = 'Le service est temporairement indisponible. Veuillez réessayer dans quelques instants.';
-        } else if (error.message.includes('429') || error.message.includes('Trop de requêtes')) {
+        } else if (err.message.includes('429') || err.message.includes('Trop de requêtes')) {
           errorContent = 'Trop de requêtes. Veuillez patienter quelques instants avant de réessayer.';
-        } else if (error.message.includes('400') || error.message.includes('invalide')) {
+        } else if (err.message.includes('400') || err.message.includes('invalide')) {
           errorContent = 'Votre message semble invalide. Pouvez-vous reformuler ?';
-        } else if (error.message.includes('Format de réponse invalide') || error.message.includes('parsing')) {
+        } else if (err.message.includes('Format de réponse invalide') || err.message.includes('parsing')) {
           errorContent = 'Je n\'ai pas pu traiter votre demande correctement. Pouvez-vous reformuler votre message ?';
-        } else if (error.message.includes('HTTP')) {
-          errorContent = `Une erreur technique est survenue (${error.status || 'inconnue'}). Veuillez réessayer.`;
+        } else if (err.message.includes('HTTP')) {
+          errorContent = `Une erreur technique est survenue (${err.status || 'inconnue'}). Veuillez réessayer.`;
         } else {
-          // Utiliser le message d'erreur tel quel s'il est déjà utilisateur-friendly
-          errorContent = error.message.length > 100 
+          errorContent = err.message.length > 100
             ? 'Une erreur est survenue. Pouvez-vous reformuler votre message ?'
-            : error.message;
+            : err.message;
         }
       } else {
         errorContent = 'Une erreur est survenue. Pouvez-vous reformuler votre message ?';

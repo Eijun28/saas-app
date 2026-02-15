@@ -54,13 +54,16 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
     setIsProcessing(true)
 
     try {
-      // TODO: Upload PDF vers Supabase Storage temporairement
-      // Puis envoyer à n8n pour extraction avec IA
+      // Upload PDF et envoi à n8n pour extraction avec IA
       const formData = new FormData()
       formData.append('file', file)
 
-      // TODO: Remplacer par votre webhook n8n pour extraction PDF
-      const N8N_EXTRACT_URL = process.env.NEXT_PUBLIC_N8N_EXTRACT_SERVICES_URL || 'https://your-n8n-instance.com/webhook/extract-services'
+      const N8N_EXTRACT_URL = process.env.NEXT_PUBLIC_N8N_EXTRACT_SERVICES_URL
+      if (!N8N_EXTRACT_URL) {
+        toast.error('Service d\'extraction non configuré. Veuillez utiliser le questionnaire IA.')
+        setIsProcessing(false)
+        return
+      }
 
       const response = await fetch(N8N_EXTRACT_URL, {
         method: 'POST',
@@ -97,8 +100,12 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
     setIsProcessing(true)
 
     try {
-      // TODO: Envoyer à n8n pour génération de services avec IA
-      const N8N_GENERATE_URL = process.env.NEXT_PUBLIC_N8N_GENERATE_SERVICES_URL || 'https://your-n8n-instance.com/webhook/generate-services'
+      const N8N_GENERATE_URL = process.env.NEXT_PUBLIC_N8N_GENERATE_SERVICES_URL
+      if (!N8N_GENERATE_URL) {
+        toast.error('Service de génération non configuré. Veuillez ajouter vos services manuellement.')
+        setIsProcessing(false)
+        return
+      }
 
       const response = await fetch(N8N_GENERATE_URL, {
         method: 'POST',
