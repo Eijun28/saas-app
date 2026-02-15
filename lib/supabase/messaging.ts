@@ -26,16 +26,6 @@ export interface Conversation {
   } | null
 }
 
-export interface MediaItem {
-  id: string
-  url: string
-  type: 'image' | 'video' | 'audio' | 'document'
-  thumbnail_url?: string
-  duration?: number
-  width?: number
-  height?: number
-}
-
 export interface Message {
   id: string
   conversation_id: string
@@ -43,7 +33,6 @@ export interface Message {
   content: string
   created_at: string
   read_at?: string | null
-  media?: MediaItem[]
 }
 
 /**
@@ -57,6 +46,7 @@ export async function getConversationsClient(userId: string): Promise<Conversati
     .from('conversations')
     .select('id, request_id, couple_id, provider_id, created_at')
     .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
+    .neq('status', 'archived')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -168,6 +158,7 @@ export async function getConversationsServer(userId: string): Promise<Conversati
     .from('conversations')
     .select('id, request_id, couple_id, provider_id, created_at')
     .or(`couple_id.eq.${userId},provider_id.eq.${userId}`)
+    .neq('status', 'archived')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -272,7 +263,7 @@ export async function getMessagesClient(conversationId: string, limit = 50): Pro
 
   const { data: messages, error } = await supabase
     .from('messages')
-    .select('id, conversation_id, sender_id, content, created_at')
+    .select('id, conversation_id, sender_id, content, created_at, read_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
     .limit(limit)
@@ -293,7 +284,7 @@ export async function getMessagesServer(conversationId: string, limit = 50): Pro
 
   const { data: messages, error } = await supabase
     .from('messages')
-    .select('id, conversation_id, sender_id, content, created_at')
+    .select('id, conversation_id, sender_id, content, created_at, read_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
     .limit(limit)
@@ -304,6 +295,28 @@ export async function getMessagesServer(conversationId: string, limit = 50): Pro
   }
 
   return messages || []
+}
+
+/**
+ * Marque tous les messages non lus d'une conversation comme lus
+ * (uniquement les messages envoyés par l'autre partie)
+ */
+export async function markMessagesAsRead(
+  conversationId: string,
+  currentUserId: string
+): Promise<void> {
+  const supabase = createClient()
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .neq('sender_id', currentUserId)
+    .is('read_at', null)
+
+  if (error) {
+    console.error('Erreur marquage messages lus:', error)
+  }
 }
 
 /**

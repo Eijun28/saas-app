@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { markMessagesAsRead } from '@/lib/supabase/messaging'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,24 @@ export function ChatMessages({
   const containerRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  // Marquer les messages comme lus
+  const markAsRead = useCallback(() => {
+    markMessagesAsRead(conversationId, currentUserId)
+  }, [conversationId, currentUserId])
+
   useEffect(() => {
     setMessages(initialMessages)
   }, [initialMessages])
+
+  // Marquer les messages comme lus au chargement et quand de nouveaux messages arrivent
+  useEffect(() => {
+    const hasUnread = messages.some(
+      (m) => m.sender_id !== currentUserId && !m.read_at
+    )
+    if (hasUnread) {
+      markAsRead()
+    }
+  }, [messages, currentUserId, markAsRead])
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -38,7 +54,7 @@ export function ChatMessages({
   }, [messages])
 
   useEffect(() => {
-    // Subscribe to new messages via Realtime
+    // Subscribe to new messages and read_at updates via Realtime
     const channel = supabase
       .channel(`messages:${conversationId}`)
       .on(
@@ -52,6 +68,21 @@ export function ChatMessages({
         (payload) => {
           const newMessage = payload.new as Message
           setMessages((prev) => [...prev, newMessage])
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Message
+          setMessages((prev) =>
+            prev.map((m) => (m.id === updated.id ? { ...m, read_at: updated.read_at } : m))
+          )
         }
       )
       .subscribe()
@@ -132,90 +163,6 @@ export function ChatMessages({
     }
   }
 
-  // Rendre les médias (images/vidéos)
-  const renderMedia = (media: Message['media']) => {
-    if (!media || media.length === 0) return null
-
-    if (media.length === 1) {
-      const item = media[0]
-      if (item.type === 'image') {
-        return (
-          <img
-            src={item.url}
-            alt="Image"
-            className="rounded-lg max-w-full h-auto mt-2"
-          />
-        )
-      }
-      if (item.type === 'video') {
-        return (
-          <video
-            src={item.url}
-            controls
-            className="rounded-lg max-w-full h-auto mt-2"
-            poster={item.thumbnail_url}
-          />
-        )
-      }
-      return null
-    }
-
-    // Grille 2x2 pour plusieurs médias
-    if (media.length <= 4) {
-      return (
-        <div className={`grid gap-1 mt-2 ${media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          {media.slice(0, 4).map((item, idx) => (
-            <div key={idx} className="relative aspect-square">
-              {item.type === 'image' ? (
-                <img
-                  src={item.url}
-                  alt={`Image ${idx + 1}`}
-                  className="rounded-lg w-full h-full object-cover"
-                />
-              ) : (
-                <video
-                  src={item.url}
-                  controls
-                  className="rounded-lg w-full h-full object-cover"
-                  poster={item.thumbnail_url}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    // Plus de 4 médias - grille avec overlay
-    return (
-      <div className="grid grid-cols-2 gap-1 mt-2 relative">
-        {media.slice(0, 4).map((item, idx) => (
-          <div key={idx} className="relative aspect-square">
-            {item.type === 'image' ? (
-              <img
-                src={item.url}
-                alt={`Image ${idx + 1}`}
-                className="rounded-lg w-full h-full object-cover"
-              />
-            ) : (
-              <video
-                src={item.url}
-                controls
-                className="rounded-lg w-full h-full object-cover"
-                poster={item.thumbnail_url}
-              />
-            )}
-          </div>
-        ))}
-        {media.length > 4 && (
-          <div className="absolute bottom-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold">
-            +{media.length - 4}
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div
       ref={containerRef}
@@ -276,9 +223,6 @@ export function ChatMessages({
                               {message.content}
                             </p>
                           )}
-
-                          {/* Médias */}
-                          {message.media && renderMedia(message.media)}
 
                           {/* Menu contextuel */}
                           <DropdownMenu>

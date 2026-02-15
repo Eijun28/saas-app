@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Send, Smile, Paperclip, Mic, Image, FileText, Camera } from 'lucide-react'
+import { Send, Smile, Paperclip, Image, FileText, Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Popover,
@@ -36,7 +36,6 @@ export function ChatInput({
   const [content, setContent] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -176,10 +175,6 @@ export function ChatInput({
     }
   }
 
-  const handleVoiceRecord = () => {
-    toast.info('Enregistrement vocal bientôt disponible')
-  }
-
   const hasContent = content.trim().length > 0
 
   return (
@@ -280,30 +275,15 @@ export function ChatInput({
               </div>
             )}
 
-            {/* Bouton microphone ou send */}
-            {hasContent ? (
-              <button
-                type="submit"
-                disabled={!content.trim() || isSending}
-                className="flex-shrink-0 bg-gray-800 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-700 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Envoyer"
-              >
-                <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleVoiceRecord}
-                className={`flex-shrink-0 rounded-full w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center transition-all duration-200 ${
-                  isRecording
-                    ? 'bg-red-500 text-white hover:bg-red-600'
-                    : 'hover:bg-white/50 active:bg-white/70'
-                }`}
-                aria-label="Enregistrer un message vocal"
-              >
-                <Mic className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-              </button>
-            )}
+            {/* Bouton envoyer */}
+            <button
+              type="submit"
+              disabled={!content.trim() || isSending}
+              className="flex-shrink-0 bg-gray-800 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-700 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Envoyer"
+            >
+              <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
+            </button>
           </div>
         </div>
       </form>
