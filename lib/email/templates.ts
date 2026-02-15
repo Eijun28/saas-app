@@ -1,6 +1,6 @@
 /**
  * Template HTML de base réutilisable pour les emails Nuply
- * Utilise le même style que sendWelcomeEmail (gradient #823F91 → #c081e3)
+ * Style Nuply (gradient #823F91 → #c081e3)
  */
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

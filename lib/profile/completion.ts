@@ -146,15 +146,15 @@ export async function getProviderProfileCompletion(
     adminClient
       .from('provider_cultures')
       .select('id', { count: 'exact', head: true })
-      .eq('provider_id', providerId),
+      .eq('profile_id', providerId),
     adminClient
       .from('provider_zones')
       .select('id', { count: 'exact', head: true })
-      .eq('provider_id', providerId),
+      .eq('profile_id', providerId),
     adminClient
-      .from('provider_portfolio_images')
+      .from('provider_portfolio')
       .select('id', { count: 'exact', head: true })
-      .eq('provider_id', providerId),
+      .eq('profile_id', providerId),
   ])
 
   if (!profileResult.data) return null

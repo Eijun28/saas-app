@@ -161,6 +161,8 @@ export default function OnboardingPage() {
             budget_min: min,
             budget_max: max,
             onboarding_step: 5,
+            onboarding_completed: true,
+            onboarding_completed_at: new Date().toISOString(),
           })
           .eq('id', userId)
         if (error) throw error
