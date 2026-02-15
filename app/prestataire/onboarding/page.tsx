@@ -264,7 +264,7 @@ export default function OnboardingPage() {
                     )}
                   </div>
                   <span className={cn(
-                    "text-[10px] sm:text-xs mt-1.5 font-medium text-center",
+                    "text-xs mt-1.5 font-medium text-center",
                     isActive ? "text-[#823F91]" : isCompleted ? "text-emerald-600" : "text-gray-400"
                   )}>
                     {step.label}

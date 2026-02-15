@@ -57,6 +57,11 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+  // Reduce particle count on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   const {
     register,
@@ -66,16 +71,19 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
   })
 
-  // Vérifier les paramètres d'erreur dans l'URL
+  // Vérifier les paramètres d'erreur et de message dans l'URL
   useEffect(() => {
     if (typeof window === 'undefined') return
-    
+
     const urlParams = new URLSearchParams(window.location.search)
     const errorParam = urlParams.get('error')
     if (errorParam) {
-      // Décoder l'erreur si elle vient de l'URL
       const decodedError = decodeURIComponent(errorParam)
       setError(decodedError)
+    }
+    const messageParam = urlParams.get('message')
+    if (messageParam === 'password_updated') {
+      setSuccessMessage('Votre mot de passe a été modifié avec succès. Connectez-vous avec votre nouveau mot de passe.')
     }
   }, [])
 
@@ -99,10 +107,10 @@ export default function SignInPage() {
 
   return (
     <>
-      {/* Background de particules - couvre toute la page */}
+      {/* Background de particules - count reduit sur mobile pour la performance */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Particles
-          particleCount={200}
+          particleCount={particleCount}
           particleSpread={10}
           speed={0.24}
           particleColors={["#823F91","#c081e3","#823F91"]}
@@ -221,6 +229,17 @@ export default function SignInPage() {
                   </motion.p>
                 )}
               </motion.div>
+
+              {/* Message de succès (ex: après reset de mot de passe) */}
+              {successMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="p-3.5 bg-green-50 border border-green-100 rounded-xl"
+                >
+                  <p className="text-sm text-green-700 text-center">{successMessage}</p>
+                </motion.div>
+              )}
 
               {/* Message d'erreur global */}
               {error && (

@@ -60,6 +60,10 @@ export default function ForgotPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Reduce particle count on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
+
   const {
     register,
     handleSubmit,
@@ -100,7 +104,7 @@ export default function ForgotPasswordPage() {
     <>
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Particles
-          particleCount={200}
+          particleCount={particleCount}
           particleSpread={10}
           speed={0.24}
           particleColors={["#823F91","#c081e3","#823F91"]}

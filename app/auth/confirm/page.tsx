@@ -29,12 +29,16 @@ function ConfirmEmailContent() {
 }
 
 export default function ConfirmEmail() {
+  // Reduce particle count on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
+
   return (
     <>
-      {/* Background de particules - couvre toute la page */}
+      {/* Background de particules - count reduit sur mobile pour la performance */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Particles
-          particleCount={200}
+          particleCount={particleCount}
           particleSpread={10}
           speed={0.24}
           particleColors={["#823F91","#c081e3","#823F91"]}
