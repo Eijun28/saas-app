@@ -336,24 +336,31 @@ export default function DashboardPrestatairePage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl"
+            className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl"
           >
-            <div className="p-2 bg-amber-100 rounded-xl flex-shrink-0">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="p-2 bg-amber-100 rounded-xl flex-shrink-0">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-900">Votre profil est complete a {profileCompletion}%</p>
+                <p className="text-xs text-amber-700 mt-0.5">Completez-le a au moins 70% pour etre visible par les couples.</p>
+              </div>
+              <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
+                <X className="h-3.5 w-3.5 text-amber-400" />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-amber-900">Votre profil est complete a {profileCompletion}%</p>
-              <p className="text-xs text-amber-700 mt-0.5">Completez-le a au moins 70% pour etre visible par les couples.</p>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => router.push('/prestataire/profil-public')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#823F91] hover:bg-[#5C2B66] text-white text-sm font-medium rounded-xl transition-colors w-full sm:w-auto justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 focus-visible:ring-offset-2"
+              >
+                Completer <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+              <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] hidden sm:flex items-center justify-center flex-shrink-0" title="Masquer">
+                <X className="h-3.5 w-3.5 text-amber-400" />
+              </button>
             </div>
-            <button
-              onClick={() => router.push('/prestataire/profil-public')}
-              className="flex items-center gap-1.5 px-4 py-2 bg-[#823F91] hover:bg-[#5C2B66] text-white text-sm font-medium rounded-xl transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 focus-visible:ring-offset-2"
-            >
-              Completer <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0" title="Masquer">
-              <X className="h-3.5 w-3.5 text-amber-400" />
-            </button>
           </motion.div>
         )}
 

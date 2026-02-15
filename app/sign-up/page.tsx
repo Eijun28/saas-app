@@ -69,6 +69,10 @@ export default function SignUpPage() {
   
   const isFormValid = Object.keys(errors).length === 0 && hasRequiredFields
 
+  // Reduce particle count on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
+
   useEffect(() => {
     async function checkSlots() {
       try {
@@ -186,10 +190,10 @@ export default function SignUpPage() {
 
   return (
     <>
-      {/* Background de particules - couvre toute la page */}
+      {/* Background de particules - count reduit sur mobile pour la performance */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Particles
-          particleCount={200}
+          particleCount={particleCount}
           particleSpread={10}
           speed={0.24}
           particleColors={["#823F91","#c081e3","#823F91"]}
@@ -230,9 +234,15 @@ export default function SignUpPage() {
               </CardTitle>
             </motion.div>
             <CardDescription className="text-sm sm:text-base text-neutral-600 max-w-md mx-auto px-2">
-              Rejoignez des milliers de couples qui organisent leur mariage de rêve avec sérénité. 
+              {selectedRole === 'prestataire'
+                ? 'Rejoignez les prestataires du mariage qui développent leur activité grâce à NUPLY.'
+                : 'Rejoignez des milliers de couples qui organisent leur mariage de rêve avec sérénité.'
+              }
               <span className="block mt-1 text-xs sm:text-sm text-neutral-500">
-                Votre aventure commence ici, en quelques secondes.
+                {selectedRole === 'prestataire'
+                  ? 'Inscription gratuite, profil en ligne en quelques minutes.'
+                  : 'Votre aventure commence ici, en quelques secondes.'
+                }
               </span>
             </CardDescription>
           </CardHeader>
@@ -521,7 +531,7 @@ export default function SignUpPage() {
                   )}
                   {/* Aide pour les prérequis du mot de passe */}
                   {password && (
-                    <div className="mt-2 space-y-1 hidden sm:block">
+                    <div className="mt-2 space-y-1">
                       <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
                       <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
                         <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : ''}`}>
