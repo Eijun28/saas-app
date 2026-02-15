@@ -1,15 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, Home, RefreshCw } from 'lucide-react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
 
 /**
  * Composant de gestion d'erreur globale pour Next.js
  * Capture les erreurs non gérées dans l'application
+ * Note: Ce composant doit rester simple et éviter les dépendances
+ * de l'app router (Link, etc.) car il s'exécute en dehors du contexte normal.
  */
 export default function GlobalError({
   error,
@@ -19,72 +16,91 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log l'erreur pour le debugging
     console.error('[GLOBAL ERROR]', error)
-    
-    // En production, vous pouvez envoyer l'erreur à un service de monitoring
-    // Exemple: Sentry.captureException(error)
   }, [error])
 
   return (
     <html>
       <body>
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-md w-full"
-          >
-            <Card className="border-[#823F91]/20 shadow-lg">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-[#823F91]/20 to-[#9D5FA8]/20 flex items-center justify-center">
-                  <AlertCircle className="h-8 w-8 text-[#823F91]" />
-                </div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent">
-                  Erreur serveur
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-center text-[#4A4A4A]">
-                  Une erreur critique s'est produite. Veuillez réessayer ou contacter le support si le problème persiste.
-                </p>
-                
-                {process.env.NODE_ENV === 'development' && error.digest && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-mono text-gray-600">
-                      Digest: {error.digest}
-                    </p>
-                    {error.message && (
-                      <p className="text-xs font-mono text-gray-600 mt-2">
-                        Message: {error.message}
-                      </p>
-                    )}
-                  </div>
-                )}
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          backgroundColor: '#FAF9F6',
+        }}>
+          <div style={{
+            maxWidth: '28rem',
+            width: '100%',
+            border: '1px solid rgba(130, 63, 145, 0.2)',
+            borderRadius: '0.75rem',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <div style={{
+                margin: '0 auto 1rem',
+                height: '4rem',
+                width: '4rem',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(130,63,145,0.2), rgba(157,95,168,0.2))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+              }}>
+                ⚠️
+              </div>
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                background: 'linear-gradient(to right, #823F91, #9D5FA8)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                marginBottom: '1rem',
+              }}>
+                Erreur serveur
+              </h1>
+              <p style={{ color: '#4A4A4A', marginBottom: '1.5rem' }}>
+                Une erreur critique s&apos;est produite. Veuillez réessayer ou contacter le support si le problème persiste.
+              </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <Button
-                    onClick={reset}
-                    className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] hover:from-[#6D3478] hover:to-[#823F91] text-white"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Réessayer
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="flex-1 border-[#823F91]/20 hover:bg-[#823F91]/10"
-                  >
-                    <Link href="/">
-                      <Home className="h-4 w-4 mr-2" />
-                      Retour à l'accueil
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <button
+                  onClick={reset}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    background: 'linear-gradient(to right, #823F91, #9D5FA8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    cursor: 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Réessayer
+                </button>
+                <a
+                  href="/"
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: '1px solid rgba(130, 63, 145, 0.2)',
+                    borderRadius: '0.5rem',
+                    textDecoration: 'none',
+                    color: '#4A4A4A',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    textAlign: 'center',
+                  }}
+                >
+                  Retour à l&apos;accueil
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </body>
     </html>
