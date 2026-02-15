@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { seoConfig } from "@/lib/seo/config";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
+import MetaPixel from "@/components/MetaPixel";
 
 export const metadata: Metadata = {
   ...seoConfig.defaultMetadata,
@@ -71,6 +72,7 @@ export default function RootLayout({
         {/* Toaster pour les notifications */}
         <Toaster />
         <Analytics />
+        <MetaPixel />
       </body>
     </html>
   );

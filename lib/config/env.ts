@@ -19,6 +19,9 @@ const publicEnvSchema = z.object({
   // N8N public webhook (optionnel)
   N8N_WEBHOOK_CHATBOT_URL: z.string().url('N8N_WEBHOOK_CHATBOT_URL doit être une URL valide').optional(),
 
+  // Meta Pixel (optionnel)
+  NEXT_PUBLIC_FACEBOOK_PIXEL_ID: z.string().optional(),
+
   // Node environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 })
@@ -73,6 +76,7 @@ export function getPublicEnvConfig(): PublicEnvConfig {
       NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || '',
       N8N_WEBHOOK_CHATBOT_URL: process.env.N8N_WEBHOOK_CHATBOT_URL,
+      NEXT_PUBLIC_FACEBOOK_PIXEL_ID: process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID,
       NODE_ENV: (process.env.NODE_ENV as PublicEnvConfig['NODE_ENV']) || 'development',
     }
     return validatedPublicConfig
