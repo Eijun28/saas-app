@@ -409,7 +409,7 @@ export default function RecherchePage() {
       // Charger le portfolio du prestataire
       const { data: portfolioData, error: portfolioError } = await supabase
         .from('provider_portfolio')
-        .select('id, image_url, title')
+        .select('id, image_url, title, file_type')
         .eq('profile_id', provider.id)
         .order('display_order', { ascending: true })
 
