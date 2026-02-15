@@ -15,7 +15,10 @@ import Link from 'next/link'
 import Particles from '@/components/Particles'
 
 const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+  password: z.string()
+    .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+    .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
+    .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Les mots de passe ne correspondent pas',
@@ -66,9 +69,16 @@ export default function ResetPasswordPage() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
   })
+
+  const password = watch('password', '')
+
+  // Reduce particle count on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -138,7 +148,7 @@ export default function ResetPasswordPage() {
   const particlesBlock = (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
       <Particles
-        particleCount={200}
+        particleCount={particleCount}
         particleSpread={10}
         speed={0.24}
         particleColors={["#823F91","#c081e3","#823F91"]}
@@ -279,6 +289,25 @@ export default function ResetPasswordPage() {
                     <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-red-500 pl-1">
                       {errors.password.message}
                     </motion.p>
+                  )}
+                  {password && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
+                      <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
+                        <li className={`flex items-center gap-1 ${password.length >= 8 ? 'text-green-600' : ''}`}>
+                          <span>{password.length >= 8 ? '✓' : '○'}</span>
+                          <span>Au moins 8 caractères</span>
+                        </li>
+                        <li className={`flex items-center gap-1 ${/[A-Z]/.test(password) ? 'text-green-600' : ''}`}>
+                          <span>{/[A-Z]/.test(password) ? '✓' : '○'}</span>
+                          <span>Au moins une majuscule</span>
+                        </li>
+                        <li className={`flex items-center gap-1 ${/[0-9]/.test(password) ? 'text-green-600' : ''}`}>
+                          <span>{/[0-9]/.test(password) ? '✓' : '○'}</span>
+                          <span>Au moins un chiffre</span>
+                        </li>
+                      </ul>
+                    </div>
                   )}
                 </motion.div>
 

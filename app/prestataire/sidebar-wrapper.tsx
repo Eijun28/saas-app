@@ -73,6 +73,7 @@ const sections: NavSection[] = [
     title: "Compte",
     items: [
       { href: "/prestataire/profil-public", icon: UserCircle, label: "Profil public" },
+      { href: "/prestataire/parametres", icon: Settings, label: "Parametres" },
     ],
   },
 ]
