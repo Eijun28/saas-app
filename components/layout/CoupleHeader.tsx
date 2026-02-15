@@ -18,14 +18,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, PanelLeft, PanelLeftClose, ChevronDown, Search, Sparkles, DollarSign } from 'lucide-react'
+import { User, LogOut, PanelLeft, PanelLeftClose, ChevronDown, Search, Sparkles } from 'lucide-react'
 
 const pageTitles: Record<string, string> = {
   '/couple/dashboard': 'Accueil',
   '/couple/recherche': 'Rechercher',
   '/couple/matching': 'Nuply Matching',
   '/couple/timeline': 'Calendrier',
-  '/couple/messagerie': 'Messages',
+  '/couple/messagerie': 'Messagerie',
   '/couple/demandes': 'Demandes & Devis',
   '/couple/budget': 'Budget',
   '/couple/profil': 'Profil',
@@ -36,14 +36,14 @@ function getPageTitle(pathname: string): string {
   for (const [path, title] of Object.entries(pageTitles)) {
     if (pathname.startsWith(path + '/')) return title
   }
-  return 'Dashboard'
+  return 'Tableau de bord'
 }
 
 export function CoupleHeader() {
   const { user } = useUser()
   const pathname = usePathname()
   const router = useRouter()
-  const { openMobile, setOpenMobile, isMobile } = useSidebar()
+  const { openMobile, setOpenMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -77,7 +77,7 @@ export function CoupleHeader() {
       await signOut()
       window.location.href = '/'
     } catch (error) {
-      console.error('Erreur lors de la deconnexion:', error)
+      console.error('Erreur lors de la déconnexion:', error)
       window.location.href = '/'
     }
   }
@@ -163,7 +163,7 @@ export function CoupleHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 cursor-pointer text-red-600 focus:text-red-600 rounded-md px-2.5 py-2">
                 <LogOut className="h-4 w-4" />
-                <span className="text-[13px]">Deconnexion</span>
+                <span className="text-[13px]">Déconnexion</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

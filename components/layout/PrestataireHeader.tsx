@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Bell, PanelLeft, PanelLeftClose, Inbox, Calendar, MessageSquare, Search } from 'lucide-react'
+import { Bell, PanelLeft, PanelLeftClose, Inbox, Calendar, MessageSquare } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -18,12 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, ChevronDown, FileText, Settings } from 'lucide-react'
+import { User, LogOut, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 
 const pageTitles: Record<string, string> = {
-  '/prestataire/dashboard': 'Dashboard',
-  '/prestataire/demandes-recues': 'Demandes recues',
+  '/prestataire/dashboard': 'Tableau de bord',
+  '/prestataire/demandes-recues': 'Demandes reçues',
   '/prestataire/agenda': 'Agenda',
   '/prestataire/messagerie': 'Messagerie',
   '/prestataire/devis-factures': 'Devis & Factures',
@@ -35,7 +35,7 @@ function getPageTitle(pathname: string): string {
   for (const [path, title] of Object.entries(pageTitles)) {
     if (pathname.startsWith(path + '/')) return title
   }
-  return 'Dashboard'
+  return 'Tableau de bord'
 }
 
 export function PrestataireHeader() {
@@ -120,7 +120,7 @@ export function PrestataireHeader() {
         const { data: evenements } = await supabase.from('events').select('id, title, date, time').eq('prestataire_id', user.id).gte('date', new Date().toISOString().split('T')[0]).order('date', { ascending: true }).limit(5)
         if (evenements) {
           evenements.forEach((evenement: any) => {
-            notificationsList.push({ id: evenement.id, type: 'evenement', title: 'Evenement a venir', message: evenement.title || 'Evenement prevu', date: `${evenement.date}T${evenement.time}`, link: '/prestataire/agenda' })
+            notificationsList.push({ id: evenement.id, type: 'evenement', title: 'Événement à venir', message: evenement.title || 'Événement prévu', date: `${evenement.date}T${evenement.time}`, link: '/prestataire/agenda' })
           })
         }
 
@@ -140,7 +140,7 @@ export function PrestataireHeader() {
       await signOut()
       window.location.href = '/'
     } catch (error) {
-      console.error('Erreur lors de la deconnexion:', error)
+      console.error('Erreur lors de la déconnexion:', error)
       window.location.href = '/'
     }
   }
@@ -251,7 +251,7 @@ export function PrestataireHeader() {
                   className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30"
                 >
                   <Avatar className="h-8 w-8 rounded-lg ring-1 ring-gray-100">
-                    <AvatarImage src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined} alt={profile?.name} key={profile?.avatar} />
+                    <AvatarImage src={profile?.avatar} alt={profile?.name} key={profile?.avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs font-semibold rounded-lg">
                       {profile?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'P'}
                     </AvatarFallback>
@@ -276,7 +276,7 @@ export function PrestataireHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 cursor-pointer text-red-600 focus:text-red-600 rounded-md px-2.5 py-2">
                   <LogOut className="h-4 w-4" />
-                  <span className="text-[13px]">Deconnexion</span>
+                  <span className="text-[13px]">Déconnexion</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

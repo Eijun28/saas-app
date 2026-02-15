@@ -31,7 +31,7 @@ import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
 import { PendingRequests } from '@/components/prestataire/dashboard/PendingRequests'
 import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPerformance'
 import { cn } from '@/lib/utils'
-import { calculateProviderProfileCompletion } from '@/lib/profile/completion'
+import { calculateProviderProfileCompletion } from '@/lib/profile/complétion'
 
 type PeriodFilter = '7d' | '30d' | 'month'
 
@@ -68,19 +68,19 @@ export default function DashboardPrestatairePage() {
   const [referralCopied, setReferralCopied] = useState(false)
   const [urgentDemandes, setUrgentDemandes] = useState(0)
 
-  // Verifier le succes du paiement Stripe
+  // Vérifier le succès du paiement Stripe
   useEffect(() => {
     if (typeof window === 'undefined') return
     const urlParams = new URLSearchParams(window.location.search)
     const success = urlParams.get('success')
     const sessionId = urlParams.get('session_id')
     if (success === 'true' && sessionId) {
-      toast.success('Abonnement active avec succes ! Bienvenue dans votre nouveau plan.')
+      toast.success('Abonnement activé avec succès ! Bienvenue dans votre nouveau plan.')
       window.history.replaceState({}, '', '/prestataire/dashboard')
     }
   }, [])
 
-  // Ecouter les evenements de recherche depuis TopBar
+  // Écouter les événements de recherche depuis TopBar
   useEffect(() => {
     const handleSearch = (e: CustomEvent) => {
       setSearchQuery(e.detail || '')
@@ -108,7 +108,7 @@ export default function DashboardPrestatairePage() {
     }
   }, [user])
 
-  // Calcul completion profil
+  // Calcul complétion profil
   useEffect(() => {
     if (!user) return
     const fetchProfileCompletion = async () => {
@@ -123,7 +123,7 @@ export default function DashboardPrestatairePage() {
         const result = calculateProviderProfileCompletion(profileResult.data, culturesResult.data?.length || 0, zonesResult.data?.length || 0, portfolioResult.data?.length || 0)
         setProfileCompletion(result.percentage)
       } catch (error) {
-        console.error('Erreur calcul completion profil:', error)
+        console.error('Erreur calcul complétion profil:', error)
       }
     }
     fetchProfileCompletion()
@@ -226,7 +226,7 @@ export default function DashboardPrestatairePage() {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-    if (diffMins < 1) return "A l'instant"
+    if (diffMins < 1) return "À l'instant"
     if (diffMins < 60) return `Il y a ${diffMins} min`
     if (diffHours < 24) return `Il y a ${diffHours}h`
     if (diffDays === 1) return 'Hier'
@@ -234,7 +234,7 @@ export default function DashboardPrestatairePage() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
   }
 
-  // Charger activites recentes
+  // Charger activités récentes
   useEffect(() => {
     if (!user) return
     const fetchRecentActivities = async () => {
@@ -263,7 +263,7 @@ export default function DashboardPrestatairePage() {
         activities.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         setRecentActivities(activities.slice(0, 5))
       } catch (error) {
-        console.error('Erreur chargement activites:', error)
+        console.error('Erreur chargement activités:', error)
       } finally {
         setActivitiesLoading(false)
       }
@@ -272,15 +272,15 @@ export default function DashboardPrestatairePage() {
   }, [user])
 
   if (uiState.loading === 'loading') return <LoadingSpinner size="lg" text="Chargement du dashboard..." />
-  if (uiState.loading === 'error') return <EmptyState title="Erreur de chargement" description={uiState.error || 'Une erreur est survenue'} action={{ label: 'Reessayer', onClick: () => window.location.reload() }} />
+  if (uiState.loading === 'error') return <EmptyState title="Erreur de chargement" description={uiState.error || 'Une erreur est survenue'} action={{ label: 'Réessayer', onClick: () => window.location.reload() }} />
 
   const demandesDelta = prevStats.demandes_ce_mois !== undefined ? stats.demandes_ce_mois - (prevStats.demandes_ce_mois || 0) : null
 
   // Next best actions
   const nextActions: { text: string; cta: string; href: string }[] = []
-  if (urgentDemandes > 0) nextActions.push({ text: `${urgentDemandes} demande${urgentDemandes > 1 ? 's' : ''} en attente depuis plus de 24h`, cta: 'Repondre maintenant', href: '/prestataire/demandes-recues' })
+  if (urgentDemandes > 0) nextActions.push({ text: `${urgentDemandes} demande${urgentDemandes > 1 ? 's' : ''} en attente depuis plus de 24h`, cta: 'Répondre maintenant', href: '/prestataire/demandes-recues' })
   // Ne pas dupliquer l'info profil ici car le bandeau dédié (amber) l'affiche déjà
-  if (profileCompletion !== null && profileCompletion < 70 && profileBannerDismissed) nextActions.push({ text: `Votre profil est a ${profileCompletion}% — completez-le pour etre visible`, cta: 'Completer le profil', href: '/prestataire/profil-public' })
+  if (profileCompletion !== null && profileCompletion < 70 && profileBannerDismissed) nextActions.push({ text: `Votre profil est à ${profileCompletion}% — complétez-le pour être visible`, cta: 'Compléter le profil', href: '/prestataire/profil-public' })
   if (stats.conversations_en_cours > 0) nextActions.push({ text: `${stats.conversations_en_cours} conversation${stats.conversations_en_cours > 1 ? 's' : ''} en cours`, cta: 'Ouvrir la messagerie', href: '/prestataire/messagerie' })
 
   return (
@@ -298,7 +298,7 @@ export default function DashboardPrestatairePage() {
             <h1 className="text-[22px] sm:text-[26px] font-bold text-gray-900 tracking-tight">
               {prenom ? `Bonjour ${prenom}` : 'Tableau de bord'}
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">Vue d&apos;ensemble de votre activite</p>
+            <p className="text-sm text-gray-500 mt-0.5">Vue d&apos;ensemble de votre activité</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-full">
@@ -330,7 +330,7 @@ export default function DashboardPrestatairePage() {
           </div>
         </motion.div>
 
-        {/* Profile completion banner */}
+        {/* Profile complétion banner */}
         {profileCompletion !== null && profileCompletion < 70 && !profileBannerDismissed && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -342,14 +342,14 @@ export default function DashboardPrestatairePage() {
               <AlertTriangle className="h-5 w-5 text-amber-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-amber-900">Votre profil est complete a {profileCompletion}%</p>
-              <p className="text-xs text-amber-700 mt-0.5">Completez-le a au moins 70% pour etre visible par les couples.</p>
+              <p className="text-sm font-semibold text-amber-900">Votre profil est complété à {profileCompletion}%</p>
+              <p className="text-xs text-amber-700 mt-0.5">Complétez-le à au moins 70% pour être visible par les couples.</p>
             </div>
             <button
               onClick={() => router.push('/prestataire/profil-public')}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#823F91] hover:bg-[#5C2B66] text-white text-sm font-medium rounded-xl transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 focus-visible:ring-offset-2"
             >
-              Completer <ArrowRight className="h-3.5 w-3.5" />
+              Compléter <ArrowRight className="h-3.5 w-3.5" />
             </button>
             <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0" title="Masquer">
               <X className="h-3.5 w-3.5 text-amber-400" />
@@ -370,7 +370,7 @@ export default function DashboardPrestatairePage() {
                 <Zap className="h-4 w-4 text-[#823F91]" />
               </div>
               <div className="flex-1 min-w-0 space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action recommandee</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action recommandée</p>
                 <p className="text-sm font-medium text-gray-800">{nextActions[0].text}</p>
                 <button
                   onClick={() => router.push(nextActions[0].href)}
@@ -404,16 +404,16 @@ export default function DashboardPrestatairePage() {
           {[
             {
               icon: Bell, label: "Nouvelles demandes", value: stats.nouvelles_demandes, subtitle: "En attente de traitement",
-              description: stats.nouvelles_demandes > 0 ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} necessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention` : "Aucune nouvelle demande",
+              description: stats.nouvelles_demandes > 0 ? `${stats.nouvelles_demandes} demande${stats.nouvelles_demandes > 1 ? 's' : ''} nécessite${stats.nouvelles_demandes > 1 ? 'nt' : ''} votre attention` : "Aucune nouvelle demande",
               delay: 0.1, onClick: () => router.push('/prestataire/demandes-recues'), actionLabel: "Voir toutes les demandes",
               actionHref: '/prestataire/demandes-recues', searchTerms: ['demandes', 'nouvelles', 'traiter'], delta: demandesDelta, sparkline: [2, 3, 1, 4, 2, 5, stats.nouvelles_demandes],
               emptyStateAction: "Optimiser votre profil", alert: urgentDemandes > 0 ? `${urgentDemandes} demande${urgentDemandes > 1 ? 's' : ''} > 24h` : undefined,
             },
             {
-              icon: Calendar, label: "Evenements a venir", value: stats.evenements_a_venir, subtitle: "Ce mois-ci",
-              description: stats.evenements_a_venir > 0 ? `${stats.evenements_a_venir} evenement${stats.evenements_a_venir > 1 ? 's' : ''} planifie${stats.evenements_a_venir > 1 ? 's' : ''}` : "Aucun evenement prevu",
-              delay: 0.2, onClick: () => router.push('/prestataire/agenda'), actionLabel: "Gerer mon agenda",
-              actionHref: '/prestataire/agenda', searchTerms: ['evenements', 'agenda', 'calendrier'], emptyStateAction: "Creer un evenement",
+              icon: Calendar, label: "Événements à venir", value: stats.evenements_a_venir, subtitle: "Ce mois-ci",
+              description: stats.evenements_a_venir > 0 ? `${stats.evenements_a_venir} événement${stats.evenements_a_venir > 1 ? 's' : ''} planifié${stats.evenements_a_venir > 1 ? 's' : ''}` : "Aucun événement prévu",
+              delay: 0.2, onClick: () => router.push('/prestataire/agenda'), actionLabel: "Gérer mon agenda",
+              actionHref: '/prestataire/agenda', searchTerms: ['événements', 'agenda', 'calendrier'], emptyStateAction: "Créer un événement",
             },
             {
               icon: MessageSquare, label: "Conversations", value: stats.conversations_en_cours, subtitle: "En cours avec des couples",
@@ -422,10 +422,10 @@ export default function DashboardPrestatairePage() {
               actionHref: '/prestataire/messagerie', searchTerms: ['messages', 'messagerie', 'conversations'], emptyStateAction: "Accepter une demande",
             },
             {
-              icon: TrendingUp, label: "Taux de reponse", value: `${stats.taux_reponse}%`, subtitle: "Taux d'acceptation",
-              description: stats.taux_reponse > 0 ? `${stats.taux_reponse}% acceptees` : "Aucune statistique",
-              delay: 0.4, onClick: () => router.push('/prestataire/demandes-recues'), actionLabel: "Voir les statistiques",
-              actionHref: '/prestataire/demandes-recues', searchTerms: ['taux', 'reponse', 'statistiques'],
+              icon: TrendingUp, label: "Taux de réponse", value: `${stats.taux_reponse}%`, subtitle: "Taux d'acceptation",
+              description: stats.taux_reponse > 0 ? `${stats.taux_reponse}% acceptées` : "Aucune statistique",
+              delay: 0.4, onClick: () => router.push('/prestataire/analytics'), actionLabel: "Voir les statistiques",
+              actionHref: '/prestataire/analytics', searchTerms: ['taux', 'réponse', 'statistiques'],
               sparkline: [20, 35, 40, 30, 45, 50, stats.taux_reponse],
             }
           ]
@@ -454,12 +454,12 @@ export default function DashboardPrestatairePage() {
             ))}
         </div>
 
-        {/* Activite recente */}
+        {/* Activité récente */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}
           className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/60">
-            <h2 className="text-base sm:text-lg font-bold text-gray-900">Activite recente</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Dernieres actions sur votre compte</p>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">Activité récente</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Dernières actions sur votre compte</p>
           </div>
           <div className="p-4 sm:p-5 max-h-[320px] overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {activitiesLoading ? (
@@ -475,7 +475,7 @@ export default function DashboardPrestatairePage() {
                 ))}
               </div>
             ) : recentActivities.length === 0 ? (
-              <EmptyState title="Aucune activite recente" description="Vos dernieres actions apparaitront ici" />
+              <EmptyState title="Aucune activité récente" description="Vos dernières actions apparaîtront ici" />
             ) : (
               <div className="space-y-2">
                 {recentActivities.map((activity, index) => (
@@ -513,7 +513,7 @@ export default function DashboardPrestatairePage() {
               <div className="flex items-center gap-2">
                 <div className="px-4 py-2 bg-white rounded-xl border border-[#823F91]/20 font-mono text-sm font-bold text-[#823F91] tracking-wider">{referralCode}</div>
                 <button
-                  onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); toast.success('Code copie !'); setTimeout(() => setReferralCopied(false), 2000) }}
+                  onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); toast.success('Code copié !'); setTimeout(() => setReferralCopied(false), 2000) }}
                   className={cn('p-2.5 rounded-xl transition-all min-w-[40px] min-h-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40', referralCopied ? 'bg-green-100 text-green-600' : 'bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20')}
                   title="Copier le code"
                 >

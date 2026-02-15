@@ -52,7 +52,7 @@ interface NavSection {
 
 const sections: NavSection[] = [
   {
-    title: "Operations",
+    title: "Opérations",
     items: [
       { href: "/couple/dashboard", icon: Home, label: "Accueil" },
       { href: "/couple/recherche", icon: Search, label: "Rechercher" },
@@ -66,7 +66,7 @@ const sections: NavSection[] = [
   {
     title: "Communication",
     items: [
-      { href: "/couple/messagerie", icon: MessageSquare, label: "Messages" },
+      { href: "/couple/messagerie", icon: MessageSquare, label: "Messagerie" },
       { href: "/couple/demandes", icon: FileText, label: "Demandes & Devis" },
     ],
   },
@@ -111,7 +111,7 @@ function SidebarToggleButton() {
       }}
       className='h-8 w-8 rounded-lg flex-shrink-0 flex relative z-[100] hover:bg-gray-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1'
       style={{ pointerEvents: 'auto', color: '#4B5563', background: 'transparent', border: 'none', boxShadow: 'none' }}
-      aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Reduire la sidebar'}
+      aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
         <ChevronsRight className='h-4 w-4' style={{ color: '#4B5563' }} />
@@ -135,7 +135,7 @@ export function CoupleSidebarWrapper() {
     if (isMobile && openMobile) {
       setOpenMobile(false)
     }
-  }, [pathname])
+  }, [pathname, isMobile, openMobile, setOpenMobile])
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -187,6 +187,7 @@ export function CoupleSidebarWrapper() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
+                        tooltip={item.label}
                         className={cn(
                           "text-[13.5px] font-medium rounded-lg transition-all duration-150 h-10 relative",
                           "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto",

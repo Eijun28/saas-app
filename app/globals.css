@@ -222,6 +222,19 @@ button, .button, .btn {
     position: relative;
     z-index: 1;
   }
+
+  .motion-fast {
+    transition-duration: 140ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .motion-normal {
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .motion-emphasis {
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 /* Suppression définitive des bordures noires sur les cards */

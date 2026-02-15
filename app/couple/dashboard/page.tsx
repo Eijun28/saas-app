@@ -90,7 +90,7 @@ export default function CoupleDashboardPage() {
           const activities = requestsResult.data.map((req: any) => ({
             id: req.id,
             type: req.status === 'accepted' ? 'contact' : 'request',
-            title: req.status === 'accepted' ? 'Demande acceptee' : req.status === 'pending' ? 'Demande en attente' : 'Demande envoyee',
+            title: req.status === 'accepted' ? 'Demande acceptée' : req.status === 'pending' ? 'Demande en attente' : 'Demande envoyée',
             time: formatRelativeTime(req.created_at),
             icon: req.status === 'accepted' ? CheckCircle2 : Clock,
             color: req.status === 'accepted' ? 'text-emerald-500' : 'text-[#823F91]',
@@ -114,7 +114,7 @@ export default function CoupleDashboardPage() {
         console.error('Erreur chargement dashboard couple:', err)
         const isNetwork = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('timeout')
         if (isNetwork) {
-          setError('Erreur de connexion. Verifiez votre connexion internet.')
+          setError('Erreur de connexion. Vérifiez votre connexion internet.')
         } else {
           setError(null) // Erreurs non-réseau : afficher le dashboard avec des données vides
         }
@@ -133,7 +133,7 @@ export default function CoupleDashboardPage() {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-    if (diffMins < 1) return "A l'instant"
+    if (diffMins < 1) return "À l'instant"
     if (diffMins < 60) return `Il y a ${diffMins} min`
     if (diffHours < 24) return `Il y a ${diffHours}h`
     if (diffDays === 1) return 'Hier'
@@ -166,10 +166,10 @@ export default function CoupleDashboardPage() {
   // Next actions for couple
   const nextActions: { text: string; cta: string; href: string }[] = []
   if (!coupleData?.wedding_date) {
-    nextActions.push({ text: "Definissez votre date de mariage pour debloquer le compteur", cta: 'Ajouter la date', href: '/couple/profil' })
+    nextActions.push({ text: "Définissez votre date de mariage pour débloquer le compteur", cta: 'Ajouter la date', href: '/couple/profil' })
   }
   if (favoritesCount === 0) {
-    nextActions.push({ text: "Commencez a chercher des prestataires pour votre mariage", cta: 'Rechercher', href: '/couple/recherche' })
+    nextActions.push({ text: "Commencez à chercher des prestataires pour votre mariage", cta: 'Rechercher', href: '/couple/recherche' })
   }
   if (unreadMessages > 0) {
     nextActions.push({ text: `${unreadMessages} conversation${unreadMessages > 1 ? 's' : ''} avec des prestataires`, cta: 'Voir les messages', href: '/couple/messagerie' })
@@ -208,7 +208,7 @@ export default function CoupleDashboardPage() {
           onClick={() => { setError(null); setLoading(true); window.location.reload() }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-[#823F91] text-white text-sm font-medium rounded-xl hover:bg-[#5C2B66] transition-colors"
         >
-          Reessayer
+          Réessayer
         </button>
       </div>
     )
@@ -236,8 +236,8 @@ export default function CoupleDashboardPage() {
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {coupleData?.wedding_date
-                ? `Mariage prevu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
-                : 'Organisez votre mariage en toute simplicite'
+                ? `Mariage prévu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                : 'Organisez votre mariage en toute simplicité'
               }
             </p>
           </div>
@@ -294,7 +294,7 @@ export default function CoupleDashboardPage() {
         {/* Stats Grid — 4 KPI cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
 
-          {/* Prestataires shortlistes */}
+          {/* Prestataires shortlistés */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -372,7 +372,7 @@ export default function CoupleDashboardPage() {
               </div>
               <div className="pt-3 mt-3 border-t border-gray-100">
                 <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
-                  <span>Gerer le budget</span>
+                  <span>Gérer le budget</span>
                   <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
@@ -399,11 +399,11 @@ export default function CoupleDashboardPage() {
                   {daysUntilWedding ?? '—'}
                 </p>
                 <p className="text-sm font-medium text-gray-500 mt-1">
-                  {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
+                  {daysUntilWedding ? 'Avant le mariage' : 'Date non définie'}
                 </p>
                 {!daysUntilWedding && (
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
-                    <Zap className="h-3 w-3" /> Definir la date
+                    <Zap className="h-3 w-3" /> Définir la date
                   </span>
                 )}
               </div>
