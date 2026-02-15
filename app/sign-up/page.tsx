@@ -257,6 +257,17 @@ export default function SignUpPage() {
                     <p className="text-xs text-purple-700 leading-relaxed">
                       Inscrivez-vous et <strong>complétez votre profil</strong> pour participer au tirage au sort. C'est simple, rapide et gratuit.
                     </p>
+                    <p className="text-xs text-purple-700 leading-relaxed">
+                      Suivez-nous sur Instagram :{' '}
+                      <a
+                        href="https://www.instagram.com/nuply.fr/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-[#823F91] underline underline-offset-2 hover:text-[#B855D6] transition-colors"
+                      >
+                        @nuply.fr
+                      </a>
+                    </p>
                   </div>
                 </div>
               </motion.div>

@@ -6,8 +6,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Bell } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 
-export const dynamic = 'force-dynamic'
-
 export default function NotificationsPage() {
   const { user } = useUser()
   const [notifications, setNotifications] = useState<any[]>([])
