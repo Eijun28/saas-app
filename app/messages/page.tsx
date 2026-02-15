@@ -8,8 +8,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
-export const dynamic = 'force-dynamic'
-
 export default function MessagesPage() {
   const { user, loading: userLoading } = useUser()
   const router = useRouter()
