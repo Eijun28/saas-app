@@ -20,10 +20,10 @@ export default function PricingSection() {
   // Plan unique pour les couples
   const couplesPricing: PricingColumnProps[] = [
     {
-      name: "Gratuit",
+      name: "Essentiel",
       description: "Tout ce dont vous avez besoin pour trouver vos prestataires parfaits.",
       price: 0,
-      priceNote: "Gratuit jusqu'au 30 juin",
+      priceNote: "Offert jusqu'au 30 juin",
       billingPeriod: "month",
       cta: {
         variant: "default",
@@ -341,7 +341,7 @@ export default function PricingSection() {
         >
           <p className="text-slate-600 text-sm">
             {userType === 'couples' 
-              ? "Aucune carte bancaire requise • Gratuit jusqu'au 30 juin"
+              ? "Aucune carte bancaire requise • Offert jusqu'au 30 juin"
               : "Annulez à tout moment • Aucun engagement"}
           </p>
         </motion.div>

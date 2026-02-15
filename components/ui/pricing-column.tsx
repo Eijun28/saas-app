@@ -40,7 +40,7 @@ export function PricingColumn({
   return (
     <div
       className={cn(
-        "relative flex flex-col h-full rounded-xl border bg-white p-6 shadow-sm transition-all",
+        "relative flex flex-col h-full rounded-xl bg-white p-6 shadow-sm transition-all",
         !comingSoon && "hover:shadow-lg",
         comingSoon && "opacity-60 pointer-events-none",
         className
