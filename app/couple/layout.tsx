@@ -5,6 +5,8 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 import { getUserRoleServer } from "@/lib/auth/utils"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CoupleLayout({
   children,
 }: {
