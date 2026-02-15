@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -56,6 +56,8 @@ interface Provider {
   tags: ProviderTag[]
   completionPercentage?: number
   hasSiret?: boolean
+  avgRating?: number
+  reviewCount?: number
 }
 
 // Utiliser la constante partagée (déjà importée)
@@ -117,28 +119,31 @@ export default function RecherchePage() {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  // P3: Advanced filters
+  const [minRating, setMinRating] = useState<number>(0)
+  const [budgetMax, setBudgetMax] = useState<number | null>(null)
+  const [sortBy, setSortBy] = useState<'default' | 'rating' | 'reviews' | 'budget_asc' | 'budget_desc'>('default')
+  const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set())
 
-  // Load available tags on mount
+  // Load available tags and favorites on mount
   useEffect(() => {
-    async function loadTags() {
+    async function loadInitialData() {
       const supabase = createClient()
-      const { data } = await supabase
-        .from('tags')
-        .select('id, label, category')
-        .order('usage_count', { ascending: false })
-        .limit(50)
-      if (data) {
-        setAvailableTags(data)
-      }
+      const [tagsResult, favsResult] = await Promise.all([
+        supabase.from('tags').select('id, label, category').order('usage_count', { ascending: false }).limit(50),
+        user ? supabase.from('favoris').select('prestataire_id').eq('couple_id', user.id) : Promise.resolve({ data: null }),
+      ])
+      if (tagsResult.data) setAvailableTags(tagsResult.data)
+      if (favsResult.data) setFavoritedIds(new Set(favsResult.data.map((f: any) => f.prestataire_id)))
     }
-    loadTags()
-  }, [])
+    loadInitialData()
+  }, [user])
 
   useEffect(() => {
     if (user) {
       searchProviders()
     }
-  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags])
+  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy])
 
   // Fonction pour calculer le pourcentage de complétion du profil
   const calculateProfileCompletion = async (
@@ -331,12 +336,21 @@ export default function RecherchePage() {
             matchesSearch = cultureMatch || zoneMatch || true // On garde tous les résultats de la requête principale
           }
 
+          // Fetch rating data
+          const { data: ratingData } = await supabase
+            .from('prestataire_public_profiles')
+            .select('rating, total_reviews')
+            .eq('profile_id', profile.id)
+            .maybeSingle()
+
           return {
             ...profile,
             cultures,
             zones,
             tags,
             completionPercentage,
+            avgRating: ratingData ? Number(ratingData.rating) : 0,
+            reviewCount: ratingData ? ratingData.total_reviews : 0,
           } as Provider & { completionPercentage: number }
         })
       )
@@ -381,6 +395,31 @@ export default function RecherchePage() {
         filteredProviders = filteredProviders.filter(p =>
           selectedTags.every(tagId => p.tags.some(t => t.id === tagId))
         )
+      }
+
+      // P3: Filtre par note minimum
+      if (minRating > 0) {
+        filteredProviders = filteredProviders.filter(p =>
+          (p.avgRating || 0) >= minRating
+        )
+      }
+
+      // P3: Filtre par budget maximum
+      if (budgetMax !== null && budgetMax > 0) {
+        filteredProviders = filteredProviders.filter(p =>
+          p.budget_min !== null && p.budget_min !== undefined && p.budget_min <= budgetMax
+        )
+      }
+
+      // P3: Tri
+      if (sortBy === 'rating') {
+        filteredProviders.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0))
+      } else if (sortBy === 'reviews') {
+        filteredProviders.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
+      } else if (sortBy === 'budget_asc') {
+        filteredProviders.sort((a, b) => (a.budget_min || 0) - (b.budget_min || 0))
+      } else if (sortBy === 'budget_desc') {
+        filteredProviders.sort((a, b) => (b.budget_min || 0) - (a.budget_min || 0))
       }
 
       setProviders(filteredProviders)
@@ -438,6 +477,25 @@ export default function RecherchePage() {
     } catch (error) {
       console.error('Erreur chargement données complètes:', error)
       setPortfolio([])
+    }
+  }
+
+  const toggleFavorite = async (e: React.MouseEvent, providerId: string) => {
+    e.stopPropagation()
+    if (!user) return
+    const supabase = createClient()
+    const isFav = favoritedIds.has(providerId)
+
+    try {
+      if (isFav) {
+        await supabase.from('favoris').delete().eq('couple_id', user.id).eq('prestataire_id', providerId)
+        setFavoritedIds(prev => { const next = new Set(prev); next.delete(providerId); return next })
+      } else {
+        await supabase.from('favoris').insert({ couple_id: user.id, prestataire_id: providerId })
+        setFavoritedIds(prev => new Set([...prev, providerId]))
+      }
+    } catch (err) {
+      console.error('Favorite toggle error:', err)
     }
   }
 
@@ -826,6 +884,68 @@ export default function RecherchePage() {
           )}
         </motion.div>
 
+        {/* P3: Filtres avancés (note, budget, tri) */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="flex flex-wrap items-center gap-2"
+        >
+          {/* Filtre note minimum */}
+          <div className="flex items-center gap-1 p-0.5 bg-gray-100 rounded-full">
+            <span className="px-2 text-[11px] text-gray-500 font-medium">Note min</span>
+            {[0, 3, 3.5, 4, 4.5].map(r => (
+              <button
+                key={r}
+                onClick={() => setMinRating(r)}
+                className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all ${
+                  minRating === r ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {r === 0 ? 'Tous' : (
+                  <span className="flex items-center gap-0.5">
+                    {r}<Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Budget max */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full">
+            <span className="text-[11px] text-gray-500 font-medium">Budget max</span>
+            <input
+              type="number"
+              value={budgetMax || ''}
+              onChange={(e) => setBudgetMax(e.target.value ? Number(e.target.value) : null)}
+              placeholder="—"
+              className="w-16 text-[11px] bg-transparent border-none outline-none text-gray-900 font-medium placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-[11px] text-gray-400">&euro;</span>
+            {budgetMax !== null && (
+              <button onClick={() => setBudgetMax(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Tri */}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="text-[11px] text-gray-600 bg-transparent border border-gray-200 rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#823F91]/30"
+            >
+              <option value="default">Par defaut</option>
+              <option value="rating">Meilleure note</option>
+              <option value="reviews">Plus d&apos;avis</option>
+              <option value="budget_asc">Budget croissant</option>
+              <option value="budget_desc">Budget decroissant</option>
+            </select>
+          </div>
+        </motion.div>
+
         {/* Résultats */}
         {loading ? (
           <div className="text-center py-16">
@@ -870,8 +990,15 @@ export default function RecherchePage() {
                   className="bg-white rounded-xl border border-gray-200 hover:border-[#823F91]/50 hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col h-full"
                   onClick={() => handleProviderClick(provider)}
                 >
-                  {/* Avatar et image de fond optionnelle */}
+                  {/* Avatar et image de fond + favorite */}
                   <div className="relative h-20 sm:h-24 md:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                    {/* Favorite button */}
+                    <button
+                      onClick={(e) => toggleFavorite(e, provider.id)}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all"
+                    >
+                      <Heart className={`h-4 w-4 transition-colors ${favoritedIds.has(provider.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+                    </button>
                     {provider.avatar_url ? (
                       <img
                         src={provider.avatar_url}
@@ -925,6 +1052,15 @@ export default function RecherchePage() {
                         </Badge>
                       )}
                     </div>
+
+                    {/* Rating */}
+                    {(provider.avgRating || 0) > 0 && (
+                      <div className="flex items-center gap-1 mb-1">
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        <span className="text-sm font-semibold text-gray-900">{provider.avgRating?.toFixed(1)}</span>
+                        <span className="text-xs text-gray-400">({provider.reviewCount} avis)</span>
+                      </div>
+                    )}
 
                     {/* Budget */}
                     {(provider.budget_min || provider.budget_max) && (
