@@ -22,12 +22,14 @@ import { User, LogOut, ChevronDown, FileText, Settings } from 'lucide-react'
 import Link from 'next/link'
 
 const pageTitles: Record<string, string> = {
-  '/prestataire/dashboard': 'Dashboard',
+  '/prestataire/dashboard': 'Accueil',
   '/prestataire/demandes-recues': 'Demandes recues',
   '/prestataire/agenda': 'Agenda',
   '/prestataire/messagerie': 'Messagerie',
   '/prestataire/devis-factures': 'Devis & Factures',
   '/prestataire/profil-public': 'Profil public',
+  '/prestataire/analytics': 'Statistiques',
+  '/prestataire/parametres': 'Parametres',
 }
 
 function getPageTitle(pathname: string): string {
@@ -35,7 +37,7 @@ function getPageTitle(pathname: string): string {
   for (const [path, title] of Object.entries(pageTitles)) {
     if (pathname.startsWith(path + '/')) return title
   }
-  return 'Dashboard'
+  return 'Accueil'
 }
 
 export function PrestataireHeader() {

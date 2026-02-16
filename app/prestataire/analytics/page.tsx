@@ -100,67 +100,66 @@ export default function AnalyticsPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-5 sm:space-y-6">
-        {/* Header */}
+      <div className="w-full space-y-6 sm:space-y-8">
+        {/* Header — coherent avec les autres pages */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 border border-[#823F91]/8 p-5 sm:p-6"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#823F91]/8 rounded-xl">
-              <BarChart3 className="h-5 w-5 text-[#823F91]" />
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-[22px] sm:text-[26px] font-bold text-gray-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">
                 Mes statistiques
               </h1>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-gray-500 mt-1 leading-relaxed">
                 Suivez votre visibilite et vos performances
               </p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            {/* Period filter */}
-            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-full">
-              {([
-                { value: '7d' as Period, label: '7j' },
-                { value: '30d' as Period, label: '30j' },
-                { value: '90d' as Period, label: '90j' },
-              ]).map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setPeriod(value)}
-                  className={cn(
-                    'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150',
-                    period === value
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Period filter */}
+              <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
+                {([
+                  { value: '7d' as Period, label: '7j' },
+                  { value: '30d' as Period, label: '30j' },
+                  { value: '90d' as Period, label: '90j' },
+                ]).map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setPeriod(value)}
+                    className={cn(
+                      'px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150',
+                      period === value
+                        ? 'bg-[#823F91] text-white shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Refresh */}
+              <button
+                onClick={fetchAnalytics}
+                disabled={loading}
+                className="p-2 hover:bg-white/60 rounded-lg transition-colors disabled:opacity-50"
+                title="Actualiser"
+              >
+                <RefreshCw className={cn('h-4 w-4 text-gray-400', loading && 'animate-spin')} />
+              </button>
+
+              {lastUpdated && (
+                <span className="text-[11px] text-gray-400">
+                  {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </div>
-
-            {/* Refresh */}
-            <button
-              onClick={fetchAnalytics}
-              disabled={loading}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              title="Actualiser"
-            >
-              <RefreshCw className={cn('h-4 w-4 text-gray-400', loading && 'animate-spin')} />
-            </button>
-
-            {lastUpdated && (
-              <span className="text-[11px] text-gray-400">
-                {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
           </div>
+          <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[#823F91]/[0.04] pointer-events-none" />
+          <div className="absolute -bottom-6 -right-3 w-20 h-20 rounded-full bg-[#823F91]/[0.03] pointer-events-none" />
         </motion.div>
 
         {/* Loading overlay for period change */}

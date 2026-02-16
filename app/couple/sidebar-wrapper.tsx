@@ -152,7 +152,7 @@ export function CoupleSidebarWrapper() {
   return (
     <Sidebar collapsible="icon" className="border-r border-gray-200/60">
       {/* Header */}
-      <SidebarHeader className="h-14 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-16 px-4 border-b border-gray-200/60 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <Link
           href="/couple/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"

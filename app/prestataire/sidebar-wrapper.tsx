@@ -51,7 +51,7 @@ const sections: NavSection[] = [
   {
     title: "Operations",
     items: [
-      { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
+      { href: "/prestataire/dashboard", icon: Home, label: "Accueil" },
       { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes recues" },
       { href: "/prestataire/agenda", icon: Calendar, label: "Agenda" },
     ],
@@ -146,7 +146,7 @@ export function PrestataireSidebarWrapper() {
   return (
     <Sidebar collapsible="icon" className="border-r border-gray-200/60">
       {/* Header */}
-      <SidebarHeader className="h-14 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-16 px-4 border-b border-gray-200/60 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <Link
           href="/prestataire/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"
