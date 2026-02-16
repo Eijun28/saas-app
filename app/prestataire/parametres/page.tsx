@@ -9,10 +9,12 @@ import {
   Eye,
   EyeOff,
   Check,
+  CreditCard,
   Bell,
   Shield,
   Trash2,
   Download,
+  Sparkles,
   Mail,
   MessageSquare,
   Calendar,
@@ -188,11 +190,54 @@ export default function ParametresPage() {
     <div className="w-full max-w-3xl mx-auto space-y-8 pb-12">
       <PageTitle
         title="Paramètres"
-        description="Gérez votre compte et vos préférences"
+        description="Gérez votre compte, votre abonnement et vos préférences"
       />
 
       {/* ═══════════════════════════════════════════
-          SECTION 1 : SÉCURITÉ
+          SECTION 1 : ABONNEMENT
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card className={cardClass}>
+          <div className="p-5 sm:p-7">
+            <SectionHeader
+              icon={CreditCard}
+              title="Abonnement"
+              description="Votre forfait actuel"
+            />
+
+            <div className="space-y-4">
+              {/* Current plan row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Forfait Discovery</p>
+                  <p className="text-sm text-gray-500">Gratuit</p>
+                </div>
+                <button
+                  onClick={() => toast.info('La gestion des abonnements sera disponible prochainement.')}
+                  className="text-sm font-medium text-[#823F91] hover:text-[#6D3478] transition-colors px-4 py-2 rounded-lg border border-[#823F91]/20 hover:bg-[#823F91]/5"
+                >
+                  Modifier l&apos;abonnement
+                </button>
+              </div>
+
+              {/* Launch offer info */}
+              <div className="flex items-start gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-4">
+                <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-amber-700">
+                  Vous beneficiez de l&apos;offre de lancement : toutes les fonctionnalites sont accessibles gratuitement.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 2 : SÉCURITÉ
           ═══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -346,7 +391,7 @@ export default function ParametresPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════
-          SECTION 2 : NOTIFICATIONS
+          SECTION 3 : NOTIFICATIONS
           ═══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -445,7 +490,7 @@ export default function ParametresPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════
-          SECTION 3 : GESTION DU COMPTE
+          SECTION 4 : GESTION DU COMPTE
           ═══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
