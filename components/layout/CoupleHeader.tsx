@@ -113,7 +113,7 @@ export function CoupleHeader() {
               {openMobile ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
             </Button>
           </div>
-          <h1 className="text-[15px] font-semibold text-gray-800 tracking-tight">{pageTitle}</h1>
+          <h1 className="text-[15px] font-semibold text-gray-900 tracking-tight">{pageTitle}</h1>
 
           {/* Quick actions — desktop dashboard only */}
           {quickActions.length > 0 && (
@@ -122,7 +122,7 @@ export function CoupleHeader() {
                 <button
                   key={action.href}
                   onClick={() => router.push(action.href)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <action.icon className="h-3.5 w-3.5" />
                   {action.label}
@@ -144,8 +144,8 @@ export function CoupleHeader() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:flex items-center gap-1.5">
-                  <span className="text-[13px] font-medium text-gray-700 max-w-[140px] truncate">{profile?.name || 'Couple'}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-[13px] font-medium text-gray-800 max-w-[140px] truncate">{profile?.name || 'Couple'}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
                 </div>
               </button>
             </DropdownMenuTrigger>

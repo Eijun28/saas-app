@@ -10,9 +10,9 @@
   --beige-100: 30 43% 97%;    /* #FBF8F3 - Beige principal (fond) */
   --beige-200: 40 35% 93%;    /* #F5F0E8 - Beige section alternée */
   --beige-300: 36 27% 89%;    /* #EBE4DA - Bordures */
-  --beige-700: 26 15% 47%;    /* #8B7866 - Texte muted */
-  --beige-800: 24 20% 24%;    /* #4A3A2E - Texte body */
-  --beige-900: 20 30% 13%;    /* #2C1810 - Texte principal/titres */
+  --beige-700: 26 18% 38%;    /* #6F5A48 - Texte muted (meilleur contraste) */
+  --beige-800: 24 22% 20%;    /* #3E2F24 - Texte body (plus foncé) */
+  --beige-900: 20 32% 10%;    /* #221510 - Texte principal/titres (très foncé) */
 
   /* === Primary Violet Scale (v2) === */
   --violet-50: 279 30% 96%;   /* #F5F0F7 */
@@ -26,8 +26,8 @@
   --neutral-50: 0 0% 98%;
   --neutral-100: 0 0% 96%;
   --neutral-200: 220 13% 91%;
-  --neutral-400: 220 9% 64%;
-  --neutral-600: 220 9% 43%;
+  --neutral-400: 220 9% 55%;
+  --neutral-600: 220 10% 36%;
   --neutral-800: 220 13% 18%;
   --neutral-900: 220 14% 8%;
 
@@ -67,7 +67,7 @@
   --ring: var(--violet-500);
   --radius: 0.875rem;
   --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: var(--beige-800);
+  --sidebar-foreground: var(--beige-900);
   --sidebar-primary: var(--violet-500);
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: var(--beige-200);
@@ -896,7 +896,7 @@ nav[class*="fixed"] {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9CA3AF;
+  color: #6B7280;
   padding: 8px 16px 4px;
 }
 

@@ -177,7 +177,7 @@ export function PrestataireHeader() {
               {openMobile ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
             </Button>
           </div>
-          <h1 className="text-[15px] font-semibold text-gray-800 tracking-tight">{pageTitle}</h1>
+          <h1 className="text-[15px] font-semibold text-gray-900 tracking-tight">{pageTitle}</h1>
 
           {/* Quick actions — only on desktop dashboard */}
           {quickActions.length > 0 && (
@@ -186,7 +186,7 @@ export function PrestataireHeader() {
                 <button
                   key={action.href}
                   onClick={() => router.push(action.href)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <action.icon className="h-3.5 w-3.5" />
                   {action.label}
@@ -205,7 +205,7 @@ export function PrestataireHeader() {
                 suppressHydrationWarning
                 className="relative h-9 w-9 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30"
               >
-                <Bell className="h-[18px] w-[18px] text-gray-500" />
+                <Bell className="h-[18px] w-[18px] text-gray-600" />
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-[#823F91] text-white text-[9px] font-semibold flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -232,8 +232,8 @@ export function PrestataireHeader() {
                         <Icon className="h-3.5 w-3.5 text-[#823F91]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-medium text-gray-800">{notification.title}</p>
-                        <p className="text-[12px] text-gray-500 truncate">{notification.message}</p>
+                        <p className="text-[13px] font-medium text-gray-900">{notification.title}</p>
+                        <p className="text-[12px] text-gray-600 truncate">{notification.message}</p>
                       </div>
                     </DropdownMenuItem>
                   )
@@ -257,8 +257,8 @@ export function PrestataireHeader() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:flex items-center gap-1.5">
-                    <span className="text-[13px] font-medium text-gray-700 max-w-[140px] truncate">{profile?.name || 'Prestataire'}</span>
-                    <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                    <span className="text-[13px] font-medium text-gray-800 max-w-[140px] truncate">{profile?.name || 'Prestataire'}</span>
+                    <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
                   </div>
                 </button>
               </DropdownMenuTrigger>

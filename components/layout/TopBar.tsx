@@ -287,7 +287,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
         {/* Page Title */}
         <div className="flex items-center gap-2">
           {breadcrumbs && breadcrumbs.length > 0 ? (
-            <nav className="flex items-center gap-2 text-sm text-[#374151]">
+            <nav className="flex items-center gap-2 text-sm text-[#1F2937]">
               {breadcrumbs.map((crumb, index) => (
                 <span key={index} className="flex items-center gap-2">
                   {crumb.href ? (
@@ -320,7 +320,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                   className="p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all"
                   title="Recherche"
                 >
-                  <Search className="h-5 w-5 text-[#374151] hover:text-[#823F91] transition-colors" />
+                  <Search className="h-5 w-5 text-[#1F2937] hover:text-[#823F91] transition-colors" />
                 </button>
               </PopoverTrigger>
               <PopoverContent 
@@ -361,7 +361,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                   className="relative p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#823F91]/10 hover:to-[#9D5FA8]/10 transition-all"
                   title="Notifications"
                 >
-                  <Bell className="h-5 w-5 text-[#374151] hover:text-[#823F91] transition-colors" />
+                  <Bell className="h-5 w-5 text-[#1F2937] hover:text-[#823F91] transition-colors" />
                   {notifications.length > 0 && (
                     <span className="absolute top-1 right-1 h-2 w-2 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full shadow-md shadow-[#823F91]/50" />
                   )}
@@ -374,7 +374,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                 onMouseLeave={() => setIsNotificationsOpen(false)}
               >
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-[#4A4A4A]">
+                  <div className="p-6 text-center text-[#6B7280]">
                     <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                     <p className="text-sm">Aucune notification</p>
                   </div>
@@ -400,7 +400,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                             <p className="text-sm font-medium text-[#0B0E12] truncate">
                               {notif.title}
                             </p>
-                            <p className="text-xs text-[#4A4A4A] truncate mt-1">
+                            <p className="text-xs text-[#374151] truncate mt-1">
                               {notif.description}
                             </p>
                             <p className="text-xs text-[#9CA3AF] mt-1">{notif.time}</p>
@@ -431,7 +431,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                     size="md"
                     status="online"
                   />
-                  <span className="text-sm text-[#823F91] hidden md:block font-medium">
+                  <span className="text-sm text-[#5C2B66] hidden md:block font-medium">
                     {userRole === 'couple' && profile.displayName
                       ? profile.displayName
                       : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
@@ -445,7 +445,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                       ? profile.displayName
                       : `${profile.prenom || ''} ${profile.nom || ''}`.trim() || user?.email?.split('@')[0] || 'Utilisateur'}
                   </p>
-                  <p className="text-xs text-[#6B7280] truncate">
+                  <p className="text-xs text-[#4B5563] truncate">
                     {user?.email}
                   </p>
                 </div>
