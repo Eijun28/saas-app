@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -128,14 +128,35 @@ function SidebarToggleButton() {
 
 export function CoupleSidebarWrapper() {
   const pathname = usePathname()
+  const router = useRouter()
   const { counts } = useNotifications()
   const { isMobile, setOpenMobile, openMobile } = useSidebar()
+
+  React.useEffect(() => {
+    const allHrefs = sections.flatMap((section) => section.items.map((item) => item.href))
+
+    const prefetchRoutes = () => {
+      allHrefs.forEach((href) => {
+        if (href !== pathname) {
+          router.prefetch(href)
+        }
+      })
+    }
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(prefetchRoutes, { timeout: 1500 })
+      return () => window.cancelIdleCallback(idleId)
+    }
+
+    const timeoutId = window.setTimeout(prefetchRoutes, 250)
+    return () => window.clearTimeout(timeoutId)
+  }, [pathname, router])
 
   React.useEffect(() => {
     if (isMobile && openMobile) {
       setOpenMobile(false)
     }
-  }, [pathname])
+  }, [isMobile, openMobile, pathname, setOpenMobile])
 
   const handleNavClick = () => {
     if (isMobile) {

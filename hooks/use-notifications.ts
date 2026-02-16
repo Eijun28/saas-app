@@ -23,7 +23,14 @@ export function useNotifications() {
       return
     }
 
+    let isMounted = true
+
     const loadNotifications = async () => {
+      // Évite les requêtes inutiles quand l'onglet n'est pas visible
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        return
+      }
+
       const supabase = createClient()
 
       try {
@@ -32,22 +39,6 @@ export function useNotifications() {
           .from('conversations')
           .select('id')
           .or(`couple_id.eq.${user.id},provider_id.eq.${user.id}`)
-
-        if (!conversations || conversations.length === 0) {
-          setCounts({ unreadMessages: 0, newRequests: 0 })
-          setLoading(false)
-          return
-        }
-
-        const conversationIds = conversations.map(c => c.id)
-
-        // Compter les messages non lus dans toutes les conversations
-        const { count: unreadMessages } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .in('conversation_id', conversationIds)
-          .neq('sender_id', user.id)
-          .is('read_at', null)
 
         // Déterminer si l'utilisateur est un couple ou un prestataire
         const { data: coupleData } = await supabase
@@ -58,6 +49,17 @@ export function useNotifications() {
 
         const isCouple = !!coupleData
 
+        const conversationIds = conversations?.map((c) => c.id) || []
+
+        const unreadMessagesPromise = conversationIds.length
+          ? supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .in('conversation_id', conversationIds)
+              .neq('sender_id', user.id)
+              .is('read_at', null)
+          : Promise.resolve({ count: 0 } as { count: number | null })
+
         let newRequests = 0
         if (isCouple) {
           // Pour les couples : compter les nouvelles demandes acceptées (statut 'accepted' créées récemment)
@@ -65,34 +67,53 @@ export function useNotifications() {
           const sevenDaysAgo = new Date()
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
           
-          const { count: acceptedRequests } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id)
-            .eq('status', 'accepted')
-            .gte('responded_at', sevenDaysAgo.toISOString())
-          
+          const [{ count: unreadMessages }, { count: acceptedRequests }] = await Promise.all([
+            unreadMessagesPromise,
+            supabase
+              .from('requests')
+              .select('id', { count: 'exact', head: true })
+              .eq('couple_id', user.id)
+              .eq('status', 'accepted')
+              .gte('responded_at', sevenDaysAgo.toISOString()),
+          ])
+
           newRequests = acceptedRequests || 0
+
+          if (isMounted) {
+            setCounts({
+              unreadMessages: unreadMessages || 0,
+              newRequests: newRequests || 0,
+            })
+          }
         } else {
           // Pour les prestataires : compter les nouvelles demandes (statut 'pending')
-          const { count: pendingRequests } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
-            .eq('status', 'pending')
-          
-          newRequests = pendingRequests || 0
-        }
+          const [{ count: unreadMessages }, { count: pendingRequests }] = await Promise.all([
+            unreadMessagesPromise,
+            supabase
+              .from('requests')
+              .select('id', { count: 'exact', head: true })
+              .eq('provider_id', user.id)
+              .eq('status', 'pending'),
+          ])
 
-        setCounts({
-          unreadMessages: unreadMessages || 0,
-          newRequests: newRequests || 0,
-        })
+          newRequests = pendingRequests || 0
+
+          if (isMounted) {
+            setCounts({
+              unreadMessages: unreadMessages || 0,
+              newRequests: newRequests || 0,
+            })
+          }
+        }
       } catch (error) {
         console.error('Erreur chargement notifications:', error)
-        setCounts({ unreadMessages: 0, newRequests: 0 })
+        if (isMounted) {
+          setCounts({ unreadMessages: 0, newRequests: 0 })
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
@@ -100,7 +121,19 @@ export function useNotifications() {
 
     // Rafraîchir toutes les 30 secondes
     const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadNotifications()
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }, [user?.id])
 
   return { counts, loading }
