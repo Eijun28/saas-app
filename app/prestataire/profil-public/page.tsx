@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store } from 'lucide-react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store, ClipboardList } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,9 +27,11 @@ import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
 import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
+import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
 import { VisibilityStats } from '@/components/provider/VisibilityStats'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
+import { hasServiceFields } from '@/lib/constants/service-fields'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -76,6 +78,7 @@ export default function ProfilPublicPage() {
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
   const [zones, setZones] = useState<Array<{ id: string; label: string }>>([])
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
+  const [serviceDetails, setServiceDetails] = useState<Record<string, unknown>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeTab, setActiveTab] = useState('infos')
@@ -123,6 +126,7 @@ export default function ProfilPublicPage() {
         portfolioResult,
         pricingResult,
         brandResult,
+        serviceDetailsResult,
       ] = await Promise.all([
         // Profil principal
         freshSupabase
@@ -164,6 +168,12 @@ export default function ProfilPublicPage() {
           .from('prestataire_profiles')
           .select('brand_color')
           .eq('user_id', userId)
+          .maybeSingle(),
+        // Détails métier spécifiques
+        freshSupabase
+          .from('provider_service_details')
+          .select('details')
+          .eq('profile_id', userId)
           .maybeSingle(),
       ])
 
@@ -219,6 +229,8 @@ export default function ProfilPublicPage() {
         title: p.title || undefined,
       }))
 
+      const loadedServiceDetails = (serviceDetailsResult.data?.details as Record<string, unknown>) || {}
+
       const timestamp = Date.now()
       const newProfile = {
         nom_entreprise: profileData?.nom_entreprise || undefined,
@@ -261,6 +273,7 @@ export default function ProfilPublicPage() {
       setCultures(mappedCultures)
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
+      setServiceDetails(loadedServiceDetails)
       setRefreshKey(prev => prev + 1)
     } catch (error) {
       console.error('Error loading profile:', error)
@@ -366,6 +379,8 @@ export default function ProfilPublicPage() {
                 portfolio={portfolio}
                 brandColor={profile?.brand_color}
                 hasSiret={!!profile?.siret}
+                serviceDetails={serviceDetails}
+                serviceTypeValue={profile?.service_type}
               />
             </div>
           </div>
@@ -376,6 +391,7 @@ export default function ProfilPublicPage() {
         cultures={cultures}
         zones={zones}
         portfolio={portfolio}
+        serviceDetails={serviceDetails}
       />
 
       {/* Statistiques de visibilité */}
@@ -387,7 +403,7 @@ export default function ProfilPublicPage() {
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
-                <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+                <TabsList className={cn("grid w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]", profile?.service_type && hasServiceFields(profile.service_type) ? 'grid-cols-6' : 'grid-cols-5')}>
                 <TabsTrigger
                   value="infos"
                   className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
@@ -399,6 +415,19 @@ export default function ProfilPublicPage() {
                   <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
                   <span className="hidden sm:inline" style={{ color: 'inherit' }}>Infos</span>
                 </TabsTrigger>
+                {profile?.service_type && hasServiceFields(profile.service_type) && (
+                <TabsTrigger
+                  value="metier"
+                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
+                  style={{
+                    background: activeTab === 'metier' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
+                    color: activeTab === 'metier' ? '#ffffff' : '#823F91',
+                  }}
+                >
+                  <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
+                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Métier</span>
+                </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="cultures"
                   className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
@@ -600,6 +629,39 @@ export default function ProfilPublicPage() {
                   </Card>
                 </motion.div>
               </TabsContent>
+
+              {/* Onglet Détails Métier */}
+              {profile?.service_type && hasServiceFields(profile.service_type) && (
+              <TabsContent value="metier" className="mt-3 xs:mt-4 sm:mt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                          <ClipboardList className="h-4 w-4 text-[#823F91]" />
+                        </div>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                          Détails métier
+                        </h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Renseignez les détails spécifiques à votre activité pour aider les couples à mieux vous trouver.
+                      </p>
+                      <ServiceDetailsEditor
+                        key={`service-details-${refreshKey}`}
+                        userId={user.id}
+                        serviceType={profile.service_type}
+                        onSave={() => loadAllData(user.id)}
+                      />
+                    </div>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+              )}
 
               <TabsContent value="cultures" className="mt-3 xs:mt-4 sm:mt-6">
                 <motion.div
