@@ -131,11 +131,11 @@ export function AgendaPreview() {
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
     >
       {/* Header avec fond blanc ivoire et pills */}
-      <div className="bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100">
+      <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Aperçu Agenda</h2>
-            <p className="text-[12px] sm:text-sm text-gray-400 mt-0.5 font-medium">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Apercu Agenda</h2>
+            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
               Prochains rendez-vous
             </p>
           </div>

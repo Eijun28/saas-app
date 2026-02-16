@@ -111,12 +111,12 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
       {/* Header - clickable on mobile to collapse */}
       <button
         onClick={() => setCollapsed(prev => !prev)}
-        className="w-full text-left bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100 lg:cursor-default"
+        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 lg:cursor-default"
       >
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Preparatifs</h2>
-            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 font-medium">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Preparatifs</h2>
+            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
               {loading ? 'Chargement...' : `${completedCount}/${totalCount} etape${totalCount > 1 ? 's' : ''} completee${completedCount > 1 ? 's' : ''}`}
             </p>
           </div>
@@ -129,7 +129,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
         {/* Barre de progression */}
         {totalCount > 0 && (
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}

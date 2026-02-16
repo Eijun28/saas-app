@@ -216,53 +216,61 @@ export default function CoupleDashboardPage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-5 sm:space-y-6">
+      <div className="w-full space-y-6 sm:space-y-8">
 
-        {/* Header: greeting + period filters */}
+        {/* Hero: greeting + period filters */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 border border-[#823F91]/8 p-5 sm:p-7"
         >
-          <div>
-            <h1 className="text-[22px] sm:text-[28px] font-extrabold text-gray-900 tracking-tight leading-tight">
-              {greeting}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-[#823F91]/50 mb-1.5">Tableau de bord</p>
+              <h1 className="text-2xl sm:text-[32px] font-extrabold text-gray-900 tracking-tight leading-tight">
+                {greeting}
+              </h1>
+              <p className="text-sm sm:text-[15px] text-gray-500 mt-1.5 leading-relaxed">
+                {coupleData?.wedding_date
+                  ? `Mariage prevu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
+                  : 'Organisez votre mariage en toute simplicite'
+                }
+              </p>
               {daysUntilWedding && (
-                <span className="ml-2 text-[15px] sm:text-[18px] font-semibold text-[#823F91]">
-                  J-{daysUntilWedding}
-                </span>
+                <div className="inline-flex items-center gap-2 mt-3 px-3.5 py-1.5 bg-[#823F91]/10 rounded-full">
+                  <Calendar className="h-3.5 w-3.5 text-[#823F91]" />
+                  <span className="text-sm font-bold text-[#823F91]">J-{daysUntilWedding}</span>
+                  <span className="text-xs text-[#823F91]/60">avant le jour J</span>
+                </div>
               )}
-            </h1>
-            <p className="text-[13px] sm:text-sm text-gray-500 mt-1 leading-relaxed">
-              {coupleData?.wedding_date
-                ? `Mariage prevu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
-                : 'Organisez votre mariage en toute simplicite'
-              }
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-gray-100/80 rounded-full">
-              {([
-                { value: '7d' as PeriodFilter, label: '7j' },
-                { value: '30d' as PeriodFilter, label: '30j' },
-                { value: 'month' as PeriodFilter, label: 'Ce mois' },
-              ]).map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setPeriodFilter(value)}
-                  className={cn(
-                    "px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
-                    periodFilter === value
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
+                {([
+                  { value: '7d' as PeriodFilter, label: '7j' },
+                  { value: '30d' as PeriodFilter, label: '30j' },
+                  { value: 'month' as PeriodFilter, label: 'Ce mois' },
+                ]).map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setPeriodFilter(value)}
+                    className={cn(
+                      "px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150",
+                      periodFilter === value
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+          {/* Decorative circle */}
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[#823F91]/[0.04] pointer-events-none" />
+          <div className="absolute -bottom-8 -right-4 w-24 h-24 rounded-full bg-[#823F91]/[0.03] pointer-events-none" />
         </motion.div>
 
         {/* Next best action */}
@@ -271,194 +279,176 @@ export default function CoupleDashboardPage() {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="p-3 sm:p-4 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/40 border border-[#823F91]/8 rounded-2xl"
+            className="p-4 sm:p-5 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/30 border border-[#823F91]/10 rounded-2xl"
           >
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <div className="p-1.5 sm:p-2 bg-[#823F91]/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91]" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2.5 bg-[#823F91]/10 rounded-xl flex-shrink-0">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
               </div>
-              <div className="flex-1 min-w-0 space-y-1 sm:space-y-1.5">
-                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action</p>
-                <p className="text-[13px] sm:text-sm font-medium text-gray-800 leading-snug">{nextActions[0].text}</p>
-                <button
-                  onClick={() => router.push(nextActions[0].href)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] hover:text-[#5C2B66] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 rounded"
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#823F91]/60 mb-0.5">Prochaine action</p>
+                <p className="text-sm sm:text-[15px] font-semibold text-gray-800 leading-snug">{nextActions[0].text}</p>
+              </div>
+              <button
+                onClick={() => router.push(nextActions[0].href)}
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#823F91] hover:bg-[#5C2B66] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40"
                 >
-                  {nextActions[0].cta} <ArrowRight className="h-3 w-3" />
+                  {nextActions[0].cta} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
-              </div>
             </div>
           </motion.div>
         )}
 
         {/* Stats Grid — 4 KPI cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full items-stretch">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight mb-3 sm:mb-4">Vos indicateurs</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
 
-          {/* Prestataires shortlistes */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            onClick={() => router.push('/couple/recherche')}
-            className="cursor-pointer group"
-          >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
-                  <Heart className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
+            {/* Prestataires shortlistes */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => router.push('/couple/recherche')}
+              className="cursor-pointer group"
+            >
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-[#823F91]/15 transition-all duration-150 p-4 sm:p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                    <Heart className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Prestataires</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Prestataires</p>
+                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                    {shortlistedCount === 0 ? '0' : shortlistedCount}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
+                    {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
+                  </p>
+                  {shortlistedCount === 0 && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                      <Search className="h-3 w-3" /> Rechercher
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
-                  {shortlistedCount === 0 ? '—' : shortlistedCount}
-                </p>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
-                  {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
-                </p>
-                {shortlistedCount === 0 && (
-                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
-                    <Search className="h-3 w-3" /> Rechercher des prestataires
-                  </span>
-                )}
-              </div>
-              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
-                  <span>Voir les favoris</span>
-                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Budget */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            onClick={() => router.push('/couple/budget')}
-            className="cursor-pointer group"
-          >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
-                  <Wallet className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
+            {/* Budget */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => router.push('/couple/budget')}
+              className="cursor-pointer group"
+            >
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-[#823F91]/15 transition-all duration-150 p-4 sm:p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                    <Wallet className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Budget</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Budget</p>
+                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                    {budgetTotal > 0 ? `${(budgetTotal / 1000).toFixed(0)}k` : '0'}
+                  </p>
+                  {budgetTotal > 0 ? (
+                    <>
+                      <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">{budgetTotal.toLocaleString('fr-FR')} &euro; total</p>
+                      <div className="mt-2.5 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full transition-all"
+                          style={{ width: `${Math.min((budgetSpent / budgetTotal) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1 hidden sm:block">
+                        {budgetRemaining > 0 ? `${budgetRemaining.toLocaleString('fr-FR')} restant` : 'Budget depense'}
+                      </p>
+                    </>
+                  ) : (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                      <Zap className="h-3 w-3" /> Definir un budget
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
-                  {budgetTotal > 0 ? `${(budgetTotal / 1000).toFixed(0)}k` : '—'}
-                </p>
-                {budgetTotal > 0 ? (
-                  <>
-                    <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">Budget {budgetTotal.toLocaleString('fr-FR')} &euro;</p>
-                    {/* Mini budget bar */}
-                    <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full transition-all"
-                        style={{ width: `${Math.min((budgetSpent / budgetTotal) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <p className="text-[11px] text-gray-400 mt-1 hidden sm:block">
-                      {budgetRemaining > 0 ? `${budgetRemaining.toLocaleString('fr-FR')} restant` : 'Budget depense'}
-                    </p>
-                  </>
-                ) : (
-                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
-                    <Zap className="h-3 w-3" /> Definir un budget
-                  </span>
-                )}
-              </div>
-              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
-                  <span>Gerer le budget</span>
-                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Jours restants */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            onClick={() => router.push('/couple/timeline')}
-            className="cursor-pointer group"
-          >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
+            {/* Jours restants */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => router.push('/couple/timeline')}
+              className="cursor-pointer group"
+            >
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-[#823F91]/15 transition-all duration-150 p-4 sm:p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Jours restants</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Jours restants</p>
+                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                    {daysUntilWedding ?? '—'}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
+                    {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
+                  </p>
+                  {!daysUntilWedding && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                      <Zap className="h-3 w-3" /> Definir la date
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
-                  {daysUntilWedding ?? '—'}
-                </p>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
-                  {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
-                </p>
-                {!daysUntilWedding && (
-                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
-                    <Zap className="h-3 w-3" /> Definir la date
-                  </span>
-                )}
-              </div>
-              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
-                  <span>{daysUntilWedding ? 'Voir le calendrier' : 'Modifier le profil'}</span>
-                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Messages / Conversations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            onClick={() => router.push('/couple/messagerie')}
-            className="cursor-pointer group"
-          >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
-                  <MessageSquare className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
+            {/* Messages / Conversations */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => router.push('/couple/messagerie')}
+              className="cursor-pointer group"
+            >
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-[#823F91]/15 transition-all duration-150 p-4 sm:p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Messages</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Messages</p>
+                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                    {unreadMessages === 0 ? '0' : unreadMessages}
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
+                    {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
+                  </p>
+                  {unreadMessages === 0 && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                      <Sparkles className="h-3 w-3" /> Envoyer une demande
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
-                  {unreadMessages === 0 ? '—' : unreadMessages}
-                </p>
-                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
-                  {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
-                </p>
-                {unreadMessages === 0 && (
-                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
-                    <Sparkles className="h-3 w-3" /> Envoyer une demande
-                  </span>
-                )}
-              </div>
-              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
-                  <span>Ouvrir la messagerie</span>
-                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
 
         {/* Quick actions */}
         <QuickActionsCouple />
 
         {/* Tasks and Activity side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <UpcomingTasksCouple coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
           <RecentActivityCouple activities={recentActivities} />
         </div>
