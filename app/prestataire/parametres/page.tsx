@@ -1,18 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Lock, Eye, EyeOff, Check } from 'lucide-react'
+import {
+  Lock,
+  Eye,
+  EyeOff,
+  Check,
+  CreditCard,
+  Bell,
+  Shield,
+  Trash2,
+  Download,
+  Crown,
+  Sparkles,
+  Mail,
+  MessageSquare,
+  Calendar,
+  Newspaper,
+  AlertTriangle,
+  ChevronRight,
+} from 'lucide-react'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { toast } from 'sonner'
 
+// ─── Password schema ───────────────────────────────────────
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Veuillez entrer votre mot de passe actuel'),
   newPassword: z.string()
@@ -30,11 +50,93 @@ const changePasswordSchema = z.object({
 
 type ChangePasswordInput = z.infer<typeof changePasswordSchema>
 
+// ─── Plan data ──────────────────────────────────────────────
+const plans = [
+  {
+    id: 'discovery',
+    name: 'Discovery',
+    price: 'Gratuit',
+    description: 'Pour démarrer sur Nuply',
+    features: [
+      'Profil public visible',
+      'Réception de demandes',
+      'Messagerie intégrée',
+      'Jusqu\'à 5 photos portfolio',
+    ],
+    current: true,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '29\u202F\u20AC/mois',
+    description: 'Pour développer votre activité',
+    features: [
+      'Tout Discovery +',
+      'Portfolio illimité',
+      'Statistiques avancées',
+      'Mise en avant dans les résultats',
+      'Devis & factures personnalisés',
+    ],
+    popular: true,
+  },
+  {
+    id: 'expert',
+    name: 'Expert',
+    price: '59\u202F\u20AC/mois',
+    description: 'Pour maximiser votre visibilité',
+    features: [
+      'Tout Pro +',
+      'Badge Expert vérifié',
+      'Priorité Nuply Matching',
+      'Support prioritaire',
+      'Analytiques premium',
+    ],
+  },
+]
+
+// ─── Notification preferences ───────────────────────────────
+interface NotificationPrefs {
+  newRequests: boolean
+  messages: boolean
+  calendarReminders: boolean
+  newsletter: boolean
+}
+
+// ─── Section header ─────────────────────────────────────────
+function SectionHeader({ icon: Icon, title, description }: {
+  icon: React.ElementType
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex items-start gap-3 mb-6">
+      <div className="p-2 rounded-xl bg-[#823F91]/10 mt-0.5">
+        <Icon className="h-5 w-5 text-[#823F91]" />
+      </div>
+      <div>
+        <h3 className="font-semibold text-base sm:text-lg text-gray-900">{title}</h3>
+        <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main page ──────────────────────────────────────────────
 export default function ParametresPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
+    newRequests: true,
+    messages: true,
+    calendarReminders: true,
+    newsletter: false,
+  })
 
   const {
     register,
@@ -48,13 +150,25 @@ export default function ParametresPage() {
 
   const newPassword = watch('newPassword', '')
 
-  const onSubmit = async (data: ChangePasswordInput) => {
+  // Fetch user email on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data } = await supabase.auth.getUser()
+      if (data.user?.email) {
+        setUserEmail(data.user.email)
+      }
+    }
+    fetchUser()
+  }, [])
+
+  // ─── Password submit ─────────────────────────────────────
+  const onSubmitPassword = async (data: ChangePasswordInput) => {
     setIsLoading(true)
 
     try {
       const supabase = createClient()
 
-      // Verify current password by attempting to sign in
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user?.email) {
         toast.error('Impossible de récupérer votre email. Veuillez vous reconnecter.')
@@ -73,7 +187,6 @@ export default function ParametresPage() {
         return
       }
 
-      // Update password
       const { error: updateError } = await supabase.auth.updateUser({
         password: data.newPassword,
       })
@@ -93,28 +206,152 @@ export default function ParametresPage() {
     }
   }
 
+  // ─── Notification toggle ──────────────────────────────────
+  const handleNotifToggle = (key: keyof NotificationPrefs) => {
+    setNotifPrefs(prev => {
+      const updated = { ...prev, [key]: !prev[key] }
+      toast.success('Préférences de notification mises à jour')
+      return updated
+    })
+  }
+
+  // ─── Delete account ───────────────────────────────────────
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'SUPPRIMER') return
+
+    setIsDeletingAccount(true)
+    try {
+      toast.error('La suppression de compte sera bientôt disponible. Contactez le support pour toute demande.')
+    } finally {
+      setIsDeletingAccount(false)
+      setShowDeleteConfirm(false)
+      setDeleteConfirmText('')
+    }
+  }
+
+  const cardClass = "bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] border border-gray-100 rounded-2xl"
+
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-3xl mx-auto space-y-8 pb-12">
       <PageTitle
         title="Paramètres"
-        description="Gérez les paramètres de votre compte"
+        description="Gérez votre compte, votre abonnement et vos préférences"
       />
 
+      {/* ═══════════════════════════════════════════
+          SECTION 1 : ABONNEMENT & PLAN
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <Card className={cardClass}>
+          <div className="p-5 sm:p-7">
+            <SectionHeader
+              icon={CreditCard}
+              title="Abonnement"
+              description="Votre plan actuel et les options disponibles"
+            />
+
+            {/* Current plan banner */}
+            <div className="bg-gradient-to-r from-[#823F91]/5 via-[#9D5FA8]/5 to-[#B855D6]/5 border border-[#823F91]/15 rounded-xl p-4 sm:p-5 mb-6">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-[#823F91]/10">
+                    <Crown className="h-5 w-5 text-[#823F91]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900">Plan Discovery</span>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#823F91]/10 text-[#823F91]">
+                        Actif
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-0.5">Gratuit</p>
+                  </div>
+                </div>
+                {userEmail && (
+                  <p className="text-sm text-gray-400">{userEmail}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Launch offer banner */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">Offre de lancement</p>
+                  <p className="text-sm text-amber-700 mt-0.5">
+                    Toutes les fonctionnalités sont accessibles gratuitement pendant la période de lancement. Profitez-en !
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Plans comparison */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {plans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`relative rounded-xl border p-4 transition-all duration-200 ${
+                    plan.current
+                      ? 'border-[#823F91] bg-[#823F91]/[0.03] ring-1 ring-[#823F91]/20'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  {plan.popular && (
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#823F91] text-white">
+                      Populaire
+                    </span>
+                  )}
+                  <div className="mb-3">
+                    <h4 className="font-semibold text-gray-900 text-sm">{plan.name}</h4>
+                    <p className="text-lg font-bold text-gray-900 mt-1 font-[family-name:var(--font-mono)]">{plan.price}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-1.5 text-xs text-gray-600">
+                        <Check className="h-3.5 w-3.5 text-[#823F91] mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.current ? (
+                    <div className="mt-4 text-center text-xs font-medium text-[#823F91] py-2 rounded-lg bg-[#823F91]/5">
+                      Plan actuel
+                    </div>
+                  ) : (
+                    <button className="mt-4 w-full text-xs font-semibold py-2 rounded-lg border border-[#823F91] text-[#823F91] hover:bg-[#823F91]/5 transition-colors duration-150">
+                      Choisir ce plan
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 2 : SÉCURITÉ
+          ═══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)]">
-          <div className="p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-1.5 rounded-lg bg-[#823F91]/10">
-                <Lock className="h-4 w-4 text-[#823F91]" />
-              </div>
-              <h3 className="font-semibold text-sm sm:text-base text-gray-900">Changer le mot de passe</h3>
-            </div>
+        <Card className={cardClass}>
+          <div className="p-5 sm:p-7">
+            <SectionHeader
+              icon={Shield}
+              title="Sécurité"
+              description="Gérez votre mot de passe et la sécurité de votre compte"
+            />
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmitPassword)} className="space-y-5">
               {/* Current password */}
               <div className="space-y-2">
                 <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
@@ -176,15 +413,15 @@ export default function ParametresPage() {
                     <p className="text-xs text-neutral-600 font-medium">Prérequis :</p>
                     <ul className="text-xs text-neutral-500 space-y-0.5 ml-2">
                       <li className={`flex items-center gap-1 ${newPassword.length >= 8 ? 'text-green-600' : ''}`}>
-                        <span>{newPassword.length >= 8 ? '✓' : '○'}</span>
+                        <span>{newPassword.length >= 8 ? '\u2713' : '\u25CB'}</span>
                         <span>Au moins 8 caractères</span>
                       </li>
                       <li className={`flex items-center gap-1 ${/[A-Z]/.test(newPassword) ? 'text-green-600' : ''}`}>
-                        <span>{/[A-Z]/.test(newPassword) ? '✓' : '○'}</span>
+                        <span>{/[A-Z]/.test(newPassword) ? '\u2713' : '\u25CB'}</span>
                         <span>Au moins une majuscule</span>
                       </li>
                       <li className={`flex items-center gap-1 ${/[0-9]/.test(newPassword) ? 'text-green-600' : ''}`}>
-                        <span>{/[0-9]/.test(newPassword) ? '✓' : '○'}</span>
+                        <span>{/[0-9]/.test(newPassword) ? '\u2713' : '\u25CB'}</span>
                         <span>Au moins un chiffre</span>
                       </li>
                     </ul>
@@ -250,6 +487,225 @@ export default function ParametresPage() {
             </form>
           </div>
         </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 3 : NOTIFICATIONS
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+      >
+        <Card className={cardClass}>
+          <div className="p-5 sm:p-7">
+            <SectionHeader
+              icon={Bell}
+              title="Notifications"
+              description="Choisissez les notifications que vous souhaitez recevoir"
+            />
+
+            <div className="space-y-1">
+              {/* New requests */}
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-blue-50">
+                    <Mail className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Nouvelles demandes</p>
+                    <p className="text-xs text-gray-500">Recevez un email quand un couple vous envoie une demande</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.newRequests}
+                  onCheckedChange={() => handleNotifToggle('newRequests')}
+                  className="data-[state=checked]:bg-[#823F91]"
+                />
+              </div>
+
+              <div className="mx-4 border-t border-gray-100" />
+
+              {/* Messages */}
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-purple-50">
+                    <MessageSquare className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Messages</p>
+                    <p className="text-xs text-gray-500">Soyez notifié quand vous recevez un nouveau message</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.messages}
+                  onCheckedChange={() => handleNotifToggle('messages')}
+                  className="data-[state=checked]:bg-[#823F91]"
+                />
+              </div>
+
+              <div className="mx-4 border-t border-gray-100" />
+
+              {/* Calendar reminders */}
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-green-50">
+                    <Calendar className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Rappels d&apos;agenda</p>
+                    <p className="text-xs text-gray-500">Recevez des rappels pour vos événements à venir</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.calendarReminders}
+                  onCheckedChange={() => handleNotifToggle('calendarReminders')}
+                  className="data-[state=checked]:bg-[#823F91]"
+                />
+              </div>
+
+              <div className="mx-4 border-t border-gray-100" />
+
+              {/* Newsletter */}
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 rounded-lg bg-amber-50">
+                    <Newspaper className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Newsletter & conseils</p>
+                    <p className="text-xs text-gray-500">Conseils pour développer votre activité sur Nuply</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notifPrefs.newsletter}
+                  onCheckedChange={() => handleNotifToggle('newsletter')}
+                  className="data-[state=checked]:bg-[#823F91]"
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 4 : GESTION DU COMPTE
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className={cardClass}>
+          <div className="p-5 sm:p-7">
+            <SectionHeader
+              icon={Lock}
+              title="Gestion du compte"
+              description="Exportez vos données ou supprimez votre compte"
+            />
+
+            {/* Export data */}
+            <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors mb-1">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-gray-100">
+                  <Download className="h-4 w-4 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Exporter mes données</p>
+                  <p className="text-xs text-gray-500">Téléchargez une copie de toutes vos données (profil, demandes, messages)</p>
+                </div>
+              </div>
+              <button
+                onClick={() => toast.success('L\'export de données sera bientôt disponible.')}
+                className="flex items-center gap-1.5 text-sm font-medium text-[#823F91] hover:text-[#6D3478] transition-colors px-3 py-2 rounded-lg hover:bg-[#823F91]/5"
+              >
+                Exporter
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mx-4 border-t border-gray-100 my-2" />
+
+            {/* Delete account */}
+            <div className="px-4 py-3.5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-1.5 rounded-lg bg-red-50">
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Supprimer mon compte</p>
+                  <p className="text-xs text-gray-500">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</p>
+                </div>
+              </div>
+
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-sm font-medium text-red-600 hover:text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+                >
+                  Supprimer mon compte
+                </button>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-red-50/50 border border-red-200 rounded-xl p-4 space-y-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-red-700">
+                      Tapez <span className="font-mono font-bold">SUPPRIMER</span> pour confirmer la suppression définitive de votre compte.
+                    </p>
+                  </div>
+                  <Input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Tapez SUPPRIMER"
+                    className="h-10 border-red-200 bg-white rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:border-red-400"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={deleteConfirmText !== 'SUPPRIMER' || isDeletingAccount}
+                      className="text-sm font-semibold text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isDeletingAccount ? 'Suppression...' : 'Confirmer la suppression'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDeleteConfirm(false)
+                        setDeleteConfirmText('')
+                      }}
+                      className="text-sm font-medium text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          FOOTER: SUPPORT
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="text-center py-4"
+      >
+        <p className="text-sm text-gray-400">
+          Besoin d&apos;aide ? Contactez notre{' '}
+          <button
+            onClick={() => toast.info('Le support sera disponible prochainement.')}
+            className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors underline underline-offset-2"
+          >
+            équipe support
+          </button>
+        </p>
       </motion.div>
     </div>
   )
