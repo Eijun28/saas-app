@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -59,6 +59,7 @@ const itemVariants = {
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -88,34 +89,53 @@ export default function ResetPasswordPage() {
 
     let resolved = false
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' && !resolved) {
-        resolved = true
-        setPageState('ready')
-      }
-    })
+    // Vérifier le token_hash dans l'URL (envoyé via Resend)
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
 
-    // Vérifier si une session existe déjà
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !resolved) {
-        resolved = true
-        setPageState('ready')
-      }
-    })
+    if (tokenHash && type === 'recovery') {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+        .then(({ error: verifyError }) => {
+          if (verifyError) {
+            console.error('Erreur verifyOtp:', verifyError)
+            resolved = true
+            setPageState('expired')
+          } else {
+            resolved = true
+            setPageState('ready')
+          }
+        })
+    } else {
+      // Fallback : écouter les événements auth (pour les liens venant du callback)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'PASSWORD_RECOVERY' && !resolved) {
+          resolved = true
+          setPageState('ready')
+        }
+      })
 
-    // Timeout après 5 secondes : le lien est invalide ou expiré
-    const timeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true
-        setPageState('expired')
-      }
-    }, 5000)
+      // Vérifier si une session existe déjà
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session && !resolved) {
+          resolved = true
+          setPageState('ready')
+        }
+      })
 
-    return () => {
-      clearTimeout(timeout)
-      subscription.unsubscribe()
+      // Timeout après 5 secondes : le lien est invalide ou expiré
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true
+          setPageState('expired')
+        }
+      }, 5000)
+
+      return () => {
+        clearTimeout(timeout)
+        subscription.unsubscribe()
+      }
     }
-  }, [])
+  }, [searchParams])
 
   const onSubmit = async (data: ResetPasswordInput) => {
     setIsLoading(true)

@@ -19,16 +19,16 @@ export async function sendPasswordResetEmail(email: string) {
   try {
     const adminClient = createAdminClient()
 
-    // Générer un lien de recovery via l'API admin
+    // Générer un token de recovery via l'API admin
+    // On n'utilise PAS le action_link (qui passe par le verify endpoint de Supabase
+    // et nécessite un code_verifier PKCE absent côté navigateur).
+    // On utilise directement le hashed_token avec verifyOtp côté client.
     const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
       type: 'recovery',
       email: email,
-      options: {
-        redirectTo: `${siteUrl}/auth/callback?type=recovery`,
-      }
     })
 
-    if (linkError || !linkData?.properties?.action_link) {
+    if (linkError || !linkData?.properties?.hashed_token) {
       // Si l'utilisateur n'existe pas, on ne révèle pas cette info (sécurité)
       if (linkError?.message?.includes('User not found')) {
         logger.info('Tentative de reset pour un email inexistant:', { email })
@@ -38,7 +38,11 @@ export async function sendPasswordResetEmail(email: string) {
       return { success: false, error: 'Erreur lors de la génération du lien' }
     }
 
-    const resetUrl = linkData.properties.action_link
+    // On utilise le token_hash directement plutôt que le action_link
+    // pour éviter le problème de PKCE (le code_verifier n'est pas dans les cookies
+    // car le flow est initié côté serveur, pas depuis le navigateur)
+    const tokenHash = linkData.properties.hashed_token
+    const resetUrl = `${siteUrl}/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`
 
     // Récupérer le prénom de l'utilisateur si disponible
     const { data: userData } = await adminClient.auth.admin.getUserById(linkData.user.id)
