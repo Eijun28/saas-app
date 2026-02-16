@@ -115,8 +115,8 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
       >
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900">Preparatifs</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Preparatifs</h2>
+            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 font-medium">
               {loading ? 'Chargement...' : `${completedCount}/${totalCount} etape${totalCount > 1 ? 's' : ''} completee${completedCount > 1 ? 's' : ''}`}
             </p>
           </div>

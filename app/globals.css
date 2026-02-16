@@ -120,36 +120,42 @@ body > * {
   z-index: 2;
 }
 
-/* Geist font-weights selon spécifications */
+/* Geist font-weights — SaaS typography */
 h1 {
   font-weight: 800; /* extrabold */
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: hsl(var(--beige-900));
+  line-height: 1.15;
 }
 
 h2 {
   font-weight: 700; /* bold */
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: hsl(var(--beige-900));
+  line-height: 1.2;
 }
 
 h3 {
   font-weight: 600; /* semibold */
+  letter-spacing: -0.01em;
   color: hsl(var(--beige-900));
+  line-height: 1.3;
 }
 
 h4, h5, h6 {
   font-weight: 500; /* font-medium */
+  letter-spacing: -0.005em;
 }
 
 p {
   font-weight: 400; /* normal */
   color: hsl(var(--beige-800));
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 button, .button, .btn {
   font-weight: 600; /* semibold */
+  letter-spacing: -0.005em;
   transition: all 0.2s ease;
 }
 

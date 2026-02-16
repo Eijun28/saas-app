@@ -57,8 +57,8 @@ export function QuickActionsCouple() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900">Actions rapides</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Acces direct aux fonctionnalites</p>
+            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Actions rapides</h2>
+            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 font-medium">Acces direct aux fonctionnalites</p>
           </div>
           <ChevronDown className={cn(
             "h-5 w-5 text-gray-400 transition-transform duration-200 lg:hidden",
@@ -95,10 +95,10 @@ export function QuickActionsCouple() {
                         <div className="inline-flex p-2 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] rounded-lg mb-2.5 w-fit shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all">
                           <Icon className="text-white" size={16} />
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-0.5 text-sm group-hover:text-[#823F91] transition-colors">
+                        <h3 className="font-semibold text-gray-900 mb-0.5 text-[13px] sm:text-sm group-hover:text-[#823F91] transition-colors tracking-tight">
                           {action.label}
                         </h3>
-                        <p className="text-xs text-gray-500">{action.description}</p>
+                        <p className="text-[11px] sm:text-xs text-gray-400">{action.description}</p>
 
                         <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all duration-200" />
                       </Link>

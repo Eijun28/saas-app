@@ -95,13 +95,13 @@ export function StatCard({
           : "bg-white border border-gray-100 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200"
       )}>
 
-        <div className="relative p-5 space-y-3 flex flex-col h-full">
+        <div className="relative p-3.5 sm:p-5 space-y-2 sm:space-y-3 flex flex-col h-full">
           {/* Header: Icon + Label */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div
                 className={cn(
-                  'h-10 w-10 rounded-xl flex-shrink-0',
+                  'h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl flex-shrink-0',
                   'flex items-center justify-center',
                   'transition-all duration-150',
                   isHighlight
@@ -110,13 +110,13 @@ export function StatCard({
                 )}
               >
                 <Icon className={cn(
-                  "h-[18px] w-[18px]",
+                  "h-4 w-4 sm:h-[18px] sm:w-[18px]",
                   isHighlight ? "text-white" : "text-[#823F91]"
                 )} />
               </div>
 
               <p className={cn(
-                "text-xs font-semibold uppercase tracking-wider",
+                "text-[10px] sm:text-xs font-semibold uppercase tracking-wider leading-tight",
                 isHighlight ? "text-white/70" : "text-gray-400"
               )}>
                 {label}
@@ -125,7 +125,7 @@ export function StatCard({
 
             {/* Sparkline (mini visualization) */}
             {sparkline && sparkline.length > 0 && (
-              <div className="flex items-end gap-[2px] h-6">
+              <div className="hidden sm:flex items-end gap-[2px] h-6">
                 {sparkline.map((val, i) => {
                   const max = Math.max(...sparkline, 1)
                   const height = Math.max((val / max) * 100, 8)
@@ -149,9 +149,9 @@ export function StatCard({
 
           {/* Main Value */}
           <div className="space-y-1 flex-1">
-            <div className="flex items-baseline gap-3">
+            <div className="flex items-baseline gap-2 sm:gap-3">
               <p className={cn(
-                "text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums",
+                "text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums",
                 isHighlight ? "text-white" : "text-gray-900"
               )}>
                 {showEmptyState ? '—' : displayValue}
@@ -179,7 +179,7 @@ export function StatCard({
 
             {subtitle && !showEmptyState && (
               <p className={cn(
-                "text-sm font-medium",
+                "text-xs sm:text-sm font-medium",
                 isHighlight ? "text-white/70" : "text-gray-500"
               )}>
                 {subtitle}
@@ -189,7 +189,7 @@ export function StatCard({
             {/* Delta label */}
             {delta !== undefined && delta !== null && !isZero && deltaLabel && (
               <p className={cn(
-                "text-[11px]",
+                "text-[11px] hidden sm:block",
                 isHighlight ? "text-white/50" : "text-gray-400"
               )}>
                 {deltaLabel}
@@ -198,15 +198,15 @@ export function StatCard({
 
             {/* Empty state */}
             {showEmptyState && (
-              <div className="mt-1 space-y-1.5">
+              <div className="mt-1 space-y-1 sm:space-y-1.5">
                 <p className={cn(
-                  "text-sm",
+                  "text-xs sm:text-sm",
                   isHighlight ? "text-white/60" : "text-gray-400"
                 )}>
                   {description || 'Aucune donnee'}
                 </p>
                 <span className={cn(
-                  "inline-flex items-center gap-1.5 text-xs font-semibold",
+                  "hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold",
                   isHighlight ? "text-white" : "text-[#823F91]"
                 )}>
                   <Zap className="h-3 w-3" />
@@ -232,7 +232,7 @@ export function StatCard({
           {actionLabel && !showEmptyState && (
             <div
               className={cn(
-                "pt-3 border-t cursor-pointer",
+                "pt-2 sm:pt-3 border-t cursor-pointer",
                 isHighlight ? "border-white/15" : "border-gray-100"
               )}
               onClick={(e) => {
@@ -258,8 +258,8 @@ export function StatCard({
                     : "text-[#823F91] hover:text-[#5C2B66]"
                 )}
               >
-                <span className="group-hover/btn:underline">{actionLabel}</span>
-                <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-150" />
+                <span className="group-hover/btn:underline text-[11px] sm:text-xs">{actionLabel}</span>
+                <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-150" />
               </span>
             </div>
           )}

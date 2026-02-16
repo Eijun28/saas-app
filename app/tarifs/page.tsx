@@ -23,7 +23,7 @@ export default function PricingSection() {
       name: "Essentiel",
       description: "Tout ce dont vous avez besoin pour trouver vos prestataires parfaits.",
       price: 0,
-      priceNote: "Offert jusqu'au 30 juin",
+      priceNote: "",
       billingPeriod: "month",
       cta: {
         variant: "default",
@@ -167,7 +167,7 @@ export default function PricingSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl leading-tight font-semibold sm:text-5xl sm:leading-tight"
+            className="text-3xl leading-tight font-extrabold sm:text-5xl sm:leading-tight tracking-tight"
             style={{ color: 'rgba(130, 63, 145, 1)' }}
           >
             {title}
@@ -177,7 +177,7 @@ export default function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-md text-slate-600 max-w-[600px] font-medium sm:text-xl"
+            className="text-base text-slate-500 max-w-[600px] font-normal sm:text-lg leading-relaxed"
           >
             {description}
           </motion.p>
@@ -196,7 +196,7 @@ export default function PricingSection() {
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#823F91]" />
                 <span className="text-sm font-medium text-slate-700">
-                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Gratuit pour tous jusqu'au 30 juin
+                  <span className="font-semibold text-[#823F91]">Offre de lancement :</span> Testez NUPLY gratuitement sans engagement
                 </span>
               </div>
             </div>
@@ -339,10 +339,10 @@ export default function PricingSection() {
           viewport={{ once: true }}
           className="text-center mt-4"
         >
-          <p className="text-slate-600 text-sm">
-            {userType === 'couples' 
-              ? "Aucune carte bancaire requise • Offert jusqu'au 30 juin"
-              : "Annulez à tout moment • Aucun engagement"}
+          <p className="text-slate-400 text-sm font-medium">
+            {userType === 'couples'
+              ? "Aucune carte bancaire requise • Commencez gratuitement"
+              : "Annulez a tout moment • Aucun engagement"}
           </p>
         </motion.div>
       </div>

@@ -193,8 +193,8 @@ export function PendingRequests() {
       <div className="bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900">Demandes en attente</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Demandes en attente</h2>
+            <p className="text-[12px] sm:text-sm text-gray-400 mt-0.5 font-medium">
               Nécessitent une action rapide
             </p>
           </div>
