@@ -157,8 +157,8 @@ export function PrestataireHeader() {
     : []
 
   return (
-    <header className="h-14 bg-white/80 backdrop-blur-sm sticky top-0 z-[100] border-b border-gray-100 w-full flex items-center">
-      <div className="w-full flex items-center justify-between px-4 sm:px-6">
+    <header className="h-16 bg-white/90 backdrop-blur-md sticky top-0 z-[100] border-b border-gray-200/60 w-full flex items-center shadow-[0_1px_3px_0_rgb(0_0_0/0.03)]">
+      <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left: mobile toggle + page title */}
         <div className="flex items-center gap-3">
           <div className="md:hidden">
@@ -177,16 +177,18 @@ export function PrestataireHeader() {
               {openMobile ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
             </Button>
           </div>
-          <h1 className="text-[15px] font-semibold text-gray-900 tracking-tight">{pageTitle}</h1>
+          <div>
+            <h1 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight leading-tight">{pageTitle}</h1>
+          </div>
 
           {/* Quick actions — only on desktop dashboard */}
           {quickActions.length > 0 && (
-            <div className="hidden lg:flex items-center gap-1 ml-3 pl-3 border-l border-gray-200">
+            <div className="hidden lg:flex items-center gap-1.5 ml-4 pl-4 border-l border-gray-200">
               {quickActions.map(action => (
                 <button
                   key={action.href}
                   onClick={() => router.push(action.href)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-600 hover:text-[#823F91] hover:bg-[#823F91]/5 rounded-lg transition-colors"
                 >
                   <action.icon className="h-3.5 w-3.5" />
                   {action.label}

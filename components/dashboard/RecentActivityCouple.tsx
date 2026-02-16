@@ -38,12 +38,12 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
       {/* Header - clickable on mobile to collapse */}
       <button
         onClick={() => setCollapsed(prev => !prev)}
-        className="w-full text-left bg-gradient-to-r from-[#FBF8F3] to-[#FAF9F6] px-5 py-4 border-b border-gray-100 lg:cursor-default"
+        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 lg:cursor-default"
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Activite recente</h2>
-            <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 font-medium">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Activite recente</h2>
+            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
               Dernieres actions sur votre compte
             </p>
           </div>

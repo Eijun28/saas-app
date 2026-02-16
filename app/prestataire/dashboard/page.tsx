@@ -285,49 +285,55 @@ export default function DashboardPrestatairePage() {
 
   return (
     <div className="w-full">
-      <div className="w-full space-y-5 sm:space-y-6">
+      <div className="w-full space-y-6 sm:space-y-8">
 
-        {/* Header: greeting + period filters */}
+        {/* Hero: greeting + period filters */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 border border-[#823F91]/8 p-5 sm:p-7"
         >
-          <div>
-            <h1 className="text-[22px] sm:text-[28px] font-extrabold text-gray-900 tracking-tight leading-tight">
-              {prenom ? `Bonjour ${prenom}` : 'Tableau de bord'}
-            </h1>
-            <p className="text-[13px] sm:text-sm text-gray-500 mt-1 leading-relaxed">Vue d&apos;ensemble de votre activite</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-gray-100/80 rounded-full">
-              {([
-                { value: '7d' as PeriodFilter, label: '7j' },
-                { value: '30d' as PeriodFilter, label: '30j' },
-                { value: 'month' as PeriodFilter, label: 'Ce mois' },
-              ]).map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setPeriodFilter(value)}
-                  className={cn(
-                    "px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
-                    periodFilter === value
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-[#823F91]/50 mb-1.5">Espace prestataire</p>
+              <h1 className="text-2xl sm:text-[32px] font-extrabold text-gray-900 tracking-tight leading-tight">
+                {prenom ? `Bonjour ${prenom}` : 'Tableau de bord'}
+              </h1>
+              <p className="text-sm sm:text-[15px] text-gray-500 mt-1.5 leading-relaxed">Vue d&apos;ensemble de votre activite</p>
+              {lastUpdated && (
+                <div className="inline-flex items-center gap-1.5 mt-3 text-xs text-gray-400">
+                  <RefreshCw className="h-3 w-3" />
+                  <span>Mis a jour a {lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              )}
             </div>
-            {lastUpdated && (
-              <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
-                <RefreshCw className="h-3 w-3" />
-                <span>{lastUpdated.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
+                {([
+                  { value: '7d' as PeriodFilter, label: '7j' },
+                  { value: '30d' as PeriodFilter, label: '30j' },
+                  { value: 'month' as PeriodFilter, label: 'Ce mois' },
+                ]).map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setPeriodFilter(value)}
+                    className={cn(
+                      "px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150",
+                      periodFilter === value
+                        ? "bg-[#823F91] text-white shadow-sm"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
           </div>
+          {/* Decorative circles */}
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[#823F91]/[0.04] pointer-events-none" />
+          <div className="absolute -bottom-8 -right-4 w-24 h-24 rounded-full bg-[#823F91]/[0.03] pointer-events-none" />
         </motion.div>
 
         {/* Profile completion banner */}
@@ -370,22 +376,22 @@ export default function DashboardPrestatairePage() {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
-            className="p-3 sm:p-4 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/40 border border-[#823F91]/8 rounded-2xl"
+            className="p-4 sm:p-5 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/30 border border-[#823F91]/10 rounded-2xl"
           >
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <div className="p-1.5 sm:p-2 bg-[#823F91]/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91]" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2.5 bg-[#823F91]/10 rounded-xl flex-shrink-0">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
               </div>
-              <div className="flex-1 min-w-0 space-y-1 sm:space-y-1.5">
-                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action</p>
-                <p className="text-[13px] sm:text-sm font-medium text-gray-800 leading-snug">{nextActions[0].text}</p>
-                <button
-                  onClick={() => router.push(nextActions[0].href)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] hover:text-[#5C2B66] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 rounded"
-                >
-                  {nextActions[0].cta} <ArrowRight className="h-3 w-3" />
-                </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#823F91]/60 mb-0.5">Prochaine action</p>
+                <p className="text-sm sm:text-[15px] font-semibold text-gray-800 leading-snug">{nextActions[0].text}</p>
               </div>
+              <button
+                onClick={() => router.push(nextActions[0].href)}
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#823F91] hover:bg-[#5C2B66] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40"
+              >
+                {nextActions[0].cta} <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           </motion.div>
         )}
@@ -407,7 +413,9 @@ export default function DashboardPrestatairePage() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full items-stretch">
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight mb-3 sm:mb-4">Vos indicateurs</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
           {[
             {
               icon: Bell, label: "Nouvelles demandes", value: stats.nouvelles_demandes, subtitle: "En attente de traitement",
@@ -459,14 +467,15 @@ export default function DashboardPrestatairePage() {
                 alert={card.alert}
               />
             ))}
+          </div>
         </div>
 
         {/* Activite recente */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.5 }}
           className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] overflow-hidden">
-          <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100 bg-gray-50/60">
-            <h2 className="text-[15px] sm:text-lg font-bold text-gray-900 tracking-tight">Activite recente</h2>
-            <p className="text-[12px] sm:text-sm text-gray-500 mt-0.5">Dernieres actions sur votre compte</p>
+          <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Activite recente</h2>
+            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">Dernieres actions sur votre compte</p>
           </div>
           <div className="p-3 sm:p-5 max-h-[280px] sm:max-h-[320px] overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {activitiesLoading ? (
@@ -494,7 +503,7 @@ export default function DashboardPrestatairePage() {
         </motion.div>
 
         {/* Grille 2 colonnes: Agenda et Demandes */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <AgendaPreview />
           <PendingRequests />
         </div>
