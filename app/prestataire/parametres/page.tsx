@@ -14,7 +14,6 @@ import {
   Shield,
   Trash2,
   Download,
-  Crown,
   Sparkles,
   Mail,
   MessageSquare,
@@ -49,50 +48,6 @@ const changePasswordSchema = z.object({
 })
 
 type ChangePasswordInput = z.infer<typeof changePasswordSchema>
-
-// ─── Plan data ──────────────────────────────────────────────
-const plans = [
-  {
-    id: 'discovery',
-    name: 'Discovery',
-    price: 'Gratuit',
-    description: 'Pour démarrer sur Nuply',
-    features: [
-      'Profil public visible',
-      'Réception de demandes',
-      'Messagerie intégrée',
-      'Jusqu\'à 5 photos portfolio',
-    ],
-    current: true,
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: '29\u202F\u20AC/mois',
-    description: 'Pour développer votre activité',
-    features: [
-      'Tout Discovery +',
-      'Portfolio illimité',
-      'Statistiques avancées',
-      'Mise en avant dans les résultats',
-      'Devis & factures personnalisés',
-    ],
-    popular: true,
-  },
-  {
-    id: 'expert',
-    name: 'Expert',
-    price: '59\u202F\u20AC/mois',
-    description: 'Pour maximiser votre visibilité',
-    features: [
-      'Tout Pro +',
-      'Badge Expert vérifié',
-      'Priorité Nuply Matching',
-      'Support prioritaire',
-      'Analytiques premium',
-    ],
-  },
-]
 
 // ─── Notification preferences ───────────────────────────────
 interface NotificationPrefs {
@@ -239,7 +194,7 @@ export default function ParametresPage() {
       />
 
       {/* ═══════════════════════════════════════════
-          SECTION 1 : ABONNEMENT & PLAN
+          SECTION 1 : ABONNEMENT
           ═══════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -251,85 +206,31 @@ export default function ParametresPage() {
             <SectionHeader
               icon={CreditCard}
               title="Abonnement"
-              description="Votre plan actuel et les options disponibles"
+              description="Votre forfait actuel"
             />
 
-            {/* Current plan banner */}
-            <div className="bg-gradient-to-r from-[#823F91]/5 via-[#9D5FA8]/5 to-[#B855D6]/5 border border-[#823F91]/15 rounded-xl p-4 sm:p-5 mb-6">
-              <div className="flex items-center justify-between flex-wrap gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[#823F91]/10">
-                    <Crown className="h-5 w-5 text-[#823F91]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-900">Plan Discovery</span>
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#823F91]/10 text-[#823F91]">
-                        Actif
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-0.5">Gratuit</p>
-                  </div>
-                </div>
-                {userEmail && (
-                  <p className="text-sm text-gray-400">{userEmail}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Launch offer banner */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-4 mb-6">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div className="space-y-4">
+              {/* Current plan row */}
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-amber-800">Offre de lancement</p>
-                  <p className="text-sm text-amber-700 mt-0.5">
-                    Toutes les fonctionnalités sont accessibles gratuitement pendant la période de lancement. Profitez-en !
-                  </p>
+                  <p className="text-sm font-semibold text-gray-900">Forfait Discovery</p>
+                  <p className="text-sm text-gray-500">Gratuit</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Plans comparison */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {plans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`relative rounded-xl border p-4 transition-all duration-200 ${
-                    plan.current
-                      ? 'border-[#823F91] bg-[#823F91]/[0.03] ring-1 ring-[#823F91]/20'
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
-                  }`}
+                <button
+                  onClick={() => toast.info('La gestion des abonnements sera disponible prochainement.')}
+                  className="text-sm font-medium text-[#823F91] hover:text-[#6D3478] transition-colors px-4 py-2 rounded-lg border border-[#823F91]/20 hover:bg-[#823F91]/5"
                 >
-                  {plan.popular && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#823F91] text-white">
-                      Populaire
-                    </span>
-                  )}
-                  <div className="mb-3">
-                    <h4 className="font-semibold text-gray-900 text-sm">{plan.name}</h4>
-                    <p className="text-lg font-bold text-gray-900 mt-1 font-[family-name:var(--font-mono)]">{plan.price}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-1.5 text-xs text-gray-600">
-                        <Check className="h-3.5 w-3.5 text-[#823F91] mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {plan.current ? (
-                    <div className="mt-4 text-center text-xs font-medium text-[#823F91] py-2 rounded-lg bg-[#823F91]/5">
-                      Plan actuel
-                    </div>
-                  ) : (
-                    <button className="mt-4 w-full text-xs font-semibold py-2 rounded-lg border border-[#823F91] text-[#823F91] hover:bg-[#823F91]/5 transition-colors duration-150">
-                      Choisir ce plan
-                    </button>
-                  )}
-                </div>
-              ))}
+                  Modifier l&apos;abonnement
+                </button>
+              </div>
+
+              {/* Launch offer info */}
+              <div className="flex items-start gap-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-4">
+                <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-amber-700">
+                  Vous beneficiez de l&apos;offre de lancement : toutes les fonctionnalites sont accessibles gratuitement.
+                </p>
+              </div>
             </div>
           </div>
         </Card>
