@@ -1,97 +1,72 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { generateMetadata as generateSeoMetadata } from '@/lib/seo/config'
+import LegalPageLayout, { LegalSection, LegalFooterDate } from '@/components/legal/LegalPageLayout'
+import { Building2, UserCheck, Server, Copyright, ShieldCheck, Cookie, AlertTriangle, Mail } from 'lucide-react'
 
 export const metadata: Metadata = generateSeoMetadata('legal')
 
 export default function LegalPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="mb-8">
-          <Link 
-            href="/" 
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Retour à l'accueil
-          </Link>
-        </div>
+    <LegalPageLayout title="Mentions l&eacute;gales">
+      <LegalSection icon={<Building2 className="h-4 w-4" />} title="&Eacute;diteur du site">
+        <p>
+          Le site <strong>nuply.fr</strong> est &eacute;dit&eacute; par la soci&eacute;t&eacute; <strong>NUPLY</strong>.
+        </p>
+        <p>
+          <strong>Informations l&eacute;gales :</strong> En cours d&apos;enregistrement
+        </p>
+      </LegalSection>
 
-        <h1 className="text-4xl font-bold mb-8">Mentions légales</h1>
+      <LegalSection icon={<UserCheck className="h-4 w-4" />} title="Directeur de publication">
+        <p>
+          Le directeur de publication est le repr&eacute;sentant l&eacute;gal de la soci&eacute;t&eacute; NUPLY.
+        </p>
+      </LegalSection>
 
-        <div className="prose prose-slate max-w-none space-y-8">
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">1. Éditeur du site</h2>
-            <p className="text-muted-foreground">
-              Le site <strong>nuply.fr</strong> est édité par la société <strong>NUPLY</strong>.
-            </p>
-            <p className="text-muted-foreground">
-              <strong>Informations légales :</strong> En cours d'enregistrement
-            </p>
-          </section>
+      <LegalSection icon={<Server className="h-4 w-4" />} title="H&eacute;bergement">
+        <p>
+          Le site est h&eacute;berg&eacute; par Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, &Eacute;tats-Unis.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">2. Directeur de publication</h2>
-            <p className="text-muted-foreground">
-              Le directeur de publication est le représentant légal de la société NUPLY.
-            </p>
-          </section>
+      <LegalSection icon={<Copyright className="h-4 w-4" />} title="Propri&eacute;t&eacute; intellectuelle">
+        <p>
+          L&apos;ensemble du contenu du site (textes, images, vid&eacute;os, logos, etc.) est la propri&eacute;t&eacute; exclusive de NUPLY, sauf mention contraire. Toute reproduction, m&ecirc;me partielle, est interdite sans autorisation pr&eacute;alable.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">3. Hébergement</h2>
-            <p className="text-muted-foreground">
-              Le site est hébergé par Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.
-            </p>
-          </section>
+      <LegalSection icon={<ShieldCheck className="h-4 w-4" />} title="Protection des donn&eacute;es personnelles">
+        <p>
+          NUPLY s&apos;engage &agrave; prot&eacute;ger la confidentialit&eacute; des donn&eacute;es personnelles collect&eacute;es sur le site. Les donn&eacute;es sont trait&eacute;es conform&eacute;ment &agrave; la r&eacute;glementation en vigueur sur la protection des donn&eacute;es personnelles (RGPD).
+        </p>
+        <p>
+          Consultez notre <Link href="/confidentialite" className="text-[#823F91] font-medium hover:underline">Politique de confidentialit&eacute;</Link> et nos <Link href="/cgu" className="text-[#823F91] font-medium hover:underline">Conditions G&eacute;n&eacute;rales d&apos;Utilisation</Link> pour en savoir plus.
+        </p>
+        <p>
+          Pour toute question concernant le traitement de vos donn&eacute;es personnelles, vous pouvez nous contacter via la page <Link href="/contact" className="text-[#823F91] font-medium hover:underline">Contact</Link>.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">4. Propriété intellectuelle</h2>
-            <p className="text-muted-foreground">
-              L'ensemble du contenu du site (textes, images, vidéos, logos, etc.) est la propriété exclusive de NUPLY, sauf mention contraire. Toute reproduction, même partielle, est interdite sans autorisation préalable.
-            </p>
-          </section>
+      <LegalSection icon={<Cookie className="h-4 w-4" />} title="Cookies">
+        <p>
+          Le site utilise des cookies pour am&eacute;liorer l&apos;exp&eacute;rience utilisateur. En continuant &agrave; naviguer sur le site, vous acceptez l&apos;utilisation de cookies.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">5. Protection des données personnelles</h2>
-            <p className="text-muted-foreground">
-              NUPLY s&apos;engage à protéger la confidentialité des données personnelles collectées sur le site. Les données sont traitées conformément à la réglementation en vigueur sur la protection des données personnelles (RGPD).
-            </p>
-            <p className="text-muted-foreground">
-              Consultez notre <Link href="/confidentialite" className="text-primary hover:underline">Politique de confidentialité</Link> et nos <Link href="/cgu" className="text-primary hover:underline">Conditions Générales d&apos;Utilisation</Link> pour en savoir plus.
-            </p>
-            <p className="text-muted-foreground">
-              Pour toute question concernant le traitement de vos données personnelles, vous pouvez nous contacter via la page <Link href="/contact" className="text-primary hover:underline">Contact</Link>.
-            </p>
-          </section>
+      <LegalSection icon={<AlertTriangle className="h-4 w-4" />} title="Limitation de responsabilit&eacute;">
+        <p>
+          NUPLY ne peut &ecirc;tre tenu responsable des dommages directs ou indirects r&eacute;sultant de l&apos;utilisation du site ou de l&apos;impossibilit&eacute; d&apos;y acc&eacute;der.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">6. Cookies</h2>
-            <p className="text-muted-foreground">
-              Le site utilise des cookies pour améliorer l'expérience utilisateur. En continuant à naviguer sur le site, vous acceptez l'utilisation de cookies.
-            </p>
-          </section>
+      <LegalSection icon={<Mail className="h-4 w-4" />} title="Contact">
+        <p>
+          Pour toute question concernant ces mentions l&eacute;gales, vous pouvez nous contacter via la page <Link href="/contact" className="text-[#823F91] font-medium hover:underline">Contact</Link>.
+        </p>
+      </LegalSection>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">7. Limitation de responsabilité</h2>
-            <p className="text-muted-foreground">
-              NUPLY ne peut être tenu responsable des dommages directs ou indirects résultant de l'utilisation du site ou de l'impossibilité d'y accéder.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">8. Contact</h2>
-            <p className="text-muted-foreground">
-              Pour toute question concernant ces mentions légales, vous pouvez nous contacter via la page <Link href="/contact" className="text-primary hover:underline">Contact</Link>.
-            </p>
-          </section>
-
-          <section className="pt-8 border-t">
-            <p className="text-sm text-muted-foreground">
-              Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-          </section>
-        </div>
-      </div>
-    </div>
+      <LegalFooterDate date="16 f&eacute;vrier 2026" />
+    </LegalPageLayout>
   )
 }
