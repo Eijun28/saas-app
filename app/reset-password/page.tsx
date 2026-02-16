@@ -12,7 +12,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import Particles from '@/components/Particles'
+import dynamic from 'next/dynamic'
+
+const Particles = dynamic(() => import('@/components/Particles'), { ssr: false })
 
 const resetPasswordSchema = z.object({
   password: z.string()
