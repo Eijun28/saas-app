@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck, Star } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck, Star, Check } from 'lucide-react'
 import { ReviewsList } from '@/components/reviews/ReviewsList'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
+import { getServiceFieldGroups, hasServiceFields, type ServiceFieldConfig } from '@/lib/constants/service-fields'
 
 interface ProfilePreviewDialogProps {
   userId: string
@@ -53,6 +54,8 @@ interface ProfilePreviewDialogProps {
   coupleId?: string
   brandColor?: string
   hasSiret?: boolean
+  serviceDetails?: Record<string, unknown>
+  serviceTypeValue?: string
 }
 
 // Palette
@@ -73,6 +76,8 @@ export function ProfilePreviewDialog({
   coupleId,
   brandColor,
   hasSiret = false,
+  serviceDetails = {},
+  serviceTypeValue,
 }: ProfilePreviewDialogProps) {
   const accentColor = brandColor || '#823F91'
   const router = useRouter()
@@ -469,6 +474,41 @@ export function ProfilePreviewDialog({
                       </span>
                     )}
                   </p>
+                </div>
+              )}
+
+              {/* Détails métier */}
+              {serviceTypeValue && hasServiceFields(serviceTypeValue) && Object.keys(serviceDetails).length > 0 && (
+                <div className="pt-4">
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: WHITE }}>
+                      <Briefcase className="h-3.5 w-3.5 text-[#6B3FA0]" />
+                    </div>
+                    <h4 className="text-sm font-bold text-[#6B3FA0]">Détails métier</h4>
+                  </div>
+                  <div className="ml-[38px] space-y-3">
+                    {getServiceFieldGroups(serviceTypeValue).map((group, gIdx) => {
+                      // Only show groups that have at least one filled field
+                      const filledFields = group.fields.filter(f => {
+                        const val = serviceDetails[f.key]
+                        if (val === undefined || val === null || val === '' || val === false) return false
+                        if (Array.isArray(val) && val.length === 0) return false
+                        return true
+                      })
+                      if (filledFields.length === 0) return null
+
+                      return (
+                        <div key={gIdx} className="space-y-2">
+                          {filledFields.map(field => {
+                            const val = serviceDetails[field.key]
+                            return (
+                              <ServiceDetailDisplay key={field.key} field={field} value={val} />
+                            )
+                          })}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -872,4 +912,73 @@ export function ProfilePreviewDialog({
       </Dialog>
     </>
   )
+}
+
+// Helper component for displaying a single service detail field in preview
+function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; value: unknown }) {
+  if (value === undefined || value === null || value === '' || value === false) return null
+  if (Array.isArray(value) && value.length === 0) return null
+
+  const WHITE = '#FFFFFF'
+
+  // Multi-select: show badges
+  if (field.type === 'multi-select' && Array.isArray(value)) {
+    const labels = value.map(v => {
+      const opt = field.options?.find(o => o.value === v)
+      return opt?.label || v
+    })
+    return (
+      <div>
+        <p className="text-xs font-semibold text-[#6B3FA0]/60 mb-1.5">{field.label}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {labels.map((label, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center text-[11px] font-medium py-1 px-2.5 rounded-full text-[#6B3FA0] shadow-sm"
+              style={{ backgroundColor: WHITE }}
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Single select: show label
+  if (field.type === 'single-select' && typeof value === 'string') {
+    const opt = field.options?.find(o => o.value === value)
+    return (
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-[#6B3FA0]/60">{field.label}</p>
+        <span className="text-xs font-medium text-[#6B3FA0]">{opt?.label || value}</span>
+      </div>
+    )
+  }
+
+  // Number
+  if (field.type === 'number' && (typeof value === 'number' || typeof value === 'string')) {
+    return (
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-[#6B3FA0]/60">{field.label}</p>
+        <span className="text-xs font-medium text-[#6B3FA0]">
+          {value}{field.suffix ? ` ${field.suffix}` : ''}
+        </span>
+      </div>
+    )
+  }
+
+  // Boolean (only show if true)
+  if (field.type === 'boolean' && value === true) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <div className="h-4 w-4 rounded-full bg-emerald-100 flex items-center justify-center">
+          <Check className="h-2.5 w-2.5 text-emerald-600" />
+        </div>
+        <p className="text-xs font-medium text-[#6B3FA0]">{field.label}</p>
+      </div>
+    )
+  }
+
+  return null
 }

@@ -14,8 +14,10 @@ import {
   Award,
   Zap,
   ChevronDown,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { hasServiceFields, getServiceDetailsCompletion } from '@/lib/constants/service-fields'
 
 interface ProfileData {
   avatar_url?: string | null
@@ -29,6 +31,7 @@ interface ProfileData {
   instagram_url?: string | null
   facebook_url?: string | null
   website_url?: string | null
+  service_type?: string
 }
 
 interface ProfileScoreCardProps {
@@ -37,6 +40,7 @@ interface ProfileScoreCardProps {
   zones: Array<{ id: string; label: string }>
   portfolio: Array<{ id: string; image_url: string }>
   tags?: Array<{ id: string; name: string }>
+  serviceDetails?: Record<string, unknown>
   className?: string
 }
 
@@ -56,6 +60,7 @@ export function ProfileScoreCard({
   zones,
   portfolio,
   tags = [],
+  serviceDetails = {},
   className,
 }: ProfileScoreCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -139,8 +144,21 @@ export function ProfileScoreCard({
         icon: <TrendingUp className="h-4 w-4" />,
         priority: 'low',
       },
+      // Only show service details item if the service type has specific fields
+      ...(profile?.service_type && hasServiceFields(profile.service_type) ? [{
+        id: 'service_details',
+        label: 'Détails métier',
+        completed: (() => {
+          const { filled, total } = getServiceDetailsCompletion(profile.service_type!, serviceDetails)
+          return total > 0 && filled >= Math.ceil(total * 0.3) // At least 30% filled
+        })(),
+        points: 15,
+        icon: <ClipboardList className="h-4 w-4" />,
+        tip: 'Les détails métier aident les couples à mieux vous trouver',
+        priority: 'medium' as const,
+      }] : []),
     ]
-  }, [profile, cultures, zones, portfolio])
+  }, [profile, cultures, zones, portfolio, serviceDetails])
 
   const totalScore = useMemo(() => {
     return scoreItems.reduce((acc, item) => acc + (item.completed ? item.points : 0), 0)
