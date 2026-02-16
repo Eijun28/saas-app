@@ -82,12 +82,12 @@ export function PricingColumn({
           {icon && (
             <div className="text-[#823F91]">{icon}</div>
           )}
-          <h3 className="text-lg font-semibold text-slate-900 text-center">{name}</h3>
+          <h3 className="text-lg font-bold text-slate-900 text-center tracking-tight">{name}</h3>
         </div>
       </div>
 
       {/* Description */}
-      <p className="mb-6 text-sm text-slate-600 leading-relaxed text-center">
+      <p className="mb-6 text-sm text-slate-500 leading-relaxed text-center">
         {description}
       </p>
 
@@ -95,22 +95,22 @@ export function PricingColumn({
       <div className="mb-2">
         <div className="flex items-baseline gap-1 justify-center">
           {price === 0 ? (
-            <span className="text-4xl font-bold text-slate-900 tracking-tight">
+            <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
               Gratuit
             </span>
           ) : (
             <>
-              <span className="text-4xl font-bold text-slate-900 tracking-tight">
+              <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
                 {price % 1 === 0 ? price.toFixed(0) : price.toFixed(2)}€
               </span>
-              <span className="text-base text-slate-500">
+              <span className="text-sm text-slate-400 font-medium">
                 {billingPeriod === "day" ? "/ jour" : "/ mois"}
               </span>
             </>
           )}
         </div>
         {priceNote && (
-          <p className="mt-2 text-xs text-slate-500 text-center">{priceNote}</p>
+          <p className="mt-2 text-xs text-slate-400 text-center">{priceNote}</p>
         )}
       </div>
 
@@ -119,7 +119,7 @@ export function PricingColumn({
         {features.map((feature, index) => (
           <li key={index} className="flex items-start gap-2.5">
             <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#823F91]" strokeWidth={2.5} />
-            <span className="text-sm text-slate-700 leading-snug">{feature}</span>
+            <span className="text-sm text-slate-600 leading-snug">{feature}</span>
           </li>
         ))}
       </ul>

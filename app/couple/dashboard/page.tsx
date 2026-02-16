@@ -226,15 +226,15 @@ export default function CoupleDashboardPage() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         >
           <div>
-            <h1 className="text-[22px] sm:text-[26px] font-bold text-gray-900 tracking-tight">
+            <h1 className="text-[22px] sm:text-[28px] font-extrabold text-gray-900 tracking-tight leading-tight">
               {greeting}
               {daysUntilWedding && (
-                <span className="ml-2 text-[16px] sm:text-[18px] font-semibold text-[#823F91]">
+                <span className="ml-2 text-[15px] sm:text-[18px] font-semibold text-[#823F91]">
                   J-{daysUntilWedding}
                 </span>
               )}
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-[13px] sm:text-sm text-gray-500 mt-1 leading-relaxed">
               {coupleData?.wedding_date
                 ? `Mariage prevu le ${new Date(coupleData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`
                 : 'Organisez votre mariage en toute simplicite'
@@ -242,7 +242,7 @@ export default function CoupleDashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-full">
+            <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-gray-100/80 rounded-full">
               {([
                 { value: '7d' as PeriodFilter, label: '7j' },
                 { value: '30d' as PeriodFilter, label: '30j' },
@@ -252,7 +252,7 @@ export default function CoupleDashboardPage() {
                   key={value}
                   onClick={() => setPeriodFilter(value)}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
+                    "px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150",
                     periodFilter === value
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -271,15 +271,15 @@ export default function CoupleDashboardPage() {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="p-4 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/40 border border-[#823F91]/8 rounded-2xl"
+            className="p-3 sm:p-4 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/40 border border-[#823F91]/8 rounded-2xl"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-[#823F91]/10 rounded-xl flex-shrink-0">
-                <Zap className="h-4 w-4 text-[#823F91]" />
+            <div className="flex items-start gap-2.5 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-[#823F91]/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91]" />
               </div>
-              <div className="flex-1 min-w-0 space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action recommandee</p>
-                <p className="text-sm font-medium text-gray-800">{nextActions[0].text}</p>
+              <div className="flex-1 min-w-0 space-y-1 sm:space-y-1.5">
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">Prochaine action</p>
+                <p className="text-[13px] sm:text-sm font-medium text-gray-800 leading-snug">{nextActions[0].text}</p>
                 <button
                   onClick={() => router.push(nextActions[0].href)}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] hover:text-[#5C2B66] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40 rounded"
@@ -292,7 +292,7 @@ export default function CoupleDashboardPage() {
         )}
 
         {/* Stats Grid — 4 KPI cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full items-stretch">
 
           {/* Prestataires shortlistes */}
           <motion.div
@@ -302,30 +302,30 @@ export default function CoupleDashboardPage() {
             onClick={() => router.push('/couple/recherche')}
             className="cursor-pointer group"
           >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
-                  <Heart className="h-[18px] w-[18px] text-[#823F91]" />
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                  <Heart className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Prestataires</p>
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Prestataires</p>
               </div>
               <div className="flex-1">
-                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
                   {shortlistedCount === 0 ? '—' : shortlistedCount}
                 </p>
-                <p className="text-sm font-medium text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
                   {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
                 </p>
                 {shortlistedCount === 0 && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
                     <Search className="h-3 w-3" /> Rechercher des prestataires
                   </span>
                 )}
               </div>
-              <div className="pt-3 mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
                   <span>Voir les favoris</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
             </div>
@@ -339,20 +339,20 @@ export default function CoupleDashboardPage() {
             onClick={() => router.push('/couple/budget')}
             className="cursor-pointer group"
           >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
-                  <Wallet className="h-[18px] w-[18px] text-[#823F91]" />
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                  <Wallet className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Budget</p>
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Budget</p>
               </div>
               <div className="flex-1">
-                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
                   {budgetTotal > 0 ? `${(budgetTotal / 1000).toFixed(0)}k` : '—'}
                 </p>
                 {budgetTotal > 0 ? (
                   <>
-                    <p className="text-sm font-medium text-gray-500 mt-1">Budget total {budgetTotal.toLocaleString('fr-FR')} &euro;</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">Budget {budgetTotal.toLocaleString('fr-FR')} &euro;</p>
                     {/* Mini budget bar */}
                     <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
@@ -360,20 +360,20 @@ export default function CoupleDashboardPage() {
                         style={{ width: `${Math.min((budgetSpent / budgetTotal) * 100, 100)}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-1">
+                    <p className="text-[11px] text-gray-400 mt-1 hidden sm:block">
                       {budgetRemaining > 0 ? `${budgetRemaining.toLocaleString('fr-FR')} restant` : 'Budget depense'}
                     </p>
                   </>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
                     <Zap className="h-3 w-3" /> Definir un budget
                   </span>
                 )}
               </div>
-              <div className="pt-3 mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
                   <span>Gerer le budget</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
             </div>
@@ -387,30 +387,30 @@ export default function CoupleDashboardPage() {
             onClick={() => router.push('/couple/timeline')}
             className="cursor-pointer group"
           >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
-                  <Calendar className="h-[18px] w-[18px] text-[#823F91]" />
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Jours restants</p>
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Jours restants</p>
               </div>
               <div className="flex-1">
-                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
                   {daysUntilWedding ?? '—'}
                 </p>
-                <p className="text-sm font-medium text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
                   {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
                 </p>
                 {!daysUntilWedding && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
                     <Zap className="h-3 w-3" /> Definir la date
                   </span>
                 )}
               </div>
-              <div className="pt-3 mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
                   <span>{daysUntilWedding ? 'Voir le calendrier' : 'Modifier le profil'}</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
             </div>
@@ -424,30 +424,30 @@ export default function CoupleDashboardPage() {
             onClick={() => router.push('/couple/messagerie')}
             className="cursor-pointer group"
           >
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-5 h-full flex flex-col">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-10 w-10 rounded-xl bg-[#823F91]/8 flex items-center justify-center">
-                  <MessageSquare className="h-[18px] w-[18px] text-[#823F91]" />
+            <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-gray-200 transition-all duration-150 p-3.5 sm:p-5 h-full flex flex-col">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="h-4 w-4 sm:h-[18px] sm:w-[18px] text-[#823F91]" />
                 </div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Messages</p>
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-gray-400 leading-tight">Messages</p>
               </div>
               <div className="flex-1">
-                <p className="text-[32px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
+                <p className="text-[26px] sm:text-[36px] font-bold tracking-tight leading-none tabular-nums text-gray-900">
                   {unreadMessages === 0 ? '—' : unreadMessages}
                 </p>
-                <p className="text-sm font-medium text-gray-500 mt-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
                   {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
                 </p>
                 {unreadMessages === 0 && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2">
                     <Sparkles className="h-3 w-3" /> Envoyer une demande
                   </span>
                 )}
               </div>
-              <div className="pt-3 mt-3 border-t border-gray-100">
-                <span className="flex items-center justify-between text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
+              <div className="pt-2 sm:pt-3 mt-2 sm:mt-3 border-t border-gray-100">
+                <span className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#823F91] group-hover:text-[#5C2B66] transition-colors">
                   <span>Ouvrir la messagerie</span>
-                  <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
             </div>
