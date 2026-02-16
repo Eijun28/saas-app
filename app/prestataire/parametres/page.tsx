@@ -218,7 +218,7 @@ export default function ParametresPage() {
                 </div>
                 <button
                   onClick={() => toast.info('La gestion des abonnements sera disponible prochainement.')}
-                  className="text-sm font-medium text-[#823F91] hover:text-[#6D3478] transition-colors px-4 py-2 rounded-lg border border-[#823F91]/20 hover:bg-[#823F91]/5"
+                  className="text-sm font-semibold text-white px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200"
                 >
                   Modifier l&apos;abonnement
                 </button>
