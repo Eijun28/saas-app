@@ -166,7 +166,7 @@ export function PrestataireSidebarWrapper() {
       <SidebarContent className="px-3 py-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
         {sections.map((section) => (
           <SidebarGroup key={section.title} className="mb-1">
-            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 px-3 py-1.5 group-data-[collapsible=icon]:hidden">
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -188,7 +188,7 @@ export function PrestataireSidebarWrapper() {
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1",
                           isActive
                             ? "bg-[#823F91]/8 text-[#823F91] font-semibold hover:bg-[#823F91]/12 group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-sm"
-                            : "hover:bg-gray-100/80 text-gray-600 hover:text-gray-900 group-data-[collapsible=icon]:hover:bg-gray-100"
+                            : "hover:bg-gray-100/80 text-gray-700 hover:text-gray-900 group-data-[collapsible=icon]:hover:bg-gray-100"
                         )}
                       >
                         <Link href={item.href} onClick={handleNavClick} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
@@ -200,7 +200,7 @@ export function PrestataireSidebarWrapper() {
                             "h-[18px] w-[18px] flex-shrink-0 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5 transition-colors duration-150",
                             isActive
                               ? "text-[#823F91] group-data-[collapsible=icon]:text-white"
-                              : "text-gray-400"
+                              : "text-gray-500"
                           )} />
                           <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
                           {badgeCount > 0 && (
