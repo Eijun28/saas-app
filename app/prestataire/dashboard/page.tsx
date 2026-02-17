@@ -350,7 +350,16 @@ export default function DashboardPrestatairePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-amber-900">Votre profil est complete a {profileCompletion}%</p>
-                <p className="text-xs text-amber-700 mt-0.5">Completez-le a au moins 70% pour etre visible par les couples.</p>
+                <div className="flex items-center gap-2.5 mt-1.5">
+                  <div className="flex-1 h-1.5 bg-amber-200/60 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                      style={{ width: `${profileCompletion}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold text-amber-700 flex-shrink-0">{profileCompletion}%</span>
+                </div>
+                <p className="text-xs text-amber-700 mt-1">Completez-le a au moins 70% pour etre visible par les couples.</p>
               </div>
               <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
                 <X className="h-3.5 w-3.5 text-amber-400" />
