@@ -45,12 +45,26 @@ export default async function AdminLayout({
         <div className="container py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900">🔧 Administration</h1>
-            <a 
-              href="/admin/early-adopters-alerts" 
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-            >
-              Alertes Early Adopters
-            </a>
+            <div className="flex items-center gap-4">
+              <a
+                href="/admin/bypass-confirmation"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Bypass confirmation
+              </a>
+              <a
+                href="/admin/invitations-prestataires"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Invitations
+              </a>
+              <a
+                href="/admin/early-adopters-alerts"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Early Adopters
+              </a>
+            </div>
           </div>
         </div>
       </nav>
