@@ -17,6 +17,7 @@ import { motion } from 'framer-motion'
 import { Lock, Sparkles, Building2, Gift } from 'lucide-react'
 import Particles from '@/components/Particles'
 import { createClient } from '@/lib/supabase/client'
+import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -667,6 +668,18 @@ export default function SignUpPage() {
                 <p className="text-xs text-neutral-400 text-center">
                   Les champs marqués d'un <span className="text-red-500">*</span> sont obligatoires
                 </p>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-3">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-neutral-200" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-neutral-400">Ou continuer avec</span>
+                  </div>
+                </div>
+                <OAuthButtons role={selectedRole} />
               </motion.div>
 
               <motion.div

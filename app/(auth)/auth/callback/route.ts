@@ -5,39 +5,83 @@ import { translateAuthError } from '@/lib/auth/error-translations'
 import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 import { logger } from '@/lib/logger'
 
+async function createCoupleProfile(adminClient: ReturnType<typeof createAdminClient>, userId: string, email: string, metadata: Record<string, any>) {
+  const fullName = `${metadata?.prenom || ''} ${metadata?.nom || ''}`.trim()
+
+  const { error: coupleError } = await adminClient
+    .from('couples')
+    .upsert({
+      id: userId,
+      user_id: userId,
+      email,
+      partner_1_name: fullName || null,
+      partner_2_name: null,
+    }, { onConflict: 'user_id' })
+
+  if (coupleError) return coupleError
+
+  await adminClient
+    .from('couple_preferences')
+    .upsert({
+      couple_id: userId,
+      languages: ['français'],
+      essential_services: [],
+      optional_services: [],
+      cultural_preferences: {},
+      service_priorities: {},
+      budget_breakdown: {},
+      profile_completed: false,
+      completion_percentage: 0,
+      onboarding_step: 0,
+    }, { onConflict: 'couple_id' })
+
+  return null
+}
+
+async function createPrestaProfile(adminClient: ReturnType<typeof createAdminClient>, userId: string, email: string, metadata: Record<string, any>) {
+  const { error } = await adminClient
+    .from('profiles')
+    .upsert({
+      id: userId,
+      email,
+      role: 'prestataire',
+      prenom: metadata?.prenom || null,
+      nom: metadata?.nom || null,
+      nom_entreprise: metadata?.nom_entreprise || null,
+    }, { onConflict: 'id' })
+
+  return error || null
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-
   const type = requestUrl.searchParams.get('type')
+  // Rôle transmis via URL param (depuis la page /sign-up avec bouton OAuth)
+  const urlRole = requestUrl.searchParams.get('role') as 'couple' | 'prestataire' | null
 
   if (code) {
     const supabase = await createClient()
 
-    // Échanger le code pour une session
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
       logger.error('Erreur callback:', error)
       const translatedError = translateAuthError(error.message || 'callback_error')
-      const encodedError = encodeURIComponent(translatedError)
-      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodedError}`)
+      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodeURIComponent(translatedError)}`)
     }
 
-    // Si c'est une récupération de mot de passe, rediriger vers le formulaire de reset
     if (type === 'recovery') {
       return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
     }
 
-    // Récupérer l'utilisateur
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (user) {
-      // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
       const roleCheck = await getUserRoleServer(user.id)
 
       if (roleCheck.role) {
-        // Pour les prestataires, vérifier si l'onboarding guidé est terminé
+        // Profil existant → vérifier onboarding prestataire
         if (roleCheck.role === 'prestataire') {
           const supabaseCheck = await createClient()
           const { data: profile } = await supabaseCheck
@@ -51,127 +95,48 @@ export async function GET(request: Request) {
           }
         }
 
-        // Profil trouvé, rediriger vers le dashboard approprié
         const dashboardUrl = getDashboardUrl(roleCheck.role)
         return NextResponse.redirect(`${requestUrl.origin}${dashboardUrl}`)
       }
 
-      // Si ni couple ni prestataire trouvé, essayer de récupérer le rôle depuis les métadonnées
-      // et créer le profil manquant si possible
-      logger.warn('Utilisateur trouvé mais aucun profil couple/prestataire:', { userId: user.id, email: user.email })
-      
-      // Récupérer le rôle depuis les métadonnées de l'utilisateur
-      const userRole = user.user_metadata?.role as 'couple' | 'prestataire' | undefined
-      
-      if (userRole && (userRole === 'couple' || userRole === 'prestataire')) {
-        logger.info('Tentative de récupération du profil manquant...', { userId: user.id, role: userRole })
-        
+      // Aucun profil trouvé — déterminer le rôle à utiliser
+      // Priorité : URL param > user_metadata (jamais renseigné par Google OAuth seul)
+      const resolvedRole = (urlRole === 'couple' || urlRole === 'prestataire')
+        ? urlRole
+        : (user.user_metadata?.role as 'couple' | 'prestataire' | undefined)
+
+      logger.warn('Aucun profil trouvé, résolution du rôle:', { userId: user.id, urlRole, resolvedRole })
+
+      if (resolvedRole === 'couple' || resolvedRole === 'prestataire') {
         try {
           const adminClient = createAdminClient()
-          
-          if (userRole === 'couple') {
-            // Essayer de créer le profil couple manquant
-            // ✅ FIX: Stocker le prénom et nom dans partner_1_name uniquement
-            const fullName = `${user.user_metadata?.prenom || ''} ${user.user_metadata?.nom || ''}`.trim()
-            
-            const { error: coupleError } = await adminClient
-              .from('couples')
-              .upsert({
-                id: user.id,
-                user_id: user.id,
-                email: user.email || '',
-                partner_1_name: fullName || null,
-                partner_2_name: null,
-              }, {
-                onConflict: 'user_id'
-              })
-            
-            if (!coupleError) {
-              logger.info('✅ Profil couple récupéré avec succès', { userId: user.id })
-              // Créer aussi les préférences vides
-              try {
-                const { error: prefError, data: prefData } = await adminClient
-                  .from('couple_preferences')
-                  .upsert({
-                    couple_id: user.id,
-                    languages: ['français'],
-                    essential_services: [],
-                    optional_services: [],
-                    cultural_preferences: {},
-                    service_priorities: {},
-                    budget_breakdown: {},
-                    profile_completed: false,
-                    completion_percentage: 0,
-                    onboarding_step: 0,
-                  }, {
-                    onConflict: 'couple_id'
-                  })
-                  .select()
-                  .single()
-                
-                if (prefError) {
-                  logger.error('Erreur création préférences couple (callback):', {
-                    userId: user.id,
-                    error: prefError.message,
-                    code: prefError.code,
-                    details: prefError.details
-                  })
-                } else {
-                  logger.info('✅ Préférences couple créées avec succès (callback)', { 
-                    userId: user.id,
-                    preferencesId: prefData?.id 
-                  })
-                }
-              } catch (prefError: any) {
-                logger.error('Erreur inattendue création préférences (callback, non bloquant):', {
-                  userId: user.id,
-                  error: prefError?.message || String(prefError)
-                })
-              }
-              
+
+          if (resolvedRole === 'couple') {
+            const err = await createCoupleProfile(adminClient, user.id, user.email || '', user.user_metadata ?? {})
+            if (!err) {
+              logger.info('✅ Profil couple créé (OAuth)', { userId: user.id })
               return NextResponse.redirect(`${requestUrl.origin}/couple/dashboard`)
-            } else {
-              logger.error('Erreur lors de la récupération du profil couple:', coupleError)
             }
+            logger.error('Erreur création profil couple (OAuth):', err)
           } else {
-            // Essayer de créer le profil prestataire manquant
-            const { error: profileError } = await adminClient
-              .from('profiles')
-              .upsert({
-                id: user.id,
-                email: user.email || '',
-                role: 'prestataire',
-                prenom: user.user_metadata?.prenom || null,
-                nom: user.user_metadata?.nom || null,
-                nom_entreprise: user.user_metadata?.nom_entreprise || null,
-              }, {
-                onConflict: 'id'
-              })
-            
-            if (!profileError) {
-              logger.info('✅ Profil prestataire récupéré avec succès', { userId: user.id })
+            const err = await createPrestaProfile(adminClient, user.id, user.email || '', user.user_metadata ?? {})
+            if (!err) {
+              logger.info('✅ Profil prestataire créé (OAuth)', { userId: user.id })
               return NextResponse.redirect(`${requestUrl.origin}/prestataire/onboarding`)
-            } else {
-              logger.error('Erreur lors de la récupération du profil prestataire:', profileError)
             }
+            logger.error('Erreur création profil prestataire (OAuth):', err)
           }
-        } catch (recoveryError: any) {
-          logger.error('Erreur lors de la tentative de récupération du profil:', recoveryError)
+        } catch (e: any) {
+          logger.error('Erreur inattendue création profil (OAuth):', e)
         }
       }
-      
-      // Si la récupération a échoué ou si le rôle n'est pas dans les métadonnées
-      // Rediriger vers une page de récupération avec un message explicite
-      const errorMessage = encodeURIComponent(
-        'Votre compte a été créé mais votre profil n\'est pas encore complet. ' +
-        'Nous avons tenté de le récupérer automatiquement. ' +
-        'Si le problème persiste, veuillez contacter le support.'
-      )
-      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${errorMessage}&recovery=true`)
+
+      // Aucun rôle disponible (ex: connexion Google depuis /sign-in sans compte existant)
+      // → page de choix de rôle
+      return NextResponse.redirect(`${requestUrl.origin}/onboarding/role`)
     }
   }
 
-  // Fallback
   return NextResponse.redirect(`${requestUrl.origin}/`)
 }
 
