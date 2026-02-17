@@ -13,8 +13,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export type PlanType = 'discovery' | 'pro' | 'expert'
 
-/** Date de fin de l'offre de lancement (30 juin 2025 à 23:59:59 UTC) */
-const FREE_ACCESS_END_DATE = new Date('2025-06-30T23:59:59Z')
+/** Date de fin de l'offre de lancement (30 juin 2026 à 23:59:59 UTC) */
+const FREE_ACCESS_END_DATE = new Date('2026-06-30T23:59:59Z')
 
 /**
  * Vérifie si l'offre de lancement (accès gratuit à toutes les features) est active.

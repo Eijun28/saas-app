@@ -71,6 +71,7 @@ export default function CollaborateursPage() {
 
     if (error) {
       console.error('Erreur chargement collaborateurs:', error)
+      toast.error('Erreur lors du chargement des collaborateurs')
       setCollaborateurs([])
     } else {
       setCollaborateurs(data || [])

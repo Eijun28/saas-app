@@ -117,11 +117,20 @@ export async function POST(request: NextRequest) {
 
     // Si un template est utilisé, incrémenter son compteur d'utilisation
     if (data.template_id) {
-      await supabase
+      const { data: currentTemplate } = await supabase
         .from('devis_templates')
-        .update({ use_count: supabase.rpc('increment_use_count') })
+        .select('use_count')
         .eq('id', data.template_id)
         .eq('prestataire_id', user.id)
+        .single()
+
+      if (currentTemplate) {
+        await supabase
+          .from('devis_templates')
+          .update({ use_count: (currentTemplate.use_count || 0) + 1 })
+          .eq('id', data.template_id)
+          .eq('prestataire_id', user.id)
+      }
     }
 
     // Générer le numéro de devis
