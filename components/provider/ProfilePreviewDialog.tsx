@@ -52,7 +52,6 @@ interface ProfilePreviewDialogProps {
   showTriggerButton?: boolean
   isCoupleView?: boolean
   coupleId?: string
-  brandColor?: string
   hasSiret?: boolean
   serviceDetails?: Record<string, unknown>
   serviceTypeValue?: string
@@ -74,12 +73,11 @@ export function ProfilePreviewDialog({
   showTriggerButton = true,
   isCoupleView = false,
   coupleId,
-  brandColor,
   hasSiret = false,
   serviceDetails = {},
   serviceTypeValue,
 }: ProfilePreviewDialogProps) {
-  const accentColor = brandColor || '#823F91'
+  const accentColor = '#823F91'
   const router = useRouter()
   const { user } = useUser()
   const [internalOpen, setInternalOpen] = useState(false)
