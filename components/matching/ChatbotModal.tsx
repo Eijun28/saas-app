@@ -102,6 +102,14 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
     }
   };
 
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (isLoading) return;
+    const nextAction = await sendMessage(suggestion);
+    if (nextAction === 'validate') {
+      setStep('validation');
+    }
+  };
+
   const handleLaunchMatching = () => {
     // TODO: Implémenter le lancement du matching avec les critères extraits
     console.log('Lancer le matching avec:', extractedCriteria);
@@ -144,28 +152,63 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {step === 'conversation' && (
             <div className="space-y-4">
-              {messages.map((message: ChatMessage, index: number) => (
-                <div
-                  key={index}
-                  className={cn(
-                    'flex gap-2',
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl p-4',
-                      message.role === 'user'
-                        ? 'bg-primary text-white'
-                        : 'bg-gray-100 text-gray-900'
+              {messages.map((message: ChatMessage, index: number) => {
+                const isLastBotMessage =
+                  message.role === 'bot' &&
+                  index === messages.map((m, i) => m.role === 'bot' ? i : -1).filter(i => i >= 0).pop();
+                const hasSuggestions =
+                  isLastBotMessage &&
+                  !isLoading &&
+                  message.suggestions &&
+                  message.suggestions.length > 0;
+
+                return (
+                  <div key={index}>
+                    <div
+                      className={cn(
+                        'flex gap-2',
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'max-w-[80%] rounded-2xl p-4',
+                          message.role === 'user'
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 text-gray-900'
+                        )}
+                      >
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Suggestion chips — uniquement sous le dernier message bot */}
+                    {hasSuggestions && (
+                      <div className="flex flex-wrap gap-2 mt-2 pl-1">
+                        {message.suggestions!.map((suggestion, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            disabled={isLoading}
+                            className={cn(
+                              'px-3 py-1.5 text-sm rounded-full border transition-all duration-150',
+                              'border-[#823F91] text-[#823F91]',
+                              'hover:bg-[#823F91] hover:text-white',
+                              'active:scale-95',
+                              'disabled:opacity-50 disabled:cursor-not-allowed',
+                              'font-medium'
+                            )}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
                     )}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                      {message.content}
-                    </p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Loading indicator */}
               {isLoading && (
