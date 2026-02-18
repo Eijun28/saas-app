@@ -26,7 +26,6 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
-import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
 import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
 import { VisibilityStats } from '@/components/provider/VisibilityStats'
 import { CULTURES } from '@/lib/constants/cultures'
@@ -72,7 +71,6 @@ export default function ProfilPublicPage() {
     boutique_appointment_only?: boolean
     siret?: string | null
     pricing_unit?: string
-    brand_color?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -125,7 +123,6 @@ export default function ProfilPublicPage() {
         zonesResult,
         portfolioResult,
         pricingResult,
-        brandResult,
         serviceDetailsResult,
       ] = await Promise.all([
         // Profil principal
@@ -162,12 +159,6 @@ export default function ProfilPublicPage() {
           .select('pricing_unit')
           .eq('provider_id', userId)
           .eq('is_primary', true)
-          .maybeSingle(),
-        // Couleur de marque
-        freshSupabase
-          .from('prestataire_profiles')
-          .select('brand_color')
-          .eq('user_id', userId)
           .maybeSingle(),
         // Détails métier spécifiques
         freshSupabase
@@ -211,7 +202,6 @@ export default function ProfilPublicPage() {
       const zonesData = zonesResult.data
       const portfolioData = portfolioResult.data
       const pricingData = pricingResult.data
-      const brandColor = brandResult.data?.brand_color || '#823F91'
 
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
@@ -265,7 +255,6 @@ export default function ProfilPublicPage() {
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingData?.pricing_unit || undefined,
-        brand_color: brandColor,
         _timestamp: timestamp,
       }
       
@@ -377,7 +366,6 @@ export default function ProfilPublicPage() {
                 cultures={cultures}
                 zones={zones}
                 portfolio={portfolio}
-                brandColor={profile?.brand_color}
                 hasSiret={!!profile?.siret}
                 serviceDetails={serviceDetails}
                 serviceTypeValue={profile?.service_type}
@@ -565,7 +553,7 @@ export default function ProfilPublicPage() {
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <Share2 className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Réseaux & Apparence</h3>
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Réseaux sociaux</h3>
                       </div>
                       <div className="space-y-4 sm:space-y-5">
                         <SocialLinksEditor
@@ -580,13 +568,6 @@ export default function ProfilPublicPage() {
                           }}
                           onSave={reloadData}
                         />
-                        <div className="border-t pt-4">
-                          <BrandColorPicker
-                            userId={user.id}
-                            currentColor={profile?.brand_color}
-                            onSave={reloadData}
-                          />
-                        </div>
                       </div>
                     </div>
                   </Card>

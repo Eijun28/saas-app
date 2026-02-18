@@ -117,7 +117,7 @@ export function StatCard({
 
               <p className={cn(
                 "text-[10px] sm:text-xs font-semibold uppercase tracking-wider leading-tight",
-                isHighlight ? "text-white/70" : "text-gray-400"
+                isHighlight ? "text-white/70" : "text-gray-500"
               )}>
                 {label}
               </p>
@@ -180,7 +180,7 @@ export function StatCard({
             {subtitle && !showEmptyState && (
               <p className={cn(
                 "text-xs sm:text-sm font-medium",
-                isHighlight ? "text-white/70" : "text-gray-500"
+                isHighlight ? "text-white/70" : "text-gray-600"
               )}>
                 {subtitle}
               </p>
@@ -190,7 +190,7 @@ export function StatCard({
             {delta !== undefined && delta !== null && !isZero && deltaLabel && (
               <p className={cn(
                 "text-[11px] hidden sm:block",
-                isHighlight ? "text-white/50" : "text-gray-400"
+                isHighlight ? "text-white/50" : "text-gray-500"
               )}>
                 {deltaLabel}
               </p>
@@ -201,7 +201,7 @@ export function StatCard({
               <div className="mt-1 space-y-1 sm:space-y-1.5">
                 <p className={cn(
                   "text-xs sm:text-sm",
-                  isHighlight ? "text-white/60" : "text-gray-400"
+                  isHighlight ? "text-white/60" : "text-gray-500"
                 )}>
                   {description || 'Aucune donnee'}
                 </p>
