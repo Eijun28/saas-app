@@ -175,11 +175,14 @@ export function useChatbot(
         .normalize('NFC') // Normaliser les caractères Unicode
         .trim();
 
-      // Ajouter la réponse du bot
+      // Ajouter la réponse du bot (avec suggestions si disponibles)
       const botMessage: ChatMessage = {
         role: 'bot',
         content: normalizedMessage,
         timestamp: new Date().toISOString(),
+        suggestions: Array.isArray(data.suggestions) && data.suggestions.length > 0
+          ? data.suggestions.map((s: string) => String(s).normalize('NFC').trim()).filter(Boolean)
+          : undefined,
       };
       setMessages((prev) => [...prev, botMessage]);
 

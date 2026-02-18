@@ -4,6 +4,8 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   timestamp: string;
+  /** Suggestions de réponse rapide générées par le bot */
+  suggestions?: string[];
 }
 
 export type ConversationStatus = 'in_progress' | 'completed' | 'abandoned';

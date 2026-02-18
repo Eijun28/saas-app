@@ -32,18 +32,19 @@ function fixUtf8Encoding(text: string): string {
       return String.fromCharCode(parseInt(code, 16));
     });
 
-    // Tentative de réparation double-encodage UTF-8 (Latin-1 → UTF-8)
-    // Quand un texte UTF-8 est interprété comme Latin-1 puis ré-encodé
-    try {
-      if (/[\xC0-\xFF]/.test(fixed)) {
+    // Réparation double-encodage UTF-8 : seulement si on détecte le pattern Ã + suite
+    // (Ã = 0xC3 en Latin-1, typique du double-encodage de é/à/ç/è/ê/etc.)
+    // On cible uniquement "Ã©", "Ã ", "Ã§", "Ã¨"... pour éviter de toucher au texte correct
+    if (/Ã[\x80-\xBF©«®±²³µ¶¹»¼½¾¿]/.test(fixed)) {
+      try {
         const bytes = new Uint8Array([...fixed].map(c => c.charCodeAt(0)));
         const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
         if (decoded && !decoded.includes('\uFFFD')) {
           fixed = decoded;
         }
+      } catch {
+        // Pas du double-encodage, continuer normalement
       }
-    } catch {
-      // Pas du double-encodage, continuer normalement
     }
 
     // Normaliser les caractères Unicode (NFC - Canonical Composition)
@@ -503,6 +504,7 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
 
 {
   "message": "Ta réponse courte (2-3 phrases max)",
+  "suggestions": ["Option 1", "Option 2", "Option 3"],
   "extracted_data": {
     "service_type": "string ou null",
     "cultures": ["culture1"] ou [],
@@ -520,6 +522,17 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
   "next_action": "continue" | "validate",
   "question_count": 1
 }
+
+RÈGLES pour suggestions[] :
+- TOUJOURS générer 2 à 4 suggestions de réponse rapide pertinentes
+- Les suggestions sont des BOUTONS cliquables dans l'interface — texte court (1-5 mots max)
+- Quand ta question a des choix explicites entre parenthèses → extrais-les comme suggestions
+- Pour les questions cultural_importance → ["Essentielles", "Importantes", "Secondaires"]
+- Pour les questions budget → fourchettes courtes ["40-60€/pers", "60-90€/pers", "90€+"]
+- Pour les questions style → options explicites ["Reportage", "Posé", "Artistique", "Mix"]
+- Pour la confirmation finale → ["Oui, lancer !", "Modifier les critères"]
+- Toujours en français, sans ponctuation à la fin, majuscule en début
+- Exemples : ["Halal", "Végétarien", "Sans restriction"] / ["Buffet", "À l'assiette", "Mix"] / ["Oui", "Non", "Peu importe"]
 
 RÈGLES pour tags[] :
 - Extraire les tags pertinents depuis les réponses utilisateur
@@ -611,7 +624,7 @@ Exemple mauvais ton :
           ...openaiMessages,
         ],
         temperature: 0.3,        // Très déterministe pour extraction fiable
-        max_tokens: 400,         // Suffisant pour JSON complet sans troncature
+        max_tokens: 500,         // Suffisant pour JSON complet avec suggestions
         response_format: { type: 'json_object' },
       });
     } catch (openaiError: any) {
@@ -763,6 +776,17 @@ Exemple mauvais ton :
     // S'assurer que tags est un tableau
     if (!Array.isArray(parsedResponse.extracted_data.tags)) {
       parsedResponse.extracted_data.tags = [];
+    }
+
+    // Valider et normaliser les suggestions
+    if (!Array.isArray(parsedResponse.suggestions)) {
+      parsedResponse.suggestions = [];
+    } else {
+      // Filtrer les suggestions vides, normaliser les accents, limiter à 4
+      parsedResponse.suggestions = parsedResponse.suggestions
+        .filter((s: any) => typeof s === 'string' && s.trim().length > 0)
+        .map((s: string) => s.normalize('NFC').trim())
+        .slice(0, 4);
     }
 
     // PRÉ-REMPLIR avec les données du couple si disponibles
