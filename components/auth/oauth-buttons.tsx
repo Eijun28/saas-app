@@ -3,14 +3,22 @@
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
-export function OAuthButtons() {
+interface OAuthButtonsProps {
+  role?: 'couple' | 'prestataire'
+}
+
+export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
   const handleOAuth = async (provider: 'google' | 'github') => {
     const supabase = createClient()
+    const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const redirectTo = role
+      ? `${base}/auth/callback?role=${role}`
+      : `${base}/auth/callback`
 
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
+        redirectTo,
       },
     })
   }
