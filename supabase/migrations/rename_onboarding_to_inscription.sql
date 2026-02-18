@@ -1,11 +1,7 @@
--- Migration: Renommer onboarding_completed en inscription_completee
--- Date: 2024
+-- Migration: NEUTRALIZED - This rename broke the signup flow
+-- The application code uses onboarding_completed everywhere.
+-- Reverted by migration 066_fix_onboarding_completed_column.sql
+-- Original: ALTER TABLE profiles RENAME COLUMN onboarding_completed TO inscription_completee;
 
--- Renommer la colonne dans la table profiles
-ALTER TABLE profiles 
-  RENAME COLUMN onboarding_completed TO inscription_completee;
-
--- Mettre à jour l'index si nécessaire
-DROP INDEX IF EXISTS idx_profiles_onboarding;
-CREATE INDEX idx_profiles_inscription ON profiles(inscription_completee);
-
+-- NO-OP: Do nothing
+SELECT 1;
