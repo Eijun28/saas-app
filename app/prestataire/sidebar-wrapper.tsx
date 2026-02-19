@@ -178,9 +178,9 @@ function SidebarUserFooter() {
               <SidebarMenuButton
                 size="lg"
                 className={cn(
-                  "hover:bg-gray-100/80 rounded-lg transition-all duration-150",
+                  "hover:!bg-gray-100/80 rounded-lg transition-all duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30",
-                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
                 )}
               >
                 <Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
@@ -279,9 +279,9 @@ export function PrestataireSidebarWrapper() {
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-200/60">
+    <Sidebar collapsible="icon" className="border-r border-gray-200/60 group-data-[collapsible=icon]:border-r-0 group-data-[collapsible=icon]:shadow-[2px_0_12px_rgba(0,0,0,0.07)]">
       {/* Header */}
-      <SidebarHeader className="h-14 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-16 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <Link
           href="/prestataire/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"
@@ -318,25 +318,26 @@ export function PrestataireSidebarWrapper() {
                         isActive={isActive}
                         tooltip={item.label}
                         className={cn(
-                          "text-[13.5px] font-medium rounded-lg transition-all duration-150 h-10 relative",
-                          "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto",
-                          "group-data-[collapsible=icon]:rounded-lg",
+                          "h-10 text-gray-700 font-medium rounded-lg transition-all duration-150 relative",
+                          // Bigger button in icon-only mode (overrides base !size-8)
+                          "group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:mx-auto",
+                          // Override sidebar-accent hover with our gray
+                          "hover:!bg-gray-100/80 hover:!text-gray-900",
+                          // Override sidebar-accent active with our brand purple
+                          "data-[active=true]:!bg-[#823F91]/10 data-[active=true]:!text-[#823F91] data-[active=true]:font-semibold",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1",
-                          isActive
-                            ? "bg-[#823F91]/8 text-[#823F91] font-semibold hover:bg-[#823F91]/12 group-data-[collapsible=icon]:bg-[#823F91] group-data-[collapsible=icon]:text-white group-data-[collapsible=icon]:shadow-sm"
-                            : "hover:bg-gray-100/80 text-gray-700 hover:text-gray-900 group-data-[collapsible=icon]:hover:bg-gray-100"
                         )}
                       >
                         <Link href={item.href} onClick={handleNavClick} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
-                          {/* Active indicator bar (left edge) */}
+                          {/* Active indicator bar (left edge, expanded only) */}
                           {isActive && (
                             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] bg-[#823F91] rounded-r-full group-data-[collapsible=icon]:hidden" />
                           )}
                           <Icon className={cn(
-                            "h-[18px] w-[18px] flex-shrink-0 group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5 transition-colors duration-150",
-                            isActive
-                              ? "text-[#823F91] group-data-[collapsible=icon]:text-white"
-                              : "text-gray-500"
+                            "flex-shrink-0 transition-colors duration-150",
+                            // Bigger icons in icon-only mode (overrides parent [&>svg]:size-4)
+                            "group-data-[collapsible=icon]:!h-6 group-data-[collapsible=icon]:!w-6",
+                            isActive ? "text-[#823F91]" : "text-gray-500"
                           )} />
                           <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
                           {badgeCount > 0 && (
