@@ -18,6 +18,7 @@ import {
   PartyPopper,
   UserPlus,
   Heart,
+  Settings,
 } from "lucide-react"
 import {
   Sidebar,
@@ -80,6 +81,7 @@ const sections: NavSection[] = [
     title: "Compte",
     items: [
       { href: "/couple/profil", icon: User, label: "Profil" },
+      { href: "/couple/parametres", icon: Settings, label: "Paramètres" },
     ],
   },
 ]
