@@ -15,10 +15,14 @@ import {
   FileText,
   Settings,
   BarChart3,
+  ChevronsUpDown,
+  LogOut,
+  User,
 } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -28,9 +32,20 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useNotifications } from "@/hooks/use-notifications"
+import { useUser } from "@/hooks/use-user"
+import { createClient } from "@/lib/supabase/client"
+import { signOut } from "@/lib/auth/actions"
 
 /* ─────────────────────────────────────────────
    Sidebar sections with nav items
@@ -117,6 +132,126 @@ function SidebarToggleButton() {
 }
 
 /* ─────────────────────────────────────────────
+   User footer card
+   ───────────────────────────────────────────── */
+
+function SidebarUserFooter() {
+  const { user } = useUser()
+  const [profile, setProfile] = React.useState<{ name: string; avatar?: string } | null>(null)
+
+  React.useEffect(() => {
+    if (!user) return
+    const load = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('profiles')
+        .select('prenom, nom, avatar_url')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        const fullName = [data.prenom, data.nom].filter(Boolean).join(' ') || 'Prestataire'
+        setProfile({ name: fullName, avatar: data.avatar_url ?? undefined })
+      }
+    }
+    load()
+  }, [user?.id])
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      window.location.href = '/'
+    } catch {
+      window.location.href = '/'
+    }
+  }
+
+  const initials = profile?.name
+    ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'P'
+
+  return (
+    <SidebarFooter className="border-t border-gray-100 p-2">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className={cn(
+                  "hover:bg-gray-100/80 rounded-lg transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
+                )}
+              >
+                <Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
+                  <AvatarImage
+                    src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined}
+                    alt={profile?.name}
+                    key={profile?.avatar}
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs font-semibold rounded-lg">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                  <span className="truncate font-semibold text-gray-900 text-[13px]">
+                    {profile?.name || 'Prestataire'}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#823F91] uppercase tracking-wide">
+                    Prestataire
+                  </span>
+                </div>
+                <ChevronsUpDown className="ml-auto h-3.5 w-3.5 text-gray-400 group-data-[collapsible=icon]:hidden" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="top"
+              align="end"
+              sideOffset={4}
+              className="w-56 p-1"
+            >
+              <div className="px-2.5 py-2">
+                <p className="text-[13px] font-semibold text-gray-900 truncate">
+                  {profile?.name || 'Prestataire'}
+                </p>
+                <p className="text-[11px] text-gray-500 truncate">{user?.email}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/prestataire/profil-public"
+                  className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2"
+                >
+                  <User className="h-4 w-4 text-gray-500" />
+                  <span className="text-[13px]">Profil public</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/prestataire/parametres"
+                  className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2"
+                >
+                  <Settings className="h-4 w-4 text-gray-500" />
+                  <span className="text-[13px]">Paramètres</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                className="flex items-center gap-2.5 cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 rounded-md px-2.5 py-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-[13px]">Déconnexion</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  )
+}
+
+/* ─────────────────────────────────────────────
    Sidebar wrapper
    ───────────────────────────────────────────── */
 
@@ -181,6 +316,7 @@ export function PrestataireSidebarWrapper() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
+                        tooltip={item.label}
                         className={cn(
                           "text-[13.5px] font-medium rounded-lg transition-all duration-150 h-10 relative",
                           "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:w-10 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:mx-auto",
@@ -218,6 +354,9 @@ export function PrestataireSidebarWrapper() {
           </SidebarGroup>
         ))}
       </SidebarContent>
+
+      {/* Footer with user card */}
+      <SidebarUserFooter />
     </Sidebar>
   )
 }
