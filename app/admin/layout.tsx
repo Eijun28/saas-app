@@ -64,6 +64,12 @@ export default async function AdminLayout({
               >
                 Early Adopters
               </a>
+              <a
+                href="/admin/ambassadeurs"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Ambassadeurs
+              </a>
             </div>
           </div>
         </div>
