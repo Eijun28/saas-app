@@ -54,10 +54,12 @@ export async function POST(request: NextRequest) {
           const planType = priceId === STRIPE_PRICE_IDS.expert ? 'expert' :
                           priceId === STRIPE_PRICE_IDS.pro ? 'pro' : 'expert'
 
+          const userId = session.metadata?.userId
+
           await adminClient
             .from('subscriptions')
             .upsert({
-              user_id: session.metadata?.userId,
+              user_id: userId,
               stripe_customer_id: subscription.customer as string,
               stripe_subscription_id: subscription.id,
               stripe_price_id: priceId,
@@ -69,6 +71,17 @@ export async function POST(request: NextRequest) {
             }, {
               onConflict: 'user_id'
             })
+
+          // Bonus ambassadeur : créditer la conversion si ce filleul a été parrainé
+          if (userId) {
+            const { error: bonusError } = await adminClient.rpc(
+              'credit_ambassador_conversion_bonus',
+              { p_referred_user_id: userId }
+            )
+            if (bonusError) {
+              logger.error('Erreur credit_ambassador_conversion_bonus', bonusError)
+            }
+          }
         }
         break
       }

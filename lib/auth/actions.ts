@@ -435,13 +435,15 @@ export async function signUp(
 
             if (referralData) {
               // Enregistrer l'usage du parrainage
-              await adminClient
+              const { data: usageData } = await adminClient
                 .from('referral_usages')
                 .insert({
                   referral_code: referralData.referral_code,
                   referrer_id: referralData.provider_id,
                   referred_user_id: data.user.id,
                 })
+                .select('id')
+                .single()
 
               // Incrémenter le compteur
               await adminClient
@@ -457,6 +459,17 @@ export async function signUp(
                 referred: data.user.id,
                 code: referralData.referral_code,
               })
+
+              // Bonus ambassadeur : créditer le signup si le parrain est ambassadeur actif
+              if (usageData?.id) {
+                const { error: bonusError } = await adminClient.rpc(
+                  'credit_ambassador_signup_bonus',
+                  { p_referral_usage_id: usageData.id }
+                )
+                if (bonusError) {
+                  logger.warn('Erreur credit_ambassador_signup_bonus (non bloquant):', bonusError)
+                }
+              }
             }
           } catch (referralError) {
             // Ne pas bloquer l'inscription si le parrainage échoue
