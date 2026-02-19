@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Copy, Check, Users, TrendingUp, Wallet, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import type { AmbassadorDashboard, AmbassadorEarningType } from '@/types/ambassador'
 
@@ -55,6 +56,7 @@ export default function AmbassadorSection() {
 
   if (isLoading || !data) return null
 
+  const cardClass = "bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] border border-gray-100 rounded-2xl"
   const referralLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/sign-up?ref=${data.referral_code}`
 
   function copyCode() {
@@ -73,6 +75,13 @@ export default function AmbassadorSection() {
   const milestoneProgress = Math.min(data.total_referrals, 20)
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.03 }}
+    >
+    <Card className={cardClass}>
+    <div className="p-5 sm:p-7">
     <div className="space-y-6">
       {/* En-tête ambassadeur */}
       <div className="flex items-start gap-3">
@@ -242,5 +251,8 @@ export default function AmbassadorSection() {
         </div>
       )}
     </div>
+    </div>
+    </Card>
+    </motion.div>
   )
 }
