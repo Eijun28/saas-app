@@ -8,7 +8,7 @@ interface OAuthButtonsProps {
 }
 
 export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = async (provider: 'google') => {
     const supabase = createClient()
     const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
     const redirectTo = role
@@ -42,21 +42,6 @@ export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
         </svg>
         Continuer avec Google
-      </Button>
-      <Button
-        onClick={() => handleOAuth('apple')}
-        variant="outline"
-        className="w-full"
-        type="button"
-      >
-        <svg
-          className="mr-2 h-4 w-4"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.39.07 2.35.74 3.18.78 1.2-.24 2.36-.93 3.63-.84 1.54.12 2.7.72 3.46 1.83-3.17 1.89-2.42 6.03.73 7.24-.61 1.52-1.41 3.02-3 3.87zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-        </svg>
-        Continuer avec Apple
       </Button>
     </div>
   )
