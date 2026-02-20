@@ -164,19 +164,30 @@ export default function SignUpPage() {
       >
         <ArrowLeft className="h-4 w-4" />
       </button>
-      <div className="flex gap-1.5">
+      <div className="flex items-center gap-1.5">
         {emailSteps.map((s, i) => (
-          <div
-            key={s}
-            className={cn(
-              'h-1.5 w-6 rounded-full transition-colors duration-300',
-              i === currentStepIndex
-                ? 'bg-[#823F91]'
-                : i < currentStepIndex
-                ? 'bg-[#823F91]/40'
-                : 'bg-neutral-200'
+          <div key={s} className="flex items-center gap-1.5">
+            <div
+              className={cn(
+                'h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300',
+                i === currentStepIndex
+                  ? 'bg-[#823F91] text-white shadow-sm shadow-purple-500/30'
+                  : i < currentStepIndex
+                  ? 'bg-[#823F91]/20 text-[#823F91]'
+                  : 'bg-neutral-100 text-neutral-400'
+              )}
+            >
+              {i + 1}
+            </div>
+            {i < emailSteps.length - 1 && (
+              <div
+                className={cn(
+                  'h-px w-4 transition-colors duration-300',
+                  i < currentStepIndex ? 'bg-[#823F91]/40' : 'bg-neutral-200'
+                )}
+              />
             )}
-          />
+          </div>
         ))}
       </div>
       <div className="w-6" />
