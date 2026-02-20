@@ -40,7 +40,7 @@ export function MessagingLayout({
   // Mobile/Tablette : afficher soit la liste soit la conversation
   if (isMobile) {
     return (
-      <div className="flex flex-col h-full gap-4">
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
         <PageTitle
           title="Messagerie"
           description={userType === 'couple'
@@ -57,7 +57,7 @@ export function MessagingLayout({
 
   // Desktop : deux cartes quand conversation sélectionnée, une carte centrée sinon
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
       <PageTitle
         title="Messagerie"
         description={userType === 'couple'
