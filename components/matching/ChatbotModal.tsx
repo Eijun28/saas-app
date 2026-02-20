@@ -194,12 +194,13 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
                             disabled={isLoading}
                             className={cn(
                               'px-3 py-1.5 text-sm rounded-full border transition-all duration-150',
-                              'border-[#823F91] text-[#823F91]',
+                              'border-[#823F91] bg-white text-[#823F91]',
                               'hover:bg-[#823F91] hover:text-white',
                               'active:scale-95',
                               'disabled:opacity-50 disabled:cursor-not-allowed',
                               'font-medium'
                             )}
+                            style={{ color: '#823F91' }}
                           >
                             {suggestion}
                           </button>
