@@ -80,8 +80,8 @@ function SectionHeader({ icon: Icon, title, description }: {
         <Icon className="h-5 w-5 text-[#823F91]" />
       </div>
       <div>
-        <h3 className="font-semibold text-base sm:text-lg text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+        <h3 className="font-semibold text-base sm:text-lg text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
       </div>
     </div>
   )
@@ -257,7 +257,7 @@ export default function ParametresPage() {
     }
   }
 
-  const cardClass = "bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] border border-gray-100 rounded-2xl"
+  const cardClass = "card-section"
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8 pb-12">
@@ -286,23 +286,23 @@ export default function ParametresPage() {
               {/* Prénom + Nom */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="prenom" className="text-sm font-medium text-gray-700">Prénom</Label>
+                  <Label htmlFor="prenom" className="text-sm font-medium text-foreground/80">Prénom</Label>
                   <Input
                     id="prenom"
                     placeholder="Votre prénom"
                     {...registerInfo('prenom')}
-                    className="h-12 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isSavingInfo}
                   />
                   {errorsInfo.prenom && <p className="text-sm text-red-500 pl-1">{errorsInfo.prenom.message}</p>}
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="nom" className="text-sm font-medium text-gray-700">Nom</Label>
+                  <Label htmlFor="nom" className="text-sm font-medium text-foreground/80">Nom</Label>
                   <Input
                     id="nom"
                     placeholder="Votre nom"
                     {...registerInfo('nom')}
-                    className="h-12 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isSavingInfo}
                   />
                   {errorsInfo.nom && <p className="text-sm text-red-500 pl-1">{errorsInfo.nom.message}</p>}
@@ -311,20 +311,20 @@ export default function ParametresPage() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email-info" className="text-sm font-medium text-gray-700">Adresse email</Label>
+                <Label htmlFor="email-info" className="text-sm font-medium text-foreground/80">Adresse email</Label>
                 {isGoogleUser && (
                   <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                     Votre compte est lié à Google. Modifier l&apos;email ici enverra un lien de confirmation à la nouvelle adresse.
                   </p>
                 )}
                 <div className="relative group">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-gray-400 transition-colors group-focus-within:text-[#823F91]" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-muted-foreground/60 transition-colors group-focus-within:text-primary" />
                   <Input
                     id="email-info"
                     type="email"
                     placeholder="votre@email.com"
                     {...registerInfo('email')}
-                    className="h-12 pl-11 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 pl-11 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isSavingInfo}
                   />
                 </div>
@@ -396,8 +396,8 @@ export default function ParametresPage() {
               {/* Current plan row */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Forfait Discovery</p>
-                  <p className="text-sm text-gray-500">Gratuit</p>
+                  <p className="text-sm font-semibold text-foreground">Forfait Discovery</p>
+                  <p className="text-sm text-muted-foreground">Gratuit</p>
                 </div>
                 <button
                   onClick={() => toast.info('La gestion des abonnements sera disponible prochainement.')}
@@ -438,23 +438,23 @@ export default function ParametresPage() {
             <form onSubmit={handleSubmit(onSubmitPassword)} className="space-y-5">
               {/* Current password */}
               <div className="space-y-2">
-                <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="currentPassword" className="text-sm font-medium text-foreground/80">
                   Mot de passe actuel
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-gray-400 transition-colors group-focus-within:text-[#823F91]" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-muted-foreground/60 transition-colors group-focus-within:text-primary" />
                   <Input
                     id="currentPassword"
                     type={showCurrent ? 'text' : 'password'}
                     placeholder="Votre mot de passe actuel"
                     {...register('currentPassword')}
-                    className="h-12 pl-11 pr-12 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 pl-11 pr-12 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrent(!showCurrent)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors p-1 rounded-md hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label={showCurrent ? 'Masquer' : 'Afficher'}
                   >
                     {showCurrent ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
@@ -467,23 +467,23 @@ export default function ParametresPage() {
 
               {/* New password */}
               <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="newPassword" className="text-sm font-medium text-foreground/80">
                   Nouveau mot de passe
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-gray-400 transition-colors group-focus-within:text-[#823F91]" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-muted-foreground/60 transition-colors group-focus-within:text-primary" />
                   <Input
                     id="newPassword"
                     type={showNew ? 'text' : 'password'}
                     placeholder="Minimum 8 caractères"
                     {...register('newPassword')}
-                    className="h-12 pl-11 pr-12 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 pl-11 pr-12 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNew(!showNew)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors p-1 rounded-md hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label={showNew ? 'Masquer' : 'Afficher'}
                   >
                     {showNew ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
@@ -515,23 +515,23 @@ export default function ParametresPage() {
 
               {/* Confirm password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground/80">
                   Confirmer le nouveau mot de passe
                 </Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-gray-400 transition-colors group-focus-within:text-[#823F91]" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-muted-foreground/60 transition-colors group-focus-within:text-primary" />
                   <Input
                     id="confirmPassword"
                     type={showConfirm ? 'text' : 'password'}
                     placeholder="Confirmez votre nouveau mot de passe"
                     {...register('confirmPassword')}
-                    className="h-12 pl-11 pr-12 border-gray-200 bg-gray-50 rounded-xl text-[15px] placeholder:text-gray-400 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#823F91]/20 focus-visible:border-[#823F91] focus-visible:bg-white hover:border-gray-300"
+                    className="h-11 pl-11 pr-12 border-border bg-muted/50 rounded-xl text-[15px] placeholder:text-muted-foreground/60 transition-colors focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary focus-visible:bg-card hover:border-border/80"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors p-1 rounded-md hover:bg-muted min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label={showConfirm ? 'Masquer' : 'Afficher'}
                   >
                     {showConfirm ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
@@ -591,14 +591,14 @@ export default function ParametresPage() {
 
             <div className="space-y-1">
               {/* New requests */}
-              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-lg bg-blue-50">
                     <Mail className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Nouvelles demandes</p>
-                    <p className="text-xs text-gray-500">Recevez un email quand un couple vous envoie une demande</p>
+                    <p className="text-sm font-medium text-foreground">Nouvelles demandes</p>
+                    <p className="text-xs text-muted-foreground">Recevez un email quand un couple vous envoie une demande</p>
                   </div>
                 </div>
                 <Switch
@@ -608,17 +608,17 @@ export default function ParametresPage() {
                 />
               </div>
 
-              <div className="mx-4 border-t border-gray-100" />
+              <div className="mx-4 border-t border-border/50" />
 
               {/* Messages */}
-              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-purple-50">
-                    <MessageSquare className="h-4 w-4 text-purple-600" />
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <MessageSquare className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Messages</p>
-                    <p className="text-xs text-gray-500">Soyez notifié quand vous recevez un nouveau message</p>
+                    <p className="text-sm font-medium text-foreground">Messages</p>
+                    <p className="text-xs text-muted-foreground">Soyez notifié quand vous recevez un nouveau message</p>
                   </div>
                 </div>
                 <Switch
@@ -628,17 +628,17 @@ export default function ParametresPage() {
                 />
               </div>
 
-              <div className="mx-4 border-t border-gray-100" />
+              <div className="mx-4 border-t border-border/50" />
 
               {/* Calendar reminders */}
-              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-lg bg-green-50">
                     <Calendar className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Rappels d&apos;agenda</p>
-                    <p className="text-xs text-gray-500">Recevez des rappels pour vos événements à venir</p>
+                    <p className="text-sm font-medium text-foreground">Rappels d&apos;agenda</p>
+                    <p className="text-xs text-muted-foreground">Recevez des rappels pour vos événements à venir</p>
                   </div>
                 </div>
                 <Switch
@@ -648,17 +648,17 @@ export default function ParametresPage() {
                 />
               </div>
 
-              <div className="mx-4 border-t border-gray-100" />
+              <div className="mx-4 border-t border-border/50" />
 
               {/* Newsletter */}
-              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors">
+              <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-lg bg-amber-50">
                     <Newspaper className="h-4 w-4 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Newsletter & conseils</p>
-                    <p className="text-xs text-gray-500">Conseils pour développer votre activité sur Nuply</p>
+                    <p className="text-sm font-medium text-foreground">Newsletter & conseils</p>
+                    <p className="text-xs text-muted-foreground">Conseils pour développer votre activité sur Nuply</p>
                   </div>
                 </div>
                 <Switch
@@ -689,14 +689,14 @@ export default function ParametresPage() {
             />
 
             {/* Export data */}
-            <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-gray-50/80 transition-colors mb-1">
+            <div className="flex items-center justify-between py-3.5 px-4 rounded-xl hover:bg-muted/50 transition-colors mb-1">
               <div className="flex items-center gap-3">
-                <div className="p-1.5 rounded-lg bg-gray-100">
-                  <Download className="h-4 w-4 text-gray-600" />
+                <div className="p-1.5 rounded-lg bg-muted">
+                  <Download className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Exporter mes données</p>
-                  <p className="text-xs text-gray-500">Téléchargez une copie de toutes vos données (profil, demandes, messages)</p>
+                  <p className="text-sm font-medium text-foreground">Exporter mes données</p>
+                  <p className="text-xs text-muted-foreground">Téléchargez une copie de toutes vos données (profil, demandes, messages)</p>
                 </div>
               </div>
               <button
@@ -708,7 +708,7 @@ export default function ParametresPage() {
               </button>
             </div>
 
-            <div className="mx-4 border-t border-gray-100 my-2" />
+            <div className="mx-4 border-t border-border/50 my-2" />
 
             {/* Delete account */}
             <div className="px-4 py-3.5">
@@ -717,8 +717,8 @@ export default function ParametresPage() {
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Supprimer mon compte</p>
-                  <p className="text-xs text-gray-500">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</p>
+                  <p className="text-sm font-medium text-foreground">Supprimer mon compte</p>
+                  <p className="text-xs text-muted-foreground">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</p>
                 </div>
               </div>
 
@@ -760,7 +760,7 @@ export default function ParametresPage() {
                         setShowDeleteConfirm(false)
                         setDeleteConfirmText('')
                       }}
-                      className="text-sm font-medium text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg hover:bg-muted transition-colors"
                     >
                       Annuler
                     </button>
@@ -781,7 +781,7 @@ export default function ParametresPage() {
         transition={{ delay: 0.25 }}
         className="text-center py-4"
       >
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Besoin d&apos;aide ? Contactez notre{' '}
           <button
             onClick={() => toast.info('Le support sera disponible prochainement.')}

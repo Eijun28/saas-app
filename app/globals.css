@@ -159,6 +159,38 @@ button, .button, .btn {
   transition: all 0.2s ease;
 }
 
+/* ─── Tab pill — style premium SaaS ──────────────────────────────────────── */
+@layer components {
+  .tab-pill {
+    color: hsl(var(--violet-500));
+    background: hsl(0 0% 100%);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .tab-pill[data-state="active"] {
+    background: linear-gradient(135deg, hsl(var(--violet-500)), hsl(var(--violet-600)));
+    color: hsl(0 0% 100%);
+    box-shadow: 0 1px 4px hsl(var(--violet-500) / 0.25);
+  }
+  /* ─── Card section standard ─────────────────────────────────────────────── */
+  .card-section {
+    background: hsl(0 0% 100% / 0.72);
+    backdrop-filter: blur(8px);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow:
+      0 1px 3px hsl(var(--shadow-color) / 0.04),
+      0 4px 12px hsl(var(--violet-500) / 0.06);
+    border-radius: var(--radius);
+    transition: box-shadow 0.2s ease;
+  }
+  .card-section:hover {
+    box-shadow:
+      0 2px 6px hsl(var(--shadow-color) / 0.04),
+      0 6px 16px hsl(var(--violet-500) / 0.09);
+  }
+}
+
 @layer utilities {
   /* gradient-subtle conservé car fonctionnel pour les backgrounds */
   .gradient-subtle {
