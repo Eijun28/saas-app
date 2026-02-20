@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
+import { z } from 'zod'
 import { signUp } from '@/lib/auth/actions'
 import { translateAuthError } from '@/lib/auth/error-translations'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Sparkles, Gift, ArrowLeft, Mail } from 'lucide-react'
+import { Lock, Gift, ArrowLeft, Mail } from 'lucide-react'
 import Particles from '@/components/Particles'
 import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
@@ -22,7 +23,7 @@ type Step = 'initial' | 'email' | 'names' | 'company' | 'password'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setFormError] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('initial')
   const router = useRouter()
 
@@ -34,8 +35,9 @@ export default function SignUpPage() {
     handleSubmit,
     watch,
     setValue,
+    setError,
+    clearErrors,
     formState: { errors },
-    trigger,
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -68,24 +70,53 @@ export default function SignUpPage() {
     else if (step === 'password') setStep(isPrestataire ? 'company' : 'names')
   }
 
-  const handleContinueEmail = async () => {
-    const isValid = await trigger('email')
-    if (isValid) setStep('names')
+  const handleContinueEmail = () => {
+    const email = watch('email')
+    const result = z.string().min(1, "L'email est requis").email('Email invalide').safeParse(email)
+    if (result.success) {
+      clearErrors('email')
+      setStep('names')
+    } else {
+      setError('email', { message: result.error.issues[0]?.message ?? 'Email invalide' })
+    }
   }
 
-  const handleContinueNames = async () => {
-    const isValid = await trigger(['prenom', 'nom'])
-    if (isValid) setStep(isPrestataire ? 'company' : 'password')
+  const handleContinueNames = () => {
+    const prenom = watch('prenom')
+    const nom = watch('nom')
+    const nameSchema = z.string().min(1, 'Requis').min(2, 'Minimum 2 caractères')
+    const prenomResult = nameSchema.safeParse(prenom)
+    const nomResult = nameSchema.safeParse(nom)
+    let valid = true
+    if (!prenomResult.success) {
+      setError('prenom', { message: prenomResult.error.issues[0]?.message ?? 'Prénom invalide' })
+      valid = false
+    } else {
+      clearErrors('prenom')
+    }
+    if (!nomResult.success) {
+      setError('nom', { message: nomResult.error.issues[0]?.message ?? 'Nom invalide' })
+      valid = false
+    } else {
+      clearErrors('nom')
+    }
+    if (valid) setStep(isPrestataire ? 'company' : 'password')
   }
 
-  const handleContinueCompany = async () => {
-    const isValid = await trigger('nomEntreprise')
-    if (isValid) setStep('password')
+  const handleContinueCompany = () => {
+    const nomEntreprise = watch('nomEntreprise') ?? ''
+    const result = z.string().min(2, "Le nom de l'entreprise est requis (minimum 2 caractères)").safeParse(nomEntreprise)
+    if (result.success) {
+      clearErrors('nomEntreprise')
+      setStep('password')
+    } else {
+      setError('nomEntreprise', { message: result.error.issues[0]?.message ?? "Nom d'entreprise invalide" })
+    }
   }
 
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true)
-    setError(null)
+    setFormError(null)
 
     try {
       const result = await signUp(data.email, data.password, data.role, {
@@ -96,12 +127,12 @@ export default function SignUpPage() {
       })
 
       if (!result) {
-        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
+        setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
         return
       }
 
       if ('error' in result && result.error) {
-        setError(result.error)
+        setFormError(result.error)
       } else if ('success' in result && result.success) {
         let redirectUrl = ('redirectTo' in result && result.redirectTo) ? result.redirectTo : '/auth/confirm'
         if ('emailWarning' in result && result.emailWarning) {
@@ -109,10 +140,10 @@ export default function SignUpPage() {
         }
         router.push(redirectUrl)
       } else {
-        setError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
+        setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
     } catch (err: any) {
-      setError(translateAuthError(err?.message))
+      setFormError(translateAuthError(err?.message))
     } finally {
       setIsLoading(false)
     }
@@ -224,7 +255,6 @@ export default function SignUpPage() {
 
             <CardHeader className="space-y-4 pb-4 text-center relative z-10">
               <div className="flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5 text-[#823F91]" />
                 <CardTitle className="text-2xl font-bold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent">
                   Créer votre compte
                 </CardTitle>
