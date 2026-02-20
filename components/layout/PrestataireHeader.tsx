@@ -1,15 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Bell, PanelLeft, Inbox, Calendar, MessageSquare } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/lib/auth/actions'
 
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -26,7 +24,6 @@ export function PrestataireHeader() {
   const { user } = useUser()
   const pathname = usePathname()
   const router = useRouter()
-  const { openMobile, setOpenMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -146,24 +143,10 @@ export function PrestataireHeader() {
       <div className="flex-1 bg-white/95 backdrop-blur-xl border-b border-gray-200/70 shadow-[0_1px_8px_0_rgba(0,0,0,0.06)] flex items-center">
         <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">
 
-          {/* Left: mobile toggle + page title */}
+          {/* Left: page title + quick actions */}
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* Mobile burger */}
-            <div className="md:hidden flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenMobile(!openMobile) }}
-                className="h-8 w-8 rounded-lg text-gray-500 hover:bg-violet-50 hover:text-violet-600 transition-colors"
-                style={{ pointerEvents: 'auto' }}
-                aria-label={openMobile ? 'Fermer la sidebar' : 'Ouvrir la sidebar'}
-              >
-                <PanelLeft className="h-[18px] w-[18px]" />
-              </Button>
-            </div>
-
-            {/* Status pill */}
-            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-100 text-[11px] font-semibold text-violet-600 flex-shrink-0">
+            {/* Status pill — visible on all screens */}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-100 text-[11px] font-semibold text-violet-600 flex-shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-violet-500 inline-block" />
               Prestataire
             </span>

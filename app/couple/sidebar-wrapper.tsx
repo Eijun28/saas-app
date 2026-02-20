@@ -275,6 +275,9 @@ export function CoupleSidebarWrapper() {
     }
   }, [pathname])
 
+  // On mobile, the bottom nav handles all navigation — no sidebar needed
+  if (isMobile) return null
+
   const handleNavClick = () => {
     if (isMobile) {
       setOpenMobile(false)

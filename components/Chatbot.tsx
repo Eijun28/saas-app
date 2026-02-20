@@ -349,7 +349,7 @@ export default function Chatbot() {
             background: '#E6D5BE',
             boxShadow: '0 20px 25px -5px rgba(180, 160, 130, 0.35), 0 10px 10px -5px rgba(180, 160, 130, 0.25)',
             right: isMobile ? '16px' : '24px',
-            bottom: isMobile ? '80px' : '24px', // Éviter la barre de navigation mobile
+            bottom: isMobile ? 'calc(72px + env(safe-area-inset-bottom))' : '24px', // Éviter la barre de navigation mobile
             position: 'fixed',
             left: 'auto',
             top: 'auto',

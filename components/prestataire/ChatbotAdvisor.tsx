@@ -118,7 +118,7 @@ export function ChatbotAdvisor() {
             onClick={() => setIsOpen(true)}
             className="fixed z-[201] w-14 h-14 rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-lg shadow-[#823F91]/30 flex items-center justify-center transition-colors"
             style={{
-              bottom: isMobile ? '76px' : '24px',
+              bottom: isMobile ? 'calc(72px + env(safe-area-inset-bottom))' : '24px',
               right: isMobile ? '16px' : '24px',
             }}
             aria-label="Ouvrir le conseiller IA"
