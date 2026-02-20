@@ -111,7 +111,20 @@ export default function ProviderMatchCard({
         </div>
 
         {/* Score badge */}
-        <div className="ml-auto text-right flex-shrink-0">
+        <div className="ml-auto text-right flex-shrink-0 flex flex-col items-center gap-1.5">
+          {/* Badge compatibilité */}
+          <span
+            className={cn(
+              'text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap',
+              score > 90
+                ? 'bg-green-100 text-green-700'
+                : score >= 75
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-gray-100 text-gray-600'
+            )}
+          >
+            {Math.round(score)}% compatible
+          </span>
           <div
             className={cn(
               'w-20 h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',

@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import MatchResults from '@/components/matching/MatchResults';
+import LoadingMatching from '@/components/matching/LoadingMatching';
 
 type Vue = 'landing' | 'chat' | 'validation' | 'results';
 
@@ -198,6 +199,19 @@ export default function MatchingPage() {
         } catch (error) {
           console.error('Erreur sauvegarde conversation:', error);
           // Ne pas bloquer le passage à la validation même si la sauvegarde échoue
+        }
+      }
+      setVue('validation');
+    }
+  };
+
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (isLoading) return;
+    const nextAction = await sendMessage(suggestion);
+    if (nextAction === 'validate') {
+      if (coupleId && extractedServiceType) {
+        try { await handleSaveConversation(); } catch (error) {
+          console.error('Erreur sauvegarde conversation:', error);
         }
       }
       setVue('validation');
@@ -474,6 +488,7 @@ export default function MatchingPage() {
             onKeyPress={handleKeyPress}
             onBack={handleGoBack}
             onOpenConversations={handleOpenConversations}
+            onSuggestionClick={handleSuggestionClick}
             coupleProfile={coupleProfile}
             savedConversations={savedConversations}
             loadingConversations={loadingConversations}
@@ -481,7 +496,19 @@ export default function MatchingPage() {
           />
         )}
 
-        {vue === 'validation' && (
+        {vue === 'validation' && isMatchingLoading && (
+          <motion.div
+            key="loading-matching"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <LoadingMatching />
+          </motion.div>
+        )}
+
+        {vue === 'validation' && !isMatchingLoading && (
           <ValidationView
             key="validation"
             criteria={extractedCriteria}
@@ -700,6 +727,7 @@ interface ChatViewProps {
   onKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onBack: () => void;
   onOpenConversations: () => void;
+  onSuggestionClick: (suggestion: string) => void;
   coupleProfile: any;
   savedConversations: ChatbotConversation[];
   loadingConversations: boolean;
@@ -718,6 +746,7 @@ function ChatView({
   onKeyPress,
   onBack,
   onOpenConversations,
+  onSuggestionClick,
   coupleProfile,
   savedConversations,
   loadingConversations,
@@ -725,7 +754,17 @@ function ChatView({
 }: ChatViewProps) {
   // Déterminer si on a des messages (plus que le message initial du bot)
   const hasMessages = messages.length > 1;
-  
+
+  // Progression dans la conversation (barre de progression #3)
+  const botMessageCount = messages.filter((m) => m.role === 'bot').length;
+  const chatProgress = Math.min((botMessageCount / 7) * 100, 95);
+
+  // Index du dernier message bot (pour afficher les chips #4)
+  const lastBotMsgIndex = messages.reduce(
+    (acc, m, i) => (m.role === 'bot' ? i : acc),
+    -1
+  );
+
   // State pour gérer les erreurs de chargement d'image du bot
   const [botAvatarError, setBotAvatarError] = useState(false);
   // State pour gérer les erreurs de chargement d'image du couple
@@ -893,6 +932,16 @@ function ChatView({
         </div>
       </header>
 
+      {/* Barre de progression (#3) — visible uniquement en conversation */}
+      {hasMessages && (
+        <div className="h-0.5 bg-gray-100 flex-shrink-0">
+          <div
+            className="h-full bg-gradient-to-r from-[#823F91] to-[#9333ea] transition-all duration-700 ease-out"
+            style={{ width: `${chatProgress}%` }}
+          />
+        </div>
+      )}
+
       {!hasMessages ? (
         /* ÉTAT INITIAL - CENTRÉ (style Claude) */
         <div className="flex-1 flex items-start justify-center px-4 pt-12 sm:pt-16">
@@ -1005,9 +1054,25 @@ function ChatView({
 
                   {/* Message bot - avec style amélioré */}
                   {message.role === 'bot' && (
-                    <div className="flex-1 bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
-                      {/* Les accents sont corrigés côté API (fixUtf8Encoding) */}
-                      {message.content.replace(/\uFFFD/g, '')}
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
+                        {/* Les accents sont corrigés côté API (fixUtf8Encoding) */}
+                        {message.content.replace(/\uFFFD/g, '')}
+                      </div>
+                      {/* Quick reply chips (#4) — dernier message bot uniquement */}
+                      {index === lastBotMsgIndex && !isLoading && message.suggestions && message.suggestions.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {message.suggestions.map((suggestion, i) => (
+                            <button
+                              key={i}
+                              onClick={() => onSuggestionClick(suggestion)}
+                              className="px-3 py-1.5 text-xs sm:text-sm rounded-full border border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-all duration-150 active:scale-95 font-medium"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1043,7 +1108,8 @@ function ChatView({
                   animate={{ opacity: 1 }}
                   className="flex gap-2 sm:gap-3 items-start"
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {/* Avatar IA animé (#1) — pulse pendant le chargement */}
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-[#823F91]/50 ring-offset-1 animate-pulse">
                     {!botAvatarError ? (
                       <img
                         src="/images/ai-assistant-avatar-3d.png"

@@ -14,23 +14,23 @@ export default function LoadingMatching() {
   const steps: LoadingStep[] = [
     {
       icon: Brain,
-      text: 'Je comprends vos besoins en profondeur...',
-      duration: 1000,
+      text: 'Analyse de vos cultures...',
+      duration: 800,
     },
     {
       icon: Search,
-      text: "J'analyse les prestataires...",
-      duration: 1200,
+      text: 'Vérification des disponibilités...',
+      duration: 900,
     },
     {
       icon: Target,
-      text: 'Je calcule les scores de compatibilité...',
-      duration: 1000,
+      text: 'Calcul des compatibilités...',
+      duration: 900,
     },
     {
       icon: Star,
-      text: 'Je sélectionne les 3 meilleurs matchs...',
-      duration: 800,
+      text: 'Sélection des meilleurs profils...',
+      duration: 900,
     },
   ];
 
