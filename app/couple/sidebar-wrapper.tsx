@@ -197,7 +197,7 @@ function SidebarUserFooter() {
                 <div className="p-[2px] rounded-lg bg-gradient-to-br from-pink-400 via-violet-400 to-purple-600 flex-shrink-0">
                   <Avatar className="h-7 w-7 rounded-md">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                    <AvatarFallback className="bg-[#1a0b35] text-white text-xs font-bold rounded-md">
+                    <AvatarFallback className="bg-[#5C2B66] text-white text-xs font-bold rounded-md">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -206,7 +206,7 @@ function SidebarUserFooter() {
                   <span className="truncate font-semibold text-white text-[13px]">
                     {profile?.name || 'Couple'}
                   </span>
-                  <span className="text-[10px] font-semibold text-pink-300 uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-[#D4ADE0] uppercase tracking-wide">
                     Couple
                   </span>
                 </div>
@@ -292,7 +292,7 @@ export function CoupleSidebarWrapper() {
       collapsible="icon"
       className="border-r-0"
       style={{
-        background: 'linear-gradient(160deg, #140A2A 0%, #1F0E40 50%, #2A1155 100%)',
+        background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)',
       }}
     >
       {/* Header */}
@@ -333,9 +333,9 @@ export function CoupleSidebarWrapper() {
                         isActive={isActive}
                         tooltip={item.label}
                         className={cn(
-                          "h-10 font-medium rounded-xl transition-all duration-150 relative",
+                          "h-10 font-medium rounded-xl transition-all duration-150 relative cursor-pointer",
                           "group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:mx-auto",
-                          "hover:!bg-white/8 hover:!text-white",
+                          "hover:!bg-white/10 hover:!text-[#D4ADE0]",
                           isActive
                             ? "!bg-white/12 !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                             : "!text-white/60",
@@ -345,7 +345,7 @@ export function CoupleSidebarWrapper() {
                         <Link
                           href={item.href}
                           onClick={handleNavClick}
-                          className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative"
+                          className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative cursor-pointer"
                         >
                           {/* Active glow pill (left edge) */}
                           {isActive && (
