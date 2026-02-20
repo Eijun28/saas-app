@@ -244,6 +244,7 @@ export default function CoupleProfilPage() {
   const { user, loading: userLoading } = useUser()
 
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [saving, setSaving] = useState(false)
 
@@ -356,13 +357,16 @@ export default function CoupleProfilPage() {
     return mapping[stage] || 0
   }
 
-  const loadProfile = async () => {
+  const loadProfile = async (silent = false) => {
 
     if (!user) return
 
-    
 
-    setLoading(true)
+    if (silent) {
+      setIsRefreshing(true)
+    } else {
+      setLoading(true)
+    }
 
     const supabase = createClient()
 
@@ -475,6 +479,7 @@ export default function CoupleProfilPage() {
     } finally {
 
       setLoading(false)
+      setIsRefreshing(false)
 
     }
 
@@ -744,11 +749,8 @@ export default function CoupleProfilPage() {
 
       toast.success('Profil mis à jour avec succès')
 
-      // ✅ FIX: Augmenter délai à 1500ms au lieu de 600ms
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Recharger le profil depuis la DB
-      loadProfile()
+      // Recharger en mode silencieux — pas de spinner plein écran
+      loadProfile(true)
 
     } catch (error) {
 
@@ -780,7 +782,7 @@ export default function CoupleProfilPage() {
 
     return (
 
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
 
         <motion.div
 
@@ -790,7 +792,7 @@ export default function CoupleProfilPage() {
 
         >
 
-          <Loader2 className="h-8 w-8 text-purple-600 animate-spin" />
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
 
         </motion.div>
 
@@ -807,11 +809,11 @@ export default function CoupleProfilPage() {
     <div className="min-h-screen bg-background">
 
       {/* Header Simple - Avatar à gauche, Nom, Bouton à droite */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+          <div className="flex flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Avatar + Nom à gauche */}
-            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
                 {user && (
                   <CoupleAvatarUploader
@@ -830,13 +832,18 @@ export default function CoupleProfilPage() {
               
               {/* Nom */}
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
-                  {formData.partner_1_name && formData.partner_2_name 
-                    ? `${formData.partner_1_name} & ${formData.partner_2_name}`
-                    : formData.partner_1_name || 'Mon Profil'}
-                </h1>
+                <div className="flex items-center gap-2 min-w-0">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
+                    {formData.partner_1_name && formData.partner_2_name
+                      ? `${formData.partner_1_name} & ${formData.partner_2_name}`
+                      : formData.partner_1_name || 'Mon Profil'}
+                  </h1>
+                  {isRefreshing && (
+                    <Loader2 className="h-3.5 w-3.5 text-primary/60 animate-spin shrink-0" />
+                  )}
+                </div>
                 {formData.wedding_date && (
-                  <p className="text-[11px] xs:text-xs sm:text-sm text-muted-foreground truncate">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     Mariage prévu le {new Date(formData.wedding_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 )}
@@ -869,13 +876,13 @@ export default function CoupleProfilPage() {
       </div>
 
       {/* Barre de progression du profil */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-2">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3">
             <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
               Profil prêt à {completion}%
             </span>
-            <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] transition-all duration-500 ease-out"
                 style={{ width: `${completion}%` }}
@@ -886,78 +893,43 @@ export default function CoupleProfilPage() {
       </div>
 
       {/* Layout Centré */}
-      <div className="w-full px-3 xs:px-4 sm:px-6 lg:px-8 pb-3 sm:pb-4 lg:pb-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-6 lg:pb-10">
         <div className="max-w-4xl mx-auto">
           {/* Tabs */}
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
-            <TabsList className="grid grid-cols-5 w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
-              <TabsTrigger
-                value="base"
-                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                style={{
-                  background: activeTab === 'base' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                  color: activeTab === 'base' ? '#ffffff' : '#823F91',
-                }}
-              >
-                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Infos</span>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+            <TabsList className="grid grid-cols-5 w-full h-auto p-1 bg-muted/50 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+              <TabsTrigger value="base" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="hidden sm:inline">Infos</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="mariage"
-                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                style={{
-                  background: activeTab === 'mariage' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                  color: activeTab === 'mariage' ? '#ffffff' : '#823F91',
-                }}
-              >
-                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Mariage</span>
+              <TabsTrigger value="mariage" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="hidden sm:inline">Mariage</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="culture"
-                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                style={{
-                  background: activeTab === 'culture' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                  color: activeTab === 'culture' ? '#ffffff' : '#823F91',
-                }}
-              >
-                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Culture</span>
+              <TabsTrigger value="culture" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="hidden sm:inline">Culture</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="style"
-                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                style={{
-                  background: activeTab === 'style' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                  color: activeTab === 'style' ? '#ffffff' : '#823F91',
-                }}
-              >
-                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Style</span>
+              <TabsTrigger value="style" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="hidden sm:inline">Style</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="services"
-                className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                style={{
-                  background: activeTab === 'services' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                  color: activeTab === 'services' ? '#ffffff' : '#823F91',
-                }}
-              >
-                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                <span className="hidden sm:inline" style={{ color: 'inherit' }}>Services</span>
+              <TabsTrigger value="services" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="hidden sm:inline">Services</span>
               </TabsTrigger>
             </TabsList>
 
             {/* TAB 1: Infos de base */}
-            <TabsContent value="base" className="mt-3 xs:mt-4 sm:mt-6">
+            <TabsContent value="base" className="mt-4 sm:mt-6">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                <Card className="card-section">
+                  <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
                     {/* Form Fields */}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1012,11 +984,11 @@ export default function CoupleProfilPage() {
 
                       disabled
 
-                      className="bg-gray-50 cursor-not-allowed"
+                      className="bg-muted/60 cursor-not-allowed text-muted-foreground"
 
                     />
 
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
 
                       L'email ne peut pas être modifié
 
@@ -1032,15 +1004,15 @@ export default function CoupleProfilPage() {
             </TabsContent>
 
             {/* TAB 2: Mariage */}
-            <TabsContent value="mariage" className="mt-3 xs:mt-4 sm:mt-6">
+            <TabsContent value="mariage" className="mt-4 sm:mt-6">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+                <Card className="card-section">
 
-                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                  <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1244,15 +1216,15 @@ export default function CoupleProfilPage() {
           </TabsContent>
 
           {/* TAB 3: Culture */}
-          <TabsContent value="culture" className="mt-3 xs:mt-4 sm:mt-6">
+          <TabsContent value="culture" className="mt-4 sm:mt-6">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+              <Card className="card-section">
 
-                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                  <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                 <div className="space-y-4">
 
@@ -1276,7 +1248,7 @@ export default function CoupleProfilPage() {
 
                               ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
+                              : 'bg-card text-primary hover:bg-muted/50 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_rgba(130,63,145,0.08)]'
 
                           }`}
 
@@ -1320,7 +1292,7 @@ export default function CoupleProfilPage() {
 
                               ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
+                              : 'bg-card text-primary hover:bg-muted/50 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_rgba(130,63,145,0.08)]'
 
                           }`}
 
@@ -1372,15 +1344,15 @@ export default function CoupleProfilPage() {
         </TabsContent>
 
         {/* TAB 4: Style */}
-        <TabsContent value="style" className="mt-3 xs:mt-4 sm:mt-6">
+        <TabsContent value="style" className="mt-4 sm:mt-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+            <Card className="card-section">
 
-                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                  <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1482,15 +1454,15 @@ export default function CoupleProfilPage() {
       </TabsContent>
 
       {/* TAB 5: Services */}
-      <TabsContent value="services" className="mt-3 xs:mt-4 sm:mt-6">
+      <TabsContent value="services" className="mt-4 sm:mt-6">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
+          <Card className="card-section">
 
-                  <CardContent className="p-3 xs:p-4 sm:p-5 lg:p-6 space-y-3 xs:space-y-4 sm:space-y-5 lg:space-y-6">
+                  <CardContent className="p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                 <div className="space-y-4">
 
@@ -1514,7 +1486,7 @@ export default function CoupleProfilPage() {
 
                               ? 'bg-[#823F91] hover:bg-[#6D3478] text-white shadow-[0_1px_3px_rgba(130,63,145,0.2)]'
 
-                              : 'bg-white text-[#823F91] hover:bg-gray-50 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(130,63,145,0.05)] hover:shadow-[0_2px_6px_rgba(130,63,145,0.12),0_0_0_1px_rgba(130,63,145,0.1)]'
+                              : 'bg-card text-primary hover:bg-muted/50 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_0_0_1px_rgba(130,63,145,0.08)]'
 
                           }`}
 
@@ -1570,7 +1542,7 @@ export default function CoupleProfilPage() {
 
                         />
 
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
 
                           Décrivez les services supplémentaires dont vous avez besoin
 
@@ -1677,7 +1649,7 @@ export default function CoupleProfilPage() {
       </div>
 
       {/* Bouton Enregistrer fixe en bas sur mobile */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg sm:hidden z-50">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated sm:hidden z-50">
         <Button
           onClick={handleSave}
           disabled={saving}
