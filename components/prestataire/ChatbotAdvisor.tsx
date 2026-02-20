@@ -138,12 +138,11 @@ export function ChatbotAdvisor() {
             transition={{ duration: 0.2 }}
             className="fixed z-[201] bg-white shadow-2xl shadow-black/15 border border-gray-200 flex flex-col overflow-hidden"
             style={isMobile ? {
-              inset: 0,
-              borderRadius: 0,
-              width: '100%',
-              height: '100%',
-              maxWidth: '100%',
-              maxHeight: '100%',
+              bottom: 'calc(64px + env(safe-area-inset-bottom))',
+              left: '12px',
+              right: '12px',
+              height: 'min(520px, calc(100dvh - 100px))',
+              borderRadius: '1rem',
             } : {
               bottom: '24px',
               right: '24px',

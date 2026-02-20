@@ -78,19 +78,19 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
       {/* Sheet */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl"
+        className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl flex flex-col"
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          maxHeight: '85vh',
           animation: 'slideInFromBottom 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
         }}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-gray-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 flex-shrink-0">
           <p className="text-[15px] font-bold text-gray-900">Toutes les pages</p>
           <button
             onClick={onClose}
@@ -101,8 +101,11 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
           </button>
         </div>
 
-        {/* Sections */}
-        <div className="px-4 py-4 space-y-5 max-h-[70vh] overflow-y-auto">
+        {/* Sections — zone scrollable isolée */}
+        <div
+          className="overflow-y-auto overscroll-y-contain px-4 py-4 space-y-5"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+        >
           {sections.map((section, i) => (
             <div key={i}>
               {section.title && (
@@ -190,6 +193,21 @@ export function MobileBottomNav({ items, moreItems, accentColor = 'violet' }: Mo
   useEffect(() => {
     setShowMore(false)
   }, [pathname])
+
+  // Bloque le scroll de la page quand le sheet est ouvert
+  useEffect(() => {
+    if (showMore) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [showMore])
 
   const activeClasses = accentColor === 'pink' ? 'text-pink-500' : 'text-violet-600'
   const activeDotClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-violet-600'
