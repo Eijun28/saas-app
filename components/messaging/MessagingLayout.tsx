@@ -40,15 +40,15 @@ export function MessagingLayout({
   // Mobile/Tablette : afficher soit la liste soit la conversation
   if (isMobile) {
     return (
-      <div className="flex flex-col h-screen bg-white p-4">
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
         <PageTitle
           title="Messagerie"
           description={userType === 'couple'
             ? 'Communiquez avec vos prestataires'
             : 'Communiquez avec vos clients'}
-          className="pb-4"
+          className="pb-0"
         />
-        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-0">
           {isConversationPage ? children : chatListComponent}
         </div>
       </div>
@@ -57,7 +57,7 @@ export function MessagingLayout({
 
   // Desktop : deux cartes quand conversation sélectionnée, une carte centrée sinon
   return (
-    <div className="flex flex-col h-screen bg-white p-4 md:p-6">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
       <PageTitle
         title="Messagerie"
         description={userType === 'couple'
@@ -65,7 +65,7 @@ export function MessagingLayout({
           : 'Communiquez avec vos clients'}
         className="pb-4"
       />
-      <div className={`flex-1 flex gap-4 overflow-hidden ${!hasConversationSelected ? 'justify-center' : ''}`}>
+      <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${!hasConversationSelected ? 'justify-center' : ''}`}>
         {/* Carte gauche — liste des conversations (largeur mobile fixe) */}
         <div className={`
           bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0
