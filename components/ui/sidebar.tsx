@@ -184,7 +184,7 @@ const Sidebar = React.forwardRef<
           {/* Sidebar avec animation slide */}
           <div
             className="fixed inset-y-0 left-0 w-[75%] max-w-sm z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
-            style={{ zIndex: 99999, background: 'linear-gradient(160deg, #140A2A 0%, #1F0E40 50%, #2A1155 100%)' }}
+            style={{ zIndex: 99999, background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)' }}
           >
             <div className="flex h-full w-full flex-col p-4">
               {children}
@@ -229,7 +229,7 @@ const Sidebar = React.forwardRef<
             <div
               data-sidebar="sidebar"
               className="flex h-full w-full flex-col group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border-r group-data-[variant=floating]:bg-sidebar group-data-[variant=inset]:border-sidebar-border group-data-[variant=inset]:border-r"
-              style={{ background: 'linear-gradient(160deg, #140A2A 0%, #1F0E40 50%, #2A1155 100%)' }}
+              style={{ background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)' }}
             >
               {children}
             </div>
