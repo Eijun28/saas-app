@@ -752,12 +752,13 @@ function ChatView({
   loadingConversations,
   onSelectConversation,
 }: ChatViewProps) {
-  // Déterminer si on a des messages (plus que le message initial du bot)
-  const hasMessages = messages.length > 1;
+  // Le chat est toujours en mode conversation (le message initial du bot s'affiche en bulle)
+  const hasMessages = messages.length >= 1;
 
   // Progression dans la conversation (barre de progression #3)
   const botMessageCount = messages.filter((m) => m.role === 'bot').length;
-  const chatProgress = Math.min((botMessageCount / 7) * 100, 95);
+  // Ne compter qu'à partir du 2e message bot (le 1er est le message d'accueil)
+  const chatProgress = Math.min(Math.max(((botMessageCount - 1) / 7) * 100, 0), 95);
 
   // Index du dernier message bot (pour afficher les chips #4)
   const lastBotMsgIndex = messages.reduce(
@@ -932,8 +933,8 @@ function ChatView({
         </div>
       </header>
 
-      {/* Barre de progression (#3) — visible uniquement en conversation */}
-      {hasMessages && (
+      {/* Barre de progression (#3) — visible uniquement quand la conversation a démarré */}
+      {messages.length > 1 && (
         <div className="h-0.5 bg-gray-100 flex-shrink-0">
           <div
             className="h-full bg-gradient-to-r from-[#823F91] to-[#9333ea] transition-all duration-700 ease-out"
@@ -942,88 +943,13 @@ function ChatView({
         </div>
       )}
 
-      {!hasMessages ? (
-        /* ÉTAT INITIAL - CENTRÉ (style Claude) */
-        <div className="flex-1 flex items-start justify-center px-4 pt-12 sm:pt-16">
-          <div className="w-full max-w-3xl">
-            {/* Message de bienvenue avec icône à gauche */}
-            <div className="flex items-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-2">
-              <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-[#823F91] flex-shrink-0" />
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-900 whitespace-nowrap overflow-hidden text-ellipsis">
-                {getWelcomeMessage()}
-              </h1>
-            </div>
-
-            {/* Input zone centrée améliorée */}
-            <div className="relative flex items-end gap-3">
-              {/* Avatar utilisateur */}
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#823F91] text-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-md">
-                {coupleProfile?.avatar_url && !coupleAvatarError ? (
-                  <img
-                    src={coupleProfile.avatar_url}
-                    alt="Profil couple"
-                    className="w-full h-full object-cover"
-                    onError={() => setCoupleAvatarError(true)}
-                  />
-                ) : (
-                  <span className="text-sm sm:text-base font-semibold">
-                    {getUserInitials()}
-                  </span>
-                )}
-              </div>
-              
-              {/* Zone de texte */}
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyDown={onKeyPress}
-                  placeholder="Quel type de prestataire recherchez-vous ?"
-                  disabled={isLoading}
-                  rows={1}
-                  className={cn(
-                    'w-full bg-gray-50 border border-gray-200 rounded-2xl sm:rounded-3xl',
-                    'p-3 sm:p-4 pr-12 sm:pr-14',
-                    'shadow-sm hover:shadow-md focus:shadow-lg transition-all duration-200',
-                    'focus:outline-none focus:ring-2 focus:ring-[#823F91]/20 focus:border-[#823F91]/30',
-                    'disabled:bg-gray-100 disabled:cursor-not-allowed',
-                    'resize-none overflow-hidden',
-                    'min-h-[48px] sm:min-h-[56px] max-h-[200px]',
-                    'text-sm sm:text-base text-gray-900 placeholder:text-gray-400',
-                    'leading-relaxed'
-                  )}
-                  style={{ height: 'auto' }}
-                />
-                <button
-                  onClick={onSend}
-                  disabled={!userInput.trim() || isLoading}
-                  className={cn(
-                    'absolute right-2 sm:right-3 bottom-2 sm:bottom-3',
-                    'w-9 h-9 sm:w-10 sm:h-10 rounded-full',
-                    'flex items-center justify-center transition-all duration-200',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                    'shadow-md hover:shadow-lg active:scale-95',
-                    userInput.trim() && !isLoading
-                      ? 'bg-[#823F91] text-white hover:bg-[#9333ea] hover:scale-105'
-                      : 'bg-gray-200 text-gray-400'
-                  )}
-                  aria-label="Envoyer"
-                >
-                  <ArrowUp size={18} className="sm:w-5 sm:h-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* CONVERSATION EN COURS */
-        <>
-          {/* Zone messages scrollable */}
-          <div
-            ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8"
-          >
+      {/* CONVERSATION — toujours affichée, le message d'accueil bot est la 1re bulle */}
+      <>
+        {/* Zone messages scrollable */}
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8"
+        >
             <div className="max-w-3xl mx-auto space-y-5 sm:space-y-6">
               {messages.map((message: ChatMessage, index: number) => (
                 <motion.div
@@ -1054,19 +980,20 @@ function ChatView({
 
                   {/* Message bot - avec style amélioré */}
                   {message.role === 'bot' && (
-                    <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 max-w-[80%] sm:max-w-[75%]">
                       <div className="bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
                         {/* Les accents sont corrigés côté API (fixUtf8Encoding) */}
                         {message.content.replace(/\uFFFD/g, '')}
                       </div>
-                      {/* Quick reply chips (#4) — dernier message bot uniquement */}
+                      {/* Quick reply chips — dernier message bot uniquement */}
                       {index === lastBotMsgIndex && !isLoading && message.suggestions && message.suggestions.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {message.suggestions.map((suggestion, i) => (
                             <button
                               key={i}
                               onClick={() => onSuggestionClick(suggestion)}
-                              className="px-3 py-1.5 text-xs sm:text-sm rounded-full border border-[#823F91] text-[#823F91] hover:bg-[#823F91] hover:text-white transition-all duration-150 active:scale-95 font-medium"
+                              className="px-3 py-1.5 text-xs sm:text-sm rounded-full border border-[#823F91] bg-white text-[#823F91] hover:bg-[#823F91] hover:text-white transition-all duration-150 active:scale-95 font-medium"
+                              style={{ color: '#823F91' }}
                             >
                               {suggestion}
                             </button>
@@ -1161,7 +1088,7 @@ function ChatView({
                     </span>
                   )}
                 </div>
-                
+
                 {/* Zone de texte avec bordure arrondie */}
                 <div className="flex-1 relative">
                   <textarea
@@ -1169,7 +1096,7 @@ function ChatView({
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyDown={onKeyPress}
-                    placeholder="Continuez la conversation..."
+                    placeholder={messages.length <= 1 ? "Quel prestataire recherchez-vous ?" : "Continuez la conversation..."}
                     disabled={isLoading}
                     rows={1}
                     className={cn(
@@ -1206,7 +1133,6 @@ function ChatView({
             </div>
           </div>
         </>
-      )}
     </motion.div>
   );
 }
