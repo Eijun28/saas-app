@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { getCached, setCached, invalidateCache } from '@/lib/cache'
 import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { cn } from '@/lib/utils'
@@ -58,9 +59,22 @@ export default function FavorisPage() {
     if (user) loadFavoris()
   }, [user])
 
-  async function loadFavoris() {
+  async function loadFavoris(skipCache = false) {
     if (!user) return
-    setLoading(true)
+    const CACHE_KEY = `couple-favoris-${user.id}`
+
+    // Serve cached data instantly, then refresh in background
+    if (!skipCache) {
+      const cached = getCached<FavProvider[]>(CACHE_KEY)
+      if (cached) {
+        setFavoris(cached)
+        setLoading(false)
+        loadFavoris(true) // background refresh
+        return
+      }
+    }
+
+    setLoading(skipCache ? false : true)
     const supabase = createClient()
 
     try {
@@ -127,6 +141,7 @@ export default function FavorisPage() {
       })
 
       setFavoris(enriched)
+      setCached(`couple-favoris-${user.id}`, enriched)
     } catch (err) {
       console.error('Error loading favoris:', err)
     } finally {
@@ -137,7 +152,9 @@ export default function FavorisPage() {
   async function removeFavori(favId: string) {
     const supabase = createClient()
     await supabase.from('favoris').delete().eq('id', favId)
-    setFavoris(prev => prev.filter(f => f.id !== favId))
+    const updated = favoris.filter(f => f.id !== favId)
+    setFavoris(updated)
+    if (user) setCached(`couple-favoris-${user.id}`, updated)
     setCompareIds(prev => { const n = new Set(prev); n.delete(favId); return n })
     toast.success('Retire des favoris')
   }
