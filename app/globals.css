@@ -786,6 +786,15 @@ nav[class*="fixed"] {
   }
 }
 
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
