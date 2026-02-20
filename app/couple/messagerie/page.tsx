@@ -272,22 +272,21 @@ export default function MessageriePage() {
 
   if (userLoading || loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <p className="text-[#4A4A4A]">Chargement...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto h-screen flex flex-col p-4 md:p-6">
+    <div className="h-full flex flex-col gap-4">
         <PageTitle
           title="Messagerie"
           description="Communiquez avec vos prestataires"
           className="pb-4"
         />
 
-        <div className={`flex-1 flex gap-4 overflow-hidden ${!selectedConversation ? 'justify-center' : ''}`}>
+        <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${!selectedConversation ? 'justify-center' : ''}`}>
           {/* Carte gauche — liste des conversations (largeur mobile fixe) */}
           <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${selectedConversation ? 'w-[340px] xl:w-[375px]' : 'w-full max-w-[375px]'}`}>
             {/* En-tête avec recherche */}
@@ -540,7 +539,6 @@ export default function MessageriePage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   )
 }
