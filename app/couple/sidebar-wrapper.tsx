@@ -67,7 +67,7 @@ interface NavSection {
 
 const sections: NavSection[] = [
   {
-    title: "Operations",
+    title: "Opérations",
     items: [
       { href: "/couple/dashboard", icon: Home, label: "Accueil" },
       { href: "/couple/recherche", icon: Search, label: "Rechercher" },
@@ -125,14 +125,14 @@ function SidebarToggleButton() {
         e.stopPropagation()
         handleToggle()
       }}
-      className='h-8 w-8 rounded-lg flex-shrink-0 flex relative z-[100] hover:bg-gray-100/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1'
-      style={{ pointerEvents: 'auto', color: '#4B5563', background: 'transparent', border: 'none', boxShadow: 'none' }}
-      aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Reduire la sidebar'}
+      className='h-7 w-7 rounded-md flex-shrink-0 flex relative z-[100] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20'
+      style={{ pointerEvents: 'auto', color: 'rgba(255,255,255,0.6)', background: 'transparent', border: 'none', boxShadow: 'none' }}
+      aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
-        <ChevronsRight className='h-4 w-4' style={{ color: '#4B5563' }} />
+        <ChevronsRight className='h-3.5 w-3.5' />
       ) : (
-        <ChevronsLeft className='h-4 w-4' style={{ color: '#4B5563' }} />
+        <ChevronsLeft className='h-3.5 w-3.5' />
       )}
     </Button>
   )
@@ -181,7 +181,7 @@ function SidebarUserFooter() {
     : 'C'
 
   return (
-    <SidebarFooter className="border-t border-gray-100 p-2">
+    <SidebarFooter className="border-t border-white/10 p-2">
       <SidebarMenu>
         <SidebarMenuItem>
           <DropdownMenu>
@@ -189,26 +189,28 @@ function SidebarUserFooter() {
               <SidebarMenuButton
                 size="lg"
                 className={cn(
-                  "hover:!bg-gray-100/80 rounded-lg transition-all duration-150",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30",
+                  "hover:!bg-white/10 rounded-xl transition-all duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
                   "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
                 )}
               >
-                <Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
-                  <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                  <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs font-semibold rounded-lg">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="p-[2px] rounded-lg bg-gradient-to-br from-pink-400 via-violet-400 to-purple-600 flex-shrink-0">
+                  <Avatar className="h-7 w-7 rounded-md">
+                    <AvatarImage src={profile?.avatar} alt={profile?.name} />
+                    <AvatarFallback className="bg-[#1a0b35] text-white text-xs font-bold rounded-md">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold text-gray-900 text-[13px]">
+                  <span className="truncate font-semibold text-white text-[13px]">
                     {profile?.name || 'Couple'}
                   </span>
-                  <span className="text-[10px] font-semibold text-[#823F91] uppercase tracking-wide">
+                  <span className="text-[10px] font-semibold text-pink-300 uppercase tracking-wide">
                     Couple
                   </span>
                 </div>
-                <ChevronsUpDown className="ml-auto h-3.5 w-3.5 text-gray-400 group-data-[collapsible=icon]:hidden" />
+                <ChevronsUpDown className="ml-auto h-3.5 w-3.5 text-white/40 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -286,9 +288,15 @@ export function CoupleSidebarWrapper() {
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-gray-200/60 group-data-[collapsible=icon]:border-r-0 group-data-[collapsible=icon]:shadow-[2px_0_12px_rgba(0,0,0,0.07)]">
+    <Sidebar
+      collapsible="icon"
+      className="border-r-0"
+      style={{
+        background: 'linear-gradient(160deg, #140A2A 0%, #1F0E40 50%, #2A1155 100%)',
+      }}
+    >
       {/* Header */}
-      <SidebarHeader className="h-16 px-4 border-b border-gray-100 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
+      <SidebarHeader className="h-16 px-4 border-b border-white/8 flex flex-row items-center justify-between group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <Link
           href="/couple/dashboard"
           className="flex items-center group-data-[collapsible=icon]:hidden"
@@ -298,21 +306,21 @@ export function CoupleSidebarWrapper() {
             alt="NUPLY Logo"
             width={100}
             height={40}
-            className="h-7 w-auto"
+            className="h-7 w-auto brightness-0 invert"
           />
         </Link>
         <SidebarToggleButton />
       </SidebarHeader>
 
       {/* Navigation sections */}
-      <SidebarContent className="px-3 py-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-3">
-        {sections.map((section) => (
-          <SidebarGroup key={section.title} className="mb-1">
-            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 px-3 py-1.5 group-data-[collapsible=icon]:hidden">
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
+        {sections.map((section, sectionIdx) => (
+          <SidebarGroup key={section.title} className={sectionIdx > 0 ? "mt-1 pt-3 border-t border-white/8" : ""}>
+            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 px-3 py-1.5 mb-0.5 group-data-[collapsible=icon]:hidden">
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-1">
+              <SidebarMenu className="space-y-0.5 group-data-[collapsible=icon]:space-y-1.5">
                 {section.items.map((item) => {
                   const Icon = item.icon
                   const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
@@ -325,30 +333,43 @@ export function CoupleSidebarWrapper() {
                         isActive={isActive}
                         tooltip={item.label}
                         className={cn(
-                          "h-10 text-gray-700 font-medium rounded-lg transition-all duration-150 relative",
-                          // Bigger button in icon-only mode (overrides base !size-8)
+                          "h-10 font-medium rounded-xl transition-all duration-150 relative",
                           "group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:mx-auto",
-                          // Override sidebar-accent hover with our gray
-                          "hover:!bg-gray-100/80 hover:!text-gray-900",
-                          // Override sidebar-accent active with our brand purple
-                          "data-[active=true]:!bg-[#823F91]/10 data-[active=true]:!text-[#823F91] data-[active=true]:font-semibold",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1",
+                          "hover:!bg-white/8 hover:!text-white",
+                          isActive
+                            ? "!bg-white/12 !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                            : "!text-white/60",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
                         )}
                       >
-                        <Link href={item.href} onClick={handleNavClick} className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative">
-                          {/* Active indicator bar (left edge, expanded only) */}
+                        <Link
+                          href={item.href}
+                          onClick={handleNavClick}
+                          className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:h-full relative"
+                        >
+                          {/* Active glow pill (left edge) */}
                           {isActive && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] bg-[#823F91] rounded-r-full group-data-[collapsible=icon]:hidden" />
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-pink-400 rounded-r-full shadow-[0_0_8px_rgba(244,114,182,0.8)] group-data-[collapsible=icon]:hidden" />
                           )}
-                          <Icon className={cn(
-                            "flex-shrink-0 transition-colors duration-150",
-                            // Bigger icons in icon-only mode (overrides parent [&>svg]:size-4)
-                            "group-data-[collapsible=icon]:!h-6 group-data-[collapsible=icon]:!w-6",
-                            isActive ? "text-[#823F91]" : "text-gray-500"
-                          )} />
-                          <span className="flex-1 group-data-[collapsible=icon]:hidden">{item.label}</span>
+                          <div className={cn(
+                            "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150",
+                            "group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9",
+                            isActive
+                              ? "bg-pink-500/20 shadow-[0_0_12px_rgba(236,72,153,0.25)]"
+                              : "bg-transparent",
+                          )}>
+                            <Icon className={cn(
+                              "h-[18px] w-[18px] flex-shrink-0 transition-colors duration-150",
+                              "group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5",
+                              isActive ? "text-pink-300" : "text-white/50"
+                            )} />
+                          </div>
+                          <span className={cn(
+                            "flex-1 text-[13.5px] group-data-[collapsible=icon]:hidden",
+                            isActive ? "font-semibold" : "font-medium"
+                          )}>{item.label}</span>
                           {badgeCount > 0 && (
-                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#823F91] text-white text-[10px] font-semibold flex items-center justify-center group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
+                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(236,72,153,0.5)] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
                               {badgeCount > 99 ? '99+' : badgeCount}
                             </span>
                           )}
