@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck, Star, Check } from 'lucide-react'
 import { ReviewsList } from '@/components/reviews/ReviewsList'
 import { Button } from '@/components/ui/button'
@@ -80,6 +81,7 @@ export function ProfilePreviewDialog({
   const accentColor = '#823F91'
   const router = useRouter()
   const { user } = useUser()
+  const isMobile = useIsMobile()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = controlledOnOpenChange || setInternalOpen
@@ -272,8 +274,24 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[85vh] p-0 gap-0 rounded-2xl border-0 shadow-2xl flex flex-col overflow-y-auto"
-          style={{ backgroundColor: BEIGE }}
+          className={cn(
+            'p-0 gap-0 border-0 shadow-2xl flex flex-col overflow-y-auto',
+            isMobile ? 'rounded-t-3xl' : 'rounded-2xl sm:max-w-lg max-h-[85vh]'
+          )}
+          style={{
+            backgroundColor: BEIGE,
+            ...(isMobile && {
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              top: 'auto',
+              transform: 'none',
+              maxWidth: '100%',
+              maxHeight: '92dvh',
+              animation: 'slideInFromBottom 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
+            }),
+          }}
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
@@ -867,7 +885,10 @@ export function ProfilePreviewDialog({
           </Tabs>
 
           {/* FOOTER */}
-          <div className="px-5 py-3">
+          <div
+            className="px-5 py-3 flex-shrink-0"
+            style={isMobile ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' } : undefined}
+          >
             {isCoupleView && activeTab === 'contact' ? (
               <Button
                 className="w-full h-11 text-white text-sm font-semibold gap-2 rounded-full shadow-md hover:opacity-90 transition-opacity bg-[#823F91] hover:bg-[#6D3478]"

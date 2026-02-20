@@ -380,26 +380,20 @@ export default function Chatbot() {
       {/* WIDGET CHATBOT */}
       {isOpen && (
         <>
-          {/* Overlay pour mobile */}
-          {isMobile && (
-            <div 
-              className="fixed inset-0 bg-black/50 z-[9997]"
-              onClick={() => setIsOpen(false)}
-              aria-hidden="true"
-            />
-          )}
-          
-          <div 
-            className={`nuply-chatbot-widget fixed bg-white shadow-2xl flex flex-col z-[9998] ${
-              isMobile 
-                ? 'inset-0 rounded-none' 
-                : 'w-[380px] h-[600px] rounded-2xl right-6 bottom-6'
+          <div
+            className={`nuply-chatbot-widget fixed bg-white shadow-2xl flex flex-col z-[9998] rounded-2xl ${
+              isMobile
+                ? 'left-3 right-3'
+                : 'w-[380px] right-6'
             }`}
-            style={{ 
-              position: 'fixed',
-              animation: isMobile ? 'fadeIn 0.2s ease-out' : 'slideInUp 0.3s ease-out',
-              transform: 'translateY(0)',
-              opacity: 1
+            style={isMobile ? {
+              bottom: 'calc(64px + env(safe-area-inset-bottom))',
+              height: 'min(540px, calc(100dvh - 100px))',
+              animation: 'slideInUp 0.25s ease-out',
+            } : {
+              bottom: '24px',
+              height: '600px',
+              animation: 'slideInUp 0.3s ease-out',
             }}
           >
           
