@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { ProviderMatch, MatchingResult } from '@/types/matching';
 import { motion } from 'framer-motion';
 import { Sparkles, Save, AlertCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import ProviderMatchCard from './ProviderMatchCard';
 
 interface MatchResultsProps {
@@ -31,8 +33,27 @@ export default function MatchResults({
   onSaveSearch,
   isSaving = false,
 }: MatchResultsProps) {
+  const [sortBy, setSortBy] = useState<'score' | 'budget' | 'note'>('score');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
   const hasResults = matches && matches.length > 0;
   const suggestions = matchingResult?.suggestions;
+
+  // Unique service types for filter chips
+  const serviceTypes = hasResults
+    ? [...new Set(matches.map((m) => m.provider.service_type))]
+    : [];
+
+  // Sorted + filtered matches (UI-only, no API call)
+  const displayMatches = hasResults
+    ? [...matches]
+        .filter((m) => !activeFilter || m.provider.service_type === activeFilter)
+        .sort((a, b) => {
+          if (sortBy === 'budget') return (a.provider.budget_min || 0) - (b.provider.budget_min || 0);
+          if (sortBy === 'note') return (b.provider.average_rating || 0) - (a.provider.average_rating || 0);
+          return b.score - a.score;
+        })
+    : [];
 
   // Cas sans résultats
   if (!hasResults) {
@@ -123,6 +144,7 @@ export default function MatchResults({
 
   // Cas avec résultats
   return (
+    <>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -161,9 +183,124 @@ export default function MatchResults({
         </motion.p>
       </div>
 
+      {/* Résumé du profil de recherche */}
+      {matchingResult?.search_criteria && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          className="mb-6 bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Search className="h-3.5 w-3.5 text-gray-500" />
+              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Votre recherche</span>
+            </div>
+            <button
+              onClick={onNewSearch}
+              className="text-xs text-[#823F91] hover:text-[#9333ea] font-medium transition-colors"
+            >
+              Modifier
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {matchingResult.search_criteria.service_type && (
+              <span className="px-2.5 py-1 text-xs rounded-full bg-purple-100 text-[#823F91] font-medium">
+                {matchingResult.search_criteria.service_type}
+              </span>
+            )}
+            {matchingResult.search_criteria.cultures?.map((c, i) => (
+              <span key={i} className="px-2.5 py-1 text-xs rounded-full bg-blue-50 text-blue-700 font-medium">
+                {c}
+              </span>
+            ))}
+            {(matchingResult.search_criteria.budget_min || matchingResult.search_criteria.budget_max) && (
+              <span className="px-2.5 py-1 text-xs rounded-full bg-green-50 text-green-700 font-medium">
+                {matchingResult.search_criteria.budget_min
+                  ? `${Number(matchingResult.search_criteria.budget_min).toLocaleString('fr-FR')}€`
+                  : '0€'}
+                {' → '}
+                {matchingResult.search_criteria.budget_max
+                  ? `${Number(matchingResult.search_criteria.budget_max).toLocaleString('fr-FR')}€`
+                  : '∞'}
+              </span>
+            )}
+            {matchingResult.search_criteria.wedding_city && (
+              <span className="px-2.5 py-1 text-xs rounded-full bg-orange-50 text-orange-700 font-medium">
+                {matchingResult.search_criteria.wedding_city}
+              </span>
+            )}
+            {matchingResult.search_criteria.wedding_date && (
+              <span className="px-2.5 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-medium">
+                {matchingResult.search_criteria.wedding_date}
+              </span>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Tri et filtres */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6"
+      >
+        {/* Sort chips */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-gray-500 font-medium whitespace-nowrap">Trier :</span>
+          {(['score', 'budget', 'note'] as const).map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setSortBy(opt)}
+              className={cn(
+                'px-3 py-1 text-xs rounded-full border transition-all duration-150',
+                sortBy === opt
+                  ? 'bg-[#823F91] text-white border-[#823F91]'
+                  : 'border-gray-300 text-gray-600 hover:border-[#823F91] hover:text-[#823F91]'
+              )}
+            >
+              {opt === 'score' ? 'Compatibilité' : opt === 'budget' ? 'Prix' : 'Note'}
+            </button>
+          ))}
+        </div>
+
+        {/* Filter chips — only if multiple service types */}
+        {serviceTypes.length > 1 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500 font-medium whitespace-nowrap">Filtrer :</span>
+            <button
+              onClick={() => setActiveFilter(null)}
+              className={cn(
+                'px-3 py-1 text-xs rounded-full border transition-all duration-150',
+                !activeFilter
+                  ? 'bg-gray-700 text-white border-gray-700'
+                  : 'border-gray-300 text-gray-600 hover:border-gray-500'
+              )}
+            >
+              Tous
+            </button>
+            {serviceTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => setActiveFilter(activeFilter === type ? null : type)}
+                className={cn(
+                  'px-3 py-1 text-xs rounded-full border transition-all duration-150',
+                  activeFilter === type
+                    ? 'bg-gray-700 text-white border-gray-700'
+                    : 'border-gray-300 text-gray-600 hover:border-gray-500'
+                )}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       {/* Results Cards */}
-      <div className="space-y-6 mb-8">
-        {matches.map((match, index) => (
+      <div className="space-y-6 mb-8 pb-20 sm:pb-0">
+        {displayMatches.map((match, index) => (
           <motion.div
             key={match.provider_id}
             initial={{ opacity: 0, y: 30 }}
@@ -214,5 +351,20 @@ export default function MatchResults({
         </Button>
       </motion.div>
     </motion.div>
+
+    {/* CTA sticky mobile — visible uniquement sur petit écran */}
+    {onSaveSearch && (
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-sm border-t border-gray-200 sm:hidden z-40">
+        <Button
+          onClick={onSaveSearch}
+          disabled={isSaving}
+          className="w-full bg-gradient-to-br from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white shadow-lg"
+        >
+          <Save className="w-4 h-4 mr-2" />
+          {isSaving ? 'Sauvegarde...' : 'Sauvegarder mes résultats'}
+        </Button>
+      </div>
+    )}
+    </>
   );
 }
