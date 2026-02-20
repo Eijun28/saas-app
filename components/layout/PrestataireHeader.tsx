@@ -21,24 +21,6 @@ import {
 import { User, LogOut, ChevronDown, Settings } from 'lucide-react'
 import Link from 'next/link'
 
-const pageTitles: Record<string, { label: string; emoji: string }> = {
-  '/prestataire/dashboard':     { label: 'Dashboard',        emoji: '⚡' },
-  '/prestataire/demandes-recues': { label: 'Demandes reçues', emoji: '📬' },
-  '/prestataire/agenda':        { label: 'Agenda',           emoji: '📅' },
-  '/prestataire/messagerie':    { label: 'Messagerie',       emoji: '💬' },
-  '/prestataire/devis-factures':{ label: 'Devis & Factures', emoji: '📄' },
-  '/prestataire/analytics':     { label: 'Statistiques',     emoji: '📊' },
-  '/prestataire/profil-public': { label: 'Profil public',    emoji: '🪪' },
-  '/prestataire/parametres':    { label: 'Paramètres',       emoji: '⚙️' },
-}
-
-function getPageInfo(pathname: string): { label: string; emoji: string } {
-  if (pageTitles[pathname]) return pageTitles[pathname]
-  for (const [path, info] of Object.entries(pageTitles)) {
-    if (pathname.startsWith(path + '/')) return info
-  }
-  return { label: 'Dashboard', emoji: '⚡' }
-}
 
 export function PrestataireHeader() {
   const { user } = useUser()
@@ -148,7 +130,6 @@ export function PrestataireHeader() {
   }
 
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
-  const pageInfo = getPageInfo(pathname || '/prestataire/dashboard')
 
   const quickActions = pathname === '/prestataire/dashboard'
     ? [
@@ -181,17 +162,11 @@ export function PrestataireHeader() {
               </Button>
             </div>
 
-            {/* Page title */}
-            <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-[15px] font-bold text-gray-900 tracking-tight truncate leading-tight">
-                {pageInfo.label}
-              </h1>
-              {/* Status pill — desktop only */}
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-100 text-[11px] font-semibold text-violet-600 flex-shrink-0">
-                <span className="h-1.5 w-1.5 rounded-full bg-violet-500 inline-block" />
-                Prestataire
-              </span>
-            </div>
+            {/* Status pill */}
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-100 text-[11px] font-semibold text-violet-600 flex-shrink-0">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-500 inline-block" />
+              Prestataire
+            </span>
 
             {/* Quick actions — desktop dashboard only */}
             {quickActions.length > 0 && (

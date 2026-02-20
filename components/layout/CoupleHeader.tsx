@@ -33,28 +33,6 @@ import {
   Heart,
 } from 'lucide-react'
 
-const pageTitles: Record<string, { label: string }> = {
-  '/couple/dashboard':       { label: 'Accueil' },
-  '/couple/recherche':       { label: 'Rechercher' },
-  '/couple/matching':        { label: 'Nuply Matching' },
-  '/couple/timeline':        { label: 'Calendrier' },
-  '/couple/messagerie':      { label: 'Messages' },
-  '/couple/demandes':        { label: 'Demandes & Devis' },
-  '/couple/budget':          { label: 'Budget' },
-  '/couple/profil':          { label: 'Profil' },
-  '/couple/parametres':      { label: 'Paramètres' },
-  '/couple/favoris':         { label: 'Favoris' },
-  '/couple/evenements':      { label: 'Événements' },
-  '/couple/collaborateurs':  { label: 'Collaborateurs' },
-}
-
-function getPageInfo(pathname: string): { label: string } {
-  if (pageTitles[pathname]) return pageTitles[pathname]
-  for (const [path, info] of Object.entries(pageTitles)) {
-    if (pathname.startsWith(path + '/')) return info
-  }
-  return { label: 'Accueil' }
-}
 
 export function CoupleHeader() {
   const { user } = useUser()
@@ -99,7 +77,6 @@ export function CoupleHeader() {
     }
   }
 
-  const pageInfo = getPageInfo(pathname || '/couple/dashboard')
   const totalNotifs = counts.unreadMessages + counts.newRequests
 
   const quickActions = pathname === '/couple/dashboard'
@@ -133,17 +110,11 @@ export function CoupleHeader() {
               </Button>
             </div>
 
-            {/* Page title + status pill */}
-            <div className="flex items-center gap-2 min-w-0">
-              <h1 className="text-[15px] font-bold text-gray-900 tracking-tight truncate leading-tight">
-                {pageInfo.label}
-              </h1>
-              {/* Status pill — desktop only */}
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 border border-pink-100 text-[11px] font-semibold text-pink-600 flex-shrink-0">
-                <Heart className="h-2.5 w-2.5 fill-pink-500 text-pink-500" />
-                Couple
-              </span>
-            </div>
+            {/* Status pill */}
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 border border-pink-100 text-[11px] font-semibold text-pink-600 flex-shrink-0">
+              <Heart className="h-2.5 w-2.5 fill-pink-500 text-pink-500" />
+              Couple
+            </span>
 
             {/* Quick actions — desktop dashboard only */}
             {quickActions.length > 0 && (

@@ -22,6 +22,7 @@ import {
   Users,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -233,10 +234,10 @@ export default function CoupleParametresPage() {
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8 pb-12 px-4 sm:px-0">
-      <div className="pt-2">
-        <h1 className="text-2xl font-bold text-foreground">Paramètres du compte</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gérez vos informations personnelles et préférences</p>
-      </div>
+      <PageTitle
+        title="Paramètres du compte"
+        description="Gérez vos informations personnelles et préférences"
+      />
 
       {/* ═══════════════════════════════════════════
           SECTION 1 : INFORMATIONS DU COUPLE
