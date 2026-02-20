@@ -217,10 +217,9 @@ const Sidebar = React.forwardRef<
                 "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear",
                 "md:flex",
                 side === "left" ? "left-0" : "right-0",
-                // Tailles responsive : tablet (md) = 220px, desktop (lg+) = 240px, collapsed = 64px
-                state === "collapsed" && collapsible === "icon" 
-                  ? "w-[var(--sidebar-width-icon)]" 
-                  : "md:w-[220px] lg:w-[240px]",
+                state === "collapsed" && collapsible === "icon"
+                  ? "w-[var(--sidebar-width-icon)]"
+                  : "w-[232px]",
                 "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
                 "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
                 className

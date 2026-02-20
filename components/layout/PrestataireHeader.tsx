@@ -287,7 +287,7 @@ export function PrestataireHeader() {
                       {profile?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'P'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:block text-[13px] font-medium text-gray-700 max-w-[120px] truncate">{profile?.name || 'Prestataire'}</span>
+                  <span className="hidden sm:block text-[13px] font-medium text-gray-700 max-w-[160px] truncate">{profile?.name || 'Prestataire'}</span>
                   <ChevronDown className="hidden sm:block h-3 w-3 text-gray-400 flex-shrink-0" />
                 </button>
               </DropdownMenuTrigger>
