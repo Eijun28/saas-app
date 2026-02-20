@@ -561,7 +561,7 @@ export default function DevisFacturesPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="z-[201]">
                               {devis.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(devis.pdf_url, '_blank')}
@@ -681,7 +681,7 @@ export default function DevisFacturesPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="z-[201]">
                               {facture.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(facture.pdf_url!, '_blank')}

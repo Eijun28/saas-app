@@ -690,7 +690,7 @@ export default function DemandesPage() {
                                           <MoreVertical className="h-4 w-4 text-gray-500" />
                                         </Button>
                                       </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end" className="w-48">
+                                      <DropdownMenuContent align="end" className="w-48 z-[201]">
                                         {r.status === 'pending' && (
                                           <DropdownMenuItem
                                             className="text-red-600 focus:text-red-600 focus:bg-red-50"

@@ -186,7 +186,10 @@ const Sidebar = React.forwardRef<
             className="fixed inset-y-0 left-0 w-[75%] max-w-sm z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
             style={{ zIndex: 99999, background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)' }}
           >
-            <div className="flex h-full w-full flex-col p-4">
+            <div
+              className="flex min-h-full w-full flex-col p-4"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            >
               {children}
             </div>
           </div>

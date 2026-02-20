@@ -207,7 +207,7 @@ export function PrestataireHeader() {
                   )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden">
+              <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden z-[201]">
                 <div className="px-3 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100/60">
                   <p className="text-[13px] font-semibold text-gray-900">Notifications</p>
                   {unreadCount > 0 && (
@@ -266,7 +266,7 @@ export function PrestataireHeader() {
                   <ChevronDown className="hidden sm:block h-3 w-3 text-gray-400 flex-shrink-0" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 p-1">
+              <DropdownMenuContent align="end" className="w-52 p-1 z-[201]">
                 <div className="px-2.5 py-2 sm:block">
                   <p className="text-[13px] font-semibold text-gray-900 truncate">{profile?.name}</p>
                   <p className="text-[11px] text-gray-500 truncate">{profile?.email}</p>
