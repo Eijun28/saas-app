@@ -1034,3 +1034,85 @@ nav[class*="fixed"] {
   min-width: 44px;
   min-height: 44px;
 }
+
+/* === Blog Article Styles === */
+
+/* Paragraphe chapeau (intro) */
+.blog-lead {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: #4A3A2E;
+  font-weight: 500;
+  border-left: 4px solid rgba(130, 63, 145, 0.25);
+  padding-left: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.blog-lead p {
+  margin: 0 !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+
+/* Corps de l'article — fallback si le plugin typography n'est pas actif */
+.blog-article h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #823F91;
+  border-left: 4px solid #823F91;
+  padding-left: 1rem;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  scroll-margin-top: 7rem;
+  letter-spacing: -0.01em;
+}
+
+.blog-article h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #4A3A2E;
+  margin-top: 2rem;
+  margin-bottom: 0.625rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(130, 63, 145, 0.3);
+  line-height: 1.4;
+}
+
+.blog-article p {
+  color: #4A3A2E;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.blog-article ul,
+.blog-article ol {
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.blog-article li {
+  color: #4A3A2E;
+  line-height: 1.7;
+  margin-bottom: 0.375rem;
+  font-size: 1rem;
+}
+
+.blog-article strong {
+  color: #2C1810;
+  font-weight: 600;
+}
+
+.blog-article a {
+  color: #823F91;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.blog-article a:hover {
+  text-decoration: underline;
+}
