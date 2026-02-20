@@ -158,9 +158,9 @@ export function PrestataireHeader() {
     : []
 
   return (
-    <header className="h-14 sticky top-0 z-[100] w-full flex flex-col">
-      {/* Top accent line */}
-      <div className="h-[2px] w-full bg-gradient-to-r from-violet-600 via-purple-500 to-violet-400 flex-shrink-0" />
+    <header className="h-16 sticky top-0 z-[100] w-full flex flex-col">
+      {/* Top accent line — même gradient que la sidebar Nuply */}
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#5C2B66] via-[#6D3478] to-[#823F91] flex-shrink-0" />
 
       <div className="flex-1 bg-white/95 backdrop-blur-xl border-b border-gray-200/70 shadow-[0_1px_8px_0_rgba(0,0,0,0.06)] flex items-center">
         <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">

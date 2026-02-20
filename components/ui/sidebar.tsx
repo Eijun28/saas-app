@@ -541,7 +541,7 @@ const SidebarMenuButton = React.forwardRef<
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
-        className="ml-2"
+        className="ml-2 !bg-white !text-[#823F91] border border-[#E8D4EF] shadow-lg font-semibold text-[12px]"
         {...tooltip}
       />
     </Tooltip>

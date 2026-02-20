@@ -126,7 +126,7 @@ function SidebarToggleButton() {
         handleToggle()
       }}
       className='h-7 w-7 rounded-md flex-shrink-0 flex relative z-[100] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20'
-      style={{ pointerEvents: 'auto', color: 'rgba(255,255,255,0.6)', background: 'transparent', border: 'none', boxShadow: 'none' }}
+      style={{ pointerEvents: 'auto', color: 'rgba(255,255,255,0.9)', background: 'transparent', border: 'none', boxShadow: 'none' }}
       aria-label={isCollapsed ? 'Ouvrir la sidebar' : 'Réduire la sidebar'}
     >
       {isCollapsed ? (
@@ -210,7 +210,7 @@ function SidebarUserFooter() {
                     Couple
                   </span>
                 </div>
-                <ChevronsUpDown className="ml-auto h-3.5 w-3.5 text-white/40 group-data-[collapsible=icon]:hidden" />
+                <ChevronsUpDown className="ml-auto h-3.5 w-3.5 text-white/70 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -316,7 +316,7 @@ export function CoupleSidebarWrapper() {
       <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
         {sections.map((section, sectionIdx) => (
           <SidebarGroup key={section.title} className={sectionIdx > 0 ? "mt-1 pt-3 border-t border-white/8" : ""}>
-            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 px-3 py-1.5 mb-0.5 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/65 px-3 py-1.5 mb-0.5 group-data-[collapsible=icon]:hidden">
               {section.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -337,8 +337,8 @@ export function CoupleSidebarWrapper() {
                           "group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:mx-auto",
                           "hover:!bg-white/10 hover:!text-[#D4ADE0]",
                           isActive
-                            ? "!bg-white/12 !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                            : "!text-white/60",
+                            ? "!bg-white/15 !text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                            : "!text-white",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
                         )}
                       >
@@ -349,19 +349,19 @@ export function CoupleSidebarWrapper() {
                         >
                           {/* Active glow pill (left edge) */}
                           {isActive && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-pink-400 rounded-r-full shadow-[0_0_8px_rgba(244,114,182,0.8)] group-data-[collapsible=icon]:hidden" />
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-white rounded-r-full shadow-[0_0_6px_rgba(255,255,255,0.6)] group-data-[collapsible=icon]:hidden" />
                           )}
                           <div className={cn(
                             "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150",
                             "group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9",
                             isActive
-                              ? "bg-pink-500/20 shadow-[0_0_12px_rgba(236,72,153,0.25)]"
+                              ? "bg-white/15 shadow-[0_0_10px_rgba(255,255,255,0.15)]"
                               : "bg-transparent",
                           )}>
+                            {/* Icon hérite de la couleur du parent pour que hover fonctionne */}
                             <Icon className={cn(
                               "h-[18px] w-[18px] flex-shrink-0 transition-colors duration-150",
                               "group-data-[collapsible=icon]:h-5 group-data-[collapsible=icon]:w-5",
-                              isActive ? "text-pink-300" : "text-white/50"
                             )} />
                           </div>
                           <span className={cn(
