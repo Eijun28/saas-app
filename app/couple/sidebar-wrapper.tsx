@@ -217,7 +217,7 @@ function SidebarUserFooter() {
               side="top"
               align="end"
               sideOffset={4}
-              className="w-56 p-1"
+              className="w-56 p-1 z-[100000]"
             >
               <div className="px-2.5 py-2">
                 <p className="text-[13px] font-semibold text-gray-900 truncate">

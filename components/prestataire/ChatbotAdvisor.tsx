@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Bot, Loader2 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface Message {
   role: 'bot' | 'user'
@@ -12,6 +13,7 @@ interface Message {
 
 export function ChatbotAdvisor() {
   const { user } = useUser()
+  const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -114,7 +116,11 @@ export function ChatbotAdvisor() {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-lg shadow-[#823F91]/30 flex items-center justify-center transition-colors"
+            className="fixed z-[201] w-14 h-14 rounded-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-lg shadow-[#823F91]/30 flex items-center justify-center transition-colors"
+            style={{
+              bottom: isMobile ? '76px' : '24px',
+              right: isMobile ? '16px' : '24px',
+            }}
             aria-label="Ouvrir le conseiller IA"
           >
             <Bot className="h-7 w-7" />
@@ -130,7 +136,23 @@ export function ChatbotAdvisor() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-4rem)] bg-white rounded-2xl shadow-2xl shadow-black/15 border border-gray-200 flex flex-col overflow-hidden"
+            className="fixed z-[201] bg-white shadow-2xl shadow-black/15 border border-gray-200 flex flex-col overflow-hidden"
+            style={isMobile ? {
+              inset: 0,
+              borderRadius: 0,
+              width: '100%',
+              height: '100%',
+              maxWidth: '100%',
+              maxHeight: '100%',
+            } : {
+              bottom: '24px',
+              right: '24px',
+              width: '360px',
+              height: '520px',
+              maxWidth: 'calc(100vw - 2rem)',
+              maxHeight: 'calc(100vh - 4rem)',
+              borderRadius: '1rem',
+            }}
           >
             {/* Header */}
             <div className="bg-[#823F91] px-4 py-3 flex items-center justify-between flex-shrink-0">

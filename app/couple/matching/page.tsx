@@ -859,7 +859,7 @@ function ChatView({
                 <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 max-h-[400px] overflow-y-auto">
+            <DropdownMenuContent align="end" className="w-80 max-h-[400px] overflow-y-auto z-[201]">
               <div className="px-2 py-1.5 text-sm font-semibold text-gray-900">
                 Recherches sauvegardées
               </div>

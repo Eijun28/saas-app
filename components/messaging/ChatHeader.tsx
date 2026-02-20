@@ -161,7 +161,7 @@ export function ChatHeader({
                   <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44 sm:w-48">
+              <DropdownMenuContent align="end" className="w-44 sm:w-48 z-[201]">
                 <DropdownMenuItem onClick={handleViewProfile} className="text-sm">
                   <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-2" />
                   Voir le profil
