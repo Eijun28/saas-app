@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Plus, SlidersHorizontal, X, Download } from 'lucide-react'
+import { Plus, SlidersHorizontal, X, Download, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -15,6 +15,7 @@ import {
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { ProgramTimeline } from '@/components/wedding-day-program/ProgramTimeline'
 import { ProgramForm } from '@/components/wedding-day-program/ProgramForm'
+import { ProgramShareDialog } from '@/components/wedding-day-program/ProgramShareDialog'
 import { useUser } from '@/hooks/use-user'
 import type { ProgramItem, ProgramCategory } from '@/types/wedding-day-program'
 import {
@@ -30,6 +31,7 @@ export default function JourJPage() {
   const [items, setItems]                   = useState<ProgramItem[]>([])
   const [loading, setLoading]               = useState(true)
   const [showAddForm, setShowAddForm]       = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
   const [filterCategory, setFilterCategory] = useState<ProgramCategory | 'all'>('all')
   const [filtersOpen, setFiltersOpen]       = useState(false)
 
@@ -131,6 +133,15 @@ export default function JourJPage() {
             <Download className="h-4 w-4" />
           </Button>
           <Button
+            variant="outline"
+            onClick={() => setShowShareDialog(true)}
+            className="h-10 rounded-xl gap-2"
+            title="Partager le programme"
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Partager</span>
+          </Button>
+          <Button
             onClick={() => setShowAddForm(true)}
             className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl gap-2"
           >
@@ -230,6 +241,12 @@ export default function JourJPage() {
         open={showAddForm}
         onClose={() => setShowAddForm(false)}
         onSaved={handleItemAdded}
+      />
+
+      {/* Dialog partage */}
+      <ProgramShareDialog
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
       />
     </div>
   )
