@@ -21,6 +21,8 @@ import { getCached, setCached } from '@/lib/cache'
 import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
 import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
+import { UpcomingPaymentsWidget } from '@/components/dashboard/UpcomingPaymentsWidget'
+import { NextProgramWidget } from '@/components/dashboard/NextProgramWidget'
 import { cn } from '@/lib/utils'
 
 type PeriodFilter = '7d' | '30d' | 'month'
@@ -526,6 +528,12 @@ export default function CoupleDashboardPage() {
 
         {/* Quick actions */}
         <QuickActionsCouple />
+
+        {/* Upcoming deadlines widgets */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UpcomingPaymentsWidget coupleId={coupleData?.id} />
+          <NextProgramWidget coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
+        </div>
 
         {/* Tasks and Activity side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
