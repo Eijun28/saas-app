@@ -13,6 +13,7 @@ import {
   Plus,
   Loader2,
   Link2,
+  UserPlus,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -45,12 +46,14 @@ interface GuestTableProps {
 
 const RSVP_OPTIONS: RsvpStatus[] = ['confirmed', 'maybe', 'declined', 'pending']
 
-// ─── Inline Add Row (style Notion) ───────────────────────────────────────────
+// ─── Inline Add Row (formulaire rapide en haut du tableau) ────────────────────
 
 function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
   const [form, setForm] = useState({
     first_name: '',
     last_name:  '',
+    email:      '',
+    phone:      '',
     side:       'commun' as GuestSide,
     category:   'famille' as GuestCategory,
   })
@@ -64,13 +67,17 @@ function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
       const res = await fetch('/api/guests', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(form),
+        body:    JSON.stringify({
+          ...form,
+          email: form.email.trim() || null,
+          phone: form.phone.trim() || null,
+        }),
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
       toast.success(`${form.first_name} ajouté(e) ✓`)
       onSaved(data.guest)
-      setForm({ first_name: '', last_name: '', side: 'commun', category: 'famille' })
+      setForm({ first_name: '', last_name: '', email: '', phone: '', side: 'commun', category: 'famille' })
       firstRef.current?.focus()
     } catch {
       toast.error("Impossible d'ajouter l'invité")
@@ -80,51 +87,90 @@ function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 px-4 py-3 border-t border-dashed border-[#823F91]/15 bg-purple-50/30">
-      <Input
-        ref={firstRef}
-        value={form.first_name}
-        onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))}
-        placeholder="Prénom *"
-        className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
-        onKeyDown={e => { if (e.key === 'Enter') save() }}
-      />
-      <Input
-        value={form.last_name}
-        onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))}
-        placeholder="Nom de famille"
-        className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
-        onKeyDown={e => { if (e.key === 'Enter') save() }}
-      />
-      <Select value={form.side} onValueChange={v => setForm(p => ({ ...p, side: v as GuestSide }))}>
-        <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {(Object.entries(SIDE_LABELS) as [GuestSide, string][]).map(([k, label]) => (
-            <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v as GuestCategory }))}>
-        <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {(Object.entries(CATEGORY_LABELS) as [GuestCategory, string][]).map(([k, label]) => (
-            <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Button
-        onClick={save}
-        disabled={!form.first_name.trim() || saving}
-        size="sm"
-        className="h-8 w-8 p-0 bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg"
-        aria-label="Ajouter l'invité"
-      >
-        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-      </Button>
+    <div className="px-4 py-3 bg-purple-50/40 border-b border-[#823F91]/10">
+      {/* Label */}
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <UserPlus className="h-3.5 w-3.5 text-[#823F91]/60" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#823F91]/60">
+          Ajouter un invité
+        </span>
+      </div>
+
+      {/* Ligne 1 : Prénom, Nom, Email, Téléphone */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2">
+        <Input
+          ref={firstRef}
+          value={form.first_name}
+          onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))}
+          placeholder="Prénom *"
+          className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
+          onKeyDown={e => { if (e.key === 'Enter') save() }}
+        />
+        <Input
+          value={form.last_name}
+          onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))}
+          placeholder="Nom de famille"
+          className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
+          onKeyDown={e => { if (e.key === 'Enter') save() }}
+        />
+        <div className="relative">
+          <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+          <Input
+            value={form.email}
+            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+            placeholder="Email"
+            type="email"
+            className="h-8 text-[13px] border-gray-200 rounded-lg bg-white pl-8"
+            onKeyDown={e => { if (e.key === 'Enter') save() }}
+          />
+        </div>
+        <div className="relative">
+          <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+          <Input
+            value={form.phone}
+            onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+            placeholder="Téléphone"
+            type="tel"
+            className="h-8 text-[13px] border-gray-200 rounded-lg bg-white pl-8"
+            onKeyDown={e => { if (e.key === 'Enter') save() }}
+          />
+        </div>
+      </div>
+
+      {/* Ligne 2 : Côté, Catégorie, Bouton */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2 items-center">
+        <Select value={form.side} onValueChange={v => setForm(p => ({ ...p, side: v as GuestSide }))}>
+          <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.entries(SIDE_LABELS) as [GuestSide, string][]).map(([k, label]) => (
+              <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v as GuestCategory }))}>
+          <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.entries(CATEGORY_LABELS) as [GuestCategory, string][]).map(([k, label]) => (
+              <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={save}
+          disabled={!form.first_name.trim() || saving}
+          size="sm"
+          className="h-8 px-3 bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg gap-1.5 text-[13px]"
+        >
+          {saving
+            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            : <Plus className="h-3.5 w-3.5" />}
+          <span className="hidden sm:inline">{saving ? 'Ajout...' : 'Ajouter'}</span>
+        </Button>
+      </div>
     </div>
   )
 }
@@ -174,14 +220,15 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
   if (guests.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+        {/* Formulaire d'ajout en haut */}
+        <InlineAddRow onSaved={onAdded} />
         <div className="flex flex-col items-center justify-center py-12 text-center px-4">
           <div className="h-16 w-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
             <Users className="h-8 w-8 text-[#823F91]/50" />
           </div>
           <p className="text-gray-500 font-medium">Aucun invité pour le moment</p>
-          <p className="text-sm text-gray-400 mt-1 mb-6">Ajoutez directement ci-dessous ou via le bouton en haut</p>
+          <p className="text-sm text-gray-400 mt-1">Utilisez le formulaire ci-dessus pour ajouter votre premier invité</p>
         </div>
-        <InlineAddRow onSaved={onAdded} />
       </div>
     )
   }
@@ -189,18 +236,22 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
   return (
     <>
       <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
-        {/* Header */}
+
+        {/* ── Formulaire d'ajout rapide – EN HAUT ── */}
+        <InlineAddRow onSaved={onAdded} />
+
+        {/* Header colonnes */}
         <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
           {['Invité', 'Contact', 'Catégorie', 'Côté', 'RSVP', ''].map(h => (
             <span key={h} className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">{h}</span>
           ))}
         </div>
 
-        {/* Rows */}
+        {/* Lignes invités */}
         <AnimatePresence initial={false}>
           {guests.map((guest, idx) => {
-            const fullName = [guest.first_name, guest.last_name].filter(Boolean).join(' ')
-            const initials = [guest.first_name[0], guest.last_name?.[0]].filter(Boolean).join('').toUpperCase()
+            const fullName  = [guest.first_name, guest.last_name].filter(Boolean).join(' ')
+            const initials  = [guest.first_name[0], guest.last_name?.[0]].filter(Boolean).join('').toUpperCase()
             const isUpdating = updatingRsvp === guest.id
 
             return (
@@ -300,7 +351,6 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
                     <DropdownMenuItem onClick={() => setEditingGuest(guest)} className="text-[13px] gap-2">
                       <Pencil className="h-3.5 w-3.5" /> Modifier
                     </DropdownMenuItem>
-                    {/* Lien RSVP (si l'invité a un email ou non) */}
                     <DropdownMenuItem
                       onClick={() => {
                         const url = `${window.location.origin}/rsvp/${guest.id}`
@@ -338,9 +388,6 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
             )
           })}
         </AnimatePresence>
-
-        {/* Ligne d'ajout rapide style Notion */}
-        <InlineAddRow onSaved={onAdded} />
       </div>
 
       {/* Modal édition */}
