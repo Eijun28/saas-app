@@ -364,17 +364,7 @@ export default function ParametresPage() {
       {/* ═══════════════════════════════════════════
           SECTION AMBASSADEUR (conditionnelle)
           ═══════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.03 }}
-      >
-        <Card className={cardClass}>
-          <div className="p-5 sm:p-7">
-            <AmbassadorSection />
-          </div>
-        </Card>
-      </motion.div>
+      <AmbassadorSection />
 
       {/* ═══════════════════════════════════════════
           SECTION 1 : ABONNEMENT
