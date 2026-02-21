@@ -133,7 +133,7 @@ export function ChatList({
       </div>
 
       {/* Liste des conversations */}
-      <div className="flex-1 overflow-y-auto p-2 sm:p-3">
+      <div className="flex-1 overflow-y-auto scrollbar-hide p-2 sm:p-3">
         <div className="space-y-1.5 sm:space-y-2">
           {filteredConversations.map((conversation) => {
             const otherParty = conversation.other_party

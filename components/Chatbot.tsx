@@ -448,7 +448,7 @@ export default function Chatbot() {
           </div>
           
           {/* MESSAGES */}
-          <div className={`flex-1 overflow-y-auto bg-gray-50 ${isMobile ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
+          <div className={`flex-1 overflow-y-auto scrollbar-hide bg-gray-50 ${isMobile ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
             {messages.map((message, index) => (
               <div
                 key={index}

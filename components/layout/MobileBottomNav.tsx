@@ -103,7 +103,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
         {/* Sections — zone scrollable isolée */}
         <div
-          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-3 space-y-4"
+          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-3 space-y-4 scrollbar-hide"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
         >
           {sections.map((section, i) => (
