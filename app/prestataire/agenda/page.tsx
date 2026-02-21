@@ -30,6 +30,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { CalendarDashboard, type CalendarEvent } from '@/components/calendar/CalendarDashboard'
+import { GoogleCalendarSync } from '@/components/calendar/GoogleCalendarSync'
 
 interface Evenement {
   id: string
@@ -445,6 +446,13 @@ export default function AgendaPage() {
       <PageTitle 
         title="Agenda"
         description="Gérez votre disponibilité et vos événements"
+      />
+
+      {/* Google Calendar Sync */}
+      <GoogleCalendarSync
+        role="prestataire"
+        onSyncComplete={loadEvenements}
+        className="mb-3 flex-shrink-0"
       />
 
       {/* Calendrier plein écran */}
