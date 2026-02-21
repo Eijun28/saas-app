@@ -67,7 +67,7 @@ const sections: NavSection[] = [
   {
     title: "Opérations",
     items: [
-      { href: "/prestataire/dashboard", icon: Home, label: "Dashboard" },
+      { href: "/prestataire/dashboard", icon: Home, label: "Accueil" },
       { href: "/prestataire/demandes-recues", icon: Inbox, label: "Demandes reçues" },
       { href: "/prestataire/agenda", icon: Calendar, label: "Agenda" },
       { href: "/prestataire/disponibilites", icon: CalendarOff, label: "Disponibilités" },
