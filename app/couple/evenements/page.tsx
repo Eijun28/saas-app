@@ -11,16 +11,20 @@ import { toast } from 'sonner'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { EventCard } from '@/components/couple-events/EventCard'
 import { EventForm } from '@/components/couple-events/EventForm'
+import { CulturalEventSuggestions } from '@/components/couple-events/CulturalEventSuggestions'
 import type { TimelineEvent, TimelineEventFormData } from '@/types/cultural-events.types'
 
 export default function EvenementsPage() {
   const { user } = useUser()
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [events, setEvents] = useState<TimelineEvent[]>([])
-  const [coupleId, setCoupleId] = useState<string | null>(null)
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [loading, setLoading]           = useState(true)
+  const [events, setEvents]             = useState<TimelineEvent[]>([])
+  const [coupleId, setCoupleId]         = useState<string | null>(null)
+  const [isFormOpen, setIsFormOpen]     = useState(false)
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null)
+  const [cultures, setCultures]         = useState<string[]>([])
+  const [religions, setReligions]       = useState<string[]>([])
+  const [suggestionValues, setSuggestionValues] = useState<{ title: string; description: string } | undefined>()
 
   useEffect(() => {
     if (user) {
@@ -48,19 +52,33 @@ export default function EvenementsPage() {
 
       setCoupleId(couple.id)
 
-      // Charger les événements depuis timeline_events
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('timeline_events')
-        .select('*')
-        .eq('couple_id', couple.id)
-        .order('event_date', { ascending: true })
+      // Charger en parallèle : événements + préférences culturelles
+      const [eventsResult, prefsResult] = await Promise.all([
+        supabase
+          .from('timeline_events')
+          .select('*')
+          .eq('couple_id', couple.id)
+          .order('event_date', { ascending: true }),
+        supabase
+          .from('couple_preferences')
+          .select('cultural_preferences')
+          .eq('couple_id', couple.id)
+          .maybeSingle(),
+      ])
 
-      if (eventsError) {
-        console.error('Erreur chargement événements:', eventsError)
+      if (eventsResult.error) {
+        console.error('Erreur chargement événements:', eventsResult.error)
         toast.error('Erreur lors du chargement des événements')
       }
 
-      setEvents((eventsData as TimelineEvent[]) || [])
+      setEvents((eventsResult.data as TimelineEvent[]) || [])
+
+      // Extraire cultures et religions des préférences
+      const culturalPrefs = prefsResult.data?.cultural_preferences as Record<string, unknown> | null
+      if (culturalPrefs) {
+        setCultures((culturalPrefs.cultures as string[]) || [])
+        setReligions((culturalPrefs.religions as string[]) || [])
+      }
     } catch (err) {
       console.error('Erreur chargement données événements:', err)
       toast.error('Erreur lors du chargement des événements')
@@ -116,6 +134,13 @@ export default function EvenementsPage() {
 
   const handleOpenCreate = () => {
     setEditingEvent(null)
+    setSuggestionValues(undefined)
+    setIsFormOpen(true)
+  }
+
+  const handleSuggestionSelect = (title: string, description: string) => {
+    setEditingEvent(null)
+    setSuggestionValues({ title, description })
     setIsFormOpen(true)
   }
 
@@ -138,7 +163,7 @@ export default function EvenementsPage() {
       />
 
       {/* Header avec bouton ajouter */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-gray-500">
           {events.length === 0
             ? 'Aucun événement pour le moment'
@@ -154,13 +179,20 @@ export default function EvenementsPage() {
         </Button>
       </div>
 
+      {/* Suggestions culturelles */}
+      <CulturalEventSuggestions
+        cultures={cultures}
+        religions={religions}
+        onSelect={handleSuggestionSelect}
+      />
+
       {/* Liste des événements */}
       {events.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex flex-col items-center justify-center py-16 text-center"
+          className="flex flex-col items-center justify-center py-12 text-center"
         >
           <div className="h-16 w-16 rounded-full bg-[#823F91]/10 flex items-center justify-center mb-4">
             <Calendar className="h-8 w-8 text-[#823F91]/60" />
@@ -169,14 +201,14 @@ export default function EvenementsPage() {
             Aucun événement
           </h3>
           <p className="text-sm text-gray-500 max-w-sm mb-6">
-            Commencez par ajouter les événements de votre mariage : cérémonie religieuse, henné, réception...
+            Cliquez sur une suggestion ci-dessus ou créez un événement personnalisé.
           </p>
           <Button
             onClick={handleOpenCreate}
             className="bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            Créer mon premier événement
+            Créer un événement personnalisé
           </Button>
         </motion.div>
       ) : (
@@ -195,9 +227,13 @@ export default function EvenementsPage() {
       {/* Dialog formulaire */}
       <EventForm
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open)
+          if (!open) setSuggestionValues(undefined)
+        }}
         onSubmit={handleFormSubmit}
         editingEvent={editingEvent}
+        initialValues={suggestionValues}
       />
     </div>
   )

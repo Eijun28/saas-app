@@ -280,6 +280,7 @@ export default function InvitesPage() {
             )}
             <GuestTable
               guests={guests}
+              onAdded={handleGuestAdded}
               onUpdated={handleGuestUpdated}
               onDeleted={handleGuestDeleted}
             />

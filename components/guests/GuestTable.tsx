@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import {
@@ -10,6 +10,8 @@ import {
   Mail,
   Phone,
   Users,
+  Plus,
+  Loader2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -18,22 +20,117 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { RsvpBadge } from './RsvpBadge'
 import { GuestForm } from './GuestForm'
-import type { Guest, RsvpStatus } from '@/types/guest'
+import type { Guest, RsvpStatus, GuestSide, GuestCategory } from '@/types/guest'
 import { CATEGORY_LABELS, SIDE_LABELS, RSVP_LABELS } from '@/types/guest'
 import { cn } from '@/lib/utils'
 
 interface GuestTableProps {
   guests: Guest[]
+  onAdded: (guest: Guest) => void
   onUpdated: (guest: Guest) => void
   onDeleted: (id: string) => void
 }
 
 const RSVP_OPTIONS: RsvpStatus[] = ['confirmed', 'maybe', 'declined', 'pending']
 
-export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
+// ─── Inline Add Row (style Notion) ───────────────────────────────────────────
+
+function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
+  const [form, setForm] = useState({
+    first_name: '',
+    last_name:  '',
+    side:       'commun' as GuestSide,
+    category:   'famille' as GuestCategory,
+  })
+  const [saving, setSaving] = useState(false)
+  const firstRef = useRef<HTMLInputElement>(null)
+
+  async function save() {
+    if (!form.first_name.trim() || saving) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/guests', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      toast.success(`${form.first_name} ajouté(e) ✓`)
+      onSaved(data.guest)
+      setForm({ first_name: '', last_name: '', side: 'commun', category: 'famille' })
+      firstRef.current?.focus()
+    } catch {
+      toast.error("Impossible d'ajouter l'invité")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-2 px-4 py-3 border-t border-dashed border-[#823F91]/15 bg-purple-50/30">
+      <Input
+        ref={firstRef}
+        value={form.first_name}
+        onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))}
+        placeholder="Prénom *"
+        className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
+        onKeyDown={e => { if (e.key === 'Enter') save() }}
+      />
+      <Input
+        value={form.last_name}
+        onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))}
+        placeholder="Nom de famille"
+        className="h-8 text-[13px] border-gray-200 rounded-lg bg-white"
+        onKeyDown={e => { if (e.key === 'Enter') save() }}
+      />
+      <Select value={form.side} onValueChange={v => setForm(p => ({ ...p, side: v as GuestSide }))}>
+        <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {(Object.entries(SIDE_LABELS) as [GuestSide, string][]).map(([k, label]) => (
+            <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select value={form.category} onValueChange={v => setForm(p => ({ ...p, category: v as GuestCategory }))}>
+        <SelectTrigger className="h-8 text-[13px] rounded-lg border-gray-200 bg-white">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {(Object.entries(CATEGORY_LABELS) as [GuestCategory, string][]).map(([k, label]) => (
+            <SelectItem key={k} value={k} className="text-[13px]">{label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        onClick={save}
+        disabled={!form.first_name.trim() || saving}
+        size="sm"
+        className="h-8 w-8 p-0 bg-[#823F91] hover:bg-[#6D3478] text-white rounded-lg"
+        aria-label="Ajouter l'invité"
+      >
+        {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+      </Button>
+    </div>
+  )
+}
+
+// ─── Table principale ─────────────────────────────────────────────────────────
+
+export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTableProps) {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingId, setDeletingId]     = useState<string | null>(null)
   const [updatingRsvp, setUpdatingRsvp] = useState<string | null>(null)
@@ -43,9 +140,9 @@ export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
     setUpdatingRsvp(guest.id)
     try {
       const res = await fetch(`/api/guests/${guest.id}`, {
-        method: 'PATCH',
+        method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rsvp_status: status }),
+        body:    JSON.stringify({ rsvp_status: status }),
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -67,7 +164,7 @@ export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
       onDeleted(guest.id)
       toast.success(`${guest.first_name} supprimé(e)`)
     } catch {
-      toast.error('Impossible de supprimer l\'invité')
+      toast.error("Impossible de supprimer l'invité")
     } finally {
       setDeletingId(null)
     }
@@ -75,12 +172,15 @@ export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
 
   if (guests.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="h-16 w-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
-          <Users className="h-8 w-8 text-[#823F91]/50" />
+      <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+        <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+          <div className="h-16 w-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
+            <Users className="h-8 w-8 text-[#823F91]/50" />
+          </div>
+          <p className="text-gray-500 font-medium">Aucun invité pour le moment</p>
+          <p className="text-sm text-gray-400 mt-1 mb-6">Ajoutez directement ci-dessous ou via le bouton en haut</p>
         </div>
-        <p className="text-gray-500 font-medium">Aucun invité pour le moment</p>
-        <p className="text-sm text-gray-400 mt-1">Ajoutez vos premiers invités en cliquant sur le bouton ci-dessus</p>
+        <InlineAddRow onSaved={onAdded} />
       </div>
     )
   }
@@ -226,6 +326,9 @@ export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
             )
           })}
         </AnimatePresence>
+
+        {/* Ligne d'ajout rapide style Notion */}
+        <InlineAddRow onSaved={onAdded} />
       </div>
 
       {/* Modal édition */}
@@ -238,7 +341,6 @@ export function GuestTable({ guests, onUpdated, onDeleted }: GuestTableProps) {
         }}
         existing={editingGuest}
       />
-
     </>
   )
 }
