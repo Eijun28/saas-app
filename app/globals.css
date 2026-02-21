@@ -262,12 +262,12 @@ button, .button, .btn {
   }
 }
 
-/* Suppression définitive des bordures noires sur les cards */
+/* Suppression des bordures noires sur les cards shadow-soft/shadow-elevated */
+/* Note : .rounded-2xl retiré — trop générique, causait des effets indésirables */
 .shadow-soft,
-.shadow-elevated,
-.rounded-2xl {
+.shadow-elevated {
   border: none !important;
-  box-shadow: 
+  box-shadow:
     0 1px 2px hsl(220 30% 15% / 0.02),
     0 2px 4px hsl(220 30% 15% / 0.02),
     0 4px 8px hsl(220 30% 15% / 0.02) !important;
@@ -912,20 +912,13 @@ nav[class*="fixed"] {
   height: 0 !important;
 }
 
-/* Cacher les scrollbars dans les sections de dashboard prestataire */
-.overflow-y-auto,
-.overflow-x-auto,
-.overflow-auto {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* === SAFE AREA — gestion des encoches iOS (notch + home indicator) === */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
 }
 
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.overflow-auto::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ═══════════════════════════════════════════════

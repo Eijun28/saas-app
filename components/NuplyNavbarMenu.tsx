@@ -273,6 +273,7 @@ function Navbar({
             width={32}
             height={30}
             className="h-6 w-auto"
+            priority
           />
         </Link>
 
