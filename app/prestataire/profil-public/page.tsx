@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store, ClipboardList } from 'lucide-react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store, ClipboardList, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,7 +32,7 @@ import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { hasServiceFields } from '@/lib/constants/service-fields'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export default function ProfilPublicPage() {
@@ -79,6 +79,11 @@ export default function ProfilPublicPage() {
   const [serviceDetails, setServiceDetails] = useState<Record<string, unknown>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('infos')
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
+
+  const toggleSection = (section: string) => {
+    setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
 
   // Pricing data
   const { pricings, reload: reloadPricing } = useProviderPricing(user?.id || null)
@@ -426,48 +431,72 @@ export default function ProfilPublicPage() {
                 >
                   <Card className="card-section">
                     <div className="p-4 sm:p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
-                          <Briefcase className="h-4 w-4 text-[#823F91]" />
+                      <button
+                        type="button"
+                        onClick={() => toggleSection('entreprise')}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                            <Briefcase className="h-4 w-4 text-[#823F91]" />
+                          </div>
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground">Entreprise</h3>
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Entreprise</h3>
-                      </div>
-                      <div className="space-y-4 sm:space-y-5">
-                        <BusinessNameEditor
-                          key="business-name"
-                          userId={user.id}
-                          currentName={profile?.nom_entreprise}
-                          onSave={reloadData}
-                        />
-                        <SiretEditor
-                          key="siret"
-                          userId={user.id}
-                          currentSiret={profile?.siret}
-                          onSave={reloadData}
-                        />
-                        <ProfileDescriptionEditor
-                          key="profile-desc"
-                          userId={user.id}
-                          currentDescription={profile?.description_courte}
-                          onSave={reloadData}
-                        />
-                        <BioEditor
-                          key="bio"
-                          userId={user.id}
-                          currentBio={profile?.bio}
-                          onSave={reloadData}
-                        />
-                        <ProfessionalInfoEditor
-                          key="professional"
-                          userId={user.id}
-                          currentBudgetMin={profile?.budget_min}
-                          currentBudgetMax={profile?.budget_max}
-                          currentExperience={profile?.annees_experience}
-                          currentVille={profile?.ville_principale}
-                          currentServiceType={profile?.service_type}
-                          onSave={reloadData}
-                        />
-                      </div>
+                        <motion.div
+                          animate={{ rotate: collapsedSections.entreprise ? -90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {!collapsedSections.entreprise && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="space-y-4 sm:space-y-5 pt-4">
+                              <BusinessNameEditor
+                                key="business-name"
+                                userId={user.id}
+                                currentName={profile?.nom_entreprise}
+                                onSave={reloadData}
+                              />
+                              <SiretEditor
+                                key="siret"
+                                userId={user.id}
+                                currentSiret={profile?.siret}
+                                onSave={reloadData}
+                              />
+                              <ProfileDescriptionEditor
+                                key="profile-desc"
+                                userId={user.id}
+                                currentDescription={profile?.description_courte}
+                                onSave={reloadData}
+                              />
+                              <BioEditor
+                                key="bio"
+                                userId={user.id}
+                                currentBio={profile?.bio}
+                                onSave={reloadData}
+                              />
+                              <ProfessionalInfoEditor
+                                key="professional"
+                                userId={user.id}
+                                currentBudgetMin={profile?.budget_min}
+                                currentBudgetMax={profile?.budget_max}
+                                currentExperience={profile?.annees_experience}
+                                currentVille={profile?.ville_principale}
+                                currentServiceType={profile?.service_type}
+                                onSave={reloadData}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </Card>
                 </motion.div>
@@ -480,18 +509,44 @@ export default function ProfilPublicPage() {
                 >
                   <Card className="card-section">
                     <div className="p-4 sm:p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
-                          <Euro className="h-4 w-4 text-[#823F91]" />
+                      <button
+                        type="button"
+                        onClick={() => toggleSection('tarifs')}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                            <Euro className="h-4 w-4 text-[#823F91]" />
+                          </div>
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground">Tarifs</h3>
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Tarifs</h3>
-                      </div>
-                      <PricingEditor
-                        key="pricing"
-                        providerId={user.id}
-                        initialPricing={pricings}
-                        onUpdate={reloadPricing}
-                      />
+                        <motion.div
+                          animate={{ rotate: collapsedSections.tarifs ? -90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {!collapsedSections.tarifs && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-4">
+                              <PricingEditor
+                                key="pricing"
+                                providerId={user.id}
+                                initialPricing={pricings}
+                                onUpdate={reloadPricing}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </Card>
                 </motion.div>
@@ -504,26 +559,50 @@ export default function ProfilPublicPage() {
                 >
                   <Card className="card-section">
                     <div className="p-4 sm:p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
-                          <Share2 className="h-4 w-4 text-[#823F91]" />
+                      <button
+                        type="button"
+                        onClick={() => toggleSection('reseaux')}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                            <Share2 className="h-4 w-4 text-[#823F91]" />
+                          </div>
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground">Réseaux sociaux</h3>
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Réseaux sociaux</h3>
-                      </div>
-                      <div className="space-y-4 sm:space-y-5">
-                        <SocialLinksEditor
-                          key="social"
-                          userId={user.id}
-                          currentLinks={{
-                            instagram_url: profile?.instagram_url,
-                            facebook_url: profile?.facebook_url,
-                            website_url: profile?.website_url,
-                            linkedin_url: profile?.linkedin_url,
-                            tiktok_url: profile?.tiktok_url,
-                          }}
-                          onSave={reloadData}
-                        />
-                      </div>
+                        <motion.div
+                          animate={{ rotate: collapsedSections.reseaux ? -90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {!collapsedSections.reseaux && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="space-y-4 sm:space-y-5 pt-4">
+                              <SocialLinksEditor
+                                key="social"
+                                userId={user.id}
+                                currentLinks={{
+                                  instagram_url: profile?.instagram_url,
+                                  facebook_url: profile?.facebook_url,
+                                  website_url: profile?.website_url,
+                                  linkedin_url: profile?.linkedin_url,
+                                  tiktok_url: profile?.tiktok_url,
+                                }}
+                                onSave={reloadData}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </Card>
                 </motion.div>
@@ -536,31 +615,57 @@ export default function ProfilPublicPage() {
                 >
                   <Card className="card-section">
                     <div className="p-4 sm:p-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="p-1.5 rounded-lg bg-[#823F91]/10">
-                          <Store className="h-4 w-4 text-[#823F91]" />
+                      <button
+                        type="button"
+                        onClick={() => toggleSection('boutique')}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                            <Store className="h-4 w-4 text-[#823F91]" />
+                          </div>
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground">Lieu physique</h3>
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Lieu physique</h3>
-                      </div>
-                      <BoutiqueEditor
-                        key="boutique"
-                        userId={user.id}
-                        initialData={{
-                          has_physical_location: profile?.has_physical_location || false,
-                          boutique_name: profile?.boutique_name,
-                          boutique_address: profile?.boutique_address,
-                          boutique_address_complement: profile?.boutique_address_complement,
-                          boutique_postal_code: profile?.boutique_postal_code,
-                          boutique_city: profile?.boutique_city,
-                          boutique_country: profile?.boutique_country,
-                          boutique_phone: profile?.boutique_phone,
-                          boutique_email: profile?.boutique_email,
-                          boutique_hours: profile?.boutique_hours,
-                          boutique_notes: profile?.boutique_notes,
-                          boutique_appointment_only: profile?.boutique_appointment_only || false,
-                        }}
-                        onSave={reloadData}
-                      />
+                        <motion.div
+                          animate={{ rotate: collapsedSections.boutique ? -90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {!collapsedSections.boutique && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-4">
+                              <BoutiqueEditor
+                                key="boutique"
+                                userId={user.id}
+                                initialData={{
+                                  has_physical_location: profile?.has_physical_location || false,
+                                  boutique_name: profile?.boutique_name,
+                                  boutique_address: profile?.boutique_address,
+                                  boutique_address_complement: profile?.boutique_address_complement,
+                                  boutique_postal_code: profile?.boutique_postal_code,
+                                  boutique_city: profile?.boutique_city,
+                                  boutique_country: profile?.boutique_country,
+                                  boutique_phone: profile?.boutique_phone,
+                                  boutique_email: profile?.boutique_email,
+                                  boutique_hours: profile?.boutique_hours,
+                                  boutique_notes: profile?.boutique_notes,
+                                  boutique_appointment_only: profile?.boutique_appointment_only || false,
+                                }}
+                                onSave={reloadData}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </Card>
                 </motion.div>
