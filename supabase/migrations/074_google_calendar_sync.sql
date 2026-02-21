@@ -1,5 +1,5 @@
 -- ============================================================
--- Migration 073: Google Calendar Sync
+-- Migration 074: Google Calendar Sync
 -- ============================================================
 -- Crée la table evenements_prestataire (si absente)
 -- Ajoute les colonnes de sync Google Calendar sur profiles et couples
@@ -24,6 +24,11 @@ CREATE TABLE IF NOT EXISTS evenements_prestataire (
   created_at        TIMESTAMPTZ DEFAULT NOW(),
   updated_at        TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Si la table existait déjà avant cette migration, ajouter les colonnes manquantes
+ALTER TABLE evenements_prestataire
+  ADD COLUMN IF NOT EXISTS google_event_id  TEXT,
+  ADD COLUMN IF NOT EXISTS google_synced_at TIMESTAMPTZ;
 
 -- Index performance
 CREATE INDEX IF NOT EXISTS idx_evenements_prestataire_prestataire_id
