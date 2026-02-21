@@ -80,17 +80,17 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
       <div
         className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl flex flex-col"
         style={{
-          maxHeight: '92vh',
+          maxHeight: '92dvh',
           animation: 'slideInFromBottom 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
         }}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+        <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
           <div className="w-10 h-1 rounded-full bg-gray-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-100 flex-shrink-0">
           <p className="text-[15px] font-bold text-gray-900">Toutes les pages</p>
           <button
             onClick={onClose}
@@ -103,8 +103,8 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
         {/* Sections — zone scrollable isolée */}
         <div
-          className="overflow-y-auto overscroll-y-contain px-4 pt-3 pb-4 space-y-4"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
+          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-3 space-y-4"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
         >
           {sections.map((section, i) => (
             <div key={i}>
