@@ -17,6 +17,7 @@ import {
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { getCached, setCached } from '@/lib/cache'
 import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
 import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
@@ -41,7 +42,35 @@ export default function CoupleDashboardPage() {
   useEffect(() => {
     if (!user) return
 
-    const fetchDashboardData = async () => {
+    const CACHE_KEY = `couple-dashboard-${user.id}`
+
+    const fetchDashboardData = async (skipCache = false) => {
+      // Serve cached data instantly on revisit
+      if (!skipCache) {
+        const cached = getCached<{
+          coupleData: any
+          favoritesCount: number
+          budgetTotal: number
+          budgetItems: any[]
+          shortlistedCount: number
+          recentActivities: any[]
+          unreadMessages: number
+        }>(CACHE_KEY)
+        if (cached) {
+          setCoupleData(cached.coupleData)
+          setBudgetTotal(cached.budgetTotal)
+          setFavoritesCount(cached.favoritesCount)
+          setBudgetItems(cached.budgetItems)
+          setShortlistedCount(cached.shortlistedCount)
+          setRecentActivities(cached.recentActivities)
+          setUnreadMessages(cached.unreadMessages)
+          setLoading(false)
+          // Background refresh after serving cache
+          fetchDashboardData(true)
+          return
+        }
+      }
+
       try {
         const supabase = createClient()
 
@@ -100,16 +129,42 @@ export default function CoupleDashboardPage() {
         }
 
         // Fetch unread messages count
+        let unreadCount = 0
         try {
           const { count: msgCount } = await supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })
             .eq('couple_id', user.id)
             .eq('status', 'accepted')
-          setUnreadMessages(msgCount || 0)
+          unreadCount = msgCount || 0
+          setUnreadMessages(unreadCount)
         } catch {
           // silent
         }
+
+        // Persist to cache for instant reload next time
+        const cData = coupleResult.data
+        const bItems = budgetResult.data || []
+        const acts = requestsResult.data
+          ? requestsResult.data.map((req: any) => ({
+              id: req.id,
+              type: req.status === 'accepted' ? 'contact' : 'request',
+              title: req.status === 'accepted' ? 'Demande acceptee' : req.status === 'pending' ? 'Demande en attente' : 'Demande envoyee',
+              time: formatRelativeTime(req.created_at),
+              icon: req.status === 'accepted' ? CheckCircle2 : Clock,
+              color: req.status === 'accepted' ? 'text-emerald-500' : 'text-[#823F91]',
+              href: '/couple/demandes',
+            })).slice(0, 5)
+          : []
+        setCached(CACHE_KEY, {
+          coupleData: cData,
+          budgetTotal: cData?.budget_total || 0,
+          favoritesCount: favoritesResult.count || 0,
+          budgetItems: bItems,
+          shortlistedCount: shortlistedResult.count || 0,
+          recentActivities: acts,
+          unreadMessages: unreadCount,
+        })
       } catch (err: any) {
         console.error('Erreur chargement dashboard couple:', err)
         const isNetwork = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('timeout')
@@ -233,9 +288,9 @@ export default function CoupleDashboardPage() {
 
         {/* Hero: greeting + period filters */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.15 }}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 border border-[#823F91]/8 p-5 sm:p-7"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -301,9 +356,9 @@ export default function CoupleDashboardPage() {
         {/* Next best action */}
         {nextActions.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -5 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            transition={{ duration: 0.15, delay: 0.05 }}
             className="p-4 sm:p-5 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/30 border border-[#823F91]/10 rounded-2xl"
           >
             <div className="flex items-center gap-3 sm:gap-4">
@@ -331,9 +386,9 @@ export default function CoupleDashboardPage() {
 
             {/* Prestataires shortlistes */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/recherche')}
               className="cursor-pointer group"
             >
@@ -363,9 +418,9 @@ export default function CoupleDashboardPage() {
 
             {/* Budget */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/budget')}
               className="cursor-pointer group"
             >
@@ -405,9 +460,9 @@ export default function CoupleDashboardPage() {
 
             {/* Jours restants */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.11, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/timeline')}
               className="cursor-pointer group"
             >
@@ -437,9 +492,9 @@ export default function CoupleDashboardPage() {
 
             {/* Messages / Conversations */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/messagerie')}
               className="cursor-pointer group"
             >

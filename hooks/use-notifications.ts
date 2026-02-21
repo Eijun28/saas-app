@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { getCached, setCached } from '@/lib/cache'
 
 export interface NotificationCounts {
   unreadMessages: number
@@ -13,6 +14,8 @@ interface UseNotificationsOptions {
   /** Pass true/false when the role is already known to skip the extra DB lookup */
   isCouple?: boolean
 }
+
+const NOTIF_TTL = 30_000 // 30 seconds cache for notifications
 
 export function useNotifications(options?: UseNotificationsOptions) {
   const { user } = useUser()
@@ -28,14 +31,26 @@ export function useNotifications(options?: UseNotificationsOptions) {
       return
     }
 
-    const loadNotifications = async () => {
+    const CACHE_KEY = `notifications-${user.id}`
+
+    const loadNotifications = async (skipCache = false) => {
+      // Serve cached counts instantly to avoid flash of zeros
+      if (!skipCache) {
+        const cached = getCached<NotificationCounts>(CACHE_KEY, NOTIF_TTL)
+        if (cached) {
+          setCounts(cached)
+          setLoading(false)
+          return
+        }
+      }
+
       const supabase = createClient()
 
       try {
         const sevenDaysAgo = new Date()
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-        // Round 1: fetch conversations + role check in parallel
+        // Round 1: conversations + role check in parallel
         // If isCouple is already known, skip the couples table lookup entirely
         const [conversationsResult, coupleCheckResult] = await Promise.all([
           supabase
@@ -83,10 +98,13 @@ export function useNotifications(options?: UseNotificationsOptions) {
                 .eq('status', 'pending'),
         ])
 
-        setCounts({
-          unreadMessages: unreadResult.count ?? 0,
-          newRequests: requestsResult.count ?? 0,
-        })
+        const result: NotificationCounts = {
+          unreadMessages: (unreadResult as any).count ?? 0,
+          newRequests: (requestsResult as any).count ?? 0,
+        }
+
+        setCounts(result)
+        setCached(CACHE_KEY, result)
       } catch (error) {
         console.error('Erreur chargement notifications:', error)
         setCounts({ unreadMessages: 0, newRequests: 0 })
@@ -97,8 +115,8 @@ export function useNotifications(options?: UseNotificationsOptions) {
 
     loadNotifications()
 
-    // Rafraîchir toutes les 30 secondes
-    const interval = setInterval(loadNotifications, 30000)
+    // Refresh every 30 seconds (skip cache for interval refreshes)
+    const interval = setInterval(() => loadNotifications(true), 30000)
     return () => clearInterval(interval)
   }, [user?.id])
 
