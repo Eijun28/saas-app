@@ -133,15 +133,6 @@ export default function BlogPage() {
                       boxShadow: '0 1px 4px rgba(44,24,16,0.04), 0 4px 16px rgba(130,63,145,0.04)',
                     }}
                   >
-                    {/* Large decorative article number */}
-                    <span
-                      className="absolute top-3 right-4 font-black text-[#EBE4DA] leading-none select-none pointer-events-none"
-                      style={{ fontSize: '4.5rem', lineHeight: 1 }}
-                      aria-hidden="true"
-                    >
-                      {String(index + 2).padStart(2, '0')}
-                    </span>
-
                     <div className="p-6 flex flex-col h-full">
                       {/* Tags */}
                       <div className="flex flex-wrap gap-2 mb-3">
