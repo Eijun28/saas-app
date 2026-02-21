@@ -72,6 +72,7 @@ export default function AgendaPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGoogleCalendarOpen, setIsGoogleCalendarOpen] = useState(false)
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -443,17 +444,37 @@ export default function AgendaPage() {
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col">
-      <PageTitle 
-        title="Agenda"
-        description="Gérez votre disponibilité et vos événements"
-      />
+      <div className="flex items-start justify-between flex-shrink-0">
+        <PageTitle
+          title="Agenda"
+          description="Gérez votre disponibilité et vos événements"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsGoogleCalendarOpen(true)}
+          className="gap-2 text-xs border-gray-200 flex-shrink-0 mt-1"
+        >
+          <CalendarIcon className="h-3.5 w-3.5" />
+          Google Calendar
+        </Button>
+      </div>
 
-      {/* Google Calendar Sync */}
-      <GoogleCalendarSync
-        role="prestataire"
-        onSyncComplete={loadEvenements}
-        className="mb-3 flex-shrink-0"
-      />
+      {/* Dialog Google Calendar Sync */}
+      <Dialog open={isGoogleCalendarOpen} onOpenChange={setIsGoogleCalendarOpen}>
+        <DialogContent className="sm:max-w-sm max-w-[calc(100vw-2rem)]">
+          <DialogHeader>
+            <DialogTitle>Google Calendar</DialogTitle>
+          </DialogHeader>
+          <GoogleCalendarSync
+            role="prestataire"
+            onSyncComplete={() => {
+              loadEvenements()
+              setIsGoogleCalendarOpen(false)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Calendrier plein écran */}
       <motion.div
