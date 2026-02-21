@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, Gift, ArrowLeft, Mail } from 'lucide-react'
+import { Lock, ArrowLeft, Mail } from 'lucide-react'
 import Particles from '@/components/Particles'
 import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
@@ -220,45 +220,6 @@ export default function SignUpPage() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
           className="w-full max-w-sm flex flex-col gap-4"
         >
-          {/* Bandeau concours - EN DEHORS de la carte */}
-          <AnimatePresence>
-            {isPrestataire && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35 }}
-                className="rounded-2xl border-2 border-[#823F91]/30 bg-gradient-to-r from-[#823F91]/10 via-purple-50 to-pink-50/80 px-4 py-4 text-sm text-purple-900 shadow-md relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-[#823F91]/10 to-transparent rounded-bl-full" />
-                <div className="flex items-start gap-3 relative z-10">
-                  <span className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#823F91] to-[#B855D6] text-white shadow-md shadow-purple-500/25 shrink-0">
-                    <Gift className="h-5 w-5" />
-                  </span>
-                  <div className="space-y-1">
-                    <p className="font-bold text-[#823F91] text-base leading-tight">
-                      250€ à gagner pour les pros du mariage !
-                    </p>
-                    <p className="text-xs text-purple-700 leading-relaxed">
-                      Inscrivez-vous et <strong>complétez votre profil</strong> pour participer au tirage au sort. Simple, rapide et gratuit.
-                    </p>
-                    <p className="text-xs text-purple-700">
-                      Suivez-nous sur Instagram :{' '}
-                      <a
-                        href="https://www.instagram.com/nuply.fr/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-[#823F91] underline underline-offset-2 hover:text-[#B855D6] transition-colors"
-                      >
-                        @nuply.fr
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Carte principale */}
           <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-400/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
@@ -479,8 +440,7 @@ export default function SignUpPage() {
                       </LabelInputContainer>
                       <LabelInputContainer>
                         <Label htmlFor="siret" className="text-sm font-medium text-neutral-700">
-                          Numéro SIRET{' '}
-                          <span className="text-xs font-normal text-purple-600">(requis pour participer au concours)</span>
+                          Numéro SIRET
                         </Label>
                         <Input
                           id="siret"
