@@ -80,7 +80,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
       <div
         className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl flex flex-col"
         style={{
-          maxHeight: '85vh',
+          maxHeight: '92vh',
           animation: 'slideInFromBottom 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
         }}
       >
@@ -103,8 +103,8 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
         {/* Sections — zone scrollable isolée */}
         <div
-          className="overflow-y-auto overscroll-y-contain px-4 py-4 space-y-5"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
+          className="overflow-y-auto overscroll-y-contain px-4 pt-3 pb-4 space-y-4"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
         >
           {sections.map((section, i) => (
             <div key={i}>
@@ -388,5 +388,5 @@ export function CoupleMobileNav() {
     },
   ]
 
-  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="pink" />
+  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="violet" />
 }
