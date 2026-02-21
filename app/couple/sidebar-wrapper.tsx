@@ -24,6 +24,7 @@ import {
   Users,
   ClipboardList,
   CreditCard,
+  Receipt,
 } from "lucide-react"
 import {
   Sidebar,
@@ -95,6 +96,7 @@ const sections: NavSection[] = [
     items: [
       { href: "/couple/budget", icon: DollarSign, label: "Budget" },
       { href: "/couple/paiements", icon: CreditCard, label: "Paiements" },
+      { href: "/couple/factures", icon: Receipt, label: "Factures" },
     ],
   },
   {
