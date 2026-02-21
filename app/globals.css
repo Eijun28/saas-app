@@ -411,6 +411,33 @@ button[role="combobox"]:focus-visible,
   border: none !important;
 }
 
+/* Fond opaque pour le contenu des selects (fix Tailwind v4 bg-popover non résolu) */
+[data-slot="select-content"] {
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+/* Fond blanc pour le trigger des selects */
+[data-slot="select-trigger"] {
+  background-color: white !important;
+  color: #111827 !important;
+}
+
+/* Checkbox visible : fond blanc + bordure grise visible */
+[data-slot="checkbox"] {
+  background-color: white !important;
+  border: 1px solid #d1d5db !important;
+}
+
+[data-slot="checkbox"][data-state="checked"] {
+  background-color: #823F91 !important;
+  border-color: #823F91 !important;
+}
+
+[data-slot="checkbox-indicator"] {
+  color: white !important;
+}
+
 /* S'assurer que les composants Select et Popover n'ont pas de bordures */
 [data-radix-select-trigger],
 [data-radix-popper-content-wrapper] select,
