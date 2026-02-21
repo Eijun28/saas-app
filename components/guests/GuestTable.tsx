@@ -12,6 +12,7 @@ import {
   Users,
   Plus,
   Loader2,
+  Link2,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -295,9 +296,20 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuContent align="end" className="w-52">
                     <DropdownMenuItem onClick={() => setEditingGuest(guest)} className="text-[13px] gap-2">
                       <Pencil className="h-3.5 w-3.5" /> Modifier
+                    </DropdownMenuItem>
+                    {/* Lien RSVP (si l'invité a un email ou non) */}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        const url = `${window.location.origin}/rsvp/${guest.id}`
+                        navigator.clipboard.writeText(url)
+                        toast.success(`Lien RSVP copié pour ${guest.first_name}`)
+                      }}
+                      className="text-[13px] gap-2 text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                    >
+                      <Link2 className="h-3.5 w-3.5" /> Copier le lien RSVP
                     </DropdownMenuItem>
                     {/* Changer RSVP (mobile) */}
                     <div className="md:hidden">
