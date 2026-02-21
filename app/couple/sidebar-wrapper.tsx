@@ -22,6 +22,7 @@ import {
   ChevronsUpDown,
   LogOut,
   Users,
+  ClipboardList,
 } from "lucide-react"
 import {
   Sidebar,
@@ -78,6 +79,7 @@ const sections: NavSection[] = [
       { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
       { href: "/couple/collaborateurs", icon: UserPlus, label: "Collaborateurs" },
       { href: "/couple/invites", icon: Users, label: "Invités" },
+      { href: "/couple/jour-j", icon: ClipboardList, label: "Programme Jour J" },
     ],
   },
   {
