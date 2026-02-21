@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { Plus, SlidersHorizontal, X, Upload } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -31,18 +32,22 @@ const STATUS_OPTIONS: { value: PaymentStatus | 'all'; label: string }[] = [
 
 export default function PaiementsPage() {
   const { user }                              = useUser()
+  const searchParams                          = useSearchParams()
   const [payments, setPayments]               = useState<CouplePayment[]>([])
   const [loading, setLoading]                 = useState(true)
   const [showAddForm, setShowAddForm]         = useState(false)
   const [showCsvImport, setShowCsvImport]     = useState(false)
-  const [filterStatus, setFilterStatus]       = useState<PaymentStatus | 'all'>('all')
+  const initialFilter                         = (searchParams.get('filter') as PaymentStatus | null) ?? 'all'
+  const [filterStatus, setFilterStatus]       = useState<PaymentStatus | 'all'>(initialFilter as PaymentStatus | 'all')
   const [filterCategory, setFilterCategory]   = useState<PaymentCategory | 'all'>('all')
-  const [filtersOpen, setFiltersOpen]         = useState(false)
+  const [filtersOpen, setFiltersOpen]         = useState(initialFilter !== 'all')
 
   // ─── Chargement ─────────────────────────────────────────────────────────────
 
   const loadPayments = useCallback(async () => {
     try {
+      // Sync overdue statuses before loading
+      await fetch('/api/couple-payments/sync-overdue', { method: 'POST' }).catch(() => {})
       const res = await fetch('/api/couple-payments')
       if (!res.ok) throw new Error()
       const data = await res.json()
