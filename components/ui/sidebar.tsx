@@ -182,11 +182,14 @@ const Sidebar = React.forwardRef<
             aria-hidden="true"
           />
           {/* Sidebar avec animation slide */}
-          <div 
-            className="fixed inset-y-0 left-0 w-[75%] max-w-sm bg-white z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
-            style={{ zIndex: 99999 }}
+          <div
+            className="fixed inset-y-0 left-0 w-[75%] max-w-sm z-[99999] shadow-xl overflow-y-auto transition-transform duration-300 ease-out"
+            style={{ zIndex: 99999, background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)' }}
           >
-            <div className="flex h-full w-full flex-col p-4">
+            <div
+              className="flex min-h-full w-full flex-col p-4"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            >
               {children}
             </div>
           </div>
@@ -217,10 +220,9 @@ const Sidebar = React.forwardRef<
                 "duration-200 fixed inset-y-0 z-30 hidden h-svh transition-[left,right,width] ease-linear",
                 "md:flex",
                 side === "left" ? "left-0" : "right-0",
-                // Tailles responsive : tablet (md) = 220px, desktop (lg+) = 240px, collapsed = 64px
-                state === "collapsed" && collapsible === "icon" 
-                  ? "w-[var(--sidebar-width-icon)]" 
-                  : "md:w-[220px] lg:w-[240px]",
+                state === "collapsed" && collapsible === "icon"
+                  ? "w-[var(--sidebar-width-icon)]"
+                  : "w-[232px]",
                 "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>span:last-child]:hidden",
                 "group-data-[collapsible=icon]:[&_[data-sidebar=menu-button]>svg]:size-4",
                 className
@@ -228,7 +230,8 @@ const Sidebar = React.forwardRef<
           >
             <div
               data-sidebar="sidebar"
-              className="flex h-full w-full flex-col bg-white border-r border-gray-200/60 group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border-r group-data-[variant=floating]:bg-sidebar group-data-[variant=inset]:border-sidebar-border group-data-[variant=inset]:border-r"
+              className="flex h-full w-full flex-col group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:border-r group-data-[variant=floating]:bg-sidebar group-data-[variant=inset]:border-sidebar-border group-data-[variant=inset]:border-r"
+              style={{ background: 'linear-gradient(160deg, #5C2B66 0%, #6D3478 45%, #823F91 100%)' }}
             >
               {children}
             </div>
@@ -377,7 +380,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
         ref={ref}
         data-sidebar="content"
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+          "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-y-auto",
           className
         )}
         {...props}
@@ -393,7 +396,7 @@ const SidebarGroup = React.forwardRef<HTMLDivElement, React.ComponentProps<"div"
       <div
         ref={ref}
         data-sidebar="group"
-        className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+        className={cn("relative flex w-full min-w-0 flex-col p-2 group-data-[collapsible=icon]:px-0", className)}
         {...props}
       />
     )
@@ -540,7 +543,7 @@ const SidebarMenuButton = React.forwardRef<
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
-        className="ml-2"
+        className="ml-2 !bg-white !text-[#823F91] border border-[#E8D4EF] shadow-lg font-semibold text-[12px]"
         {...tooltip}
       />
     </Tooltip>

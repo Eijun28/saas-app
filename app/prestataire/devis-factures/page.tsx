@@ -45,6 +45,7 @@ import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { QuickDevisGenerator } from '@/components/devis/QuickDevisGenerator'
 import { DevisTemplateManager } from '@/components/devis/DevisTemplateManager'
+import { ConnectOnboardingCard } from '@/components/stripe/ConnectOnboardingCard'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { formatCoupleName } from '@/lib/supabase/queries/couples.queries'
@@ -561,7 +562,7 @@ export default function DevisFacturesPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="z-[201]">
                               {devis.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(devis.pdf_url, '_blank')}
@@ -681,7 +682,7 @@ export default function DevisFacturesPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="z-[201]">
                               {facture.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(facture.pdf_url!, '_blank')}
@@ -691,9 +692,37 @@ export default function DevisFacturesPage() {
                                 </DropdownMenuItem>
                               )}
                               {facture.status === 'sent' && (
-                                <DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={async () => {
+                                    await fetch(`/api/factures/${facture.id}`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ status: 'paid' }),
+                                    })
+                                    fetchFactures()
+                                    fetchAnalytics()
+                                    toast.success('Facture marquée comme payée')
+                                  }}
+                                >
                                   <CheckCircle className="h-4 w-4 mr-2" />
                                   Marquer payée
+                                </DropdownMenuItem>
+                              )}
+                              {['sent', 'overdue'].includes(facture.status) && (
+                                <DropdownMenuItem
+                                  onClick={async () => {
+                                    const newValue = !facture.online_payment_enabled
+                                    await fetch(`/api/factures/${facture.id}`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ online_payment_enabled: newValue }),
+                                    })
+                                    fetchFactures()
+                                    toast.success(newValue ? 'Paiement en ligne activé' : 'Paiement en ligne désactivé')
+                                  }}
+                                >
+                                  <CreditCard className="h-4 w-4 mr-2" />
+                                  {facture.online_payment_enabled ? 'Désactiver paiement en ligne' : 'Activer paiement en ligne'}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -719,6 +748,9 @@ export default function DevisFacturesPage() {
 
         {/* Onglet Paramètres */}
         <TabsContent value="settings" className="space-y-4">
+          {/* Stripe Connect — Paiement en ligne */}
+          <ConnectOnboardingCard />
+
           {/* Infos bancaires */}
           <Card className="bg-white/70 backdrop-blur-sm shadow-sm">
             <CardContent className="p-4 sm:p-6 space-y-6">

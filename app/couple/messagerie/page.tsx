@@ -272,24 +272,23 @@ export default function MessageriePage() {
 
   if (userLoading || loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <p className="text-[#4A4A4A]">Chargement...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto h-screen flex flex-col p-4 md:p-6">
+    <div className="flex-1 min-h-0 flex flex-col gap-4">
         <PageTitle
           title="Messagerie"
           description="Communiquez avec vos prestataires"
           className="pb-4"
         />
 
-        <div className="flex-1 flex gap-4 overflow-hidden">
-          {/* Liste des conversations - Carte blanche arrondie */}
-          <div className="w-full lg:w-[380px] xl:w-[420px] bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+        <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${!selectedConversation ? 'justify-center' : ''}`}>
+          {/* Carte gauche — liste des conversations (largeur mobile fixe) */}
+          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${selectedConversation ? 'w-[340px] xl:w-[375px]' : 'w-full max-w-[375px]'}`}>
             {/* En-tête avec recherche */}
             <div className="p-3 sm:p-4 border-b border-gray-100">
               <div className="relative">
@@ -404,159 +403,142 @@ export default function MessageriePage() {
             </div>
           </div>
 
-          {/* Zone de messages - Carte blanche arrondie */}
-          <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            {selectedConversation ? (
-              <>
-                {/* En-tête de conversation */}
-                <div className="bg-white border-b border-gray-100 safe-area-top">
-                  <div className="px-3 sm:px-4 py-2.5 sm:py-3">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Avatar avec status online */}
-                      <div className="relative flex-shrink-0">
-                        <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
-                          <AvatarImage src={prestataireAvatars[selectedConversation] || undefined} />
-                          <AvatarFallback className="bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold">
-                            {(prestataireNames[selectedConversation] || 'P').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
+          {/* Carte droite — conversation, se déploie depuis la droite */}
+          {selectedConversation && (
+            <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in slide-in-from-right-4 duration-300">
+              {/* En-tête de conversation */}
+              <div className="bg-white border-b border-gray-100 safe-area-top">
+                <div className="px-3 sm:px-4 py-2.5 sm:py-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {/* Avatar avec status online */}
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                        <AvatarImage src={prestataireAvatars[selectedConversation] || undefined} />
+                        <AvatarFallback className="bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold">
+                          {(prestataireNames[selectedConversation] || 'P').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
 
-                      {/* Nom et statut */}
-                      <div className="flex-1 min-w-0">
-                        <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
-                          {prestataireNames[selectedConversation] || 'Messages'}
-                        </h2>
-                        <p className="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
-                          Hors ligne
-                        </p>
-                      </div>
+                    {/* Nom et statut */}
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
+                        {prestataireNames[selectedConversation] || 'Messages'}
+                      </h2>
+                      <p className="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
+                        Hors ligne
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Messages */}
-                <div
-                  className="flex-1 overflow-y-auto bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
-                  style={{
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent',
-                  }}
-                >
-                  <div className="max-w-3xl mx-auto space-y-1">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>Aucun message dans cette conversation</p>
-                    </div>
-                  ) : (
-                    messages.map((msg, index) => {
-                      const isFromMe = msg.sender_id === user?.id
-                      const prevMessage = index > 0 ? messages[index - 1] : null
-                      const nextMessage = index < messages.length - 1 ? messages[index + 1] : null
-                      const isConsecutive = prevMessage?.sender_id === msg.sender_id
-                      const showTime = !nextMessage || nextMessage.sender_id !== msg.sender_id
-                      
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${isFromMe ? 'justify-end' : 'justify-start'} ${
-                            !isConsecutive ? 'mt-2' : 'mt-0.5'
-                          }`}
-                        >
-                          <div className={`flex flex-col ${isFromMe ? 'items-end' : 'items-start'} max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]`}>
-                            <div className="relative group">
-                              <div
-                                className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
-                                  isFromMe
-                                    ? 'bg-gray-800 text-white rounded-br-sm'
-                                    : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
-                                }`}
-                              >
-                                {/* Contenu texte */}
-                                <p 
-                                  className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
-                                    isFromMe ? 'text-white' : 'text-gray-900'
-                                  }`}
-                                >
-                                  {msg.content}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            {/* Timestamp et checkmarks */}
-                            {showTime && (
-                              <div className="flex items-center gap-1 mt-0.5 px-1 sm:px-1.5">
-                                <span className="text-[10px] sm:text-[11px] text-gray-400">
-                                  {new Date(msg.created_at).toLocaleTimeString('fr-FR', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
-                                </span>
-                                {isFromMe && (
-                                  <div className="flex-shrink-0">
-                                    <CheckCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                  </div>
-                </div>
-
-                {/* Zone de saisie */}
-                <div className="bg-white border-t border-gray-100 safe-area-bottom">
-                  <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                    <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:border-gray-300 transition-all">
-                      <textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            sendMessage()
-                          }
-                        }}
-                        placeholder="Message"
-                        className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-500 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
-                        rows={1}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!newMessage.trim()}
-                        className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
-                          newMessage.trim()
-                            ? 'bg-gray-800 text-white hover:bg-gray-700 active:scale-95'
-                            : 'bg-transparent text-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        <Send className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.5} />
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-                <div className="p-6 sm:p-8 max-w-md w-full text-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                    <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
-                    Sélectionnez une conversation
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-500 px-2">
-                    Choisissez une conversation dans la liste pour commencer à discuter
-                  </p>
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Messages */}
+              <div
+                className="flex-1 overflow-y-auto bg-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 scroll-smooth"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: 'rgba(0, 0, 0, 0.1) transparent',
+                }}
+              >
+                <div className="max-w-3xl mx-auto space-y-1">
+                {messages.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Aucun message dans cette conversation</p>
+                  </div>
+                ) : (
+                  messages.map((msg, index) => {
+                    const isFromMe = msg.sender_id === user?.id
+                    const prevMessage = index > 0 ? messages[index - 1] : null
+                    const nextMessage = index < messages.length - 1 ? messages[index + 1] : null
+                    const isConsecutive = prevMessage?.sender_id === msg.sender_id
+                    const showTime = !nextMessage || nextMessage.sender_id !== msg.sender_id
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex ${isFromMe ? 'justify-end' : 'justify-start'} ${
+                          !isConsecutive ? 'mt-2' : 'mt-0.5'
+                        }`}
+                      >
+                        <div className={`flex flex-col ${isFromMe ? 'items-end' : 'items-start'} max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]`}>
+                          <div className="relative group">
+                            <div
+                              className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${
+                                isFromMe
+                                  ? 'bg-gray-800 text-white rounded-br-sm'
+                                  : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
+                              }`}
+                            >
+                              {/* Contenu texte */}
+                              <p
+                                className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
+                                  isFromMe ? 'text-white' : 'text-gray-900'
+                                }`}
+                              >
+                                {msg.content}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Timestamp et checkmarks */}
+                          {showTime && (
+                            <div className="flex items-center gap-1 mt-0.5 px-1 sm:px-1.5">
+                              <span className="text-[10px] sm:text-[11px] text-gray-400">
+                                {new Date(msg.created_at).toLocaleTimeString('fr-FR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                              {isFromMe && (
+                                <div className="flex-shrink-0">
+                                  <CheckCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+                </div>
+              </div>
+
+              {/* Zone de saisie */}
+              <div className="bg-white border-t border-gray-100 safe-area-bottom">
+                <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+                  <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:border-gray-300 transition-all">
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          sendMessage()
+                        }
+                      }}
+                      placeholder="Message"
+                      className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-500 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
+                      rows={1}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newMessage.trim()}
+                      className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
+                        newMessage.trim()
+                          ? 'bg-gray-800 text-white hover:bg-gray-700 active:scale-95'
+                          : 'bg-transparent text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Send className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
     </div>
   )
 }

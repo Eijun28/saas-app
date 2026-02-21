@@ -3,7 +3,6 @@
  * Ajoutez les adresses email des administrateurs ici
  */
 export const ADMIN_EMAILS = [
-  'karim.reziouk@kina-ia.xyz',
   'contact@nuply.fr',
 ]
 

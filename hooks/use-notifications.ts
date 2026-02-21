@@ -3,13 +3,21 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { getCached, setCached } from '@/lib/cache'
 
 export interface NotificationCounts {
   unreadMessages: number
   newRequests: number
 }
 
-export function useNotifications() {
+interface UseNotificationsOptions {
+  /** Pass true/false when the role is already known to skip the extra DB lookup */
+  isCouple?: boolean
+}
+
+const NOTIF_TTL = 30_000 // 30 seconds cache for notifications
+
+export function useNotifications(options?: UseNotificationsOptions) {
   const { user } = useUser()
   const [counts, setCounts] = useState<NotificationCounts>({
     unreadMessages: 0,
@@ -23,71 +31,80 @@ export function useNotifications() {
       return
     }
 
-    const loadNotifications = async () => {
-      const supabase = createClient()
+    const CACHE_KEY = `notifications-${user.id}`
 
-      try {
-        // Récupérer toutes les conversations de l'utilisateur
-        const { data: conversations } = await supabase
-          .from('conversations')
-          .select('id')
-          .or(`couple_id.eq.${user.id},provider_id.eq.${user.id}`)
-
-        if (!conversations || conversations.length === 0) {
-          setCounts({ unreadMessages: 0, newRequests: 0 })
+    const loadNotifications = async (skipCache = false) => {
+      // Serve cached counts instantly to avoid flash of zeros
+      if (!skipCache) {
+        const cached = getCached<NotificationCounts>(CACHE_KEY, NOTIF_TTL)
+        if (cached) {
+          setCounts(cached)
           setLoading(false)
           return
         }
+      }
 
-        const conversationIds = conversations.map(c => c.id)
+      const supabase = createClient()
 
-        // Compter les messages non lus dans toutes les conversations
-        const { count: unreadMessages } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .in('conversation_id', conversationIds)
-          .neq('sender_id', user.id)
-          .is('read_at', null)
+      try {
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-        // Déterminer si l'utilisateur est un couple ou un prestataire
-        const { data: coupleData } = await supabase
-          .from('couples')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle()
+        // Round 1: conversations + role check in parallel
+        // If isCouple is already known, skip the couples table lookup entirely
+        const [conversationsResult, coupleCheckResult] = await Promise.all([
+          supabase
+            .from('conversations')
+            .select('id')
+            .or(`couple_id.eq.${user.id},provider_id.eq.${user.id}`),
+          options?.isCouple !== undefined
+            ? Promise.resolve(null) // role already known — skip DB call
+            : supabase
+                .from('couples')
+                .select('id')
+                .eq('user_id', user.id)
+                .maybeSingle(),
+        ])
 
-        const isCouple = !!coupleData
+        const conversations = conversationsResult.data ?? []
+        const isCouple =
+          options?.isCouple !== undefined
+            ? options.isCouple
+            : !!coupleCheckResult?.data
 
-        let newRequests = 0
-        if (isCouple) {
-          // Pour les couples : compter les nouvelles demandes acceptées (statut 'accepted' créées récemment)
-          // On considère comme "nouvelles" les demandes acceptées dans les 7 derniers jours
-          const sevenDaysAgo = new Date()
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-          
-          const { count: acceptedRequests } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id)
-            .eq('status', 'accepted')
-            .gte('responded_at', sevenDaysAgo.toISOString())
-          
-          newRequests = acceptedRequests || 0
-        } else {
-          // Pour les prestataires : compter les nouvelles demandes (statut 'pending')
-          const { count: pendingRequests } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('provider_id', user.id)
-            .eq('status', 'pending')
-          
-          newRequests = pendingRequests || 0
+        const conversationIds = conversations.map((c) => c.id)
+
+        // Round 2: unread messages + requests count in parallel
+        const [unreadResult, requestsResult] = await Promise.all([
+          conversationIds.length > 0
+            ? supabase
+                .from('messages')
+                .select('id', { count: 'exact', head: true })
+                .in('conversation_id', conversationIds)
+                .neq('sender_id', user.id)
+                .is('read_at', null)
+            : Promise.resolve({ count: 0 }),
+          isCouple
+            ? supabase
+                .from('requests')
+                .select('id', { count: 'exact', head: true })
+                .eq('couple_id', user.id)
+                .eq('status', 'accepted')
+                .gte('responded_at', sevenDaysAgo.toISOString())
+            : supabase
+                .from('requests')
+                .select('id', { count: 'exact', head: true })
+                .eq('provider_id', user.id)
+                .eq('status', 'pending'),
+        ])
+
+        const result: NotificationCounts = {
+          unreadMessages: (unreadResult as any).count ?? 0,
+          newRequests: (requestsResult as any).count ?? 0,
         }
 
-        setCounts({
-          unreadMessages: unreadMessages || 0,
-          newRequests: newRequests || 0,
-        })
+        setCounts(result)
+        setCached(CACHE_KEY, result)
       } catch (error) {
         console.error('Erreur chargement notifications:', error)
         setCounts({ unreadMessages: 0, newRequests: 0 })
@@ -98,8 +115,8 @@ export function useNotifications() {
 
     loadNotifications()
 
-    // Rafraîchir toutes les 30 secondes
-    const interval = setInterval(loadNotifications, 30000)
+    // Refresh every 30 seconds (skip cache for interval refreshes)
+    const interval = setInterval(() => loadNotifications(true), 30000)
     return () => clearInterval(interval)
   }, [user?.id])
 

@@ -17,9 +17,12 @@ import {
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { getCached, setCached } from '@/lib/cache'
 import { UpcomingTasksCouple } from '@/components/dashboard/UpcomingTasksCouple'
 import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCouple'
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
+import { UpcomingPaymentsWidget } from '@/components/dashboard/UpcomingPaymentsWidget'
+import { NextProgramWidget } from '@/components/dashboard/NextProgramWidget'
 import { cn } from '@/lib/utils'
 
 type PeriodFilter = '7d' | '30d' | 'month'
@@ -41,7 +44,35 @@ export default function CoupleDashboardPage() {
   useEffect(() => {
     if (!user) return
 
-    const fetchDashboardData = async () => {
+    const CACHE_KEY = `couple-dashboard-${user.id}`
+
+    const fetchDashboardData = async (skipCache = false) => {
+      // Serve cached data instantly on revisit
+      if (!skipCache) {
+        const cached = getCached<{
+          coupleData: any
+          favoritesCount: number
+          budgetTotal: number
+          budgetItems: any[]
+          shortlistedCount: number
+          recentActivities: any[]
+          unreadMessages: number
+        }>(CACHE_KEY)
+        if (cached) {
+          setCoupleData(cached.coupleData)
+          setBudgetTotal(cached.budgetTotal)
+          setFavoritesCount(cached.favoritesCount)
+          setBudgetItems(cached.budgetItems)
+          setShortlistedCount(cached.shortlistedCount)
+          setRecentActivities(cached.recentActivities)
+          setUnreadMessages(cached.unreadMessages)
+          setLoading(false)
+          // Background refresh after serving cache
+          fetchDashboardData(true)
+          return
+        }
+      }
+
       try {
         const supabase = createClient()
 
@@ -100,16 +131,42 @@ export default function CoupleDashboardPage() {
         }
 
         // Fetch unread messages count
+        let unreadCount = 0
         try {
           const { count: msgCount } = await supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })
             .eq('couple_id', user.id)
             .eq('status', 'accepted')
-          setUnreadMessages(msgCount || 0)
+          unreadCount = msgCount || 0
+          setUnreadMessages(unreadCount)
         } catch {
           // silent
         }
+
+        // Persist to cache for instant reload next time
+        const cData = coupleResult.data
+        const bItems = budgetResult.data || []
+        const acts = requestsResult.data
+          ? requestsResult.data.map((req: any) => ({
+              id: req.id,
+              type: req.status === 'accepted' ? 'contact' : 'request',
+              title: req.status === 'accepted' ? 'Demande acceptee' : req.status === 'pending' ? 'Demande en attente' : 'Demande envoyee',
+              time: formatRelativeTime(req.created_at),
+              icon: req.status === 'accepted' ? CheckCircle2 : Clock,
+              color: req.status === 'accepted' ? 'text-emerald-500' : 'text-[#823F91]',
+              href: '/couple/demandes',
+            })).slice(0, 5)
+          : []
+        setCached(CACHE_KEY, {
+          coupleData: cData,
+          budgetTotal: cData?.budget_total || 0,
+          favoritesCount: favoritesResult.count || 0,
+          budgetItems: bItems,
+          shortlistedCount: shortlistedResult.count || 0,
+          recentActivities: acts,
+          unreadMessages: unreadCount,
+        })
       } catch (err: any) {
         console.error('Erreur chargement dashboard couple:', err)
         const isNetwork = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('timeout')
@@ -160,8 +217,21 @@ export default function CoupleDashboardPage() {
 
   // Greeting
   const greeting = coupleData?.partner_1_name
-    ? `Bonjour ${coupleData.partner_1_name}`
+    ? coupleData?.partner_2_name
+      ? `Bonjour ${coupleData.partner_1_name} & ${coupleData.partner_2_name}`
+      : `Bonjour ${coupleData.partner_1_name}`
     : 'Bienvenue'
+
+  // Planning progress (based on key milestones)
+  const planningProgress = useMemo(() => {
+    let completed = 0
+    const total = 4
+    if (coupleData?.wedding_date) completed++
+    if (budgetTotal > 0) completed++
+    if (shortlistedCount > 0) completed++
+    if (unreadMessages > 0) completed++
+    return { completed, total, percentage: Math.round((completed / total) * 100) }
+  }, [coupleData?.wedding_date, budgetTotal, shortlistedCount, unreadMessages])
 
   // Next actions for couple
   const nextActions: { text: string; cta: string; href: string }[] = []
@@ -220,9 +290,9 @@ export default function CoupleDashboardPage() {
 
         {/* Hero: greeting + period filters */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.15 }}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 border border-[#823F91]/8 p-5 sm:p-7"
         >
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -237,13 +307,25 @@ export default function CoupleDashboardPage() {
                   : 'Organisez votre mariage en toute simplicite'
                 }
               </p>
-              {daysUntilWedding && (
-                <div className="inline-flex items-center gap-2 mt-3 px-3.5 py-1.5 bg-[#823F91]/10 rounded-full">
-                  <Calendar className="h-3.5 w-3.5 text-[#823F91]" />
-                  <span className="text-sm font-bold text-[#823F91]">J-{daysUntilWedding}</span>
-                  <span className="text-xs text-[#823F91]/60">avant le jour J</span>
+              <div className="flex items-center flex-wrap gap-2.5 mt-3">
+                {daysUntilWedding && (
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#823F91]/10 rounded-full">
+                    <Calendar className="h-3.5 w-3.5 text-[#823F91]" />
+                    <span className="text-sm font-bold text-[#823F91]">J-{daysUntilWedding}</span>
+                    <span className="text-xs text-[#823F91]/60">avant le jour J</span>
+                  </div>
+                )}
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-white/60 border border-gray-100 rounded-full">
+                  <span className="text-xs font-semibold text-gray-500">Preparation</span>
+                  <div className="w-16 sm:w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full transition-all duration-500"
+                      style={{ width: `${planningProgress.percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-[#823F91]">{planningProgress.completed}/{planningProgress.total}</span>
                 </div>
-              )}
+              </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
@@ -276,9 +358,9 @@ export default function CoupleDashboardPage() {
         {/* Next best action */}
         {nextActions.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -5 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            transition={{ duration: 0.15, delay: 0.05 }}
             className="p-4 sm:p-5 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/30 border border-[#823F91]/10 rounded-2xl"
           >
             <div className="flex items-center gap-3 sm:gap-4">
@@ -306,9 +388,9 @@ export default function CoupleDashboardPage() {
 
             {/* Prestataires shortlistes */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/recherche')}
               className="cursor-pointer group"
             >
@@ -328,7 +410,7 @@ export default function CoupleDashboardPage() {
                     {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
                   </p>
                   {shortlistedCount === 0 && (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Search className="h-3 w-3" /> Rechercher
                     </span>
                   )}
@@ -338,9 +420,9 @@ export default function CoupleDashboardPage() {
 
             {/* Budget */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/budget')}
               className="cursor-pointer group"
             >
@@ -370,7 +452,7 @@ export default function CoupleDashboardPage() {
                       </p>
                     </>
                   ) : (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Zap className="h-3 w-3" /> Definir un budget
                     </span>
                   )}
@@ -380,9 +462,9 @@ export default function CoupleDashboardPage() {
 
             {/* Jours restants */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.11, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/timeline')}
               className="cursor-pointer group"
             >
@@ -402,7 +484,7 @@ export default function CoupleDashboardPage() {
                     {daysUntilWedding ? 'Avant le mariage' : 'Date non definie'}
                   </p>
                   {!daysUntilWedding && (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Zap className="h-3 w-3" /> Definir la date
                     </span>
                   )}
@@ -412,9 +494,9 @@ export default function CoupleDashboardPage() {
 
             {/* Messages / Conversations */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.2, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
               onClick={() => router.push('/couple/messagerie')}
               className="cursor-pointer group"
             >
@@ -434,7 +516,7 @@ export default function CoupleDashboardPage() {
                     {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
                   </p>
                   {unreadMessages === 0 && (
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#823F91] mt-2.5">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Sparkles className="h-3 w-3" /> Envoyer une demande
                     </span>
                   )}
@@ -446,6 +528,12 @@ export default function CoupleDashboardPage() {
 
         {/* Quick actions */}
         <QuickActionsCouple />
+
+        {/* Upcoming deadlines widgets */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UpcomingPaymentsWidget coupleId={coupleData?.id} />
+          <NextProgramWidget coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
+        </div>
 
         {/* Tasks and Activity side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

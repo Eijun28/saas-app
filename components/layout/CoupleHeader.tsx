@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
+import { useNotifications } from '@/hooks/use-notifications'
 import { createClient } from '@/lib/supabase/client'
 import { signOut } from '@/lib/auth/actions'
 
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -18,32 +17,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, PanelLeft, PanelLeftClose, ChevronDown, Search, Sparkles, DollarSign } from 'lucide-react'
+import {
+  User,
+  LogOut,
+  ChevronDown,
+  Search,
+  Sparkles,
+  Bell,
+  MessageSquare,
+  FileText,
+  Settings,
+  Heart,
+} from 'lucide-react'
 
-const pageTitles: Record<string, string> = {
-  '/couple/dashboard': 'Accueil',
-  '/couple/recherche': 'Rechercher',
-  '/couple/matching': 'Nuply Matching',
-  '/couple/timeline': 'Calendrier',
-  '/couple/messagerie': 'Messages',
-  '/couple/demandes': 'Demandes & Devis',
-  '/couple/budget': 'Budget',
-  '/couple/profil': 'Profil',
-}
-
-function getPageTitle(pathname: string): string {
-  if (pageTitles[pathname]) return pageTitles[pathname]
-  for (const [path, title] of Object.entries(pageTitles)) {
-    if (pathname.startsWith(path + '/')) return title
-  }
-  return 'Dashboard'
-}
 
 export function CoupleHeader() {
   const { user } = useUser()
+  const { counts } = useNotifications()
   const pathname = usePathname()
   const router = useRouter()
-  const { openMobile, setOpenMobile, isMobile } = useSidebar()
   const [profile, setProfile] = useState<{
     name?: string
     email?: string
@@ -76,15 +68,13 @@ export function CoupleHeader() {
     try {
       await signOut()
       window.location.href = '/'
-    } catch (error) {
-      console.error('Erreur lors de la deconnexion:', error)
+    } catch {
       window.location.href = '/'
     }
   }
 
-  const pageTitle = getPageTitle(pathname || '/couple/dashboard')
+  const totalNotifs = counts.unreadMessages + counts.newRequests
 
-  // Quick actions based on current page
   const quickActions = pathname === '/couple/dashboard'
     ? [
         { label: 'Rechercher', icon: Search, href: '/couple/recherche' },
@@ -93,82 +83,152 @@ export function CoupleHeader() {
     : []
 
   return (
-    <header className="h-16 bg-white/90 backdrop-blur-md sticky top-0 z-[100] border-b border-gray-200/60 w-full flex items-center shadow-[0_1px_3px_0_rgb(0_0_0/0.03)]">
-      <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Left: mobile toggle + page title + quick actions */}
-        <div className="flex items-center gap-3">
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenMobile(!openMobile) }}
-              className={cn(
-                'h-9 w-9 rounded-lg transition-all duration-150',
-                'hover:bg-gray-100 text-gray-500',
-                'focus-visible:ring-2 focus-visible:ring-[#823F91]/30 focus-visible:ring-offset-1'
-              )}
-              style={{ pointerEvents: 'auto' }}
-              aria-label={openMobile ? 'Fermer le menu' : 'Ouvrir le menu'}
-            >
-              {openMobile ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
-            </Button>
-          </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight leading-tight">{pageTitle}</h1>
-          </div>
+    <header className="h-14 sticky top-0 z-[100] w-full">
+      <div className="h-full bg-white border-b border-gray-200 flex items-center">
+        <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">
 
-          {/* Quick actions — desktop dashboard only */}
-          {quickActions.length > 0 && (
-            <div className="hidden lg:flex items-center gap-1.5 ml-4 pl-4 border-l border-gray-200">
-              {quickActions.map(action => (
-                <button
-                  key={action.href}
-                  onClick={() => router.push(action.href)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-gray-600 hover:text-[#823F91] hover:bg-[#823F91]/5 rounded-lg transition-colors"
-                >
-                  <action.icon className="h-3.5 w-3.5" />
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Left: page title + quick actions */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Status pill — visible on all screens */}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 border border-pink-100 text-[11px] font-semibold text-pink-600 flex-shrink-0">
+              <Heart className="h-2.5 w-2.5 fill-pink-500 text-pink-500" />
+              Couple
+            </span>
 
-        {/* Right: user dropdown */}
-        <div className="relative z-[103]">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                  <AvatarFallback className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white text-xs font-semibold rounded-lg">
-                    {profile?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'C'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden sm:flex items-center gap-1.5">
-                  <span className="text-[13px] font-medium text-gray-800 max-w-[140px] truncate">{profile?.name || 'Couple'}</span>
-                  <ChevronDown className="h-3.5 w-3.5 text-gray-500" />
-                </div>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 p-1">
-              <div className="px-2.5 py-2 sm:hidden">
-                <p className="text-sm font-medium text-gray-900 truncate">{profile?.name}</p>
-                <p className="text-xs text-gray-500 truncate">{profile?.email}</p>
+            {/* Quick actions — desktop dashboard only */}
+            {quickActions.length > 0 && (
+              <div className="hidden lg:flex items-center gap-1 ml-3 pl-3 border-l border-gray-200">
+                {quickActions.map(action => (
+                  <button
+                    key={action.href}
+                    onClick={() => router.push(action.href)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <action.icon className="h-3.5 w-3.5" />
+                    {action.label}
+                  </button>
+                ))}
               </div>
-              <DropdownMenuSeparator className="sm:hidden" />
-              <DropdownMenuItem asChild>
-                <Link href="/couple/profil" className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-[13px]">Profil</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 cursor-pointer text-red-600 focus:text-red-600 rounded-md px-2.5 py-2">
-                <LogOut className="h-4 w-4" />
-                <span className="text-[13px]">Deconnexion</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+          </div>
+
+          {/* Right: notifications + user dropdown */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+
+            {/* Notifications bell */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  suppressHydrationWarning
+                  className="relative h-8 w-8 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300/50"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-[17px] w-[17px] text-gray-500" />
+                  {totalNotifs > 0 && (
+                    <span className="absolute top-1 right-1 h-3.5 w-3.5 rounded-full bg-gray-800 text-white text-[8px] font-bold flex items-center justify-center">
+                      {totalNotifs > 9 ? '9+' : totalNotifs}
+                    </span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden z-[201]">
+                <div className="px-3 py-2.5 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-100/60">
+                  <p className="text-[13px] font-semibold text-gray-900">Notifications</p>
+                  {totalNotifs > 0 && (
+                    <p className="text-[11px] text-pink-600 font-medium">{totalNotifs} non lue{totalNotifs > 1 ? 's' : ''}</p>
+                  )}
+                </div>
+                <div className="py-1 max-h-64 overflow-y-auto">
+                  {totalNotifs === 0 ? (
+                    <div className="px-4 py-6 text-center">
+                      <Bell className="h-6 w-6 text-gray-300 mx-auto mb-1.5" />
+                      <p className="text-[12px] text-gray-400">Aucune notification</p>
+                    </div>
+                  ) : (
+                    <div>
+                      {counts.unreadMessages > 0 && (
+                        <button
+                          onClick={() => router.push('/couple/messagerie')}
+                          className="w-full flex items-start gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <div className="h-7 w-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <MessageSquare className="h-3.5 w-3.5 text-blue-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12.5px] font-semibold text-gray-900">Messages non lus</p>
+                            <p className="text-[11.5px] text-gray-500">
+                              {counts.unreadMessages} message{counts.unreadMessages > 1 ? 's' : ''} en attente
+                            </p>
+                          </div>
+                        </button>
+                      )}
+                      {counts.newRequests > 0 && (
+                        <button
+                          onClick={() => router.push('/couple/demandes')}
+                          className="w-full flex items-start gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <div className="h-7 w-7 rounded-lg bg-pink-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <FileText className="h-3.5 w-3.5 text-pink-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12.5px] font-semibold text-gray-900">
+                              Devis accepté{counts.newRequests > 1 ? 's' : ''}
+                            </p>
+                            <p className="text-[11.5px] text-gray-500">
+                              {counts.newRequests} devis accepté{counts.newRequests > 1 ? 's' : ''} cette semaine
+                            </p>
+                          </div>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* User dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  suppressHydrationWarning
+                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/30"
+                >
+                  <Avatar className="h-7 w-7 rounded-lg ring-1 ring-gray-200 flex-shrink-0">
+                    <AvatarImage src={profile?.avatar} alt={profile?.name} />
+                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white text-[10px] font-bold rounded-lg">
+                      {profile?.name?.split(' ').filter(w => w !== '&').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'C'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:block text-[13px] font-medium text-gray-700 max-w-[120px] truncate">{profile?.name || 'Couple'}</span>
+                  <ChevronDown className="hidden sm:block h-3 w-3 text-gray-400 flex-shrink-0" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 p-1 z-[201]">
+                <div className="px-2.5 py-2">
+                  <p className="text-[13px] font-semibold text-gray-900 truncate">{profile?.name}</p>
+                  <p className="text-[11px] text-gray-500 truncate">{profile?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/couple/profil" className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2">
+                    <User className="h-4 w-4 text-gray-400" />
+                    <span className="text-[13px]">Profil</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/couple/parametres" className="flex items-center gap-2.5 cursor-pointer rounded-md px-2.5 py-2">
+                    <Settings className="h-4 w-4 text-gray-400" />
+                    <span className="text-[13px]">Paramètres</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2.5 cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-50 rounded-md px-2.5 py-2">
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-[13px]">Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </header>

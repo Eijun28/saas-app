@@ -33,7 +33,7 @@ async function getProviderProfile(userId: string) {
     supabase
       .from('profiles')
       .select(
-        'nom_entreprise, prenom, nom, service_type, description_courte, bio, annees_experience, ville_principale, budget_min, budget_max, avatar_url, instagram_url, facebook_url, website_url, tiktok_url, has_physical_location, brand_color'
+        'nom_entreprise, prenom, nom, service_type, description_courte, bio, annees_experience, ville_principale, budget_min, budget_max, avatar_url, instagram_url, facebook_url, website_url, tiktok_url, has_physical_location'
       )
       .eq('id', userId)
       .single(),

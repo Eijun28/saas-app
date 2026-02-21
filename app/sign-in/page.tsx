@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import Particles from '@/components/Particles'
+import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 // Animation variants pour une entrée élégante
 const containerVariants = {
@@ -153,6 +154,19 @@ export default function SignInPage() {
           </CardHeader>
 
           <CardContent className="pt-4 relative z-10">
+            {/* Google OAuth — mis en avant */}
+            <div className="mb-6 space-y-4">
+              <OAuthButtons />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#E5E7EB]" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-3 bg-white text-[#9CA3AF]">Ou avec email et mot de passe</span>
+                </div>
+              </div>
+            </div>
+
             <motion.form
               variants={containerVariants}
               initial="hidden"

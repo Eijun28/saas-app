@@ -3,37 +3,89 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
+import { useUserContext } from "@/lib/context/user-context"
 
-export function useUser() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+// Module-level singleton cache — shared across all hook instances.
+// Used as fallback when outside a UserProvider (public pages, etc.)
+let _cachedUser: User | null = null
+let _cacheReady = false
+let _pendingPromise: Promise<User | null> | null = null
+const _listeners = new Set<(user: User | null) => void>()
 
-  useEffect(() => {
-    const supabase = createClient()
+function notifyListeners(user: User | null) {
+  _listeners.forEach((fn) => fn(user))
+}
 
-    // Récupérer l'utilisateur initial
-    supabase.auth.getUser().then(({ data: { user }, error }) => {
-      // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
+function resolveUser(): Promise<User | null> {
+  if (_cacheReady) return Promise.resolve(_cachedUser)
+  if (_pendingPromise) return _pendingPromise
+
+  _pendingPromise = createClient()
+    .auth.getUser()
+    .then(({ data: { user }, error }) => {
       if (error && !error.message?.includes("Auth session missing")) {
         console.error("Erreur lors de la récupération de l'utilisateur:", error)
       }
-      setUser(error ? null : user)
-      setLoading(false)
+      _cachedUser = error ? null : user
+      _cacheReady = true
+      _pendingPromise = null
+      return _cachedUser
+    })
+    .catch(() => {
+      _cacheReady = true
+      _pendingPromise = null
+      return null
     })
 
-    // Écouter les changements d'authentification
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+  return _pendingPromise
+}
+
+export function useUser() {
+  // UserProvider context wins — user is pre-populated from server, no async call needed
+  const ctx = useUserContext()
+
+  // Fallback state — only used when outside a UserProvider (public pages, etc.)
+  const [user, setUser] = useState<User | null>(_cachedUser)
+  const [loading, setLoading] = useState(!_cacheReady)
+
+  useEffect(() => {
+    // Context is available — skip all client-side auth logic
+    if (ctx !== null) return
+
+    if (_cacheReady) {
+      setUser(_cachedUser)
       setLoading(false)
-    })
+    } else {
+      resolveUser().then((u) => {
+        setUser(u)
+        setLoading(false)
+      })
+    }
+
+    // Subscribe to future auth changes
+    const listener = (u: User | null) => {
+      setUser(u)
+      setLoading(false)
+    }
+    _listeners.add(listener)
+
+    // Set up auth state change listener once globally
+    if (_listeners.size === 1) {
+      const supabase = createClient()
+      supabase.auth.onAuthStateChange((_event, session) => {
+        _cachedUser = session?.user ?? null
+        _cacheReady = true
+        notifyListeners(_cachedUser)
+      })
+    }
 
     return () => {
-      subscription.unsubscribe()
+      _listeners.delete(listener)
     }
-  }, [])
+  }, [ctx])
+
+  // Context wins — instant, no loading
+  if (ctx !== null) return ctx
 
   return { user, loading }
 }
-

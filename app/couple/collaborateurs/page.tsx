@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { UserPlus, Users, Edit2, X, Check, Mail, Loader2, Link2, Copy, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
+import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -71,6 +72,7 @@ export default function CollaborateursPage() {
 
     if (error) {
       console.error('Erreur chargement collaborateurs:', error)
+      toast.error('Erreur lors du chargement des collaborateurs')
       setCollaborateurs([])
     } else {
       setCollaborateurs(data || [])
@@ -220,24 +222,19 @@ export default function CollaborateursPage() {
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
-        >
-          <div>
-            <p className="text-[#4A4A4A]">
-              Gérez les personnes qui vous aident dans l'organisation
-            </p>
-          </div>
+        <div className="flex items-start justify-between gap-4">
+          <PageTitle
+            title="Collaborateurs"
+            description="Gérez les personnes qui vous aident dans l'organisation"
+          />
           <Button
             onClick={() => setIsDialogOpen(true)}
-            className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+            className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 flex-shrink-0 mt-1"
           >
             <UserPlus className="h-4 w-4" />
             Inviter
           </Button>
-        </motion.div>
+        </div>
 
         {/* Section "Rejoignez-nous" avec images de couples */}
         <motion.div

@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/api-error-handler';
-import { getServiceSpecificPrompt, shouldAskQuestion } from '@/lib/chatbot/service-prompts';
+import { getServiceSpecificPrompt, shouldAskQuestion, getMinRequiredCriteria } from '@/lib/chatbot/service-prompts';
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 import { logger } from '@/lib/logger';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
@@ -32,18 +32,19 @@ function fixUtf8Encoding(text: string): string {
       return String.fromCharCode(parseInt(code, 16));
     });
 
-    // Tentative de réparation double-encodage UTF-8 (Latin-1 → UTF-8)
-    // Quand un texte UTF-8 est interprété comme Latin-1 puis ré-encodé
-    try {
-      if (/[\xC0-\xFF]/.test(fixed)) {
+    // Réparation double-encodage UTF-8 : seulement si on détecte le pattern Ã + suite
+    // (Ã = 0xC3 en Latin-1, typique du double-encodage de é/à/ç/è/ê/etc.)
+    // On cible uniquement "Ã©", "Ã ", "Ã§", "Ã¨"... pour éviter de toucher au texte correct
+    if (/Ã[\x80-\xBF©«®±²³µ¶¹»¼½¾¿]/.test(fixed)) {
+      try {
         const bytes = new Uint8Array([...fixed].map(c => c.charCodeAt(0)));
         const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
         if (decoded && !decoded.includes('\uFFFD')) {
           fixed = decoded;
         }
+      } catch {
+        // Pas du double-encodage, continuer normalement
       }
-    } catch {
-      // Pas du double-encodage, continuer normalement
     }
 
     // Normaliser les caractères Unicode (NFC - Canonical Composition)
@@ -211,6 +212,11 @@ RÈGLES IMPORTANTES :
     const serviceSpecificPrompt = service_type && !isBudgetPlanner
       ? getServiceSpecificPrompt(service_type, couple_profile)
       : '';
+
+    // Critères minimum obligatoires pour ce service
+    const minRequiredCriteria = service_type && !isBudgetPlanner
+      ? getMinRequiredCriteria(service_type)
+      : [];
     
     // Calculer les moyennes de marché pour guider le couple
     let marketAverageInfo = '';
@@ -352,73 +358,110 @@ ${serviceSpecificPrompt}
 RÈGLES ABSOLUES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. CONCISION MAXIMALE
-   - Réponses COURTES (2-3 phrases maximum)
+1. CONCISION MAXIMALE (RÈGLE ABSOLUE)
+   - Réponses COURTES : 1 phrase de contexte max + 1 question. JAMAIS plus.
    - 1 question à la fois (JAMAIS 2-3 questions en même temps)
-   - Aller DIRECT à l'essentiel
-   - Pas de blabla, pas de reformulation longue
+   - Ne JAMAIS reformuler ni récapituler ce que l'utilisateur vient de dire.
+     ❌ "Tu cherches donc un photographe reportage, c'est noté ! Et pour le budget..."
+     ✅ "Budget pour le photographe ? (1 500–2 500€, 2 500–4 000€, 4 000€+)"
+   - Toujours proposer des choix concrets entre parenthèses pour guider rapidement
+   - Pas d'emojis sauf dans le message d'accueil initial
 
-2. EFFICACITÉ
-   - Objectif : être concis mais complet (généralement 3-7 questions suffisent)
-   - Si l'utilisateur donne beaucoup d'infos → Pose seulement 1-2 questions de clarification
-   - Si l'utilisateur est vague → Pose des questions fermées avec choix
-   - Ne te limite pas strictement : si tu as besoin de plus d'infos pour un matching précis, continue
+2. PRÉCISION MAXIMALE (NOUVEAU - PRIORITÉ ABSOLUE)
+   - L'objectif est d'obtenir les critères MINIMUM OBLIGATOIRES du service avant toute validation
+   - Ces critères sont listés dans la section "QUESTIONS SPÉCIFIQUES" ci-dessous
+   - JAMAIS valider sans avoir tous les critères minimum obligatoires
+   - Si un critère minimum manque → poser la question dessus en priorité
+   - Critères minimum actuels pour ce service : ${minRequiredCriteria.length > 0 ? minRequiredCriteria.join(', ') : 'service_type + style + budget'}
 
-3. ADAPTATION
-   - Utilisateur bavard (>30 mots) → Juste confirmer et passer à validation
-   - Utilisateur concis (<15 mots) → Poser UNE question précise avec exemples
-   - Utilisateur moyen → Poser UNE question ouverte courte
+3. CULTURAL IMPORTANCE (CRITIQUE pour le matching)
+   - Si le couple a des cultures connues ET n'a pas encore précisé l'importance : TOUJOURS demander
+   - "Les traditions [culture] sont importantes pour vous ? (essentielles — prestataire doit les maîtriser / importantes — un plus / secondaires)"
+   - Mapper la réponse sur cultural_importance : "essential" | "important" | "nice_to_have"
 
-4. PROGRESSION LOGIQUE ADAPTÉE AU SERVICE
-   Ordre des infos à extraire selon le type de service :
-   
-   ÉTAPE 1 : Service type (si pas encore clair)
-   ÉTAPE 2 : Utiliser les données du couple (cultures, date, lieu, invités) - NE PAS REDEMANDER
-   ÉTAPE 3 : Questions spécifiques au service (voir section QUESTIONS SPÉCIFIQUES ci-dessous)
-   ÉTAPE 4 : Budget pour ce service spécifique (si pas dans profil ou différent du budget global)
-   ÉTAPE 5 : Style/Vision spécifique au service
-   
-   RÈGLE D'OR : Si les données du couple sont complètes ET tu as les critères spécifiques au service → VALIDATION IMMÉDIATE
-   
-   Exemple pour traiteur :
-   - Si couple a déjà 100 invités dans profil → NE PAS redemander
-   - Poser : type de service, régime alimentaire, style culinaire
-   - Si couple a déjà budget global → adapter pour budget traiteur (portion du budget global)
+4. BUDGET SERVICE SPÉCIFIQUE
+   - Toujours demander le budget pour CE service précis (pas le budget global du mariage)
+   - Si le couple a un budget global → suggérer une fourchette cohérente et demander confirmation
+   - Le budget est un critère de matching critique, ne pas l'omettre
+
+5. LOGIQUE D'ENTONNOIR — ORDRE STRICT À RESPECTER
+
+   → Cet ordre garantit un matching précis dès le départ.
+
+   ÉTAPE 1 : BESOIN — Quel service exactement ? (photographe, traiteur, DJ, etc.)
+             Si le service n'est pas encore identifié, c'est LA seule question à poser.
+
+   ÉTAPE 2 : BUDGET — Budget précis pour CE service (pas le budget global du mariage).
+             Proposer une fourchette réaliste selon le marché si le couple hésite.
+             Ex : "Budget pour le photographe ? (1 500–2 500€, 2 500–4 000€, 4 000€+)"
+
+   ÉTAPE 3 : DISPONIBILITÉ — Date du mariage si absente du profil couple.
+             Vérifier que la date n'est pas déjà connue avant de demander.
+             Si la date est dans le profil → passer directement à l'étape 4.
+
+   ÉTAPE 4 : CULTURES — Importance des traditions si le couple est multiculturel.
+             "Les traditions [culture] sont importantes ? (essentielles / importantes / secondaires)"
+             → cultural_importance : "essential" | "important" | "nice_to_have"
+             Si le couple n'a pas de culture spécifique → passer à l'étape 5.
+
+   ÉTAPE 5 : SPÉCIFICITÉS PRESTATAIRE — 1 à 2 questions clés propres au service
+             (voir section QUESTIONS SPÉCIFIQUES ci-dessous).
+             Choisir les 1 ou 2 critères les plus discriminants pour le matching.
+             Ne pas chercher à tout demander — aller à l'essentiel.
+
+   RÈGLE D'OR : Chaque étape = 1 seule question. Ne pas sauter d'étape, ne pas
+   regrouper 2 étapes dans un même message. Si une étape est déjà remplie grâce au
+   profil ou à une réponse précédente, passer directement à la suivante.
+
+   Exemple traiteur avec couple maghrébin (100 invités connus) :
+   → Étape 1 : déjà OK (traiteur)
+   → Étape 2 : "Budget par personne pour le traiteur ? (40–60€, 60–90€, 90€+)"
+   → Étape 3 : date déjà dans le profil → skip
+   → Étape 4 : "Les traditions maghrébines sont importantes ? (essentiel — halal certifié obligatoire / importantes / secondaires)"
+   → Étape 5 : "Type de service ? (buffet, service à l'assiette, cocktail dinatoire)"
+   → Résumé + validation
+
+6. ADAPTATION AU NIVEAU DE DÉTAIL
+   - Utilisateur bavard (>30 mots, donne beaucoup d'infos) → Extraire un maximum, poser seulement 1 question sur le critère manquant le plus important
+   - Utilisateur concis (<15 mots) → Poser UNE question fermée avec choix explicites
+   - Utilisateur moyen → Poser UNE question ouverte courte avec exemples
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXEMPLES DE BONNES RÉPONSES (COURTES)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-EXEMPLE 1 - Photographe (avec données couple disponibles) :
+EXEMPLE 1 - Photographe (couple algérien, cultures: ["algérienne"], date et lieu déjà dans le profil) :
 Utilisateur : "Je cherche un photographe"
-Toi : "Parfait ! Style de photos préféré ? (reportage, posé, artistique)"
+Toi : "Budget pour le photographe ? (1 500–2 500€, 2 500–4 000€, 4 000€+)"
 
-Utilisateur : "Reportage"
-Toi : "D'accord. Durée de prestation souhaitée ? (cérémonie uniquement, journée complète)"
+Utilisateur : "Autour de 2 000€"
+Toi : "Les traditions algériennes sont importantes ? (essentielles — il doit maîtriser la zaffa et le henna / importantes / secondaires)"
 
-Utilisateur : "Journée complète"
-Toi : "Compris ! Je résume :
-- Photographe reportage, journée complète
-- Mariage ${couple_profile?.wedding_date ? `le ${couple_profile.wedding_date}` : 'date à confirmer'} ${couple_profile?.wedding_location ? `à ${couple_profile.wedding_location}` : ''}
-- ${couple_profile?.cultures?.length ? `Culture ${couple_profile.cultures.join(', ')}` : 'Culture à préciser'}
-- Budget à définir selon prestation
+Utilisateur : "Essentielles, zaffa et henna obligatoires"
+Toi : "Style de photos ? (reportage/naturel, posé/classique, artistique, mix)"
 
+Utilisateur : "Reportage naturel"
+Toi : "Je résume :
+- Photographe reportage, traditions algériennes essentielles (zaffa + henna)
+- Budget ~2 000€
+${couple_profile?.wedding_date ? `- Mariage le ${couple_profile.wedding_date}` : ''}${couple_profile?.wedding_location ? ` à ${couple_profile.wedding_location}` : ''}
 Je lance la recherche ?"
 
-EXEMPLE 2 - Traiteur (avec données couple disponibles) :
+EXEMPLE 2 - Traiteur (120 invités connus, cultures maghrébines) :
 Utilisateur : "Je cherche un traiteur"
-Toi : "Parfait ! Type de service préféré ? (buffet, assiette, mix)"
+Toi : "Budget par personne ? (40–60€, 60–90€, 90€+)"
+
+Utilisateur : "60–80€"
+Toi : "Les traditions maghrébines sont importantes ? (essentielles — halal certifié obligatoire / importantes / secondaires)"
+
+Utilisateur : "Essentielles, halal obligatoire"
+Toi : "Type de service ? (buffet, service à l'assiette, cocktail dinatoire, mix)"
 
 Utilisateur : "Buffet"
-Toi : "D'accord. Régime alimentaire ? (halal, végétarien, sans allergènes)"
-
-Utilisateur : "Halal"
-Toi : "Compris ! Je résume :
-- Traiteur buffet halal
-- ${couple_profile?.guest_count ? `${couple_profile.guest_count} invités` : 'Nombre d\'invités à confirmer'}
-- ${couple_profile?.wedding_date ? `Mariage le ${couple_profile.wedding_date}` : 'Date à confirmer'}
-- Budget à définir selon nombre d'invités
-
+Toi : "Je résume :
+- Traiteur halal certifié, buffet, 120 invités (~7 200–9 600€)
+- Traditions maghrébines essentielles
+${couple_profile?.wedding_date ? `- Mariage le ${couple_profile.wedding_date}` : ''}
 Je lance la recherche ?"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -483,6 +526,7 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
 
 {
   "message": "Ta réponse courte (2-3 phrases max)",
+  "suggestions": ["Option 1", "Option 2", "Option 3"],
   "extracted_data": {
     "service_type": "string ou null",
     "cultures": ["culture1"] ou [],
@@ -492,7 +536,8 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
     "wedding_style": "moderne|traditionnel|fusion ou null",
     "wedding_ambiance": "string ou null",
     "specific_requirements": ["req1"] ou [],
-    "vision_description": "résumé court",
+    "tags": ["tag1", "tag2"],
+    "vision_description": "résumé court incluant les critères service-spécifiques collectés",
     "must_haves": [] ou ["élément"],
     "must_not_haves": [] ou ["élément"]
   },
@@ -500,26 +545,43 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
   "question_count": 1
 }
 
+RÈGLES pour suggestions[] :
+- TOUJOURS générer 2 à 4 suggestions de réponse rapide pertinentes
+- Les suggestions sont des BOUTONS cliquables dans l'interface — texte court (1-5 mots max)
+- Quand ta question a des choix explicites entre parenthèses → extrais-les comme suggestions
+- Pour les questions cultural_importance → ["Essentielles", "Importantes", "Secondaires"]
+- Pour les questions budget → fourchettes courtes ["40-60€/pers", "60-90€/pers", "90€+"]
+- Pour les questions style → options explicites ["Reportage", "Posé", "Artistique", "Mix"]
+- Pour la confirmation finale → ["Oui, lancer !", "Modifier les critères"]
+- Toujours en français, sans ponctuation à la fin, majuscule en début
+- Exemples : ["Halal", "Végétarien", "Sans restriction"] / ["Buffet", "À l'assiette", "Mix"] / ["Oui", "Non", "Peu importe"]
+
+RÈGLES pour tags[] :
+- Extraire les tags pertinents depuis les réponses utilisateur
+- Exemples photographe : "reportage", "henna", "zaffa", "album_physique", "artistique"
+- Exemples traiteur : "halal", "buffet", "maghrébin", "végétarien"
+- Exemples DJ : "oriental", "zaffa", "mix", "éclairage"
+- Exemples salle : "extérieur", "traiteur_inclus", "moderne", "château"
+- Toujours populer ce champ avec les tags pertinents identifiés
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CRITÈRES DE VALIDATION (next_action: "validate")
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Passe en validation DÈS QUE tu as :
+Passe en validation SEULEMENT si TOUTES ces conditions sont réunies :
 ✅ service_type identifié
-✅ AU MOINS 1 des suivants : cultures OU budget OU style
-✅ Une vision minimale de ce qu'ils veulent
+✅ Critères minimum obligatoires du service collectés : ${minRequiredCriteria.length > 0 ? minRequiredCriteria.join(' + ') : 'style + vision'}
+✅ cultural_importance extrait (si couple a des cultures connues)
+✅ budget_min ou budget_max pour CE service (pas le budget global)
 
-OU SI :
+OU SI (priorité absolue, override tout) :
 ✅ L'utilisateur confirme explicitement le lancement ("oui", "ok", "d'accord", "vas-y", "go", "lancer", "parfait" en réponse à "Je lance la recherche ?")
 
-JAMAIS besoin de toutes les infos pour valider. Mieux vaut un matching avec 3 critères bien compris qu'attendre d'avoir tout.
+Si confirmation utilisateur → VALIDATION IMMÉDIATE avec les données déjà collectées.
+Si critères manquent et pas de confirmation → CONTINUER et poser la question sur le critère manquant le plus important.
 
-Si tu as : service + culture + budget → VALIDATION IMMÉDIATE
-Si tu as : service + style + vision → VALIDATION IMMÉDIATE
-Si l'utilisateur confirme → VALIDATION IMMÉDIATE (même avec moins d'infos)
-
-NE PAS attendre d'avoir localisation, date précise, nombre d'invités, etc.
-Ces infos viendront du profil couple ou seront optionnelles.
+NE PAS attendre : localisation exacte, date précise, nombre d'invités (si pas dans le profil).
+Ces infos viennent du profil couple ou sont gérées lors du contact prestataire.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TON & STYLE
@@ -583,8 +645,8 @@ Exemple mauvais ton :
           { role: 'system', content: systemPrompt },
           ...openaiMessages,
         ],
-        temperature: 0.5,        // Plus déterministe
-        max_tokens: 150,         // Forcer concision
+        temperature: 0.3,        // Très déterministe pour extraction fiable
+        max_tokens: 500,         // Suffisant pour JSON complet avec suggestions
         response_format: { type: 'json_object' },
       });
     } catch (openaiError: any) {
@@ -733,6 +795,22 @@ Exemple mauvais ton :
       parsedResponse.extracted_data = {};
     }
 
+    // S'assurer que tags est un tableau
+    if (!Array.isArray(parsedResponse.extracted_data.tags)) {
+      parsedResponse.extracted_data.tags = [];
+    }
+
+    // Valider et normaliser les suggestions
+    if (!Array.isArray(parsedResponse.suggestions)) {
+      parsedResponse.suggestions = [];
+    } else {
+      // Filtrer les suggestions vides, normaliser les accents, limiter à 4
+      parsedResponse.suggestions = parsedResponse.suggestions
+        .filter((s: any) => typeof s === 'string' && s.trim().length > 0)
+        .map((s: string) => s.normalize('NFC').trim())
+        .slice(0, 4);
+    }
+
     // PRÉ-REMPLIR avec les données du couple si disponibles
     if (couple_profile) {
       // Cultures
@@ -781,10 +859,10 @@ Exemple mauvais ton :
       parsedResponse.extracted_data.auto_filled_from_profile = true;
     }
 
-    // Si la réponse est trop longue, la tronquer
-    if (parsedResponse.message && parsedResponse.message.length > 200) {
+    // Si la réponse est trop longue, la tronquer (400 chars max pour les résumés de validation)
+    if (parsedResponse.message && parsedResponse.message.length > 400) {
       logger.warn('Message IA trop long, troncature...');
-      parsedResponse.message = parsedResponse.message.substring(0, 197) + '...';
+      parsedResponse.message = parsedResponse.message.substring(0, 397) + '...';
     }
 
     // Détecter si l'utilisateur confirme le lancement de recherche
@@ -796,9 +874,9 @@ Exemple mauvais ton :
       ? lastUserMsg.content.toLowerCase() 
       : '';
     
-    const confirmationKeywords = ['oui', 'ok', 'd\'accord', 'daccord', 'vas-y', 'vasy', 'go', 'lancer', 'parfait', 'c\'est bon', 'cest bon', 'valider', 'confirmer'];
+    const confirmationKeywords = ['oui', 'ok', 'd\'accord', 'daccord', 'vas-y', 'vasy', 'go', 'lancer', 'parfait', 'c\'est bon', 'cest bon', 'valider', 'confirmer', 'lancez', 'top', 'super', 'bonne idée', 'allons-y', 'on y va', 'c\'est parti'];
     const isConfirmation = confirmationKeywords.some(keyword => lastUserMessage.includes(keyword));
-    
+
     // Vérifier si le dernier message bot demandait confirmation
     const lastBotMsg = openaiMessages
       .filter((msg: ChatCompletionMessageParam) => msg.role === 'assistant')
@@ -806,7 +884,7 @@ Exemple mauvais ton :
     const lastBotMessage = typeof lastBotMsg?.content === 'string'
       ? lastBotMsg.content.toLowerCase()
       : '';
-    const botAskedConfirmation = lastBotMessage.includes('je lance') || lastBotMessage.includes('lancer la recherche') || lastBotMessage.includes('recherche ?');
+    const botAskedConfirmation = lastBotMessage.includes('je lance') || lastBotMessage.includes('lancer la recherche') || lastBotMessage.includes('recherche ?') || lastBotMessage.includes('je résume') || lastBotMessage.includes('on lance') || lastBotMessage.includes('confirmer ?');
     
     // Si l'utilisateur confirme ET que le bot demandait confirmation, forcer la validation
     if (isConfirmation && botAskedConfirmation && parsedResponse.next_action !== 'validate') {

@@ -19,6 +19,7 @@ const updateFactureSchema = z.object({
   due_date: z.string().optional().nullable(),
   status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).optional(),
   paid_date: z.string().optional().nullable(),
+  online_payment_enabled: z.boolean().optional(),
 })
 
 interface RouteParams {

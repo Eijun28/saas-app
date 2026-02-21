@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,7 @@ import { CULTURES } from '@/lib/constants/cultures'
 import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
+import { AvailabilityIndicator } from '@/components/provider-availability/AvailabilityIndicator'
 
 interface ProviderTag {
   id: string
@@ -124,17 +125,23 @@ export default function RecherchePage() {
   const [budgetMax, setBudgetMax] = useState<number | null>(null)
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'reviews' | 'budget_asc' | 'budget_desc'>('default')
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set())
+  // Availability filter
+  const [weddingDate, setWeddingDate] = useState<string | null>(null)
+  const [filterAvailable, setFilterAvailable] = useState(false)
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({}) // providerId → isAvailable
 
-  // Load available tags and favorites on mount
+  // Load available tags, favorites and wedding date on mount
   useEffect(() => {
     async function loadInitialData() {
       const supabase = createClient()
-      const [tagsResult, favsResult] = await Promise.all([
+      const [tagsResult, favsResult, coupleResult] = await Promise.all([
         supabase.from('tags').select('id, label, category').order('usage_count', { ascending: false }).limit(50),
         user ? supabase.from('favoris').select('prestataire_id').eq('couple_id', user.id) : Promise.resolve({ data: null }),
+        user ? supabase.from('couples').select('wedding_date').eq('user_id', user.id).single() : Promise.resolve({ data: null }),
       ])
       if (tagsResult.data) setAvailableTags(tagsResult.data)
       if (favsResult.data) setFavoritedIds(new Set(favsResult.data.map((f: any) => f.prestataire_id)))
+      if (coupleResult.data?.wedding_date) setWeddingDate(coupleResult.data.wedding_date)
     }
     loadInitialData()
   }, [user])
@@ -423,6 +430,29 @@ export default function RecherchePage() {
       }
 
       setProviders(filteredProviders)
+
+      // Fetch availability for all providers if wedding date is set
+      if (weddingDate && filteredProviders.length > 0) {
+        const availMap: Record<string, boolean> = {}
+        await Promise.all(
+          filteredProviders.map(async (p) => {
+            try {
+              const res = await fetch(
+                `/api/provider-availability/public/${p.id}?from=${weddingDate}&to=${weddingDate}`
+              )
+              if (!res.ok) { availMap[p.id] = true; return }
+              const data = await res.json()
+              const blocked = (data.slots ?? []).some((s: { status: string }) =>
+                s.status === 'unavailable' || s.status === 'tentative'
+              )
+              availMap[p.id] = !blocked
+            } catch {
+              availMap[p.id] = true
+            }
+          })
+        )
+        setAvailabilityMap(availMap)
+      }
     } catch (error) {
       console.error('Erreur recherche:', error)
       setProviders([])
@@ -929,6 +959,21 @@ export default function RecherchePage() {
             )}
           </div>
 
+          {/* Filtre disponibilité */}
+          {weddingDate && (
+            <button
+              onClick={() => setFilterAvailable(p => !p)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all ${
+                filterAvailable
+                  ? 'bg-green-50 border-green-300 text-green-700'
+                  : 'bg-gray-100 border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <CalendarCheck className="h-3 w-3" />
+              Disponibles uniquement
+            </button>
+          )}
+
           {/* Tri */}
           <div className="flex items-center gap-1.5 ml-auto">
             <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
@@ -972,15 +1017,25 @@ export default function RecherchePage() {
             transition={{ delay: 0.2 }}
             className="space-y-3"
           >
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-600">
-                <span className="font-semibold text-gray-900">{providers.length}</span>{' '}
-                prestataire{providers.length > 1 ? 's' : ''} trouvé{providers.length > 1 ? 's' : ''}
-              </p>
-            </div>
+            {/* Computed list with availability filter */}
+          {(() => {
+            const displayedProviders = filterAvailable && weddingDate
+              ? providers.filter(p => availabilityMap[p.id] !== false)
+              : providers
+            return (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-gray-600">
+                    <span className="font-semibold text-gray-900">{displayedProviders.length}</span>{' '}
+                    prestataire{displayedProviders.length > 1 ? 's' : ''} trouvé{displayedProviders.length > 1 ? 's' : ''}
+                    {filterAvailable && weddingDate && displayedProviders.length < providers.length && (
+                      <span className="ml-2 text-green-600 text-xs font-medium">({providers.length - displayedProviders.length} indisponible{providers.length - displayedProviders.length > 1 ? 's' : ''} masqué{providers.length - displayedProviders.length > 1 ? 's' : ''})</span>
+                    )}
+                  </p>
+                </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {providers.map((provider, index) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  {displayedProviders.map((provider, index) => (
                 <motion.div
                   key={provider.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -1062,6 +1117,13 @@ export default function RecherchePage() {
                       </div>
                     )}
 
+                    {/* Availability badge */}
+                    {weddingDate && (
+                      <div className="mb-1">
+                        <AvailabilityIndicator providerId={provider.id} weddingDate={weddingDate} />
+                      </div>
+                    )}
+
                     {/* Budget */}
                     {(provider.budget_min || provider.budget_max) && (
                       <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100">
@@ -1077,6 +1139,9 @@ export default function RecherchePage() {
                 </motion.div>
               ))}
             </div>
+              </>
+            )
+          })()}
           </motion.div>
         )}
 

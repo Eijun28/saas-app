@@ -492,7 +492,8 @@ export async function POST(request: NextRequest) {
       logger.warn('⚠️ Impossible de charger les donnees d\'equite (table peut-etre inexistante):', fairnessError);
     }
 
-    // Charger les tags de specialite pour tous les prestataires
+    // Charger les tags pour tous les prestataires (tous types + specialites separement)
+    const allTagsMap = new Map<string, string[]>();
     const specialtyTagsMap = new Map<string, string[]>();
     try {
       const { data: providerTagsData, error: tagsError } = await supabase
@@ -521,16 +522,24 @@ export async function POST(request: NextRequest) {
           const tagsList = Array.isArray(tags) ? tags : [tags];
 
           tagsList.forEach((tag) => {
-            if (tag && tag.category === 'specialite') {
-              const existing = specialtyTagsMap.get(profileId) || [];
-              existing.push(tag.slug as string);
-              specialtyTagsMap.set(profileId, existing);
+            if (tag) {
+              // Stocker TOUS les tags pour calculateTagsScore (style, ambiance, etc.)
+              const existingAll = allTagsMap.get(profileId) || [];
+              existingAll.push(tag.slug as string);
+              allTagsMap.set(profileId, existingAll);
+
+              // Stocker les tags de specialite separement
+              if (tag.category === 'specialite') {
+                const existing = specialtyTagsMap.get(profileId) || [];
+                existing.push(tag.slug as string);
+                specialtyTagsMap.set(profileId, existing);
+              }
             }
           });
         });
       }
     } catch (tagsError) {
-      logger.warn('⚠️ Impossible de charger les tags de specialite:', tagsError);
+      logger.warn('⚠️ Impossible de charger les tags:', tagsError);
     }
 
     // ETAPE 3 : CALCULER LES SCORES AVEC EQUITE (sur les prestataires filtrés >= 70%)
@@ -541,6 +550,7 @@ export async function POST(request: NextRequest) {
       const enrichedProvider = enrichProviderWithFairness(
         {
           ...provider,
+          tags: allTagsMap.get(providerId) || [],
           specialty_tags: specialtyTagsMap.get(providerId) || [],
         },
         fairnessDataMap.get(providerId) || null

@@ -438,7 +438,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                   </span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-[#823F91]/10 !via-[#9D5FA8]/10 !to-white border-[#823F91]/20 backdrop-blur-sm">
+              <DropdownMenuContent align="end" className="w-56 !bg-gradient-to-br !from-[#823F91]/10 !via-[#9D5FA8]/10 !to-white border-[#823F91]/20 backdrop-blur-sm z-[201]">
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium text-[#0B0E12]">
                     {userRole === 'couple' && profile.displayName

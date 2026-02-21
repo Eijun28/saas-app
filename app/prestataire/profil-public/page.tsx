@@ -26,7 +26,6 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { ProfileScoreCard } from '@/components/provider/ProfileScoreCard'
-import { BrandColorPicker } from '@/components/provider/BrandColorPicker'
 import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
 import { VisibilityStats } from '@/components/provider/VisibilityStats'
 import { CULTURES } from '@/lib/constants/cultures'
@@ -72,7 +71,6 @@ export default function ProfilPublicPage() {
     boutique_appointment_only?: boolean
     siret?: string | null
     pricing_unit?: string
-    brand_color?: string
     _timestamp?: number
   } | null>(null)
   const [cultures, setCultures] = useState<Array<{ id: string; label: string }>>([])
@@ -80,7 +78,6 @@ export default function ProfilPublicPage() {
   const [portfolio, setPortfolio] = useState<Array<{ id: string; image_url: string; title?: string }>>([])
   const [serviceDetails, setServiceDetails] = useState<Record<string, unknown>>({})
   const [isLoading, setIsLoading] = useState(true)
-  const [refreshKey, setRefreshKey] = useState(0)
   const [activeTab, setActiveTab] = useState('infos')
 
   // Pricing data
@@ -106,7 +103,6 @@ export default function ProfilPublicPage() {
     if (!user) return
 
     await loadAllData(user.id, false)
-    setRefreshKey(prev => prev + 1)
   }
 
   async function loadAllData(userId: string, showLoading = true) {
@@ -125,7 +121,6 @@ export default function ProfilPublicPage() {
         zonesResult,
         portfolioResult,
         pricingResult,
-        brandResult,
         serviceDetailsResult,
       ] = await Promise.all([
         // Profil principal
@@ -162,12 +157,6 @@ export default function ProfilPublicPage() {
           .select('pricing_unit')
           .eq('provider_id', userId)
           .eq('is_primary', true)
-          .maybeSingle(),
-        // Couleur de marque
-        freshSupabase
-          .from('prestataire_profiles')
-          .select('brand_color')
-          .eq('user_id', userId)
           .maybeSingle(),
         // Détails métier spécifiques
         freshSupabase
@@ -211,7 +200,6 @@ export default function ProfilPublicPage() {
       const zonesData = zonesResult.data
       const portfolioData = portfolioResult.data
       const pricingData = pricingResult.data
-      const brandColor = brandResult.data?.brand_color || '#823F91'
 
       const mappedCultures = (culturesData || []).map(c => {
         const culture = CULTURES.find(cult => cult.id === c.culture_id)
@@ -265,7 +253,6 @@ export default function ProfilPublicPage() {
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingData?.pricing_unit || undefined,
-        brand_color: brandColor,
         _timestamp: timestamp,
       }
       
@@ -274,7 +261,6 @@ export default function ProfilPublicPage() {
       setZones(mappedZones)
       setPortfolio(mappedPortfolio)
       setServiceDetails(loadedServiceDetails)
-      setRefreshKey(prev => prev + 1)
     } catch (error) {
       console.error('Error loading profile:', error)
     } finally {
@@ -312,9 +298,9 @@ export default function ProfilPublicPage() {
         title="Profil public"
         description="Gérez votre profil visible par les couples"
       />
-      <div className="flex flex-row items-center justify-between gap-2 xs:gap-3 sm:gap-4">
+      <div className="flex flex-row items-center justify-between gap-3 sm:gap-4">
             {/* Avatar + Nom + Métier à gauche */}
-            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
                 <AvatarUploader 
                   userId={user.id}
@@ -339,11 +325,11 @@ export default function ProfilPublicPage() {
               
               {/* Nom et Métier */}
               <div className="space-y-0.5 min-w-0 flex-1">
-                <h1 className="text-base xs:text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">
                   {profile?.nom_entreprise || 'Mon Entreprise'}
                 </h1>
                 {profile?.service_type && (
-                  <p className="text-[11px] xs:text-xs sm:text-sm text-muted-foreground truncate">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     {getServiceTypeLabel(profile.service_type)}
                   </p>
                 )}
@@ -377,7 +363,6 @@ export default function ProfilPublicPage() {
                 cultures={cultures}
                 zones={zones}
                 portfolio={portfolio}
-                brandColor={profile?.brand_color}
                 hasSiret={!!profile?.siret}
                 serviceDetails={serviceDetails}
                 serviceTypeValue={profile?.service_type}
@@ -402,120 +387,78 @@ export default function ProfilPublicPage() {
 
       {/* COLONNE UNIQUE - Sections éditables avec Tabs */}
       <main>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 xs:space-y-4 sm:space-y-6">
-                <TabsList className={cn("grid w-full h-auto p-0.5 bg-muted/40 backdrop-blur-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)]", profile?.service_type && hasServiceFields(profile.service_type) ? 'grid-cols-6' : 'grid-cols-5')}>
-                <TabsTrigger
-                  value="infos"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'infos' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'infos' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Infos</span>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+                <TabsList className={cn("grid w-full h-auto p-1 bg-muted/50 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.06)]", profile?.service_type && hasServiceFields(profile.service_type) ? 'grid-cols-6' : 'grid-cols-5')}>
+                <TabsTrigger value="infos" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Infos</span>
                 </TabsTrigger>
                 {profile?.service_type && hasServiceFields(profile.service_type) && (
-                <TabsTrigger
-                  value="metier"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'metier' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'metier' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Métier</span>
+                <TabsTrigger value="metier" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Métier</span>
                 </TabsTrigger>
                 )}
-                <TabsTrigger
-                  value="cultures"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'cultures' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'cultures' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Cultures</span>
+                <TabsTrigger value="cultures" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Cultures</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="zones"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'zones' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'zones' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Zones</span>
+                <TabsTrigger value="zones" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Zones</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="tags"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'tags' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'tags' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Tags</span>
+                <TabsTrigger value="tags" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Tags</span>
                 </TabsTrigger>
-                <TabsTrigger
-                  value="portfolio"
-                  className="text-xs sm:text-sm font-medium data-[state=active]:shadow-sm"
-                  style={{
-                    background: activeTab === 'portfolio' ? 'linear-gradient(to right, #823F91, #9D5FA8)' : 'white',
-                    color: activeTab === 'portfolio' ? '#ffffff' : '#823F91',
-                  }}
-                >
-                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1.5" style={{ color: 'inherit' }} />
-                  <span className="hidden sm:inline" style={{ color: 'inherit' }}>Portfolio</span>
+                <TabsTrigger value="portfolio" className="tab-pill flex items-center justify-center gap-1.5 rounded-lg py-2 px-1">
+                  <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline">Portfolio</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="infos" className="mt-3 xs:mt-4 sm:mt-6 space-y-4">
+              <TabsContent value="infos" className="mt-4 sm:mt-6 space-y-4">
                 {/* Section 1 : Entreprise */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <Briefcase className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Entreprise</h3>
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Entreprise</h3>
                       </div>
                       <div className="space-y-4 sm:space-y-5">
                         <BusinessNameEditor
-                          key={`business-name-${profile?._timestamp || 0}`}
+                          key="business-name"
                           userId={user.id}
                           currentName={profile?.nom_entreprise}
                           onSave={reloadData}
                         />
                         <SiretEditor
-                          key={`siret-${profile?._timestamp || 0}`}
+                          key="siret"
                           userId={user.id}
                           currentSiret={profile?.siret}
                           onSave={reloadData}
                         />
                         <ProfileDescriptionEditor
-                          key={`profile-desc-${profile?._timestamp || 0}`}
+                          key="profile-desc"
                           userId={user.id}
                           currentDescription={profile?.description_courte}
                           onSave={reloadData}
                         />
                         <BioEditor
-                          key={`bio-${profile?._timestamp || 0}`}
+                          key="bio"
                           userId={user.id}
                           currentBio={profile?.bio}
                           onSave={reloadData}
                         />
                         <ProfessionalInfoEditor
-                          key={`professional-${profile?._timestamp || 0}`}
+                          key="professional"
                           userId={user.id}
                           currentBudgetMin={profile?.budget_min}
                           currentBudgetMax={profile?.budget_max}
@@ -535,16 +478,16 @@ export default function ProfilPublicPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <Euro className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Tarifs</h3>
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Tarifs</h3>
                       </div>
                       <PricingEditor
-                        key={`pricing-${refreshKey}`}
+                        key="pricing"
                         providerId={user.id}
                         initialPricing={pricings}
                         onUpdate={reloadPricing}
@@ -559,17 +502,17 @@ export default function ProfilPublicPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <Share2 className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Réseaux & Apparence</h3>
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Réseaux sociaux</h3>
                       </div>
                       <div className="space-y-4 sm:space-y-5">
                         <SocialLinksEditor
-                          key={`social-${profile?._timestamp || 0}`}
+                          key="social"
                           userId={user.id}
                           currentLinks={{
                             instagram_url: profile?.instagram_url,
@@ -580,13 +523,6 @@ export default function ProfilPublicPage() {
                           }}
                           onSave={reloadData}
                         />
-                        <div className="border-t pt-4">
-                          <BrandColorPicker
-                            userId={user.id}
-                            currentColor={profile?.brand_color}
-                            onSave={reloadData}
-                          />
-                        </div>
                       </div>
                     </div>
                   </Card>
@@ -598,16 +534,16 @@ export default function ProfilPublicPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <Store className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">Lieu physique</h3>
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground">Lieu physique</h3>
                       </div>
                       <BoutiqueEditor
-                        key={`boutique-${profile?._timestamp || 0}`}
+                        key="boutique"
                         userId={user.id}
                         initialData={{
                           has_physical_location: profile?.has_physical_location || false,
@@ -632,19 +568,19 @@ export default function ProfilPublicPage() {
 
               {/* Onglet Détails Métier */}
               {profile?.service_type && hasServiceFields(profile.service_type) && (
-              <TabsContent value="metier" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="metier" className="mt-4 sm:mt-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="p-1.5 rounded-lg bg-[#823F91]/10">
                           <ClipboardList className="h-4 w-4 text-[#823F91]" />
                         </div>
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground">
                           Détails métier
                         </h3>
                       </div>
@@ -652,7 +588,7 @@ export default function ProfilPublicPage() {
                         Renseignez les détails spécifiques à votre activité pour aider les couples à mieux vous trouver.
                       </p>
                       <ServiceDetailsEditor
-                        key={`service-details-${refreshKey}`}
+                        key="service-details"
                         userId={user.id}
                         serviceType={profile.service_type}
                         onSave={() => loadAllData(user.id)}
@@ -663,57 +599,57 @@ export default function ProfilPublicPage() {
               </TabsContent>
               )}
 
-              <TabsContent value="cultures" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="cultures" className="mt-4 sm:mt-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <CultureSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="zones" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="zones" className="mt-4 sm:mt-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <ZoneSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="tags" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="tags" className="mt-4 sm:mt-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)] transition-all duration-300 hover:shadow-[0_4px_12px_rgba(130,63,145,0.12)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <TagSelector userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>
                 </motion.div>
               </TabsContent>
 
-              <TabsContent value="portfolio" className="mt-3 xs:mt-4 sm:mt-6">
+              <TabsContent value="portfolio" className="mt-4 sm:mt-6">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-5"
+                  className="space-y-4 sm:space-y-5"
                 >
-                  <Card className="bg-white/70 backdrop-blur-sm shadow-[0_2px_8px_rgba(130,63,145,0.08)]">
-                    <div className="p-3 xs:p-4 sm:p-5 lg:p-6">
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
                       <PortfolioUploader userId={user.id} onSave={() => loadAllData(user.id)} />
                     </div>
                   </Card>

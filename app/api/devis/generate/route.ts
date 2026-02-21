@@ -124,7 +124,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Générer le numéro de devis
-    const { data: devisNumber } = await supabase.rpc('generate_devis_number')
+    const { data: devisNumber } = await supabase.rpc('generate_devis_number', {
+      p_prestataire_id: user.id,
+    })
     const finalDevisNumber = devisNumber || `DEV-${new Date().getFullYear()}-${Date.now()}`
 
     // Préparer les données pour le PDF
