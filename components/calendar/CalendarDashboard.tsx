@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +59,11 @@ export function CalendarDashboard({
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+  const weekScrollRef = useRef<HTMLDivElement>(null)
+  const dayScrollRef = useRef<HTMLDivElement>(null)
   const [newEvent, setNewEvent] = useState({
     date: null as Date | null,
     time: '',
@@ -71,6 +76,41 @@ export function CalendarDashboard({
     title: '',
     description: '',
   })
+
+  // Auto-scroll to current hour when switching to week/day view
+  useEffect(() => {
+    if (viewMode !== 'week' && viewMode !== 'day') return
+    const scrollToCurrentHour = () => {
+      const ref = viewMode === 'week' ? weekScrollRef.current : dayScrollRef.current
+      if (!ref) return
+      const currentHour = new Date().getHours()
+      const hourHeight = viewMode === 'week' ? 56 : 72
+      // Scroll so that current hour is visible near the top, with some context above
+      const scrollTop = Math.max(0, (currentHour - 8) * hourHeight - 80)
+      ref.scrollTop = scrollTop
+    }
+    const timer = setTimeout(scrollToCurrentHour, 80)
+    return () => clearTimeout(timer)
+  }, [viewMode])
+
+  // Swipe gesture handlers for mobile navigation (not used in week view due to h-scroll)
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (viewMode === 'week') return
+    setTouchStartX(e.targetTouches[0].clientX)
+    setTouchStartY(e.targetTouches[0].clientY)
+  }, [viewMode])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (viewMode === 'week' || touchStartX === null || touchStartY === null) return
+    const deltaX = touchStartX - e.changedTouches[0].clientX
+    const deltaY = Math.abs(touchStartY - e.changedTouches[0].clientY)
+    // Only navigate if swipe is clearly horizontal (not a scroll attempt)
+    if (Math.abs(deltaX) < 50 || deltaY > Math.abs(deltaX) * 0.75) return
+    if (deltaX > 0) nextPeriod()
+    else previousPeriod()
+    setTouchStartX(null)
+    setTouchStartY(null)
+  }, [viewMode, touchStartX, touchStartY])
 
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -222,14 +262,10 @@ export function CalendarDashboard({
 
   const handleDeleteEvent = async () => {
     if (!selectedEvent || !onEventDelete) return
-
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
-      return
-    }
-
     setIsDeleting(true)
     try {
       await onEventDelete(selectedEvent.id)
+      setIsDeleteConfirmOpen(false)
       setIsEditDialogOpen(false)
       setSelectedEvent(null)
       setEditEvent({ date: null, time: '', title: '', description: '' })
@@ -369,9 +405,9 @@ export function CalendarDashboard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.008 }}
                 className={cn(
-                  'border-r border-b border-gray-100 p-2 sm:p-2.5 md:p-3 lg:p-3.5',
-                  'hover:bg-purple-50/30 transition-all duration-200 cursor-pointer',
-                  'flex flex-col items-center justify-start min-h-0',
+                  'border-r border-b border-gray-100 p-1.5 sm:p-2.5 md:p-3 lg:p-3.5',
+                  'hover:bg-purple-50/30 active:bg-purple-50/60 transition-all duration-150 cursor-pointer touch-manipulation',
+                  'flex flex-col items-center justify-start min-h-[52px]',
                   !isCurrentMonth && 'bg-gray-50/30',
                   isCurrentMonth && 'bg-white',
                   isPastDay && 'opacity-50'
@@ -380,7 +416,6 @@ export function CalendarDashboard({
                   const normalizedDay = normalizeDate(day)
                   setSelectedDate(normalizedDay)
                   setCurrentDate(normalizedDay)
-                  // Basculer automatiquement vers la vue jour
                   setViewMode('day')
                 }}
               >
@@ -427,6 +462,8 @@ export function CalendarDashboard({
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     const hours = Array.from({ length: 13 }, (_, i) => i + 8) // 8h à 20h
+    const GRID_COLS = '55px repeat(7, minmax(80px, 1fr))'
+    const GRID_MIN_WIDTH = '615px'
 
     return (
       <motion.div
@@ -434,126 +471,142 @@ export function CalendarDashboard({
         animate={{ opacity: 1 }}
         className="flex flex-col h-full overflow-hidden"
       >
-        {/* En-têtes des jours */}
-        <div className="grid border-b border-gray-100 bg-white flex-shrink-0" style={{ gridTemplateColumns: '55px repeat(7, 1fr)' }}>
-          <div className="text-center py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-500 border-r border-gray-100">Heure</div>
-          {weekDays.map((day, index) => {
-            const isToday = isSameDay(day, new Date())
-            const isPastDay = isPast(startOfDay(day)) && !isToday
-            return (
-              <div
-                key={index}
-                className={cn(
-                  'text-center py-2.5 sm:py-3 transition-all',
-                  isToday && 'bg-purple-50',
-                  isPastDay && 'opacity-50'
-                )}
-              >
-                <div className={cn('text-xs sm:text-sm font-medium', isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-600')}>
-                  {format(day, 'EEE', { locale: fr })}
-                </div>
-                <div
-                  className={cn(
-                    'text-base sm:text-lg md:text-xl font-semibold mt-1 sm:mt-1.5',
-                    isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-900'
-                  )}
-                >
-                  {format(day, 'd')}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        {/* Unique scrollable container : horizontal + vertical synchronisés */}
+        <div
+          ref={weekScrollRef}
+          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100"
+        >
+          <div style={{ minWidth: GRID_MIN_WIDTH }}>
 
-        {/* Grille des heures - SCROLLABLE */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
-          <div className="grid min-h-full" style={{ gridTemplateColumns: '55px repeat(7, 1fr)' }}>
-            {/* Colonne des heures */}
-            <div className="border-r border-gray-100 bg-gray-50/30">
-              {hours.map((hour) => (
-                <div
-                  key={hour}
-                  className="h-14 sm:h-16 md:h-20 border-b border-gray-100 flex items-start justify-end pr-2.5 sm:pr-2 pt-1.5 sm:pt-1"
-                >
-                  <span className="text-xs sm:text-sm font-medium text-gray-500">{`${hour}:00`}</span>
-                </div>
-              ))}
+            {/* En-têtes des jours - sticky en haut */}
+            <div
+              className="grid sticky top-0 bg-white z-20 border-b border-gray-100 shadow-sm"
+              style={{ gridTemplateColumns: GRID_COLS }}
+            >
+              <div className="text-center py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-500 border-r border-gray-100">
+                Heure
+              </div>
+              {weekDays.map((day, index) => {
+                const isToday = isSameDay(day, new Date())
+                const isPastDay = isPast(startOfDay(day)) && !isToday
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      'text-center py-2.5 sm:py-3 transition-all cursor-pointer touch-manipulation hover:bg-purple-50/30',
+                      isToday && 'bg-purple-50',
+                      isPastDay && 'opacity-50'
+                    )}
+                    onClick={() => {
+                      setSelectedDate(day)
+                      setCurrentDate(day)
+                      setViewMode('day')
+                    }}
+                  >
+                    <div className={cn('text-xs sm:text-sm font-medium', isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-600')}>
+                      {format(day, 'EEE', { locale: fr })}
+                    </div>
+                    <div className={cn(
+                      'text-base sm:text-lg md:text-xl font-semibold mt-0.5 sm:mt-1',
+                      isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-900'
+                    )}>
+                      {format(day, 'd')}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
-            {/* Colonnes des jours */}
-            {weekDays.map((day, dayIndex) => {
-              const isToday = isSameDay(day, new Date())
-              const isPastDay = isPast(startOfDay(day)) && !isToday
-              const dayEvents = events.filter((event) =>
-                isSameDay(new Date(event.date), day)
-              )
+            {/* Grille des heures */}
+            <div className="grid" style={{ gridTemplateColumns: GRID_COLS }}>
+              {/* Colonne des heures */}
+              <div className="border-r border-gray-100 bg-gray-50/30">
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className="h-14 sm:h-16 md:h-20 border-b border-gray-100 flex items-start justify-end pr-2.5 sm:pr-2 pt-1.5 sm:pt-1"
+                  >
+                    <span className="text-xs sm:text-sm font-medium text-gray-500">{`${hour}:00`}</span>
+                  </div>
+                ))}
+              </div>
 
-              return (
-                <div
-                  key={dayIndex}
-                  className={cn(
-                    'relative',
-                    isToday && 'bg-purple-50/20',
-                    isPastDay && 'opacity-50'
-                  )}
-                >
-                  {hours.map((hour) => (
-                    <div
-                      key={hour}
-                      className="h-14 sm:h-16 md:h-20 border-b border-gray-100 hover:bg-purple-50/40 transition-colors cursor-pointer"
-                      onClick={() => setSelectedDate(day)}
-                    />
-                  ))}
+              {/* Colonnes des jours */}
+              {weekDays.map((day, dayIndex) => {
+                const isToday = isSameDay(day, new Date())
+                const isPastDay = isPast(startOfDay(day)) && !isToday
+                const dayEvents = events.filter((event) =>
+                  isSameDay(new Date(event.date), day)
+                )
 
-                  {/* Événements positionnés */}
-                  {dayEvents.map((event, idx) => {
-                    // Utiliser event.time si disponible, sinon utiliser une heure par défaut (9h)
-                    let eventHour = 9
-                    let eventMinute = 0
-                    
-                    if (event.time) {
-                      const [hours, minutes] = event.time.split(':').map(Number)
-                      eventHour = hours || 9
-                      eventMinute = minutes || 0
-                    } else {
-                      // Si pas d'heure, essayer d'extraire de la date
-                      const eventDate = new Date(event.date)
-                      if (!isNaN(eventDate.getTime())) {
-                        eventHour = eventDate.getHours() || 9
-                        eventMinute = eventDate.getMinutes() || 0
-                      }
-                    }
-                    
-                    // Ne pas afficher si l'heure est en dehors de la plage visible (8h-20h)
-                    if (eventHour < 8 || eventHour > 20) return null
-                    
-                    // Calcul responsive : 56px (h-14) mobile, 64px (h-16) sm, 80px (h-20) md
-                    const cellHeight = 56 // h-14 sur mobile
-                    const top = (eventHour - 8) * cellHeight + (eventMinute / 60) * cellHeight
-                    const height = 50
-
-                    return (
-                      <motion.div
-                        key={event.id || idx}
-                        whileHover={{ scale: 1.02, zIndex: 10 }}
-                        style={{ top: `${top}px`, height: `${height}px` }}
-                        className="absolute left-1 right-1 sm:left-1.5 sm:right-1.5 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 sm:p-2 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
-                        title={event.title}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEventClick(event)
+                return (
+                  <div
+                    key={dayIndex}
+                    className={cn(
+                      'relative',
+                      isToday && 'bg-purple-50/20',
+                      isPastDay && 'opacity-50'
+                    )}
+                  >
+                    {hours.map((hour) => (
+                      <div
+                        key={hour}
+                        className="h-14 sm:h-16 md:h-20 border-b border-gray-100 hover:bg-purple-50/40 active:bg-purple-50/60 transition-colors cursor-pointer touch-manipulation"
+                        onClick={() => {
+                          setSelectedDate(day)
+                          setCurrentDate(day)
+                          setViewMode('day')
                         }}
-                      >
-                        <div className="text-[10px] sm:text-xs font-bold truncate leading-tight">{event.title}</div>
-                        <div className="text-[9px] sm:text-[10px] opacity-90 mt-0.5 leading-tight">
-                          {event.time || `${String(eventHour).padStart(2, '0')}:${String(eventMinute).padStart(2, '0')}`}
-                        </div>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              )
-            })}
+                      />
+                    ))}
+
+                    {/* Événements positionnés */}
+                    {dayEvents.map((event, idx) => {
+                      let eventHour = 9
+                      let eventMinute = 0
+
+                      if (event.time) {
+                        const [h, m] = event.time.split(':').map(Number)
+                        eventHour = h || 9
+                        eventMinute = m || 0
+                      } else {
+                        const eventDate = new Date(event.date)
+                        if (!isNaN(eventDate.getTime())) {
+                          eventHour = eventDate.getHours() || 9
+                          eventMinute = eventDate.getMinutes() || 0
+                        }
+                      }
+
+                      if (eventHour < 8 || eventHour > 20) return null
+
+                      const cellHeight = 56 // h-14 sur mobile
+                      const top = (eventHour - 8) * cellHeight + (eventMinute / 60) * cellHeight
+                      const height = 50
+
+                      return (
+                        <motion.div
+                          key={event.id || idx}
+                          whileHover={{ scale: 1.02, zIndex: 10 }}
+                          style={{ top: `${top}px`, height: `${height}px` }}
+                          className="absolute left-1 right-1 sm:left-1.5 sm:right-1.5 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 sm:p-2 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden touch-manipulation"
+                          title={event.title}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEventClick(event)
+                          }}
+                        >
+                          <div className="text-[10px] sm:text-xs font-bold truncate leading-tight">{event.title}</div>
+                          <div className="text-[9px] sm:text-[10px] opacity-90 mt-0.5 leading-tight">
+                            {event.time || `${String(eventHour).padStart(2, '0')}:${String(eventMinute).padStart(2, '0')}`}
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+
           </div>
         </div>
       </motion.div>
@@ -576,7 +629,7 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* Grille des heures - SCROLLABLE - Sans en-tête */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
+        <div ref={dayScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
           <div className="grid min-h-full" style={{ gridTemplateColumns: '65px 1fr' }}>
             {/* Colonne des heures */}
             <div className="border-r border-gray-100 bg-gray-50/50 sticky left-0 z-10">
@@ -595,16 +648,20 @@ export function CalendarDashboard({
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] sm:h-20 md:h-24 border-b border-gray-100 hover:bg-purple-50/50 transition-colors cursor-pointer"
+                  className="h-[72px] sm:h-20 md:h-24 border-b border-gray-100 hover:bg-purple-50/50 active:bg-purple-50 transition-colors cursor-pointer touch-manipulation relative group"
                   onClick={() => {
                     const dateToUse = normalizeDate(displayDate)
                     setSelectedDate(dateToUse)
-                    // Ouvrir le dialog avec la date et l'heure pré-remplies
                     const timeString = `${hour.toString().padStart(2, '0')}:00`
                     setNewEvent({ date: dateToUse, time: timeString, title: '', description: '' })
                     setIsDialogOpen(true)
                   }}
-                />
+                >
+                  {/* Indicateur visuel d'ajout au hover */}
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-30 text-[#823F91] text-xs font-medium transition-opacity pointer-events-none select-none">
+                    + ajouter
+                  </span>
+                </div>
               ))}
 
               {/* Événements positionnés */}
@@ -739,7 +796,7 @@ export function CalendarDashboard({
                 {eventsForDate.map((event) => (
                   <div
                     key={event.id}
-                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-2.5 xs:p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 cursor-pointer transition-all"
+                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-purple-50/50 cursor-pointer transition-all touch-manipulation min-h-[52px]"
                     onClick={() => handleEventClick(event)}
                   >
                     {event.time && (
@@ -779,7 +836,7 @@ export function CalendarDashboard({
             {showSidebar && (
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
               >
                 {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -787,50 +844,55 @@ export function CalendarDashboard({
             {/* Flèches de navigation mobile */}
             <button
               onClick={previousPeriod}
-              className="p-2 text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-sm font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-2 line-clamp-1">
+            <h2 className="text-sm font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-1 line-clamp-1">
               {getPeriodTitle()}
             </h2>
             <button
               onClick={nextPeriod}
-              className="p-2 text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
             <button
+              onClick={goToToday}
+              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-xs font-semibold text-[#823F91] hover:bg-purple-50 active:scale-95 transition-all touch-manipulation"
+            >
+              Auj.
+            </button>
+            <button
               onClick={() => {
-                // Utiliser la date du jour affiché si on est en vue jour, sinon aujourd'hui
                 const rawDate = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
                 const dateToUse = normalizeDate(rawDate)
                 setSelectedDate(dateToUse)
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
-              className="p-2 text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <Plus className="h-5 w-5" />
             </button>
           </div>
 
           {/* Mobile: Sélecteur de vue */}
-          <div className="flex gap-1.5 bg-gray-100 rounded-lg p-1 sm:hidden">
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-1 sm:hidden">
             {(['month', 'week', 'day', 'agenda'] as const).map((viewType) => {
               const labels = {
                 month: 'Mois',
-                week: 'Semaine',
+                week: 'Sem.',
                 day: 'Jour',
-                agenda: 'Agenda',
+                agenda: 'Liste',
               }
-              
+
               return (
                 <button
                   key={viewType}
                   onClick={() => setViewMode(viewType)}
                   className={cn(
-                    'flex-1 px-2.5 py-2 rounded-md text-xs font-semibold transition-all active:scale-95',
+                    'flex-1 py-2.5 rounded-md text-xs font-semibold transition-all active:scale-95 touch-manipulation min-h-[40px]',
                     viewMode === viewType
                       ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-sm'
                       : 'text-[#823F91] hover:bg-purple-50'
@@ -932,7 +994,11 @@ export function CalendarDashboard({
         </div>
 
         {/* Calendar content */}
-        <div className="flex-1 overflow-hidden">
+        <div
+          className="flex-1 overflow-hidden"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={viewMode}
@@ -1128,11 +1194,11 @@ export function CalendarDashboard({
           <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-0">
             <Button
               variant="destructive"
-              onClick={handleDeleteEvent}
+              onClick={() => setIsDeleteConfirmOpen(true)}
               disabled={isDeleting || !onEventDelete}
               className="w-full sm:w-auto h-9 sm:h-10 text-sm order-2 sm:order-1"
             >
-              {isDeleting ? 'Suppression...' : 'Supprimer'}
+              Supprimer
             </Button>
             <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
               <Button
@@ -1154,6 +1220,35 @@ export function CalendarDashboard({
                 Enregistrer
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <DialogContent size="sm" className="sm:max-w-[380px] max-w-[calc(100vw-1rem)] p-4 sm:p-6">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base sm:text-lg">Supprimer l'événement ?</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-1">
+              "{selectedEvent?.title}" sera définitivement supprimé. Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2 pt-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+              className="w-full sm:w-auto h-10 text-sm"
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteEvent}
+              disabled={isDeleting}
+              className="w-full sm:w-auto h-10 text-sm"
+            >
+              {isDeleting ? 'Suppression...' : 'Oui, supprimer'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
