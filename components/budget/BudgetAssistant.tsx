@@ -201,7 +201,7 @@ export function BudgetAssistant({ variant = 'full', className }: BudgetAssistant
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-[#FCFAFD] px-4 py-4 sm:px-6 sm:py-5">
+          <div className="flex-1 overflow-y-auto scrollbar-hide bg-[#FCFAFD] px-4 py-4 sm:px-6 sm:py-5">
             <div className="space-y-4">
               {messages.map((message, index) => (
                 <div
