@@ -24,14 +24,12 @@ export interface UserRoleCheckResult {
 export async function getUserRoleServer(userId: string): Promise<UserRoleCheckResult> {
   try {
     const supabase = await createClient()
-    
-    // Vérifier d'abord dans la table couples
-    // Si l'utilisateur est dans couples, c'est forcément un couple
-    const { data: couple, error: coupleError } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', userId)
-      .maybeSingle()
+
+    // Interroger les deux tables en parallèle pour éviter la latence séquentielle
+    const [{ data: couple, error: coupleError }, { data: profile, error: profileError }] = await Promise.all([
+      supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('id').eq('id', userId).maybeSingle(),
+    ])
 
     if (couple && !coupleError) {
       return {
@@ -39,15 +37,6 @@ export async function getUserRoleServer(userId: string): Promise<UserRoleCheckRe
         coupleId: couple.id,
       }
     }
-
-    // Sinon vérifier dans profiles
-    // Si l'utilisateur est dans profiles, c'est forcément un prestataire
-    // (car seuls les prestataires sont stockés dans profiles)
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', userId)
-      .maybeSingle()
 
     if (profile && !profileError) {
       return {

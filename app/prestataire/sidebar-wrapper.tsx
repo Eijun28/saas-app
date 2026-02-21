@@ -188,9 +188,8 @@ function SidebarUserFooter() {
                 <div className="p-[2px] rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex-shrink-0">
                   <Avatar className="h-7 w-7 rounded-md">
                     <AvatarImage
-                      src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined}
+                      src={profile?.avatar ?? undefined}
                       alt={profile?.name}
-                      key={profile?.avatar}
                     />
                     <AvatarFallback className="bg-[#5C2B66] text-white text-xs font-bold rounded-md">
                       {initials}
