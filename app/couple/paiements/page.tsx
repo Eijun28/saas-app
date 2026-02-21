@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Plus, SlidersHorizontal, X } from 'lucide-react'
+import { Plus, SlidersHorizontal, X, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -16,6 +16,7 @@ import { PageTitle }        from '@/components/couple/shared/PageTitle'
 import { PaymentStatsBar }  from '@/components/couple-payments/PaymentStatsBar'
 import { PaymentList }      from '@/components/couple-payments/PaymentList'
 import { PaymentForm }      from '@/components/couple-payments/PaymentForm'
+import { PaymentCsvImport } from '@/components/couple-payments/PaymentCsvImport'
 import { useUser }          from '@/hooks/use-user'
 import type { CouplePayment, PaymentStatus, PaymentCategory } from '@/types/couple-payments'
 import { computePaymentStats, CATEGORY_LABELS } from '@/types/couple-payments'
@@ -33,6 +34,7 @@ export default function PaiementsPage() {
   const [payments, setPayments]               = useState<CouplePayment[]>([])
   const [loading, setLoading]                 = useState(true)
   const [showAddForm, setShowAddForm]         = useState(false)
+  const [showCsvImport, setShowCsvImport]     = useState(false)
   const [filterStatus, setFilterStatus]       = useState<PaymentStatus | 'all'>('all')
   const [filterCategory, setFilterCategory]   = useState<PaymentCategory | 'all'>('all')
   const [filtersOpen, setFiltersOpen]         = useState(false)
@@ -103,14 +105,25 @@ export default function PaiementsPage() {
               : `${payments.length} paiement${payments.length > 1 ? 's' : ''} enregistré${payments.length > 1 ? 's' : ''}`
           }
         />
-        <Button
-          onClick={() => setShowAddForm(true)}
-          className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl gap-2 flex-shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Ajouter un paiement</span>
-          <span className="sm:hidden">Ajouter</span>
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            onClick={() => setShowCsvImport(true)}
+            className="rounded-xl gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importer CSV</span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Ajouter un paiement</span>
+            <span className="sm:hidden">Ajouter</span>
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
@@ -222,6 +235,13 @@ export default function PaiementsPage() {
         open={showAddForm}
         onClose={() => setShowAddForm(false)}
         onSaved={handlePaymentAdded}
+      />
+
+      {/* Dialog import CSV */}
+      <PaymentCsvImport
+        open={showCsvImport}
+        onClose={() => setShowCsvImport(false)}
+        onImported={(imported) => setPayments(imported)}
       />
     </div>
   )
