@@ -322,7 +322,7 @@ export function CoupleSidebarWrapper() {
       </SidebarHeader>
 
       {/* Navigation sections */}
-      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-4">
+      <SidebarContent className="px-3 py-4 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-4">
         {sections.map((section, sectionIdx) => (
           <SidebarGroup key={section.title} className={sectionIdx > 0 ? "mt-1 pt-3 border-t border-white/8" : ""}>
             <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/65 px-3 py-1.5 mb-0.5 group-data-[collapsible=icon]:hidden">
