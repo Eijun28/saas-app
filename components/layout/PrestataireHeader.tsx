@@ -136,11 +136,8 @@ export function PrestataireHeader() {
     : []
 
   return (
-    <header className="h-16 sticky top-0 z-[100] w-full flex flex-col">
-      {/* Top accent line — même gradient que la sidebar Nuply */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#5C2B66] via-[#6D3478] to-[#823F91] flex-shrink-0" />
-
-      <div className="flex-1 bg-white/95 backdrop-blur-xl border-b border-gray-200/70 shadow-[0_1px_8px_0_rgba(0,0,0,0.06)] flex items-center">
+    <header className="h-14 sticky top-0 z-[100] w-full">
+      <div className="h-full bg-white border-b border-gray-200 flex items-center">
         <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">
 
           {/* Left: page title + quick actions */}
@@ -158,7 +155,7 @@ export function PrestataireHeader() {
                   <button
                     key={action.href}
                     onClick={() => router.push(action.href)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <action.icon className="h-3.5 w-3.5" />
                     {action.label}
@@ -176,15 +173,12 @@ export function PrestataireHeader() {
               <DropdownMenuTrigger asChild>
                 <button
                   suppressHydrationWarning
-                  className="relative h-8 w-8 flex items-center justify-center cursor-pointer hover:bg-violet-50 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30"
+                  className="relative h-8 w-8 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300/50"
                   aria-label="Notifications"
                 >
-                  <Bell className={cn(
-                    "h-[17px] w-[17px] transition-colors",
-                    unreadCount > 0 ? "text-violet-600" : "text-gray-500"
-                  )} />
+                  <Bell className="h-[17px] w-[17px] text-gray-500" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 h-3.5 w-3.5 rounded-full bg-violet-600 text-white text-[8px] font-bold flex items-center justify-center">
+                    <span className="absolute top-1 right-1 h-3.5 w-3.5 rounded-full bg-gray-800 text-white text-[8px] font-bold flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
