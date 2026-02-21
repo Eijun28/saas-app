@@ -3,37 +3,44 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
+import { useUserContext } from "@/lib/context/user-context"
 
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Try to get user from context (populated by server in couple/prestataire layouts)
+  const ctx = useUserContext()
+
+  // Fallback state — only used when outside a UserProvider (public pages, etc.)
+  const [fallbackUser, setFallbackUser] = useState<User | null>(null)
+  const [fallbackLoading, setFallbackLoading] = useState(ctx === null)
 
   useEffect(() => {
+    // Context is available → already have the user, skip redundant auth call
+    if (ctx !== null) return
+
     const supabase = createClient()
 
-    // Récupérer l'utilisateur initial
     supabase.auth.getUser().then(({ data: { user }, error }) => {
-      // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
       if (error && !error.message?.includes("Auth session missing")) {
         console.error("Erreur lors de la récupération de l'utilisateur:", error)
       }
-      setUser(error ? null : user)
-      setLoading(false)
+      setFallbackUser(error ? null : user)
+      setFallbackLoading(false)
     })
 
-    // Écouter les changements d'authentification
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
+      setFallbackUser(session?.user ?? null)
+      setFallbackLoading(false)
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [ctx])
 
-  return { user, loading }
+  // Context wins — instant, no loading
+  if (ctx !== null) return ctx
+
+  return { user: fallbackUser, loading: fallbackLoading }
 }
-

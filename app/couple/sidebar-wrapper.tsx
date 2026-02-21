@@ -266,7 +266,7 @@ function SidebarUserFooter() {
 
 export function CoupleSidebarWrapper() {
   const pathname = usePathname()
-  const { counts } = useNotifications()
+  const { counts } = useNotifications({ isCouple: true })
   const { isMobile, setOpenMobile, openMobile } = useSidebar()
 
   React.useEffect(() => {

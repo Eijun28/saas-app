@@ -5,6 +5,7 @@ import { PrestataireSidebarWrapper } from "./sidebar-wrapper"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 import { getUserRoleServer } from "@/lib/auth/utils"
+import { UserProvider } from "@/lib/context/user-context"
 
 export default async function PrestataireLayout({
   children,
@@ -35,11 +36,13 @@ export default async function PrestataireLayout({
   }
 
   return (
-    <SidebarProvider>
-      <PrestataireSidebarWrapper />
-      <SidebarInsetWrapper>
-        {children}
-      </SidebarInsetWrapper>
-    </SidebarProvider>
+    <UserProvider initialUser={user}>
+      <SidebarProvider>
+        <PrestataireSidebarWrapper />
+        <SidebarInsetWrapper>
+          {children}
+        </SidebarInsetWrapper>
+      </SidebarProvider>
+    </UserProvider>
   )
 }

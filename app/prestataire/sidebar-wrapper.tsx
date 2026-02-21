@@ -259,7 +259,7 @@ function SidebarUserFooter() {
 
 export function PrestataireSidebarWrapper() {
   const pathname = usePathname()
-  const { counts } = useNotifications()
+  const { counts } = useNotifications({ isCouple: false })
   const { isMobile, setOpenMobile, openMobile } = useSidebar()
 
   React.useEffect(() => {
