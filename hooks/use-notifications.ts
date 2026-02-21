@@ -10,15 +10,18 @@ export interface NotificationCounts {
   newRequests: number
 }
 
+interface UseNotificationsOptions {
+  /** Pass true/false when the role is already known to skip the extra DB lookup */
+  isCouple?: boolean
+}
+
 const NOTIF_TTL = 30_000 // 30 seconds cache for notifications
 
-export function useNotifications() {
+export function useNotifications(options?: UseNotificationsOptions) {
   const { user } = useUser()
-  const [counts, setCounts] = useState<NotificationCounts>(() => {
-    // Try to initialize from cache synchronously to avoid flash of zeros
-    if (typeof window === 'undefined') return { unreadMessages: 0, newRequests: 0 }
-    // We don't know the user id yet at module init, so start with zeros
-    return { unreadMessages: 0, newRequests: 0 }
+  const [counts, setCounts] = useState<NotificationCounts>({
+    unreadMessages: 0,
+    newRequests: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -31,7 +34,7 @@ export function useNotifications() {
     const CACHE_KEY = `notifications-${user.id}`
 
     const loadNotifications = async (skipCache = false) => {
-      // Serve cached counts instantly
+      // Serve cached counts instantly to avoid flash of zeros
       if (!skipCache) {
         const cached = getCached<NotificationCounts>(CACHE_KEY, NOTIF_TTL)
         if (cached) {
@@ -44,28 +47,34 @@ export function useNotifications() {
       const supabase = createClient()
 
       try {
-        // Run conversations fetch + couple check in parallel
-        const [conversationsResult, coupleResult] = await Promise.all([
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+        // Round 1: conversations + role check in parallel
+        // If isCouple is already known, skip the couples table lookup entirely
+        const [conversationsResult, coupleCheckResult] = await Promise.all([
           supabase
             .from('conversations')
             .select('id')
             .or(`couple_id.eq.${user.id},provider_id.eq.${user.id}`),
-          supabase
-            .from('couples')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle(),
+          options?.isCouple !== undefined
+            ? Promise.resolve(null) // role already known — skip DB call
+            : supabase
+                .from('couples')
+                .select('id')
+                .eq('user_id', user.id)
+                .maybeSingle(),
         ])
 
-        const conversations = conversationsResult.data
-        const isCouple = !!coupleResult.data
+        const conversations = conversationsResult.data ?? []
+        const isCouple =
+          options?.isCouple !== undefined
+            ? options.isCouple
+            : !!coupleCheckResult?.data
 
-        // Build second wave of parallel queries
-        const sevenDaysAgo = new Date()
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        const conversationIds = conversations.map((c) => c.id)
 
-        const conversationIds = conversations?.map(c => c.id) ?? []
-
+        // Round 2: unread messages + requests count in parallel
         const [unreadResult, requestsResult] = await Promise.all([
           conversationIds.length > 0
             ? supabase
@@ -90,8 +99,8 @@ export function useNotifications() {
         ])
 
         const result: NotificationCounts = {
-          unreadMessages: (unreadResult as any).count || 0,
-          newRequests: (requestsResult as any).count || 0,
+          unreadMessages: (unreadResult as any).count ?? 0,
+          newRequests: (requestsResult as any).count ?? 0,
         }
 
         setCounts(result)

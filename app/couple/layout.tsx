@@ -4,6 +4,7 @@ import { CoupleSidebarWrapper } from "./sidebar-wrapper"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 import { getUserRoleServer } from "@/lib/auth/utils"
+import { UserProvider } from "@/lib/context/user-context"
 
 export const dynamic = 'force-dynamic'
 
@@ -29,11 +30,13 @@ export default async function CoupleLayout({
   }
 
   return (
-    <SidebarProvider>
-      <CoupleSidebarWrapper />
-      <SidebarInsetWrapper>
-        {children}
-      </SidebarInsetWrapper>
-    </SidebarProvider>
+    <UserProvider initialUser={user}>
+      <SidebarProvider>
+        <CoupleSidebarWrapper />
+        <SidebarInsetWrapper>
+          {children}
+        </SidebarInsetWrapper>
+      </SidebarProvider>
+    </UserProvider>
   )
 }

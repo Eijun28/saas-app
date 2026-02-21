@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
+import { useUserContext } from "@/lib/context/user-context"
 
 // Module-level singleton cache — shared across all hook instances.
-// Eliminates redundant getUser() network calls on every page mount.
+// Used as fallback when outside a UserProvider (public pages, etc.)
 let _cachedUser: User | null = null
 let _cacheReady = false
 let _pendingPromise: Promise<User | null> | null = null
@@ -40,11 +41,17 @@ function resolveUser(): Promise<User | null> {
 }
 
 export function useUser() {
+  // UserProvider context wins — user is pre-populated from server, no async call needed
+  const ctx = useUserContext()
+
+  // Fallback state — only used when outside a UserProvider (public pages, etc.)
   const [user, setUser] = useState<User | null>(_cachedUser)
   const [loading, setLoading] = useState(!_cacheReady)
 
   useEffect(() => {
-    // If already resolved, skip the async call entirely
+    // Context is available — skip all client-side auth logic
+    if (ctx !== null) return
+
     if (_cacheReady) {
       setUser(_cachedUser)
       setLoading(false)
@@ -75,7 +82,10 @@ export function useUser() {
     return () => {
       _listeners.delete(listener)
     }
-  }, [])
+  }, [ctx])
+
+  // Context wins — instant, no loading
+  if (ctx !== null) return ctx
 
   return { user, loading }
 }
