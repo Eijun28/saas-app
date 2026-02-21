@@ -272,6 +272,11 @@ export interface Facture {
   paid_date: string | null
   status: FactureStatus
   pdf_url: string | null
+  // Stripe paiement en ligne
+  stripe_checkout_session_id: string | null
+  stripe_payment_intent_id: string | null
+  online_payment_url: string | null
+  online_payment_enabled: boolean
   created_at: string
   updated_at: string
   // Relations
@@ -281,6 +286,30 @@ export interface Facture {
     partner_2_name: string | null
   }
   devis?: DevisWithPdf
+}
+
+// ============================================
+// STRIPE CONNECT
+// ============================================
+
+/**
+ * Statuts du compte Stripe Connect d'un prestataire
+ */
+export type StripeConnectStatus = 'pending' | 'active' | 'restricted' | 'rejected'
+
+/**
+ * Compte Stripe Connect d'un prestataire
+ */
+export interface StripeConnectAccount {
+  id: string
+  prestataire_id: string
+  stripe_account_id: string
+  account_status: StripeConnectStatus
+  onboarding_completed: boolean
+  charges_enabled: boolean
+  payouts_enabled: boolean
+  created_at: string
+  updated_at: string
 }
 
 /**
