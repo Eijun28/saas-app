@@ -25,6 +25,8 @@ interface EventFormProps {
   editingEvent?: TimelineEvent | null
   eventTypes?: unknown[]
   loading?: boolean
+  /** Valeurs pré-remplies depuis une suggestion culturelle */
+  initialValues?: { title: string; description: string }
 }
 
 export function EventForm({
@@ -33,6 +35,7 @@ export function EventForm({
   onSubmit,
   editingEvent,
   loading = false,
+  initialValues,
 }: EventFormProps) {
   const [form, setForm] = useState<TimelineEventFormData>(EMPTY_EVENT_FORM)
   const [submitting, setSubmitting] = useState(false)
@@ -44,10 +47,16 @@ export function EventForm({
         description: editingEvent.description || '',
         event_date: editingEvent.event_date ? new Date(editingEvent.event_date) : null,
       })
+    } else if (initialValues) {
+      setForm({
+        title:       initialValues.title,
+        description: initialValues.description,
+        event_date:  null,
+      })
     } else {
       setForm(EMPTY_EVENT_FORM)
     }
-  }, [editingEvent, open])
+  }, [editingEvent, open, initialValues])
 
   const handleSubmit = async () => {
     if (!form.title) return
