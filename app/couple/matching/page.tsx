@@ -58,7 +58,7 @@ export default function MatchingPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialiser le hook useChatbot sans serviceType
-  const { messages, extractedCriteria, isLoading, sendMessage, extractedServiceType, resetChat } = useChatbot(
+  const { messages, extractedCriteria, isLoading, sendMessage, extractedServiceType, resetChat, loadConversation } = useChatbot(
     undefined,
     coupleProfile
   );
@@ -457,8 +457,20 @@ export default function MatchingPage() {
   };
 
   const handleSelectConversation = (conversation: ChatbotConversation) => {
-    // TODO: Charger la conversation sélectionnée
-    toast.info('Fonctionnalité de reprise de conversation à venir');
+    if (!conversation.messages || conversation.messages.length === 0) {
+      toast.error('Cette conversation est vide');
+      return;
+    }
+    // Incrementer la clé pour forcer le remontage du composant chat
+    setChatKey(prev => prev + 1);
+    // Restaurer les messages et critères extraits de la conversation
+    loadConversation(conversation.messages, conversation.extracted_criteria || {});
+    setConversationId(conversation.id);
+    // Si la conversation a des critères extraits, aller en vue validation, sinon chat
+    const hasCriteria = conversation.extracted_criteria &&
+      Object.keys(conversation.extracted_criteria).some(k => !!(conversation.extracted_criteria as Record<string, unknown>)[k]);
+    setVue(hasCriteria ? 'validation' : 'chat');
+    toast.success('Conversation restaurée');
   };
 
   return (

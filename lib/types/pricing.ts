@@ -22,6 +22,8 @@ export interface ProviderPricing {
   is_primary: boolean
   display_order: number
   description: string | null
+  /** Prestations incluses dans ce forfait (uniquement pour pricing_unit = 'forfait') */
+  forfait_items: string[] | null
   created_at: string
   updated_at: string
 }
@@ -35,6 +37,7 @@ export interface ProviderPricingInsert {
   is_primary?: boolean
   display_order?: number
   description?: string | null
+  forfait_items?: string[] | null
 }
 
 export interface ProviderPricingUpdate {
@@ -45,6 +48,7 @@ export interface ProviderPricingUpdate {
   is_primary?: boolean
   display_order?: number
   description?: string | null
+  forfait_items?: string[] | null
 }
 
 // Pricing unit display configuration

@@ -1,37 +1,47 @@
 /**
  * Logger conditionnel - Ne log qu'en développement
+ * En production, les erreurs et alertes critiques sont envoyées à Sentry.
  */
+
+import * as Sentry from '@sentry/nextjs'
 
 const isDev = process.env.NODE_ENV === 'development'
 
 export const logger = {
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (isDev) console.log('[INFO]', ...args)
   },
 
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     if (isDev) console.warn('[WARN]', ...args)
   },
 
   error: (message: string, error?: unknown) => {
-    if (isDev) {
-      console.error('[ERROR]', message, error)
-    } else {
-      // En production : logger le message et les détails de l'erreur pour debugging
-      console.error('[ERROR]', message, error)
-
-      // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
-      // Exemple : Sentry.captureException(error)
+    console.error('[ERROR]', message, error)
+    if (!isDev) {
+      try {
+        if (error instanceof Error) {
+          Sentry.captureException(error, { extra: { message } })
+        } else {
+          Sentry.captureMessage(message, { level: 'error', extra: { details: error } })
+        }
+      } catch {
+        // Ne pas bloquer si Sentry échoue
+      }
     }
   },
 
   // Logger critique - toujours actif même en production
-  critical: (message: string, details?: any) => {
+  critical: (message: string, details?: unknown) => {
     console.error('[CRITICAL]', message, details)
-    // TODO: Envoyer à un service de monitoring (Sentry, LogRocket, etc.)
+    try {
+      Sentry.captureMessage(message, { level: 'fatal', extra: { details } })
+    } catch {
+      // Ne pas bloquer si Sentry échoue
+    }
   },
 
-  debug: (...args: any[]) => {
+  debug: (...args: unknown[]) => {
     if (isDev) console.debug('[DEBUG]', ...args)
-  }
+  },
 }

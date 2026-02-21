@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store, ClipboardList, ChevronDown } from 'lucide-react'
+import { Info, Globe, MapPin, Camera, Sparkles, Briefcase, Upload, Check, AlertCircle, Tag, Euro, Share2, Store, ClipboardList, ChevronDown, Package } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,7 @@ import { PortfolioUploader } from '@/components/provider/PortfolioUploader'
 import { ProfilePreviewDialog } from '@/components/provider/ProfilePreviewDialog'
 import { ProfessionalInfoEditor } from '@/components/provider/ProfessionalInfoEditor'
 import { PricingEditor } from '@/components/provider/PricingEditor'
+import { ForfaitsManager } from '@/components/provider/ForfaitsManager'
 import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
 import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
@@ -541,6 +542,58 @@ export default function ProfilPublicPage() {
                                 key="pricing"
                                 providerId={user.id}
                                 initialPricing={pricings}
+                                onUpdate={reloadPricing}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </Card>
+                </motion.div>
+
+                {/* Section Forfaits */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.18 }}
+                >
+                  <Card className="card-section">
+                    <div className="p-4 sm:p-6">
+                      <button
+                        type="button"
+                        onClick={() => toggleSection('forfaits')}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-[#823F91]/10">
+                            <Package className="h-4 w-4 text-[#823F91]" />
+                          </div>
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground">Forfaits</h3>
+                          <span className="text-xs text-gray-400 font-normal hidden sm:inline">
+                            — Formules clés-en-main avec prestations incluses
+                          </span>
+                        </div>
+                        <motion.div
+                          animate={{ rotate: collapsedSections.forfaits ? -90 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {!collapsedSections.forfaits && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pt-4">
+                              <ForfaitsManager
+                                providerId={user.id}
+                                initialPricings={pricings}
                                 onUpdate={reloadPricing}
                               />
                             </div>
