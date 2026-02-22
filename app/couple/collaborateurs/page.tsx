@@ -33,6 +33,7 @@ export default function CollaborateursPage() {
   const { user } = useUser()
   const [collaborateurs, setCollaborateurs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isInviting, setIsInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
@@ -60,10 +61,11 @@ export default function CollaborateursPage() {
 
   const loadCollaborateurs = async () => {
     if (!user) return
-    
+
     setLoading(true)
+    setLoadError(null)
     const supabase = createClient()
-    
+
     const { data, error } = await supabase
       .from('collaborateurs')
       .select('*')
@@ -72,7 +74,7 @@ export default function CollaborateursPage() {
 
     if (error) {
       console.error('Erreur chargement collaborateurs:', error)
-      toast.error('Erreur lors du chargement des collaborateurs')
+      setLoadError(error.message || 'Erreur lors du chargement des collaborateurs')
       setCollaborateurs([])
     } else {
       setCollaborateurs(data || [])
@@ -219,6 +221,32 @@ export default function CollaborateursPage() {
     )
   }
 
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-white p-6">
+        <div className="max-w-7xl mx-auto">
+          <PageTitle
+            title="Collaborateurs"
+            description="Gérez les personnes qui vous aident dans l'organisation"
+          />
+          <Card className="border-red-200 mt-8">
+            <CardContent className="p-12 text-center">
+              <Users className="h-16 w-16 mx-auto mb-4 text-red-300" />
+              <p className="text-red-600 font-medium mb-2">Erreur lors du chargement</p>
+              <p className="text-sm text-[#4A4A4A] mb-6">{loadError}</p>
+              <Button
+                onClick={loadCollaborateurs}
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+              >
+                Réessayer
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -309,7 +337,7 @@ export default function CollaborateursPage() {
 
         {/* Modal d'invitation - toujours rendu */}
         <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); else setIsDialogOpen(true) }}>
-              <DialogContent className="sm:max-w-[500px]">
+              <DialogContent className="sm:max-w-[420px]">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-semibold">
                     Inviter un collaborateur
@@ -483,7 +511,7 @@ export default function CollaborateursPage() {
                           value={formData.message}
                           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                           placeholder="Ajoutez un message personnalisé à votre invitation..."
-                          className="min-h-[100px] resize-none"
+                          className="min-h-[64px] resize-none"
                           disabled={isInviting}
                         />
                         {channel === 'email' && (
