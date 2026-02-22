@@ -149,7 +149,7 @@ export function ChatbotModal({ isOpen, onClose }: ChatbotModalProps) {
         </div>
 
         {/* Content scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="flex-1 overflow-y-auto scrollbar-hide p-4 sm:p-6">
           {step === 'conversation' && (
             <div className="space-y-4">
               {messages.map((message: ChatMessage, index: number) => {

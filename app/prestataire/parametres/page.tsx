@@ -32,6 +32,7 @@ import { Switch } from '@/components/ui/switch'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { toast } from 'sonner'
 import AmbassadorSection from '@/components/prestataire/AmbassadorSection'
+import { ConnectOnboardingCard } from '@/components/stripe/ConnectOnboardingCard'
 
 // ─── Profile info schema ────────────────────────────────────
 const profileInfoSchema = z.object({
@@ -407,6 +408,17 @@ export default function ParametresPage() {
             </div>
           </div>
         </Card>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════
+          SECTION STRIPE CONNECT : PAIEMENTS EN LIGNE
+          ═══════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+      >
+        <ConnectOnboardingCard />
       </motion.div>
 
       {/* ═══════════════════════════════════════════

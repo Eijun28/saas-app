@@ -72,6 +72,8 @@ export default function SignInPage() {
     resolver: zodResolver(signInSchema),
   })
 
+  const [invitationToken, setInvitationToken] = useState<string | null>(null)
+
   // Vérifier les paramètres d'erreur et de message dans l'URL
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -86,6 +88,10 @@ export default function SignInPage() {
     if (messageParam === 'password_updated') {
       setSuccessMessage('Votre mot de passe a été modifié avec succès. Connectez-vous avec votre nouveau mot de passe.')
     }
+    const invitationParam = urlParams.get('invitation')
+    if (invitationParam) {
+      setInvitationToken(invitationParam)
+    }
   }, [])
 
   const onSubmit = async (data: SignInInput) => {
@@ -97,8 +103,13 @@ export default function SignInPage() {
       if (result?.error) {
         setError(translateAuthError(result.error))
         setIsLoading(false)
-      } else if (result?.success && result?.redirectTo) {
-        router.push(result.redirectTo)
+      } else if (result?.success) {
+        // Si on vient d'une invitation, rediriger vers la page d'invitation
+        if (invitationToken) {
+          router.push(`/invitation/${invitationToken}`)
+        } else if (result?.redirectTo) {
+          router.push(result.redirectTo)
+        }
       }
     } catch (err: any) {
       setError(translateAuthError(err.message))
