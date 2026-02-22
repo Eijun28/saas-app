@@ -398,21 +398,45 @@ export default function DashboardPrestatairePage() {
             transition={{ duration: 0.3, delay: 0.15 }}
             className="p-4 sm:p-5 bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/30 border border-[#823F91]/10 rounded-2xl"
           >
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2.5 bg-[#823F91]/10 rounded-xl flex-shrink-0">
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+            {nextActions.length === 1 ? (
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2.5 bg-[#823F91]/10 rounded-xl flex-shrink-0">
+                  <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#823F91]/60 mb-0.5">Prochaine action</p>
+                  <p className="text-sm sm:text-[15px] font-semibold text-gray-800 leading-snug">{nextActions[0].text}</p>
+                </div>
+                <button
+                  onClick={() => router.push(nextActions[0].href)}
+                  className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#823F91] hover:bg-[#5C2B66] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40"
+                >
+                  {nextActions[0].cta} <ArrowRight className="h-3.5 w-3.5" />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#823F91]/60 mb-0.5">Prochaine action</p>
-                <p className="text-sm sm:text-[15px] font-semibold text-gray-800 leading-snug">{nextActions[0].text}</p>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="p-2 bg-[#823F91]/10 rounded-xl flex-shrink-0">
+                    <Zap className="h-4 w-4 text-[#823F91]" />
+                  </div>
+                  <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#823F91]/60">Prochaines actions</p>
+                </div>
+                <div className="space-y-2">
+                  {nextActions.slice(0, 3).map((action, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <p className="flex-1 text-sm font-semibold text-gray-800 leading-snug min-w-0 truncate">{action.text}</p>
+                      <button
+                        onClick={() => router.push(action.href)}
+                        className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-white bg-[#823F91] hover:bg-[#5C2B66] rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40"
+                      >
+                        {action.cta} <ArrowRight className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <button
-                onClick={() => router.push(nextActions[0].href)}
-                className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-white bg-[#823F91] hover:bg-[#5C2B66] rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40"
-              >
-                {nextActions[0].cta} <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            )}
           </motion.div>
         )}
 
