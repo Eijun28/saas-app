@@ -19,6 +19,7 @@ export interface CalendarEvent {
   title: string
   date: string // Format YYYY-MM-DD
   time?: string // Format HH:MM (optionnel)
+  endTime?: string // Format HH:MM (optionnel)
   description?: string
   [key: string]: any // Pour permettre d'autres propriétés spécifiques
 }
@@ -77,6 +78,8 @@ export function CalendarDashboard({
     description: '',
   })
 
+  const [currentTime, setCurrentTime] = useState(new Date())
+
   // Auto-scroll to current hour when switching to week/day view
   useEffect(() => {
     if (viewMode !== 'week' && viewMode !== 'day') return
@@ -84,14 +87,19 @@ export function CalendarDashboard({
       const ref = viewMode === 'week' ? weekScrollRef.current : dayScrollRef.current
       if (!ref) return
       const currentHour = new Date().getHours()
-      const hourHeight = viewMode === 'week' ? 56 : 72
-      // Scroll so that current hour is visible near the top, with some context above
+      const hourHeight = viewMode === 'week' ? 64 : 72
       const scrollTop = Math.max(0, (currentHour - 8) * hourHeight - 80)
       ref.scrollTop = scrollTop
     }
     const timer = setTimeout(scrollToCurrentHour, 80)
     return () => clearTimeout(timer)
   }, [viewMode])
+
+  // Tick every minute to keep the current time indicator up to date
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Swipe gesture handlers for mobile navigation (not used in week view due to h-scroll)
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -405,9 +413,9 @@ export function CalendarDashboard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.008 }}
                 className={cn(
-                  'border-r border-b border-gray-100 p-1.5 sm:p-2.5 md:p-3 lg:p-3.5',
+                  'border-r border-b border-gray-100 p-1.5 sm:p-2 md:p-2.5',
                   'hover:bg-purple-50/30 active:bg-purple-50/60 transition-all duration-150 cursor-pointer touch-manipulation',
-                  'flex flex-col items-center justify-start min-h-[52px]',
+                  'flex flex-col items-center sm:items-start justify-start min-h-[52px] sm:min-h-[80px] md:min-h-[90px]',
                   !isCurrentMonth && 'bg-gray-50/30',
                   isCurrentMonth && 'bg-white',
                   isPastDay && 'opacity-50'
@@ -435,18 +443,37 @@ export function CalendarDashboard({
                   </span>
                 </div>
 
-                {/* Points d'événements */}
+                {/* Événements : points sur mobile, pills avec titre sur desktop */}
                 {hasEvents && (
-                  <div className="flex gap-1.5 sm:gap-1 justify-center mt-1 sm:mt-0.5">
-                    {dayEvents.slice(0, 3).map((_, idx) => (
-                      <div
-                        key={idx}
-                        className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#823F91]"
-                      />
-                    ))}
-                    {dayEvents.length > 3 && (
-                      <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-purple-300" />
-                    )}
+                  <div className="w-full mt-1">
+                    {/* Mobile : points */}
+                    <div className="flex gap-1 justify-center sm:hidden">
+                      {dayEvents.slice(0, 3).map((_, idx) => (
+                        <div key={idx} className="w-1.5 h-1.5 rounded-full bg-[#823F91]" />
+                      ))}
+                      {dayEvents.length > 3 && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-300" />
+                      )}
+                    </div>
+                    {/* Desktop : pill avec titre */}
+                    <div className="hidden sm:flex flex-col gap-0.5 w-full">
+                      {dayEvents.slice(0, 2).map((ev, idx) => (
+                        <div
+                          key={idx}
+                          className="w-full text-left px-1.5 py-0.5 bg-[#823F91]/10 hover:bg-[#823F91]/20 text-[#6D3478] text-[10px] md:text-xs font-medium rounded truncate transition-colors"
+                          title={ev.title}
+                          onClick={(e) => { e.stopPropagation(); handleEventClick(ev) }}
+                        >
+                          {ev.time && <span className="opacity-70 mr-1">{ev.time.slice(0, 5)}</span>}
+                          {ev.title}
+                        </div>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <div className="text-[10px] text-gray-400 pl-1">
+                          +{dayEvents.length - 2} autre{dayEvents.length - 2 > 1 ? 's' : ''}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </motion.div>
@@ -457,13 +484,65 @@ export function CalendarDashboard({
     )
   }
 
+  // Calcule les positions (top, height) et les colonnes de chevauchement pour un ensemble d'événements
+  const layoutEvents = (dayEvents: CalendarEvent[], hourHeight: number) => {
+    type LayoutEvent = CalendarEvent & { top: number; height: number; col: number; totalCols: number }
+
+    const positioned: LayoutEvent[] = dayEvents.map((event) => {
+      let h = 9, m = 0
+      if (event.time) { [h, m] = event.time.split(':').map(Number) }
+      const top = (h - 8) * hourHeight + (m / 60) * hourHeight
+
+      let endH = h + 1, endM = m
+      if (event.endTime) { [endH, endM] = event.endTime.split(':').map(Number) }
+      const endTop = (endH - 8) * hourHeight + (endM / 60) * hourHeight
+      const height = Math.max(endTop - top, hourHeight * 0.75) // min 45min de hauteur visuelle
+
+      return { ...event, top, height, col: 0, totalCols: 1 }
+    })
+
+    // Algorithme de colonnes : pour chaque event, chercher la première colonne libre
+    const columns: LayoutEvent[][] = []
+    positioned.sort((a, b) => a.top - b.top)
+
+    positioned.forEach((event) => {
+      let placed = false
+      for (let c = 0; c < columns.length; c++) {
+        const lastInCol = columns[c][columns[c].length - 1]
+        if (lastInCol.top + lastInCol.height <= event.top + 2) {
+          event.col = c
+          columns[c].push(event)
+          placed = true
+          break
+        }
+      }
+      if (!placed) {
+        event.col = columns.length
+        columns.push([event])
+      }
+    })
+
+    const totalCols = columns.length
+    positioned.forEach((e) => { e.totalCols = totalCols })
+
+    return positioned
+  }
+
   // Render Week View
   const renderWeekView = () => {
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 })
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     const hours = Array.from({ length: 13 }, (_, i) => i + 8) // 8h à 20h
-    const GRID_COLS = '55px repeat(7, minmax(80px, 1fr))'
-    const GRID_MIN_WIDTH = '615px'
+    const HOUR_HEIGHT = 64 // px par heure — plus aéré qu'avant (56px)
+    const TIME_COL_WIDTH = '60px'
+    const GRID_COLS = `${TIME_COL_WIDTH} repeat(7, minmax(90px, 1fr))`
+    const GRID_MIN_WIDTH = '690px'
+
+    // Indicateur heure courante
+    const nowHour = currentTime.getHours()
+    const nowMinute = currentTime.getMinutes()
+    const nowTop = (nowHour - 8) * HOUR_HEIGHT + (nowMinute / 60) * HOUR_HEIGHT
+    const isCurrentWeek = weekDays.some((d) => isSameDay(d, new Date()))
 
     return (
       <motion.div
@@ -471,21 +550,21 @@ export function CalendarDashboard({
         animate={{ opacity: 1 }}
         className="flex flex-col h-full overflow-hidden"
       >
-        {/* Unique scrollable container : horizontal + vertical synchronisés */}
+        {/* Conteneur scrollable horizontal + vertical */}
         <div
           ref={weekScrollRef}
           className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100"
         >
           <div style={{ minWidth: GRID_MIN_WIDTH }}>
 
-            {/* En-têtes des jours - sticky en haut */}
+            {/* En-têtes des jours — sticky en haut */}
             <div
-              className="grid sticky top-0 bg-white z-20 border-b border-gray-100 shadow-sm"
+              className="grid sticky top-0 bg-white z-20 border-b border-gray-200 shadow-sm"
               style={{ gridTemplateColumns: GRID_COLS }}
             >
-              <div className="text-center py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-gray-500 border-r border-gray-100">
-                Heure
-              </div>
+              {/* Coin heure */}
+              <div className="border-r border-gray-100 bg-gray-50/60" />
+
               {weekDays.map((day, index) => {
                 const isToday = isSameDay(day, new Date())
                 const isPastDay = isPast(startOfDay(day)) && !isToday
@@ -493,8 +572,8 @@ export function CalendarDashboard({
                   <div
                     key={index}
                     className={cn(
-                      'text-center py-2.5 sm:py-3 transition-all cursor-pointer touch-manipulation hover:bg-purple-50/30',
-                      isToday && 'bg-purple-50',
+                      'text-center py-3 transition-all cursor-pointer touch-manipulation hover:bg-purple-50/40 border-r border-gray-100 last:border-r-0',
+                      isToday && 'bg-purple-50/60',
                       isPastDay && 'opacity-50'
                     )}
                     onClick={() => {
@@ -503,12 +582,22 @@ export function CalendarDashboard({
                       setViewMode('day')
                     }}
                   >
-                    <div className={cn('text-xs sm:text-sm font-medium', isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-600')}>
-                      {format(day, 'EEE', { locale: fr })}
-                    </div>
+                    {/* Nom du jour — abrégé mobile, complet desktop */}
                     <div className={cn(
-                      'text-base sm:text-lg md:text-xl font-semibold mt-0.5 sm:mt-1',
-                      isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-900'
+                      'text-xs font-medium uppercase tracking-wide',
+                      isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-500'
+                    )}>
+                      <span className="sm:hidden">{format(day, 'EEE', { locale: fr })}</span>
+                      <span className="hidden sm:inline">{format(day, 'EEEE', { locale: fr })}</span>
+                    </div>
+                    {/* Numéro du jour */}
+                    <div className={cn(
+                      'mt-1 mx-auto w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-base sm:text-lg font-bold transition-all',
+                      isToday
+                        ? 'bg-[#823F91] text-white shadow-md'
+                        : isPastDay
+                          ? 'text-gray-400'
+                          : 'text-gray-900 hover:bg-purple-100'
                     )}>
                       {format(day, 'd')}
                     </div>
@@ -518,23 +607,25 @@ export function CalendarDashboard({
             </div>
 
             {/* Grille des heures */}
-            <div className="grid" style={{ gridTemplateColumns: GRID_COLS }}>
+            <div className="grid relative" style={{ gridTemplateColumns: GRID_COLS }}>
+
               {/* Colonne des heures */}
-              <div className="border-r border-gray-100 bg-gray-50/30">
+              <div className="border-r border-gray-100 bg-gray-50/40">
                 {hours.map((hour) => (
                   <div
                     key={hour}
-                    className="h-14 sm:h-16 md:h-20 border-b border-gray-100 flex items-start justify-end pr-2.5 sm:pr-2 pt-1.5 sm:pt-1"
+                    style={{ height: `${HOUR_HEIGHT}px` }}
+                    className="border-b border-gray-100 flex items-start justify-end pr-3 pt-1"
                   >
-                    <span className="text-xs sm:text-sm font-medium text-gray-500">{`${hour}:00`}</span>
+                    <span className="text-xs font-medium text-gray-400">{`${hour}:00`}</span>
                   </div>
                 ))}
               </div>
 
               {/* Colonnes des jours */}
               {weekDays.map((day, dayIndex) => {
-                const isToday = isSameDay(day, new Date())
-                const isPastDay = isPast(startOfDay(day)) && !isToday
+                const isDayToday = isSameDay(day, new Date())
+                const isPastDay = isPast(startOfDay(day)) && !isDayToday
                 const dayEvents = events.filter((event) =>
                   isSameDay(new Date(event.date), day)
                 )
@@ -543,52 +634,57 @@ export function CalendarDashboard({
                   <div
                     key={dayIndex}
                     className={cn(
-                      'relative',
-                      isToday && 'bg-purple-50/20',
-                      isPastDay && 'opacity-50'
+                      'relative border-r border-gray-100 last:border-r-0',
+                      isDayToday && 'bg-purple-50/20',
+                      isPastDay && 'opacity-60'
                     )}
                   >
                     {hours.map((hour) => (
                       <div
                         key={hour}
-                        className="h-14 sm:h-16 md:h-20 border-b border-gray-100 hover:bg-purple-50/40 active:bg-purple-50/60 transition-colors cursor-pointer touch-manipulation"
+                        style={{ height: `${HOUR_HEIGHT}px` }}
+                        className="border-b border-gray-100 hover:bg-purple-50/40 active:bg-purple-50/70 transition-colors cursor-pointer touch-manipulation"
                         onClick={() => {
-                          setSelectedDate(day)
-                          setCurrentDate(day)
-                          setViewMode('day')
+                          const timeString = `${String(hour).padStart(2, '0')}:00`
+                          setSelectedDate(normalizeDate(day))
+                          setNewEvent({ date: normalizeDate(day), time: timeString, title: '', description: '' })
+                          setIsDialogOpen(true)
                         }}
                       />
                     ))}
 
-                    {/* Événements positionnés */}
-                    {dayEvents.map((event, idx) => {
-                      let eventHour = 9
-                      let eventMinute = 0
+                    {/* Indicateur heure courante — uniquement sur la colonne aujourd'hui */}
+                    {isDayToday && nowHour >= 8 && nowHour <= 20 && (
+                      <div
+                        className="absolute left-0 right-0 z-10 pointer-events-none"
+                        style={{ top: `${nowTop}px` }}
+                      >
+                        <div className="relative flex items-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm -ml-1.5 flex-shrink-0" />
+                          <div className="flex-1 h-[2px] bg-red-500 opacity-80" />
+                        </div>
+                      </div>
+                    )}
 
-                      if (event.time) {
-                        const [h, m] = event.time.split(':').map(Number)
-                        eventHour = h || 9
-                        eventMinute = m || 0
-                      } else {
-                        const eventDate = new Date(event.date)
-                        if (!isNaN(eventDate.getTime())) {
-                          eventHour = eventDate.getHours() || 9
-                          eventMinute = eventDate.getMinutes() || 0
-                        }
-                      }
-
-                      if (eventHour < 8 || eventHour > 20) return null
-
-                      const cellHeight = 56 // h-14 sur mobile
-                      const top = (eventHour - 8) * cellHeight + (eventMinute / 60) * cellHeight
-                      const height = 50
+                    {/* Événements positionnés avec gestion du chevauchement */}
+                    {layoutEvents(dayEvents, HOUR_HEIGHT).map((event, idx) => {
+                      if (event.top < 0 || event.top > HOUR_HEIGHT * 13) return null
+                      const colWidth = 100 / event.totalCols
+                      const leftPct = event.col * colWidth
+                      const GAP = 2 // px entre colonnes
 
                       return (
                         <motion.div
                           key={event.id || idx}
-                          whileHover={{ scale: 1.02, zIndex: 10 }}
-                          style={{ top: `${top}px`, height: `${height}px` }}
-                          className="absolute left-1 right-1 sm:left-1.5 sm:right-1.5 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 sm:p-2 rounded-md shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden touch-manipulation"
+                          whileHover={{ scale: 1.02, zIndex: 20 }}
+                          style={{
+                            top: `${event.top}px`,
+                            height: `${event.height}px`,
+                            left: `calc(${leftPct}% + ${event.col > 0 ? GAP : 4}px)`,
+                            right: `calc(${100 - leftPct - colWidth}% + ${event.col < event.totalCols - 1 ? GAP : 4}px)`,
+                            position: 'absolute',
+                          }}
+                          className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden touch-manipulation z-10"
                           title={event.title}
                           onClick={(e) => {
                             e.stopPropagation()
@@ -596,8 +692,9 @@ export function CalendarDashboard({
                           }}
                         >
                           <div className="text-[10px] sm:text-xs font-bold truncate leading-tight">{event.title}</div>
-                          <div className="text-[9px] sm:text-[10px] opacity-90 mt-0.5 leading-tight">
-                            {event.time || `${String(eventHour).padStart(2, '0')}:${String(eventMinute).padStart(2, '0')}`}
+                          <div className="text-[9px] sm:text-[10px] opacity-80 mt-0.5 leading-tight">
+                            {event.time || '09:00'}
+                            {event.endTime && ` – ${event.endTime}`}
                           </div>
                         </motion.div>
                       )
@@ -605,6 +702,20 @@ export function CalendarDashboard({
                   </div>
                 )
               })}
+
+              {/* Ligne heure courante sur toute la largeur (hors colonne heure) — visible seulement si semaine courante */}
+              {isCurrentWeek && nowHour >= 8 && nowHour <= 20 && (
+                <div
+                  className="absolute pointer-events-none z-10"
+                  style={{
+                    top: `${nowTop}px`,
+                    left: TIME_COL_WIDTH,
+                    right: 0,
+                  }}
+                >
+                  <div className="h-[2px] bg-red-400 opacity-40 w-full" />
+                </div>
+              )}
             </div>
 
           </div>
