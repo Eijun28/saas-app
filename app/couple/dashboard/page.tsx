@@ -23,9 +23,6 @@ import { RecentActivityCouple } from '@/components/dashboard/RecentActivityCoupl
 import { QuickActionsCouple } from '@/components/dashboard/QuickActionsCouple'
 import { UpcomingPaymentsWidget } from '@/components/dashboard/UpcomingPaymentsWidget'
 import { NextProgramWidget } from '@/components/dashboard/NextProgramWidget'
-import { cn } from '@/lib/utils'
-
-type PeriodFilter = '7d' | '30d' | 'month'
 
 export default function CoupleDashboardPage() {
   const router = useRouter()
@@ -37,7 +34,6 @@ export default function CoupleDashboardPage() {
   const [budgetTotal, setBudgetTotal] = useState(0)
   const [budgetItems, setBudgetItems] = useState<any[]>([])
   const [shortlistedCount, setShortlistedCount] = useState(0)
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('30d')
   const [recentActivities, setRecentActivities] = useState<any[]>([])
 
   useEffect(() => {
@@ -307,28 +303,6 @@ export default function CoupleDashboardPage() {
                   </div>
                   <span className="text-xs font-bold text-[#823F91]">{planningProgress.completed}/{planningProgress.total}</span>
                 </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
-                {([
-                  { value: '7d' as PeriodFilter, label: '7j' },
-                  { value: '30d' as PeriodFilter, label: '30j' },
-                  { value: 'month' as PeriodFilter, label: 'Ce mois' },
-                ]).map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setPeriodFilter(value)}
-                    className={cn(
-                      "px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150",
-                      periodFilter === value
-                        ? "bg-[#823F91] text-white shadow-sm"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
               </div>
             </div>
           </div>

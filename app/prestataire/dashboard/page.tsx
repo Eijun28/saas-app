@@ -34,8 +34,6 @@ import { MonthlyPerformance } from '@/components/prestataire/dashboard/MonthlyPe
 import { cn } from '@/lib/utils'
 import { calculateProviderProfileCompletion } from '@/lib/profile/completion'
 
-type PeriodFilter = '7d' | '30d' | 'month'
-
 export default function DashboardPrestatairePage() {
   const router = useRouter()
   const { user } = useUser()
@@ -43,7 +41,6 @@ export default function DashboardPrestatairePage() {
   const [nom, setNom] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('30d')
 
   const [stats, setStats] = useState<Stats>({
     nouvelles_demandes: 0,
@@ -63,7 +60,9 @@ export default function DashboardPrestatairePage() {
   const [recentActivities, setRecentActivities] = useState<any[]>([])
   const [activitiesLoading, setActivitiesLoading] = useState(true)
   const [profileCompletion, setProfileCompletion] = useState<number | null>(null)
-  const [profileBannerDismissed, setProfileBannerDismissed] = useState(false)
+  const [profileBannerDismissed, setProfileBannerDismissed] = useState(
+    typeof window !== 'undefined' && localStorage.getItem('prestataire-profile-banner-dismissed') === 'true'
+  )
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [referralCount, setReferralCount] = useState(0)
   const [referralCopied, setReferralCopied] = useState(false)
@@ -342,29 +341,7 @@ export default function DashboardPrestatairePage() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex items-center gap-0.5 sm:gap-1 p-1 bg-white/80 rounded-full shadow-sm border border-gray-100">
-                {([
-                  { value: '7d' as PeriodFilter, label: '7j' },
-                  { value: '30d' as PeriodFilter, label: '30j' },
-                  { value: 'month' as PeriodFilter, label: 'Ce mois' },
-                ]).map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setPeriodFilter(value)}
-                    className={cn(
-                      "px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150",
-                      periodFilter === value
-                        ? "bg-[#823F91] text-white shadow-sm"
-                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
             </div>
-          </div>
           {/* Decorative circles */}
           <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[#823F91]/[0.04] pointer-events-none" />
           <div className="absolute -bottom-8 -right-4 w-24 h-24 rounded-full bg-[#823F91]/[0.03] pointer-events-none" />
@@ -395,7 +372,7 @@ export default function DashboardPrestatairePage() {
                 </div>
                 <p className="text-xs text-amber-700 mt-1">Completez-le a au moins 70% pour etre visible par les couples.</p>
               </div>
-              <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
+              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
                 <X className="h-3.5 w-3.5 text-amber-400" />
               </button>
             </div>
@@ -406,7 +383,7 @@ export default function DashboardPrestatairePage() {
               >
                 Completer <ArrowRight className="h-3.5 w-3.5" />
               </button>
-              <button onClick={() => setProfileBannerDismissed(true)} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] hidden sm:flex items-center justify-center flex-shrink-0" title="Masquer">
+              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] hidden sm:flex items-center justify-center flex-shrink-0" title="Masquer">
                 <X className="h-3.5 w-3.5 text-amber-400" />
               </button>
             </div>
@@ -480,10 +457,10 @@ export default function DashboardPrestatairePage() {
               actionHref: '/prestataire/messagerie', searchTerms: ['messages', 'messagerie', 'conversations'], emptyStateAction: "Accepter une demande",
             },
             {
-              icon: TrendingUp, label: "Taux de reponse", value: `${stats.taux_reponse}%`, subtitle: "Taux d'acceptation",
-              description: stats.taux_reponse > 0 ? `${stats.taux_reponse}% acceptees` : "Aucune statistique",
+              icon: TrendingUp, label: "Taux d'acceptation", value: `${stats.taux_reponse}%`, subtitle: "Demandes acceptees / total",
+              description: stats.taux_reponse > 0 ? `${stats.taux_reponse}% des demandes acceptees` : "Aucune demande traitee",
               delay: 0.4, onClick: () => router.push('/prestataire/demandes-recues'), actionLabel: "Voir les statistiques",
-              actionHref: '/prestataire/demandes-recues', searchTerms: ['taux', 'reponse', 'statistiques'],
+              actionHref: '/prestataire/demandes-recues', searchTerms: ['taux', 'acceptation', 'statistiques'],
               sparkline: [20, 35, 40, 30, 45, 50, stats.taux_reponse],
             }
           ]
