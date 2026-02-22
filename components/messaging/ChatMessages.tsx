@@ -37,6 +37,24 @@ export function ChatMessages({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Marquer les messages non lus comme lus dès que l'utilisateur ouvre la conversation
+  useEffect(() => {
+    const markAsRead = async () => {
+      const unreadIds = messages
+        .filter((m) => m.sender_id !== currentUserId && !m.read_at)
+        .map((m) => m.id)
+
+      if (unreadIds.length === 0) return
+
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .in('id', unreadIds)
+    }
+
+    markAsRead()
+  }, [conversationId, currentUserId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     // Subscribe to new messages via Realtime
     const channel = supabase

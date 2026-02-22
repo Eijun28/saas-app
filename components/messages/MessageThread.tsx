@@ -36,7 +36,6 @@ export function MessageThread({
   useEffect(() => {
     loadMessages()
 
-    // TODO: Implémenter Supabase Realtime pour les nouveaux messages
     const supabase = createClient()
     const channel = supabase
       .channel(`conversation:${conversationId}`)
@@ -68,7 +67,6 @@ export function MessageThread({
     try {
       const supabase = createClient()
 
-      // TODO: Implémenter la requête réelle pour charger les messages
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -95,7 +93,6 @@ export function MessageThread({
     try {
       const supabase = createClient()
 
-      // TODO: Implémenter l'envoi de message
       const { error } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         sender_id: userId,

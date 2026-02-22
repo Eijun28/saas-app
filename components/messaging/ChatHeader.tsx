@@ -38,7 +38,14 @@ export function ChatHeader({
   isOnline = false,
 }: ChatHeaderProps) {
   const router = useRouter()
-  const [isMuted, setIsMuted] = useState(false)
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === 'undefined') return false
+    try {
+      return JSON.parse(localStorage.getItem(`conv_muted_${conversation.id}`) || 'false')
+    } catch {
+      return false
+    }
+  })
 
   const initials = otherParty.name
     .split(' ')
@@ -68,9 +75,14 @@ export function ChatHeader({
   }
 
   const handleMute = () => {
-    setIsMuted(!isMuted)
-    toast.success(isMuted ? 'Notifications activées' : 'Notifications désactivées')
-    // TODO: Sauvegarder dans conversation_participants
+    const newMuted = !isMuted
+    setIsMuted(newMuted)
+    try {
+      localStorage.setItem(`conv_muted_${conversation.id}`, JSON.stringify(newMuted))
+    } catch {
+      // localStorage non disponible (SSR ou navigation privée)
+    }
+    toast.success(newMuted ? 'Notifications désactivées' : 'Notifications activées')
   }
 
   const handleReport = () => {

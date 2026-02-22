@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Search, Check, CheckCheck } from 'lucide-react'
-import type { Conversation } from '@/lib/supabase/messaging'
+import { createClient } from '@/lib/supabase/client'
+import { getConversationsClient, type Conversation } from '@/lib/supabase/messaging'
 
 interface ChatListProps {
   conversations: Conversation[]
@@ -15,13 +16,66 @@ interface ChatListProps {
 }
 
 export function ChatList({
-  conversations,
+  conversations: initialConversations,
   currentUserId,
   userType,
   selectedConversationId,
 }: ChatListProps) {
   const router = useRouter()
+  const [conversations, setConversations] = useState<Conversation[]>(initialConversations)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Mettre à jour la liste quand les props changent (navigation SSR)
+  useEffect(() => {
+    setConversations(initialConversations)
+  }, [initialConversations])
+
+  // Subscription Supabase Realtime : met à jour la liste quand un nouveau message arrive
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel(`chatlist:${currentUserId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        async () => {
+          // Recharger les conversations enrichies pour mettre à jour last_message et unread_count
+          try {
+            const updated = await getConversationsClient(currentUserId)
+            setConversations(updated)
+          } catch {
+            // Ignorer les erreurs silencieusement
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        async () => {
+          // Recharger quand des messages sont marqués comme lus (unread_count change)
+          try {
+            const updated = await getConversationsClient(currentUserId)
+            setConversations(updated)
+          } catch {
+            // Ignorer les erreurs silencieusement
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUserId])
 
   // Filtrer les conversations selon la recherche
   const filteredConversations = useMemo(() => {
