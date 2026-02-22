@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,7 @@ import { DEPARTEMENTS } from '@/lib/constants/zones'
 import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { AvailabilityIndicator } from '@/components/provider-availability/AvailabilityIndicator'
+import { ProviderComparisonTray } from '@/components/recherche/ProviderComparisonTray'
 
 interface ProviderTag {
   id: string
@@ -129,6 +130,8 @@ export default function RecherchePage() {
   const [weddingDate, setWeddingDate] = useState<string | null>(null)
   const [filterAvailable, setFilterAvailable] = useState(false)
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({}) // providerId → isAvailable
+  // Comparaison — max 3 prestataires
+  const [comparisonIds, setComparisonIds] = useState<Set<string>>(new Set())
 
   // Load available tags, favorites and wedding date on mount
   useEffect(() => {
@@ -537,6 +540,22 @@ export default function RecherchePage() {
       .toUpperCase()
       .slice(0, 2)
   }
+
+  const toggleComparison = (e: React.MouseEvent, providerId: string) => {
+    e.stopPropagation()
+    setComparisonIds(prev => {
+      const next = new Set(prev)
+      if (next.has(providerId)) {
+        next.delete(providerId)
+      } else if (next.size < 3) {
+        next.add(providerId)
+      }
+      return next
+    })
+  }
+
+  // Prestataires sélectionnés pour la comparaison (données complètes)
+  const comparisonProviders = providers.filter(p => comparisonIds.has(p.id))
 
   return (
     <div className="w-full">
@@ -1042,11 +1061,29 @@ export default function RecherchePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  className="bg-white rounded-xl border border-gray-200 hover:border-[#823F91]/50 hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col h-full"
+                  className={`bg-white rounded-xl border transition-all cursor-pointer overflow-hidden flex flex-col h-full hover:shadow-lg ${
+                    comparisonIds.has(provider.id)
+                      ? 'border-[#823F91] ring-2 ring-[#823F91]/20'
+                      : 'border-gray-200 hover:border-[#823F91]/50'
+                  }`}
                   onClick={() => handleProviderClick(provider)}
                 >
-                  {/* Avatar et image de fond + favorite */}
+                  {/* Avatar et image de fond + favorite + compare */}
                   <div className="relative h-20 sm:h-24 md:h-32 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
+                    {/* Bouton Comparer */}
+                    <button
+                      onClick={(e) => toggleComparison(e, provider.id)}
+                      title={comparisonIds.has(provider.id) ? 'Retirer de la comparaison' : comparisonIds.size >= 3 ? 'Maximum 3 prestataires' : 'Ajouter à la comparaison'}
+                      className={`absolute top-2 left-2 z-10 p-1.5 rounded-full shadow-sm transition-all ${
+                        comparisonIds.has(provider.id)
+                          ? 'bg-[#823F91] text-white hover:bg-[#6D3478]'
+                          : comparisonIds.size >= 3
+                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            : 'bg-white/80 hover:bg-white text-gray-400 hover:text-[#823F91]'
+                      }`}
+                    >
+                      <ArrowLeftRight className="h-3.5 w-3.5" />
+                    </button>
                     {/* Favorite button */}
                     <button
                       onClick={(e) => toggleFavorite(e, provider.id)}
@@ -1144,6 +1181,13 @@ export default function RecherchePage() {
           })()}
           </motion.div>
         )}
+
+        {/* Tray de comparaison */}
+        <ProviderComparisonTray
+          providers={comparisonProviders}
+          onRemove={(id) => setComparisonIds(prev => { const next = new Set(prev); next.delete(id); return next })}
+          onClear={() => setComparisonIds(new Set())}
+        />
 
         {/* Dialog pour afficher la carte du prestataire */}
         {selectedProvider && user && (

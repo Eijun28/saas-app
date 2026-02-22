@@ -65,11 +65,11 @@ export default function ProviderMatchCard({
   return (
     <div className="border rounded-xl shadow-lg hover:shadow-xl transition-all bg-white">
       {/* Header */}
-      <div className="flex items-center gap-4 p-6 border-b">
+      <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6 border-b">
         {/* Badge rank */}
         <div
           className={cn(
-            'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0',
+            'w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-sm sm:text-lg flex-shrink-0 mt-0.5',
             getRankBadge(rank)
           )}
         >
@@ -79,7 +79,7 @@ export default function ProviderMatchCard({
         {/* Avatar */}
         <div className="flex-shrink-0">
           {provider.avatar_url ? (
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+            <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-gray-200">
               <Image
                 src={provider.avatar_url}
                 alt={provider.nom_entreprise}
@@ -88,7 +88,7 @@ export default function ProviderMatchCard({
               />
             </div>
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#823F91] to-[#9333ea] flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#823F91] to-[#9333ea] flex items-center justify-center text-white text-base sm:text-xl font-bold">
               {provider.nom_entreprise.charAt(0).toUpperCase()}
             </div>
           )}
@@ -96,26 +96,22 @@ export default function ProviderMatchCard({
 
         {/* Infos principales */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-xl text-gray-900 truncate">
+          <h3 className="font-semibold text-base sm:text-xl text-gray-900 truncate">
             {provider.nom_entreprise}
           </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>{provider.service_type}</span>
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mt-0.5">
+            <span className="truncate">{provider.service_type}</span>
             {provider.ville_principale && (
               <>
                 <span>•</span>
-                <span>{provider.ville_principale}</span>
+                <span className="truncate">{provider.ville_principale}</span>
               </>
             )}
           </div>
-        </div>
-
-        {/* Score badge */}
-        <div className="ml-auto text-right flex-shrink-0 flex flex-col items-center gap-1.5">
-          {/* Badge compatibilité */}
+          {/* Badge compatibilité — sous le nom sur mobile */}
           <span
             className={cn(
-              'text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap',
+              'inline-block mt-1.5 sm:hidden text-xs font-bold px-2 py-0.5 rounded-full',
               score > 90
                 ? 'bg-green-100 text-green-700'
                 : score >= 75
@@ -125,22 +121,40 @@ export default function ProviderMatchCard({
           >
             {Math.round(score)}% compatible
           </span>
+        </div>
+
+        {/* Score badge — côté droit */}
+        <div className="ml-auto flex-shrink-0 flex flex-col items-center gap-1">
+          {/* Badge compatibilité — desktop uniquement */}
+          <span
+            className={cn(
+              'hidden sm:block text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap',
+              score > 90
+                ? 'bg-green-100 text-green-700'
+                : score >= 75
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-gray-100 text-gray-600'
+            )}
+          >
+            {Math.round(score)}% compatible
+          </span>
+          {/* Cercle score — réduit sur mobile */}
           <div
             className={cn(
-              'w-20 h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
+              'w-14 h-14 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
               getScoreColor(score)
             )}
           >
-            <span className="text-2xl font-bold">{Math.round(score)}</span>
-            <span className="text-xs">/100</span>
+            <span className="text-lg sm:text-2xl font-bold">{Math.round(score)}</span>
+            <span className="text-[10px] sm:text-xs">/100</span>
           </div>
           {/* Étoiles selon score */}
-          <div className="flex items-center justify-center gap-0.5 mt-2">
+          <div className="flex items-center justify-center gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
                 className={cn(
-                  'h-3 w-3',
+                  'h-2.5 w-2.5 sm:h-3 sm:w-3',
                   i < starCount
                     ? 'text-yellow-400 fill-yellow-400'
                     : 'text-gray-300'
@@ -152,7 +166,7 @@ export default function ProviderMatchCard({
       </div>
 
       {/* Body */}
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         {/* Description courte */}
         {(provider.description_courte || provider.bio) && (
           <p className="text-gray-700 line-clamp-2">
@@ -355,20 +369,20 @@ export default function ProviderMatchCard({
       </div>
 
       {/* Footer */}
-      <div className="p-6 border-t flex gap-3">
+      <div className="p-4 sm:p-6 border-t flex gap-2 sm:gap-3">
         <Button
           onClick={() => onViewProfile(provider.id)}
           variant="outline"
-          className="flex-1"
+          className="flex-1 text-xs sm:text-sm"
         >
           Voir le profil
         </Button>
         <Button
           onClick={() => onContact(provider.id)}
           variant="default"
-          className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white"
+          className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white text-xs sm:text-sm"
         >
-          <Mail className="h-4 w-4 mr-2" />
+          <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Contacter
         </Button>
         <Button

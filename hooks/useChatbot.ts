@@ -257,6 +257,14 @@ export function useChatbot(
     ];
   };
 
+  // Restaure une conversation sauvegardée dans le chat
+  const loadConversation = (savedMessages: ChatMessage[], savedCriteria: Partial<SearchCriteria>) => {
+    setMessages(savedMessages);
+    messagesRef.current = savedMessages;
+    setExtractedCriteria(savedCriteria);
+    setIsLoading(false);
+  };
+
   return {
     messages,
     extractedCriteria,
@@ -264,5 +272,6 @@ export function useChatbot(
     sendMessage,
     extractedServiceType: extractedCriteria.service_type,
     resetChat,
+    loadConversation,
   };
 }
