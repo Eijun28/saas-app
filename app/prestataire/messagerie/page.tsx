@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getConversationsServer } from '@/lib/supabase/messaging'
+import { getConversationsServer } from '@/lib/supabase/messaging-server'
 import { MessagingLayout, ChatList } from '@/components/messaging'
 
 export default async function PrestataireMessageriePage() {

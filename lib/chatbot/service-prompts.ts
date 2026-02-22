@@ -314,7 +314,7 @@ ${config.specificNotes ? `⚠️ IMPORTANT : ${config.specificNotes}` : ''}
       prompt += `\n💡 Le couple a ${coupleProfile.guest_count} invités — utilise cette info, NE PAS redemander.`;
     }
 
-    if (coupleProfile.cultures && coupleProfile.cultures.length > 0) {
+    if (Array.isArray(coupleProfile.cultures) && coupleProfile.cultures.length > 0) {
       const cultures = coupleProfile.cultures.join(', ');
       if (['photographe', 'videaste', 'dj', 'fleuriste', 'traiteur'].includes(serviceType)) {
         prompt += `\n💡 Culture(s) ${cultures} — vérifier connaissance des traditions correspondantes (zaffa, henna, etc.).`;

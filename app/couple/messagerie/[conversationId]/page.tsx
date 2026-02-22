@@ -1,6 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getMessagesServer, getConversationsServer } from '@/lib/supabase/messaging'
+import { getMessagesServer, getConversationsServer } from '@/lib/supabase/messaging-server'
 import { MessagingLayout, ChatList, ChatHeader, ChatMessages, ChatInput } from '@/components/messaging'
 
 interface ConversationPageProps {
