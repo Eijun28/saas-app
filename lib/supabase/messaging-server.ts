@@ -1,57 +1,12 @@
-import { createClient } from '@/lib/supabase/client'
-
-export interface Conversation {
-  id: string
-  request_id: string
-  couple_id: string
-  provider_id: string
-  created_at: string
-  unread_count?: number
-  last_message_at?: string | null
-  request?: {
-    id: string
-    initial_message: string
-    status: string
-  }
-  other_party?: {
-    id: string
-    name: string
-    avatar_url?: string | null
-  }
-  last_message?: {
-    content: string
-    created_at: string
-    sender_id: string
-  } | null
-}
-
-export interface MediaItem {
-  id: string
-  url: string
-  type: 'image' | 'video' | 'audio' | 'document'
-  thumbnail_url?: string
-  duration?: number
-  width?: number
-  height?: number
-}
-
-export interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content: string
-  created_at: string
-  read_at?: string | null
-  media?: MediaItem[]
-}
+import { createServerSupabaseClient } from '@/lib/config/supabase-server'
+import type { Conversation, Message } from './messaging'
 
 /**
- * Récupère toutes les conversations d'un utilisateur (côté client)
+ * Récupère toutes les conversations d'un utilisateur (côté serveur)
  */
-export async function getConversationsClient(userId: string): Promise<Conversation[]> {
-  const supabase = createClient()
+export async function getConversationsServer(userId: string): Promise<Conversation[]> {
+  const supabase = await createServerSupabaseClient()
 
-  // Récupérer les conversations où l'utilisateur est couple OU prestataire
   const { data: conversations, error } = await supabase
     .from('conversations')
     .select('id, request_id, couple_id, provider_id, created_at')
@@ -67,26 +22,22 @@ export async function getConversationsClient(userId: string): Promise<Conversati
     return []
   }
 
-  // Enrichir avec les requests, les profils de l'autre partie, le dernier message et le nombre de messages non lus
+  // Enrichir avec les requests, les profils, le dernier message et le nombre de messages non lus
   const enrichedConversations = await Promise.all(
     conversations.map(async (conv) => {
-      // Récupérer la request associée
       const { data: request } = await supabase
         .from('requests')
         .select('id, initial_message, status')
         .eq('id', conv.request_id)
         .single()
 
-      // Déterminer qui est l'autre partie
       const otherPartyId = conv.couple_id === userId ? conv.provider_id : conv.couple_id
       const isCouple = conv.couple_id === userId
 
-      // Récupérer le profil de l'autre partie
       let otherPartyName = 'Utilisateur'
       let otherPartyAvatar: string | null = null
 
       if (isCouple) {
-        // L'autre partie est un prestataire (profiles)
         const { data: profile } = await supabase
           .from('profiles')
           .select('prenom, nom, nom_entreprise, avatar_url')
@@ -98,7 +49,6 @@ export async function getConversationsClient(userId: string): Promise<Conversati
           otherPartyAvatar = profile.avatar_url || null
         }
       } else {
-        // L'autre partie est un couple (couples.user_id)
         const { data: couple } = await supabase
           .from('couples')
           .select('partner_1_name, partner_2_name')
@@ -158,10 +108,10 @@ export async function getConversationsClient(userId: string): Promise<Conversati
 }
 
 /**
- * Récupère les messages d'une conversation (côté client)
+ * Récupère les messages d'une conversation (côté serveur)
  */
-export async function getMessagesClient(conversationId: string, limit = 50): Promise<Message[]> {
-  const supabase = createClient()
+export async function getMessagesServer(conversationId: string, limit = 50): Promise<Message[]> {
+  const supabase = await createServerSupabaseClient()
 
   const { data: messages, error } = await supabase
     .from('messages')
@@ -176,32 +126,4 @@ export async function getMessagesClient(conversationId: string, limit = 50): Pro
   }
 
   return messages || []
-}
-
-/**
- * Envoie un message dans une conversation
- */
-export async function sendMessage(
-  conversationId: string,
-  senderId: string,
-  content: string
-): Promise<Message> {
-  const supabase = createClient()
-
-  const { data: message, error } = await supabase
-    .from('messages')
-    .insert({
-      conversation_id: conversationId,
-      sender_id: senderId,
-      content: content.trim(),
-    })
-    .select('id, conversation_id, sender_id, content, created_at')
-    .single()
-
-  if (error) {
-    console.error('Erreur envoi message:', error)
-    throw error
-  }
-
-  return message
 }
