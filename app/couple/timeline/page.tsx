@@ -252,77 +252,73 @@ export default function TimelinePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-[#4A4A4A]">Chargement...</p>
+      <div className="w-full space-y-5">
+        <div className="h-8 w-56 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-4 w-80 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="flex-1 h-[480px] sm:h-[560px] bg-white rounded-2xl border border-gray-100 animate-pulse" />
       </div>
     )
   }
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '480px' }}>
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mb-6"
+        transition={{ duration: 0.15 }}
+        className="mb-4 sm:mb-5 flex-shrink-0"
       >
-        <h1 className="text-xl sm:text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent mb-1 text-center">
-          Timeline de Mariage
-        </h1>
-        <p className="text-[#823F91]/70 text-sm sm:text-base text-center">
-          Gérez votre disponibilité et vos événements
-        </p>
-        {dateMarriage && (
-          <div className="mt-3 flex items-center gap-2 text-sm sm:text-base text-[#823F91]/80">
-            <CalendarIcon className="h-4 w-4" />
-            <span>
-              {(() => {
-                const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })
-                return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
-              })()}
-            </span>
-            <span className="mx-2">•</span>
-            <span className="font-semibold">
-              {(() => {
-                const date = new Date(dateMarriage)
-                const today = new Date()
-                const diff = date.getTime() - today.getTime()
-                const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                if (days > 0) {
-                  return `${days} jour${days > 1 ? 's' : ''} restant${days > 1 ? 's' : ''}`
-                } else if (days === 0) {
-                  return "C'est aujourd'hui ! 🎉"
-                } else {
-                  return `Il y a ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
-                }
-              })()}
-            </span>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight mb-1">
+              Calendrier de mariage
+            </h1>
+            {dateMarriage ? (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
+                <CalendarIcon className="h-4 w-4 text-[#823F91] flex-shrink-0" />
+                <span>
+                  {(() => {
+                    const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                    return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
+                  })()}
+                </span>
+                <span className="text-gray-300">•</span>
+                <span className="font-semibold text-[#823F91]">
+                  {(() => {
+                    const date = new Date(dateMarriage)
+                    const today = new Date()
+                    const diff = date.getTime() - today.getTime()
+                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+                    if (days > 0) return `J-${days}`
+                    if (days === 0) return "Aujourd'hui !"
+                    return `Il y a ${Math.abs(days)} j`
+                  })()}
+                </span>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">
+                <a href="/couple/profil" className="text-[#823F91] hover:text-[#6D3478] underline">
+                  Définir la date de mariage
+                </a>{' '}
+                pour voir le compte à rebours
+              </p>
+            )}
           </div>
-        )}
-        {!dateMarriage && (
-          <div className="mt-3">
-            <a
-              href="/couple/profil"
-              className="inline-block text-sm text-[#823F91] hover:text-[#6D3478] underline"
-            >
-              Définir la date de mariage dans le profil
-            </a>
-          </div>
-        )}
+        </div>
       </motion.div>
 
       {/* Calendrier plein écran */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, delay: 0.05 }}
+        className="flex-1 overflow-hidden rounded-2xl border border-[#823F91]/15 bg-white shadow-sm"
       >
         <CalendarDashboard
           events={calendarEvents}
