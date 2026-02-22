@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import Image from 'next/image'
 import { UserPlus, Users, Edit2, X, Check, Mail, Loader2, Link2, Copy, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
@@ -281,53 +282,48 @@ export default function CollaborateursPage() {
                 <div className="flex -space-x-3">
                   {/* Images de couples - avatars circulaires */}
                   <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#E8C4F5] to-[#823F91]/20 relative z-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=100&h=100&fit=crop" 
-                      alt="Couple 1" 
+                    <Image
+                      src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=100&h=100&fit=crop"
+                      alt="Couple 1"
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </div>
                   <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#D49FFD]/30 to-[#9D5FA8]/20 relative z-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1519741497674-611481863552?w=100&h=100&fit=crop" 
-                      alt="Couple 2" 
+                    <Image
+                      src="https://images.unsplash.com/photo-1519741497674-611481863552?w=100&h=100&fit=crop"
+                      alt="Couple 2"
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </div>
                   <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#B87FC0]/20 to-[#823F91]/15 relative z-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=100&h=100&fit=crop" 
-                      alt="Couple 3" 
+                    <Image
+                      src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=100&h=100&fit=crop"
+                      alt="Couple 3"
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </div>
                   <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#C084FC]/20 to-[#A855F7]/15 relative z-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1518621012428-ef8be442a055?w=100&h=100&fit=crop" 
-                      alt="Couple 4" 
+                    <Image
+                      src="https://images.unsplash.com/photo-1518621012428-ef8be442a055?w=100&h=100&fit=crop"
+                      alt="Couple 4"
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </div>
                   <div className="h-12 w-12 rounded-full border-2 border-white overflow-hidden bg-gradient-to-br from-[#DDA0DD]/20 to-[#6D3478]/15 relative z-0">
-                    <img 
-                      src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop" 
-                      alt="Couple 5" 
+                    <Image
+                      src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop"
+                      alt="Couple 5"
+                      width={48}
+                      height={48}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
                     />
                   </div>
                   <div className="h-12 w-12 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center relative z-10">

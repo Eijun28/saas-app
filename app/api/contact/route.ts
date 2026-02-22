@@ -1,13 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { contactFormSchema } from '@/lib/validations/contact.schema'
 import { escapeHtml } from '@/lib/email/templates'
+import { contactLimiter, getClientIp } from '@/lib/rate-limit'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const contactEmail = 'contact@nuply.fr'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limiting : 5 envois par 10 minutes par IP
+  const ip = getClientIp(request)
+  if (!contactLimiter.check(ip)) {
+    const retryAfter = contactLimiter.getResetTime(ip)
+    return NextResponse.json(
+      { error: 'Trop de messages envoyés. Veuillez patienter avant de réessayer.' },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    )
+  }
+
   try {
     const body = await request.json()
 

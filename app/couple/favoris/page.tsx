@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Heart,
@@ -261,7 +262,7 @@ export default function FavorisPage() {
                 {/* Header */}
                 <div className="relative h-20 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
                   {fav.avatar_url ? (
-                    <img src={fav.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover border-3 border-white shadow-md" />
+                    <Image src={fav.avatar_url} alt="" width={56} height={56} className="h-14 w-14 rounded-full object-cover border-3 border-white shadow-md" />
                   ) : (
                     <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-3 border-white shadow-md">
                       <span className="text-lg font-semibold text-white">{getInitials(fav.nom_entreprise || 'P')}</span>
@@ -411,7 +412,7 @@ export default function FavorisPage() {
                     {compareProviders.map(p => (
                       <div key={p.id} className="text-center space-y-2">
                         {p.avatar_url ? (
-                          <img src={p.avatar_url} alt="" className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-gray-100" />
+                          <Image src={p.avatar_url} alt="" width={64} height={64} className="h-16 w-16 rounded-full object-cover mx-auto border-2 border-gray-100" />
                         ) : (
                           <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center mx-auto">
                             <span className="text-lg font-semibold text-white">{getInitials(p.nom_entreprise || 'P')}</span>

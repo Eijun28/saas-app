@@ -192,10 +192,22 @@ export async function POST(request: NextRequest) {
 
     const { messages, user_id } = body;
 
-    if (!user_id) {
+    // Vérifier l'authentification et l'identité de l'appelant
+    const supabaseAuth = await createClient();
+    const { data: { user: sessionUser }, error: authError } = await supabaseAuth.auth.getUser();
+
+    if (authError || !sessionUser) {
       return NextResponse.json(
         { error: 'Utilisateur non authentifié' },
         { status: 401, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
+      );
+    }
+
+    // Protection IDOR : s'assurer que user_id correspond à la session active
+    if (!user_id || user_id !== sessionUser.id) {
+      return NextResponse.json(
+        { error: 'Accès non autorisé' },
+        { status: 403, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
       );
     }
 
