@@ -95,14 +95,14 @@ export function AvailabilityMiniCalendar({
     <div className="select-none">
       {/* Navigation */}
       <div className="flex items-center justify-between mb-4">
-        <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8 rounded-lg">
+        <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8 rounded-lg text-gray-600 hover:text-gray-900">
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-sm font-medium text-gray-700">
           {MONTHS_FR[months[0].month]} {months[0].year}
           {monthCount > 1 && ` — ${MONTHS_FR[months[monthCount - 1].month]} ${months[monthCount - 1].year}`}
         </span>
-        <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8 rounded-lg">
+        <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8 rounded-lg text-gray-600 hover:text-gray-900">
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
