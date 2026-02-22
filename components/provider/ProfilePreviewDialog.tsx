@@ -275,7 +275,7 @@ export function ProfilePreviewDialog({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           className={cn(
-            'p-0 gap-0 border-0 shadow-2xl flex flex-col overflow-y-auto',
+            'p-0 gap-0 border-0 shadow-2xl flex flex-col overflow-y-auto scrollbar-hide',
             isMobile ? 'rounded-t-3xl' : 'rounded-2xl sm:max-w-lg max-h-[85vh]'
           )}
           style={{
@@ -305,7 +305,7 @@ export function ProfilePreviewDialog({
               size="icon"
               className="absolute top-2 right-2 z-20 h-8 w-8 rounded-full shadow-sm hover:bg-[#823F91]/5"
             >
-              <X className="h-4 w-4 text-[#6B3FA0]" />
+              <X className="h-4 w-4 text-[#3B0F6B]" />
             </Button>
           </DialogClose>
 
