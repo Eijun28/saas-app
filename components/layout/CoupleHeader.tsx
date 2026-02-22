@@ -83,7 +83,7 @@ export function CoupleHeader() {
     : []
 
   return (
-    <header className="h-14 sticky top-0 z-[100] w-full">
+    <header className="h-16 sticky top-0 z-[100] w-full">
       <div className="h-full bg-white border-b border-gray-200 flex items-center">
         <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">
 
