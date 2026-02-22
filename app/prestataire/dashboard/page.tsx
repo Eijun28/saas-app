@@ -19,7 +19,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
-import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
@@ -304,7 +303,27 @@ export default function DashboardPrestatairePage() {
     fetchRecentActivities()
   }, [user])
 
-  if (uiState.loading === 'loading') return <LoadingSpinner size="lg" text="Chargement du dashboard..." />
+  if (uiState.loading === 'loading') return (
+    <div className="w-full space-y-6 sm:space-y-8">
+      {/* Header skeleton */}
+      <div className="h-32 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+      {/* Stats grid skeleton */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-36 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+        ))}
+      </div>
+      {/* Activity skeleton */}
+      <div className="h-40 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+      {/* Two-column skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+        <div className="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+      </div>
+      {/* Performance chart skeleton */}
+      <div className="h-40 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+    </div>
+  )
   if (uiState.loading === 'error') return <EmptyState title="Erreur de chargement" description={uiState.error || 'Une erreur est survenue'} action={{ label: 'Reessayer', onClick: () => window.location.reload() }} />
 
   const demandesDelta = prevStats.demandes_ce_mois !== undefined ? stats.demandes_ce_mois - (prevStats.demandes_ce_mois || 0) : null

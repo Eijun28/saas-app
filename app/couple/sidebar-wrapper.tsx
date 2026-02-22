@@ -9,7 +9,7 @@ import {
   Sparkles,
   Calendar,
   MessageSquare,
-  DollarSign,
+  Euro,
   User,
   FileText,
   ChevronsLeft,
@@ -100,7 +100,7 @@ const sections: NavSection[] = [
   {
     title: "Finances",
     items: [
-      { href: "/couple/budget", icon: DollarSign, label: "Budget" },
+      { href: "/couple/budget", icon: Euro, label: "Budget" },
       { href: "/couple/paiements", icon: CreditCard, label: "Paiements" },
       { href: "/couple/factures", icon: Receipt, label: "Factures" },
     ],
