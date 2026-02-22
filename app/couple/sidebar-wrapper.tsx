@@ -25,6 +25,7 @@ import {
   ClipboardList,
   CreditCard,
   Receipt,
+  Bell,
 } from "lucide-react"
 import {
   Sidebar,
@@ -71,17 +72,22 @@ interface NavSection {
 
 const sections: NavSection[] = [
   {
-    title: "Opérations",
+    title: "Planning",
     items: [
       { href: "/couple/dashboard", icon: Home, label: "Accueil" },
+      { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
+      { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
+      { href: "/couple/jour-j", icon: ClipboardList, label: "Programme Jour J" },
+    ],
+  },
+  {
+    title: "Prestataires",
+    items: [
       { href: "/couple/recherche", icon: Search, label: "Rechercher" },
       { href: "/couple/favoris", icon: Heart, label: "Favoris" },
       { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
-      { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
-      { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
       { href: "/couple/collaborateurs", icon: UserPlus, label: "Collaborateurs" },
       { href: "/couple/invites", icon: Users, label: "Invités" },
-      { href: "/couple/jour-j", icon: ClipboardList, label: "Programme Jour J" },
     ],
   },
   {
@@ -103,6 +109,7 @@ const sections: NavSection[] = [
     title: "Compte",
     items: [
       { href: "/couple/profil", icon: User, label: "Profil" },
+      { href: "/couple/notifications", icon: Bell, label: "Notifications" },
       { href: "/couple/parametres", icon: Settings, label: "Paramètres" },
     ],
   },
@@ -295,6 +302,7 @@ export function CoupleSidebarWrapper() {
   const getBadgeCount = (href: string) => {
     if (href === '/couple/messagerie') return counts.unreadMessages
     if (href === '/couple/demandes') return counts.newRequests
+    if (href === '/couple/notifications') return (counts as any).notifications ?? 0
     return 0
   }
 
