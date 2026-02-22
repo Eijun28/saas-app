@@ -9,6 +9,15 @@ import { logger } from '@/lib/logger'
 
 export async function POST() {
   try {
+    // Vérifier que la clé Stripe est configurée
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_placeholder_for_build') {
+      logger.error('STRIPE_SECRET_KEY non configurée')
+      return NextResponse.json(
+        { error: 'Stripe non configuré. Veuillez ajouter STRIPE_SECRET_KEY dans les variables d\'environnement.' },
+        { status: 503 }
+      )
+    }
+
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
