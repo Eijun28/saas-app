@@ -468,7 +468,7 @@ export default function MatchingPage() {
     setConversationId(conversation.id);
     // Si la conversation a des critères extraits, aller en vue validation, sinon chat
     const hasCriteria = conversation.extracted_criteria &&
-      Object.keys(conversation.extracted_criteria).some(k => !!(conversation.extracted_criteria as Record<string, unknown>)[k]);
+      Object.keys(conversation.extracted_criteria).some(k => !!(conversation.extracted_criteria as unknown as Record<string, unknown>)[k]);
     setVue(hasCriteria ? 'validation' : 'chat');
     toast.success('Conversation restaurée');
   };
