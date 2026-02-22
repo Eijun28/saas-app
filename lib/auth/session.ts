@@ -15,9 +15,9 @@ export async function getUser() {
     }
 
     return error ? null : user
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Gérer les erreurs de configuration ou autres erreurs
-    if (error.message?.includes('Variables d\'environnement')) {
+    if (error instanceof Error && error.message.includes('Variables d\'environnement')) {
       console.error('Configuration Supabase invalide:', error)
     }
     return null

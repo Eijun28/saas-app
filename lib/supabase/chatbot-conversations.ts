@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { getErrorMessage } from '@/lib/utils'
 import type { ChatbotConversation, ChatMessage, SearchCriteria } from '@/types/chatbot';
 
 /**
@@ -98,9 +99,9 @@ export async function saveChatbotConversation(
     }
 
     return { success: true, conversationId: data.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error saving chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la sauvegarde' };
+    return { success: false, error: getErrorMessage(error, 'Erreur lors de la sauvegarde') };
   }
 }
 
@@ -275,9 +276,9 @@ export async function updateChatbotConversation(
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la mise à jour' };
+    return { success: false, error: getErrorMessage(error, 'Erreur lors de la mise à jour') };
   }
 }
 
@@ -314,8 +315,8 @@ export async function deleteChatbotConversation(
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting chatbot conversation:', error);
-    return { success: false, error: error.message || 'Erreur lors de la suppression' };
+    return { success: false, error: getErrorMessage(error, 'Erreur lors de la suppression') };
   }
 }

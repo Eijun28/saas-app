@@ -1,5 +1,6 @@
 'use server'
 
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendConfirmationEmail } from '@/lib/email/confirmation'
@@ -78,7 +79,7 @@ export async function signUp(
   logger.critical('📧 Création utilisateur via admin API (sans email natif)...', { email, role })
   const signupAdminClient = createAdminClient()
 
-  let data: { user: any } = { user: null }
+  let data: { user: User | null } = { user: null }
 
   const { data: adminData, error: adminError } = await signupAdminClient.auth.admin.createUser({
     email,
@@ -121,7 +122,7 @@ export async function signUp(
     try {
       await sendConfirmationEmail(data.user.id, email, profileData.prenom)
       logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
-    } catch (emailError: any) {
+    } catch (emailError: unknown) {
       // Ne pas bloquer l'inscription si l'email échoue, mais informer l'utilisateur
       confirmationEmailFailed = true
       logger.warn('⚠️ Erreur envoi email confirmation personnalisé (non bloquant):', emailError)
@@ -132,7 +133,7 @@ export async function signUp(
   let adminClient: ReturnType<typeof createAdminClient> | null = null
   try {
     adminClient = createAdminClient()
-  } catch (adminError: any) {
+  } catch (adminError: unknown) {
     logger.error('Erreur création client admin:', adminError)
     // Impossible de nettoyer l'utilisateur sans client admin - loguer l'utilisateur orphelin
     logger.error('UTILISATEUR ORPHELIN - suppression manuelle requise:', { userId: data.user.id, email })
@@ -171,11 +172,11 @@ export async function signUp(
                 await new Promise(resolve => setTimeout(resolve, retryDelay))
               }
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             retries++
             logger.critical(`❌ Erreur tentative ${retries}/${maxRetries}`, {
               userId,
-              error: err?.message || String(err)
+              error: err instanceof Error ? err.message : String(err)
             })
             if (retries < maxRetries) {
               await new Promise(resolve => setTimeout(resolve, retryDelay))
@@ -275,11 +276,11 @@ export async function signUp(
                 preferencesId: prefData?.id
               })
             }
-          } catch (prefError: any) {
+          } catch (prefError: unknown) {
             logger.error('Erreur inattendue création préférences (non bloquant):', {
               userId,
-              error: prefError?.message || String(prefError),
-              stack: prefError?.stack
+              error: prefError instanceof Error ? prefError.message : String(prefError),
+              stack: prefError instanceof Error ? prefError.stack : undefined
             })
           }
         }
@@ -313,11 +314,11 @@ export async function signUp(
                 await new Promise(resolve => setTimeout(resolve, retryDelay))
               }
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             retries++
             logger.critical(`❌ Erreur tentative ${retries}/${maxRetries} (prestataire)`, {
               userId,
-              error: err?.message || String(err)
+              error: err instanceof Error ? err.message : String(err)
             })
             if (retries < maxRetries) {
               await new Promise(resolve => setTimeout(resolve, retryDelay))
@@ -477,12 +478,13 @@ export async function signUp(
           }
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Erreur lors de la création du profil', err)
       const userId = data.user.id
+      const errMessage = err instanceof Error ? err.message : String(err)
       
       // Si c'est une erreur RLS, vérifier si le profil a quand même été créé
-      if (err.message?.includes('row-level security')) {
+      if (errMessage.includes('row-level security')) {
         logger.warn('Erreur RLS détectée, vérification si le profil existe quand même...', { userId, role })
         
         // Vérifier si le profil a été créé malgré l'erreur RLS (réutilise le client admin existant)
@@ -511,7 +513,7 @@ export async function signUp(
             const response = { success: true, redirectTo: '/auth/confirm' }
             try {
               revalidatePath('/', 'layout')
-            } catch (revalidateError: any) {
+            } catch (revalidateError: unknown) {
               logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
             }
             return response
@@ -522,7 +524,7 @@ export async function signUp(
             // La création avec adminClient a déjà été tentée dans le bloc try principal
             // Si on arrive ici, c'est que ça a échoué
             // Ne pas retourner succès si le profil n'existe pas
-            logger.critical('🚨 ÉCHEC: Profil non créé après erreur RLS', { userId, role, error: err.message })
+            logger.critical('🚨 ÉCHEC: Profil non créé après erreur RLS', { userId, role, error: errMessage })
             
             // Essayer de supprimer l'utilisateur créé pour éviter un compte orphelin
             try {
@@ -536,7 +538,7 @@ export async function signUp(
               error: 'Erreur lors de la création de votre profil. Veuillez réessayer ou contacter le support si le problème persiste.' 
             }
           }
-        } catch (checkError: any) {
+        } catch (checkError: unknown) {
           // Erreur lors de la vérification, ne pas retourner succès
           logger.error('Erreur lors de la vérification du profil après erreur RLS:', checkError)
           
@@ -585,7 +587,7 @@ export async function signUp(
     // Revalidate après avoir préparé la réponse
     try {
       revalidatePath('/', 'layout')
-    } catch (revalidateError: any) {
+    } catch (revalidateError: unknown) {
       // Ne pas bloquer si revalidatePath échoue
       logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
     }

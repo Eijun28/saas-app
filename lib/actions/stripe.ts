@@ -1,5 +1,7 @@
 'use server'
 
+import { getErrorMessage } from '@/lib/utils'
+
 // Activer un plan gratuitement (sans Stripe)
 export async function activateFreePlan(planType: 'discovery' | 'pro' | 'expert') {
   try {
@@ -18,8 +20,8 @@ export async function activateFreePlan(planType: 'discovery' | 'pro' | 'expert')
 
     const data = await response.json()
     return { success: true, subscription: data.subscription, message: data.message }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -27,7 +29,7 @@ export async function activateFreePlan(planType: 'discovery' | 'pro' | 'expert')
 export async function createCheckoutSession(planType: 'pro' | 'expert') {
   // Pour l'instant, utiliser l'activation gratuite
   return activateFreePlan(planType)
-  
+
   /* Code Stripe désactivé - à réactiver plus tard
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/stripe/create-checkout-session`, {
@@ -45,8 +47,8 @@ export async function createCheckoutSession(planType: 'pro' | 'expert') {
 
     const data = await response.json()
     return { success: true, url: data.url, sessionId: data.sessionId }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
   */
 }
@@ -67,7 +69,7 @@ export async function cancelSubscription() {
 
     const data = await response.json()
     return { success: true, ...data }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
 }

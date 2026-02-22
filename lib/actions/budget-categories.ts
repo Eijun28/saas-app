@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { DEFAULT_CATEGORIES } from '@/lib/types/budget'
+import { getErrorMessage } from '@/lib/utils'
 
 /**
  * Initialise les catégories par défaut avec icônes
@@ -50,9 +51,9 @@ export async function initializeDefaultCategories() {
 
     revalidatePath('/couple/budget')
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in initializeDefaultCategories:', error)
-    return { error: error.message || 'Erreur lors de l\'initialisation' }
+    return { error: getErrorMessage(error, 'Erreur lors de l\'initialisation') }
   }
 }
 
@@ -98,9 +99,9 @@ export async function addCustomCategory(name: string, icon: string, budgetPrevu:
 
     revalidatePath('/couple/budget')
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in addCustomCategory:', error)
-    return { error: error.message || 'Erreur lors de l\'ajout de la catégorie' }
+    return { error: getErrorMessage(error, 'Erreur lors de l\'ajout de la catégorie') }
   }
 }
 

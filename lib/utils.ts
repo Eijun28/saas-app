@@ -6,6 +6,16 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Extrait le message d'une erreur inconnue de façon sûre.
+ * Remplace le pattern répété `error instanceof Error ? error.message : fallback`
+ */
+export function getErrorMessage(error: unknown, fallback = 'Une erreur inattendue s\'est produite'): string {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'string') return error
+  return fallback
+}
+
+/**
  * Extrait toutes les propriétés d'une erreur Supabase pour un meilleur débogage
  * Les erreurs Supabase peuvent avoir des propriétés non-énumérables qui ne sont pas visibles dans console.error
  */
