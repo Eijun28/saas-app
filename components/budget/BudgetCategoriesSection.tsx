@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,10 +16,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Pencil, Trash2, Loader2, type LucideIcon } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Plus, Pencil, Trash2, Loader2, UserPlus, Eye, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { type BudgetCategory } from '@/lib/types/budget'
-import { updateCategoryBudget, deleteCategory } from '@/lib/actions/budget'
+import { createClient } from '@/lib/supabase/client'
+import { type BudgetCategory, type BudgetProvider } from '@/lib/types/budget'
+import { updateCategoryBudget, deleteCategory, addProvider, updateProviderStatus, deleteProvider } from '@/lib/actions/budget'
 import { addCustomCategory } from '@/lib/actions/budget-categories'
 import { getCategoryIcon, AVAILABLE_ICONS, getIconName } from '@/lib/constants/budget-icons'
 
@@ -41,6 +49,21 @@ export function BudgetCategoriesSection({
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryIcon, setNewCategoryIcon] = useState<LucideIcon>(AVAILABLE_ICONS[AVAILABLE_ICONS.length - 1].icon)
   const [newCategoryBudget, setNewCategoryBudget] = useState('')
+
+  // États pour "Ajouter un prestataire"
+  const [addProviderCategoryId, setAddProviderCategoryId] = useState<string | null>(null)
+  const [addProviderCategoryName, setAddProviderCategoryName] = useState('')
+  const [providerName, setProviderName] = useState('')
+  const [providerDevis, setProviderDevis] = useState('')
+  const [providerStatut, setProviderStatut] = useState<'contacte' | 'devis_recu' | 'valide' | 'paye'>('contacte')
+  const [providerNotes, setProviderNotes] = useState('')
+  const [loadingProvider, setLoadingProvider] = useState(false)
+
+  // États pour "Voir détails"
+  const [detailCategoryId, setDetailCategoryId] = useState<string | null>(null)
+  const [detailCategoryName, setDetailCategoryName] = useState('')
+  const [categoryProviders, setCategoryProviders] = useState<BudgetProvider[]>([])
+  const [loadingProviders, setLoadingProviders] = useState(false)
 
   // Calculer le budget total alloué
   const totalAlloue = categories.reduce((sum, cat) => sum + Number(cat.budget_prevu || 0), 0)
@@ -108,6 +131,103 @@ export function BudgetCategoriesSection({
       setNewCategoryBudget('')
       onUpdate()
     }
+  }
+
+  const openAddProvider = (categoryId: string, categoryName: string) => {
+    setAddProviderCategoryId(categoryId)
+    setAddProviderCategoryName(categoryName)
+    setProviderName('')
+    setProviderDevis('')
+    setProviderStatut('contacte')
+    setProviderNotes('')
+  }
+
+  const handleAddProvider = async () => {
+    if (!providerName.trim()) {
+      toast.error('Veuillez entrer un nom de prestataire')
+      return
+    }
+    const devis = parseFloat(providerDevis) || 0
+    if (devis < 0) {
+      toast.error('Le montant doit être positif')
+      return
+    }
+
+    setLoadingProvider(true)
+    const result = await addProvider({
+      name: providerName.trim(),
+      category: addProviderCategoryName,
+      devis,
+      statut: providerStatut,
+      notes: providerNotes.trim() || undefined,
+    })
+    setLoadingProvider(false)
+
+    if (result.error) {
+      toast.error(`Erreur: ${result.error}`)
+    } else {
+      toast.success('Prestataire ajouté au budget')
+      setAddProviderCategoryId(null)
+      onUpdate()
+    }
+  }
+
+  const openCategoryDetail = async (categoryId: string, categoryName: string) => {
+    setDetailCategoryId(categoryId)
+    setDetailCategoryName(categoryName)
+    setCategoryProviders([])
+    setLoadingProviders(true)
+
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('budget_providers')
+      .select('*')
+      .eq('category', categoryName)
+      .order('created_at', { ascending: false })
+
+    setLoadingProviders(false)
+    setCategoryProviders(data || [])
+  }
+
+  const handleProviderStatusChange = async (
+    providerId: string,
+    statut: 'contacte' | 'devis_recu' | 'valide' | 'paye'
+  ) => {
+    const result = await updateProviderStatus(providerId, statut)
+    if (result.error) {
+      toast.error(`Erreur: ${result.error}`)
+    } else {
+      setCategoryProviders((prev) =>
+        prev.map((p) => (p.id === providerId ? { ...p, statut } : p))
+      )
+      onUpdate()
+    }
+  }
+
+  const handleProviderDelete = async (providerId: string) => {
+    if (!confirm('Supprimer ce prestataire du budget ?')) return
+    const result = await deleteProvider(providerId)
+    if (result.error) {
+      toast.error(`Erreur: ${result.error}`)
+    } else {
+      toast.success('Prestataire supprimé')
+      setCategoryProviders((prev) => prev.filter((p) => p.id !== providerId))
+      onUpdate()
+    }
+  }
+
+  const statutLabel: Record<string, string> = {
+    contacte: 'Contacté',
+    devis_recu: 'Devis reçu',
+    valide: 'Validé',
+    paye: 'Payé',
+  }
+
+  const statutColor: Record<string, string> = {
+    contacte: 'bg-gray-100 text-gray-700',
+    devis_recu: 'bg-blue-100 text-blue-700',
+    valide: 'bg-green-100 text-green-700',
+    paye: 'bg-purple-100 text-purple-700',
   }
 
   return (
@@ -260,21 +380,17 @@ export function BudgetCategoriesSection({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // TODO: Ouvrir modal pour ajouter prestataire
-                            toast.info('Fonctionnalité à venir')
-                          }}
+                          onClick={() => openAddProvider(category.id, category.category_name)}
                         >
+                          <UserPlus className="h-3.5 w-3.5 mr-1.5" />
                           Ajouter un prestataire
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // TODO: Voir détails
-                            toast.info('Fonctionnalité à venir')
-                          }}
+                          onClick={() => openCategoryDetail(category.id, category.category_name)}
                         >
+                          <Eye className="h-3.5 w-3.5 mr-1.5" />
                           Voir détails
                         </Button>
                       </div>
@@ -378,6 +494,176 @@ export function BudgetCategoriesSection({
           </DialogContent>
         </Dialog>
       </CardContent>
+
+      {/* Modal Ajouter un prestataire */}
+      <Dialog open={!!addProviderCategoryId} onOpenChange={(open) => !open && setAddProviderCategoryId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ajouter un prestataire</DialogTitle>
+            <DialogDescription>
+              Catégorie : <strong>{addProviderCategoryName}</strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="provider-name">Nom du prestataire</Label>
+              <Input
+                id="provider-name"
+                placeholder="Ex: Studio Photo Martin"
+                value={providerName}
+                onChange={(e) => setProviderName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="provider-devis">Montant du devis (€)</Label>
+              <Input
+                id="provider-devis"
+                type="number"
+                min="0"
+                step="100"
+                placeholder="2500"
+                value={providerDevis}
+                onChange={(e) => setProviderDevis(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Statut</Label>
+              <Select
+                value={providerStatut}
+                onValueChange={(v) => setProviderStatut(v as typeof providerStatut)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contacte">Contacté</SelectItem>
+                  <SelectItem value="devis_recu">Devis reçu</SelectItem>
+                  <SelectItem value="valide">Validé</SelectItem>
+                  <SelectItem value="paye">Payé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="provider-notes">Notes (optionnel)</Label>
+              <Input
+                id="provider-notes"
+                placeholder="Remarques, conditions..."
+                value={providerNotes}
+                onChange={(e) => setProviderNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddProviderCategoryId(null)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handleAddProvider}
+              disabled={loadingProvider}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+            >
+              {loadingProvider ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Ajout...
+                </>
+              ) : (
+                'Ajouter'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Voir détails */}
+      <Dialog open={!!detailCategoryId} onOpenChange={(open) => !open && setDetailCategoryId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Détails — {detailCategoryName}</DialogTitle>
+            <DialogDescription>
+              Prestataires associés à cette catégorie
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            {loadingProviders ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-[#823F91]" />
+              </div>
+            ) : categoryProviders.length === 0 ? (
+              <div className="text-center py-8 text-[#6B7280]">
+                <p className="text-sm">Aucun prestataire pour cette catégorie.</p>
+                <p className="text-xs mt-1">Utilisez "Ajouter un prestataire" pour en ajouter un.</p>
+              </div>
+            ) : (
+              categoryProviders.map((provider) => (
+                <div
+                  key={provider.id}
+                  className="border border-[#E5E7EB] rounded-lg p-3 space-y-2"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-[#111827] truncate">{provider.provider_name}</p>
+                      <p className="text-sm text-[#6B7280]">
+                        {Number(provider.devis).toLocaleString('fr-FR')} €
+                      </p>
+                      {provider.notes && (
+                        <p className="text-xs text-[#9CA3AF] mt-1 line-clamp-2">{provider.notes}</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleProviderDelete(provider.id)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 flex-shrink-0"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+
+                  <Select
+                    value={provider.statut}
+                    onValueChange={(v) =>
+                      handleProviderStatusChange(provider.id, v as typeof provider.statut)
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="contacte">Contacté</SelectItem>
+                      <SelectItem value="devis_recu">Devis reçu</SelectItem>
+                      <SelectItem value="valide">Validé</SelectItem>
+                      <SelectItem value="paye">Payé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDetailCategoryId(null)
+                openAddProvider(detailCategoryId!, detailCategoryName)
+              }}
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Ajouter un prestataire
+            </Button>
+            <Button variant="outline" onClick={() => setDetailCategoryId(null)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

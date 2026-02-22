@@ -97,10 +97,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
     setIsProcessing(true)
 
     try {
-      // TODO: Envoyer à n8n pour génération de services avec IA
-      const N8N_GENERATE_URL = process.env.NEXT_PUBLIC_N8N_GENERATE_SERVICES_URL || 'https://your-n8n-instance.com/webhook/generate-services'
-
-      const response = await fetch(N8N_GENERATE_URL, {
+      const response = await fetch('/api/generate-services', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +107,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
           specialites: iaQuestionnaire.specialites,
           tarifs_habituels: iaQuestionnaire.tarifs_habituels,
           autres_info: iaQuestionnaire.autres_info,
-        })
+        }),
       })
 
       if (!response.ok) {
