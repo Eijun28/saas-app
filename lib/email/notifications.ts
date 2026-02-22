@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { generateEmailTemplate, generateContentBlock, generateMessagePreview } from './templates'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
+import { getErrorMessage } from '@/lib/utils'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
@@ -91,9 +92,9 @@ export async function sendNewRequestEmail(
 
     logger.info('✅ Email nouvelle demande envoyé au prestataire', { providerId, requestId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email nouvelle demande:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -167,9 +168,9 @@ export async function sendRequestAcceptedEmail(
 
     logger.info('✅ Email demande acceptée envoyé au couple', { coupleId, requestId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email demande acceptée:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -242,9 +243,9 @@ export async function sendRequestRejectedEmail(
 
     logger.info('✅ Email demande refusée envoyé au couple', { coupleId, requestId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email demande refusée:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -351,9 +352,9 @@ export async function sendNewMessageEmail(
 
     logger.info('✅ Email nouveau message envoyé', { recipientId, conversationId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email nouveau message:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -435,8 +436,8 @@ export async function sendNewDevisEmail(
 
     logger.info('✅ Email nouveau devis envoyé au couple', { coupleId, devisId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email nouveau devis:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }

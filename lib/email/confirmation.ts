@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
+import { getErrorMessage } from '@/lib/utils'
 
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
@@ -184,8 +185,8 @@ export async function sendConfirmationEmail(
 
     logger.info('✅ Email de confirmation envoyé avec succès', { email, userId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi email de confirmation:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }

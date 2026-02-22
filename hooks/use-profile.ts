@@ -10,7 +10,8 @@ interface Profile {
   prenom?: string | null
   nom?: string | null
   email?: string | null
-  [key: string]: any // Pour les autres champs spécifiques à chaque type
+  // Additional dynamic fields specific to each profile type (couple or prestataire)
+  [key: string]: string | number | boolean | null | undefined | string[]
 }
 
 export function useProfile() {

@@ -280,7 +280,7 @@ export const SERVICE_SPECIFIC_QUESTIONS: Record<string, ServicePromptConfig> = {
 /**
  * Génère le prompt spécialisé pour un type de service
  */
-export function getServiceSpecificPrompt(serviceType: string, coupleProfile?: any): string {
+export function getServiceSpecificPrompt(serviceType: string, coupleProfile?: Record<string, unknown>): string {
   const config = SERVICE_SPECIFIC_QUESTIONS[serviceType];
 
   if (!config) {
@@ -339,7 +339,7 @@ export function getMinRequiredCriteria(serviceType: string): string[] {
 /**
  * Vérifie si une question doit être posée selon les données du couple
  */
-export function shouldAskQuestion(questionKey: string, coupleProfile?: any): boolean {
+export function shouldAskQuestion(questionKey: string, coupleProfile?: Record<string, unknown>): boolean {
   if (!coupleProfile) return true;
 
   // Ne pas redemander des infos déjà connues

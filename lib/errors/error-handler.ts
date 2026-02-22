@@ -51,7 +51,7 @@ export function handleApiError(error: unknown): NextResponse {
  * Wrapper pour les handlers de route API
  * Capture automatiquement toutes les erreurs
  */
-export function withErrorHandling<T extends any[]>(
+export function withErrorHandling<T extends unknown[]>(
   handler: (...args: T) => Promise<NextResponse>
 ) {
   return async (...args: T): Promise<NextResponse> => {

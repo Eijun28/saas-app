@@ -97,7 +97,7 @@ export async function updateProfile(profileData: {
       return { error: 'Non authentifié' }
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     
     if (profileData.prenom !== undefined) {
       updateData.prenom = profileData.prenom.trim() || null
@@ -156,7 +156,7 @@ export async function updateWeddingInfo(weddingData: {
       return { error: 'Non authentifié' }
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     
     if (weddingData.dateMarriage !== undefined) {
       updateData.date_marriage = weddingData.dateMarriage || null

@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { logger } from '@/lib/logger'
+import { getErrorMessage } from '@/lib/utils'
 import { escapeHtml } from './templates'
 
 const resendApiKey = process.env.RESEND_API_KEY
@@ -91,9 +92,9 @@ export async function sendNewRequestAlertToProvider(
 
     logger.info('✅ Alerte nouvelle demande envoyée au prestataire', { providerId, requestId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi alerte demande prestataire:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -183,9 +184,9 @@ export async function sendRequestResponseAlertToCouple(
 
     logger.info('✅ Alerte réponse demande envoyée au couple', { coupleEmail, status, requestId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi alerte réponse couple:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -265,8 +266,8 @@ export async function sendNewMessageAlert(
 
     logger.info('✅ Alerte nouveau message envoyée', { recipientEmail, conversationId })
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Erreur envoi alerte message:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
