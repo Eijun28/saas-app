@@ -83,6 +83,49 @@ class ChatbotRateLimiter {
 // Instance singleton pour le rate limiting du chatbot
 export const chatbotLimiter = new ChatbotRateLimiter();
 
+// Rate limiter spécifique pour le formulaire de contact : 5 envois par 10 minutes
+class ContactRateLimiter {
+  private cache: LRUCache<string, RateLimitEntry>;
+  private readonly maxRequests = 5;
+  private readonly windowMs = 10 * 60 * 1000; // 10 minutes
+
+  constructor() {
+    this.cache = new LRUCache<string, RateLimitEntry>({
+      max: 500,
+      ttl: this.windowMs,
+    });
+  }
+
+  check(ip: string): boolean {
+    const now = Date.now();
+    const entry = this.cache.get(ip);
+
+    if (!entry) {
+      this.cache.set(ip, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (now > entry.resetTime) {
+      this.cache.set(ip, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (entry.count >= this.maxRequests) return false;
+
+    entry.count++;
+    this.cache.set(ip, entry);
+    return true;
+  }
+
+  getResetTime(ip: string): number {
+    const entry = this.cache.get(ip);
+    if (!entry) return 0;
+    return Math.max(0, Math.ceil((entry.resetTime - Date.now()) / 1000));
+  }
+}
+
+export const contactLimiter = new ContactRateLimiter();
+
 /**
  * Récupère l'adresse IP depuis une requête Next.js
  */

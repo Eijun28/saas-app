@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,9 +50,11 @@ export function DashboardHeader({ title }: DashboardHeaderProps) {
                 <span className="text-xs font-medium text-primary-foreground">M</span>
               </div>
             ) : (
-              <img 
-                src="/placeholder-avatar.jpg" 
-                alt="User" 
+              <Image
+                src="/placeholder-avatar.jpg"
+                alt="User"
+                width={32}
+                height={32}
                 className="h-full w-full object-cover"
                 onError={() => setAvatarError(true)}
               />
