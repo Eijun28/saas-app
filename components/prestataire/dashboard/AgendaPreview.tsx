@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, ArrowRight, CalendarDays, CalendarRange } from 'lucide-react'
+import { Calendar, Clock, ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
-import { cn } from '@/lib/utils'
 
 interface Evenement {
   id: string
@@ -15,14 +14,11 @@ interface Evenement {
   heure_debut?: string
 }
 
-type ViewMode = 'upcoming' | 'week' | 'month'
-
 export function AgendaPreview() {
   const router = useRouter()
   const { user } = useUser()
   const [evenements, setEvenements] = useState<Evenement[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<ViewMode>('upcoming')
 
   useEffect(() => {
     if (!user) return
@@ -75,54 +71,6 @@ export function AgendaPreview() {
     }
   }
 
-  // Filtrer les événements selon le mode de vue
-  const filteredEvenements = evenements.filter(event => {
-    const eventDate = new Date(event.date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    if (viewMode === 'upcoming') {
-      // Tous les événements à venir (déjà filtré par la requête)
-      return true
-    } else if (viewMode === 'week') {
-      // Événements de cette semaine
-      const endOfWeek = new Date(today)
-      endOfWeek.setDate(today.getDate() + (7 - today.getDay()))
-      return eventDate >= today && eventDate <= endOfWeek
-    } else if (viewMode === 'month') {
-      // Événements de ce mois
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-      return eventDate >= today && eventDate <= endOfMonth
-    }
-    return true
-  })
-
-  // Pill component for view mode selection
-  const ViewPill = ({
-    icon: Icon,
-    label,
-    value,
-    active
-  }: {
-    icon: typeof Calendar
-    label: string
-    value: ViewMode
-    active: boolean
-  }) => (
-    <button
-      onClick={() => setViewMode(value)}
-      className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
-        active
-          ? "bg-[#823F91] text-white shadow-sm"
-          : "text-gray-600 hover:text-[#823F91] hover:bg-gray-50"
-      )}
-    >
-      <Icon className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">{label}</span>
-    </button>
-  )
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -147,13 +95,6 @@ export function AgendaPreview() {
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
-
-        {/* Pills de sélection */}
-        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-full w-fit">
-          <ViewPill icon={Calendar} label="À venir" value="upcoming" active={viewMode === 'upcoming'} />
-          <ViewPill icon={CalendarDays} label="Semaine" value="week" active={viewMode === 'week'} />
-          <ViewPill icon={CalendarRange} label="Mois" value="month" active={viewMode === 'month'} />
-        </div>
       </div>
 
       {/* Contenu avec scroll caché */}
@@ -173,21 +114,19 @@ export function AgendaPreview() {
               </div>
             ))}
           </div>
-        ) : filteredEvenements.length === 0 ? (
+        ) : evenements.length === 0 ? (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
               <Calendar className="h-8 w-8 text-gray-300" />
             </div>
             <p className="text-sm font-medium text-gray-900 mb-1">
-              {viewMode === 'week' ? 'Aucun événement cette semaine' :
-               viewMode === 'month' ? 'Aucun événement ce mois' :
-               'Aucun événement à venir'}
+              Aucun événement à venir
             </p>
             <p className="text-xs text-gray-500">Vos prochains rendez-vous apparaîtront ici</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredEvenements.map((event, index) => (
+            {evenements.map((event, index) => (
               <motion.div
                 key={event.id}
                 initial={{ opacity: 0, x: -10 }}
