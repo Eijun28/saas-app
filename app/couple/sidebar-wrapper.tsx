@@ -371,7 +371,7 @@ export function CoupleSidebarWrapper() {
                             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-white rounded-r-full shadow-[0_0_6px_rgba(255,255,255,0.6)] group-data-[collapsible=icon]:hidden" />
                           )}
                           <div className={cn(
-                            "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-150",
+                            "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors duration-150",
                             "group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9",
                             isActive
                               ? "bg-white/15 shadow-[0_0_10px_rgba(255,255,255,0.15)]"
