@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -397,15 +397,15 @@ function BooleanField({
   onUpdate: (value: unknown) => void
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
-      <Label className="text-sm font-medium text-gray-700 flex-1 cursor-pointer" htmlFor={field.key}>
-        {field.label}
-      </Label>
-      <Switch
+    <div className="flex items-center gap-3 py-2">
+      <Checkbox
         id={field.key}
         checked={value}
         onCheckedChange={onUpdate}
       />
+      <Label className="text-sm font-medium text-gray-700 cursor-pointer" htmlFor={field.key}>
+        {field.label}
+      </Label>
     </div>
   )
 }
