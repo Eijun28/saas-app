@@ -322,6 +322,7 @@ export default function AgendaPage() {
     title: event.titre,
     date: formatDateKey(event.date),
     time: event.heure_debut,
+    endTime: event.heure_fin || undefined,
     description: event.notes || undefined,
   }))
 
@@ -418,8 +419,6 @@ export default function AgendaPage() {
   }
 
   const handleDeleteEvent = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
-
     try {
       const supabase = createClient()
       
