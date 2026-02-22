@@ -7,7 +7,7 @@ import {
   Wallet,
   Calendar,
   ArrowRight,
-  MessageSquare,
+  FileText,
   Search,
   Sparkles,
   CheckCircle2,
@@ -36,7 +36,6 @@ export default function CoupleDashboardPage() {
   const [favoritesCount, setFavoritesCount] = useState(0)
   const [budgetTotal, setBudgetTotal] = useState(0)
   const [budgetItems, setBudgetItems] = useState<any[]>([])
-  const [unreadMessages, setUnreadMessages] = useState(0)
   const [shortlistedCount, setShortlistedCount] = useState(0)
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('30d')
   const [recentActivities, setRecentActivities] = useState<any[]>([])
@@ -56,7 +55,6 @@ export default function CoupleDashboardPage() {
           budgetItems: any[]
           shortlistedCount: number
           recentActivities: any[]
-          unreadMessages: number
         }>(CACHE_KEY)
         if (cached) {
           setCoupleData(cached.coupleData)
@@ -65,7 +63,6 @@ export default function CoupleDashboardPage() {
           setBudgetItems(cached.budgetItems)
           setShortlistedCount(cached.shortlistedCount)
           setRecentActivities(cached.recentActivities)
-          setUnreadMessages(cached.unreadMessages)
           setLoading(false)
           // Background refresh after serving cache
           fetchDashboardData(true)
@@ -130,20 +127,6 @@ export default function CoupleDashboardPage() {
           setRecentActivities(activities.slice(0, 5))
         }
 
-        // Fetch unread messages count
-        let unreadCount = 0
-        try {
-          const { count: msgCount } = await supabase
-            .from('requests')
-            .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id)
-            .eq('status', 'accepted')
-          unreadCount = msgCount || 0
-          setUnreadMessages(unreadCount)
-        } catch {
-          // silent
-        }
-
         // Persist to cache for instant reload next time
         const cData = coupleResult.data
         const bItems = budgetResult.data || []
@@ -165,7 +148,6 @@ export default function CoupleDashboardPage() {
           budgetItems: bItems,
           shortlistedCount: shortlistedResult.count || 0,
           recentActivities: acts,
-          unreadMessages: unreadCount,
         })
       } catch (err: any) {
         console.error('Erreur chargement dashboard couple:', err)
@@ -229,9 +211,9 @@ export default function CoupleDashboardPage() {
     if (coupleData?.wedding_date) completed++
     if (budgetTotal > 0) completed++
     if (shortlistedCount > 0) completed++
-    if (unreadMessages > 0) completed++
+    if (favoritesCount > 0) completed++
     return { completed, total, percentage: Math.round((completed / total) * 100) }
-  }, [coupleData?.wedding_date, budgetTotal, shortlistedCount, unreadMessages])
+  }, [coupleData?.wedding_date, budgetTotal, shortlistedCount, favoritesCount])
 
   // Next actions for couple
   const nextActions: { text: string; cta: string; href: string }[] = []
@@ -241,8 +223,8 @@ export default function CoupleDashboardPage() {
   if (favoritesCount === 0) {
     nextActions.push({ text: "Commencez a chercher des prestataires pour votre mariage", cta: 'Rechercher', href: '/couple/recherche' })
   }
-  if (unreadMessages > 0) {
-    nextActions.push({ text: `${unreadMessages} conversation${unreadMessages > 1 ? 's' : ''} avec des prestataires`, cta: 'Voir les messages', href: '/couple/messagerie' })
+  if (shortlistedCount > 0) {
+    nextActions.push({ text: `${shortlistedCount} demande${shortlistedCount > 1 ? 's' : ''} en cours avec des prestataires`, cta: 'Voir les demandes', href: '/couple/demandes' })
   }
 
   if (loading) {
@@ -404,12 +386,12 @@ export default function CoupleDashboardPage() {
                 <div className="flex-1">
                   <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Prestataires</p>
                   <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
-                    {shortlistedCount === 0 ? '0' : shortlistedCount}
+                    {favoritesCount === 0 ? '0' : favoritesCount}
                   </p>
                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
-                    {shortlistedCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
+                    {favoritesCount > 0 ? 'Dans vos favoris' : 'Aucun favori'}
                   </p>
-                  {shortlistedCount === 0 && (
+                  {favoritesCount === 0 && (
                     <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Search className="h-3 w-3" /> Rechercher
                     </span>
@@ -492,30 +474,30 @@ export default function CoupleDashboardPage() {
               </div>
             </motion.div>
 
-            {/* Messages / Conversations */}
+            {/* Demandes actives */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
-              onClick={() => router.push('/couple/messagerie')}
+              onClick={() => router.push('/couple/demandes')}
               className="cursor-pointer group"
             >
               <div className="bg-white border border-gray-100 rounded-2xl shadow-[0_1px_3px_0_rgb(0_0_0/0.04),0_1px_2px_-1px_rgb(0_0_0/0.04)] hover:shadow-[0_4px_6px_-1px_rgb(0_0_0/0.06),0_2px_4px_-2px_rgb(0_0_0/0.04)] hover:border-[#823F91]/15 transition-all duration-150 p-4 sm:p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#823F91]/8 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
+                    <FileText className="h-[18px] w-[18px] sm:h-5 sm:w-5 text-[#823F91]" />
                   </div>
                   <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] group-hover:translate-x-0.5 transition-all" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Messages</p>
+                  <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Demandes actives</p>
                   <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
-                    {unreadMessages === 0 ? '0' : unreadMessages}
+                    {shortlistedCount === 0 ? '0' : shortlistedCount}
                   </p>
                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
-                    {unreadMessages > 0 ? `Conversation${unreadMessages > 1 ? 's' : ''} active${unreadMessages > 1 ? 's' : ''}` : 'Aucun message'}
+                    {shortlistedCount > 0 ? `En cours avec des prestataires` : 'Aucune demande'}
                   </p>
-                  {unreadMessages === 0 && (
+                  {shortlistedCount === 0 && (
                     <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold text-[#823F91] mt-2">
                       <Sparkles className="h-3 w-3" /> Envoyer une demande
                     </span>
