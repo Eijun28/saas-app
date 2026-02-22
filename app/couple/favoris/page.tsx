@@ -199,7 +199,7 @@ export default function FavorisPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="sticky top-0 z-30 flex items-center justify-between p-3 bg-[#823F91] text-white rounded-xl shadow-lg"
+            className="sticky top-0 z-[50] flex items-center justify-between p-3 bg-[#823F91] text-white rounded-xl shadow-lg"
           >
             <div className="flex items-center gap-2">
               <ArrowLeftRight className="h-4 w-4" />
@@ -228,9 +228,10 @@ export default function FavorisPage() {
 
         {/* Loading */}
         {loading ? (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#823F91]" />
-            <p className="text-gray-500 mt-4">Chargement...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-64 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+            ))}
           </div>
         ) : favoris.length === 0 ? (
           <motion.div
@@ -382,7 +383,7 @@ export default function FavorisPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+              className="fixed inset-0 z-[201] bg-black/50 flex items-center justify-center p-4"
               onClick={() => setShowCompare(false)}
             >
               <motion.div

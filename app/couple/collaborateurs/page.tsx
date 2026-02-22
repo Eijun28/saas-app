@@ -215,41 +215,46 @@ export default function CollaborateursPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-[#4A4A4A]">Chargement...</p>
+      <div className="w-full space-y-5 sm:space-y-6">
+        <div className="h-8 w-48 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-4 w-64 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="h-24 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+          ))}
+        </div>
       </div>
     )
   }
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-white p-6">
-        <div className="max-w-7xl mx-auto">
-          <PageTitle
-            title="Collaborateurs"
-            description="Gérez les personnes qui vous aident dans l'organisation"
-          />
-          <Card className="border-red-200 mt-8">
-            <CardContent className="p-12 text-center">
-              <Users className="h-16 w-16 mx-auto mb-4 text-red-300" />
-              <p className="text-red-600 font-medium mb-2">Erreur lors du chargement</p>
-              <p className="text-sm text-[#4A4A4A] mb-6">{loadError}</p>
-              <Button
-                onClick={loadCollaborateurs}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
-              >
-                Réessayer
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="w-full space-y-5 sm:space-y-6">
+        <PageTitle
+          title="Collaborateurs"
+          description="Gérez les personnes qui vous aident dans l'organisation"
+        />
+        <Card className="border-red-200">
+          <CardContent className="p-8 sm:p-12 text-center">
+            <Users className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-red-300" />
+            <p className="text-red-600 font-medium mb-2">Erreur lors du chargement</p>
+            <p className="text-sm text-gray-500 mb-6">{loadError}</p>
+            <Button
+              onClick={loadCollaborateurs}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+            >
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full">
+      <div className="space-y-5 sm:space-y-6">
         <div className="flex items-start justify-between gap-4">
           <PageTitle
             title="Collaborateurs"
@@ -266,9 +271,9 @@ export default function CollaborateursPage() {
 
         {/* Section "Rejoignez-nous" avec images de couples */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          transition={{ duration: 0.2, delay: 0.05 }}
         >
           <Card className="border-gray-200">
             <CardContent className="p-6">
@@ -570,15 +575,16 @@ export default function CollaborateursPage() {
             </Dialog>
 
         {collaborateurs.length === 0 ? (
-          <Card className="border-gray-200">
-            <CardContent className="p-12 text-center">
-              <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-[#4A4A4A] mb-4">
-                Vous n&apos;avez pas encore de collaborateurs
+          <Card className="border-gray-100 shadow-sm">
+            <CardContent className="p-8 sm:p-12 text-center">
+              <Users className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-200" />
+              <p className="text-gray-600 font-medium mb-1">Aucun collaborateur</p>
+              <p className="text-sm text-gray-400 mb-5">
+                Invitez des proches pour vous aider dans l&apos;organisation
               </p>
               <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2"
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white gap-2 rounded-xl"
               >
                 <UserPlus className="h-4 w-4" />
                 Inviter votre premier collaborateur
@@ -586,16 +592,15 @@ export default function CollaborateursPage() {
             </CardContent>
           </Card>
         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {collaborateurs.map((collab) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {collaborateurs.map((collab, index) => (
               <motion.div
                 key={collab.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -4 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{ duration: 0.2, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
               >
-                <Card className="h-full hover:shadow-lg transition-shadow border-gray-200">
+                <Card className="h-full hover:shadow-md transition-all duration-150 border-gray-100 hover:border-[#823F91]/15 rounded-2xl">
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
                       <CardTitle className="text-lg">{collab.name}</CardTitle>
