@@ -25,6 +25,7 @@ import type { Stats, UIState } from '@/lib/types/prestataire'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { getCouplesByUserIds, formatCoupleName } from '@/lib/supabase/queries/couples.queries'
+import { getCached, setCached } from '@/lib/cache'
 import { toast } from 'sonner'
 import { ActivityItem } from '@/components/dashboard/ActivityItem'
 import { AgendaPreview } from '@/components/prestataire/dashboard/AgendaPreview'
@@ -93,77 +94,103 @@ export default function DashboardPrestatairePage() {
     }
   }, [])
 
-  useEffect(() => {
-    if (user) {
-      const supabase = createClient()
-      supabase
-        .from('profiles')
-        .select('prenom, nom')
-        .eq('id', user.id)
-        .single()
-        .then(({ data }) => {
-          if (data?.prenom) setPrenom(data.prenom)
-          if (data?.nom) setNom(data.nom)
-        })
-    }
-  }, [user])
+  // prenom/nom chargé dans le useEffect stats pour éviter un appel réseau séparé
 
-  // Calcul completion profil
+  // Complétion profil + code parrainage — avec cache TTL 120s (données peu volatiles)
   useEffect(() => {
     if (!user) return
-    const fetchProfileCompletion = async () => {
+    const PROFILE_CACHE_KEY = `prestataire-profile-meta-${user.id}`
+
+    const cached = getCached<{ completion: number; referralCode: string | null; referralCount: number }>(PROFILE_CACHE_KEY, 120_000)
+    if (cached) {
+      setProfileCompletion(cached.completion)
+      setReferralCode(cached.referralCode)
+      setReferralCount(cached.referralCount)
+      return
+    }
+
+    const fetchProfileMeta = async () => {
       try {
         const supabase = createClient()
-        const [profileResult, culturesResult, zonesResult, portfolioResult] = await Promise.all([
+        const [profileResult, culturesResult, zonesResult, portfolioResult, referralResult] = await Promise.all([
           supabase.from('profiles').select('avatar_url, nom_entreprise, description_courte, budget_min, budget_max, ville_principale, instagram_url, facebook_url, website_url').eq('id', user.id).maybeSingle(),
           supabase.from('provider_cultures').select('culture_id').eq('profile_id', user.id),
           supabase.from('provider_zones').select('zone_id').eq('profile_id', user.id),
           supabase.from('provider_portfolio').select('id').eq('profile_id', user.id),
+          supabase.from('provider_referrals').select('referral_code, total_referrals').eq('provider_id', user.id).maybeSingle(),
         ])
         const result = calculateProviderProfileCompletion(profileResult.data, culturesResult.data?.length || 0, zonesResult.data?.length || 0, portfolioResult.data?.length || 0)
-        setProfileCompletion(result.percentage)
+        const completion = result.percentage
+        const refCode = referralResult.data?.referral_code ?? null
+        const refCount = referralResult.data?.total_referrals || 0
+
+        setProfileCompletion(completion)
+        if (refCode) { setReferralCode(refCode); setReferralCount(refCount) }
+
+        setCached(PROFILE_CACHE_KEY, { completion, referralCode: refCode, referralCount: refCount })
       } catch (error) {
-        console.error('Erreur calcul completion profil:', error)
+        console.error('Erreur chargement meta profil:', error)
       }
     }
-    fetchProfileCompletion()
+    fetchProfileMeta()
   }, [user])
 
-  // Charger code parrainage
+  // Fetch stats + prenom/nom — avec cache TTL 60s pour éviter le spinner sur chaque navigation
   useEffect(() => {
     if (!user) return
-    const fetchReferralCode = async () => {
-      try {
-        const supabase = createClient()
-        const { data } = await supabase.from('provider_referrals').select('referral_code, total_referrals').eq('provider_id', user.id).maybeSingle()
-        if (data) {
-          setReferralCode(data.referral_code)
-          setReferralCount(data.total_referrals || 0)
+
+    const CACHE_KEY = `prestataire-dashboard-${user.id}`
+
+    const fetchStats = async (skipCache = false) => {
+      // Servir le cache immédiatement si disponible
+      if (!skipCache) {
+        const cached = getCached<{
+          stats: Stats
+          prevStats: Partial<Stats>
+          urgentDemandes: number
+          prenom: string
+          nom: string
+        }>(CACHE_KEY)
+        if (cached) {
+          setStats(cached.stats)
+          setPrevStats(cached.prevStats)
+          setUrgentDemandes(cached.urgentDemandes)
+          if (cached.prenom) setPrenom(cached.prenom)
+          if (cached.nom) setNom(cached.nom)
+          setUiState({ loading: 'success', error: null })
+          // Rafraîchissement silencieux en arrière-plan
+          fetchStats(true)
+          return
         }
-      } catch (error) { /* table may not exist */ }
-    }
-    fetchReferralCode()
-  }, [user])
+      }
 
-  // Fetch stats
-  useEffect(() => {
-    if (!user) return
-    const fetchStats = async () => {
       setUiState({ loading: 'loading', error: null })
       try {
         const supabase = createClient()
+        const now = new Date()
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString()
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
         const [
           { count: nouvellesDemandes, error: demandesError },
           { count: evenementsAvenir, error: eventsError },
           { count: demandesCeMois },
           { count: totalDemandes },
-          { count: conversationsEnCours }
+          { count: conversationsEnCours },
+          { count: urgentCount },
+          { count: prevMonthDemandes },
+          { data: profileData },
         ] = await Promise.all([
           supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).eq('status', 'pending'),
-          supabase.from('evenements_prestataire').select('id', { count: 'exact', head: true }).eq('prestataire_id', user.id).gte('date', new Date().toISOString().split('T')[0]),
-          supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+          supabase.from('evenements_prestataire').select('id', { count: 'exact', head: true }).eq('prestataire_id', user.id).gte('date', now.toISOString().split('T')[0]),
+          supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).gte('created_at', monthStart),
           supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id),
           supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).eq('status', 'accepted'),
+          supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).eq('status', 'pending').lt('created_at', oneDayAgo),
+          supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd),
+          supabase.from('profiles').select('prenom, nom').eq('id', user.id).single(),
         ])
 
         const isIgnorableError = (err: any) => {
@@ -180,29 +207,36 @@ export default function DashboardPrestatairePage() {
           if (eventsError.message?.includes('fetch') || eventsError.message?.includes('network') || eventsError.message?.includes('timeout')) throw eventsError
         }
 
-        const { count: demandesAcceptees } = await supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).eq('status', 'accepted')
-        const tauxReponse = totalDemandes && totalDemandes > 0 ? Math.round((demandesAcceptees || 0) / totalDemandes * 100) : 0
+        const tauxReponse = totalDemandes && totalDemandes > 0 ? Math.round((conversationsEnCours || 0) / totalDemandes * 100) : 0
 
-        // Urgent demandes (> 24h pending)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const { count: urgentCount } = await supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).eq('status', 'pending').lt('created_at', oneDayAgo)
-        setUrgentDemandes(urgentCount || 0)
-
-        // Previous month delta
-        const lastMonthStart = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString()
-        const lastMonthEnd = new Date(new Date().getFullYear(), new Date().getMonth(), 0).toISOString()
-        const { count: prevMonthDemandes } = await supabase.from('requests').select('id', { count: 'exact', head: true }).eq('provider_id', user.id).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd)
-        setPrevStats({ demandes_ce_mois: prevMonthDemandes || 0 })
-
-        setStats({
+        const newStats: Stats = {
           nouvelles_demandes: nouvellesDemandes || 0,
           evenements_a_venir: evenementsAvenir || 0,
           conversations_en_cours: conversationsEnCours || 0,
           taux_reponse: tauxReponse,
           demandes_ce_mois: demandesCeMois || 0,
-        })
+        }
+        const newPrevStats: Partial<Stats> = { demandes_ce_mois: prevMonthDemandes || 0 }
+        const newUrgent = urgentCount || 0
+        const newPrenom = profileData?.prenom || ''
+        const newNom = profileData?.nom || ''
+
+        setStats(newStats)
+        setPrevStats(newPrevStats)
+        setUrgentDemandes(newUrgent)
+        if (newPrenom) setPrenom(newPrenom)
+        if (newNom) setNom(newNom)
         setLastUpdated(new Date())
         setUiState({ loading: 'success', error: null })
+
+        // Persister en cache pour le prochain chargement
+        setCached(CACHE_KEY, {
+          stats: newStats,
+          prevStats: newPrevStats,
+          urgentDemandes: newUrgent,
+          prenom: newPrenom,
+          nom: newNom,
+        })
       } catch (error: any) {
         console.error('Erreur chargement stats:', error)
         const codes = ['42P01', 'PGRST116', 'PGRST301']
