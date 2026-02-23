@@ -92,7 +92,8 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 120, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl"
+          className="fixed bottom-0 left-0 right-0 z-[201] bg-white border-t border-gray-200 shadow-2xl"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="max-w-5xl mx-auto px-4 py-3">
             <div className="flex items-center gap-3">
