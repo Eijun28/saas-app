@@ -7,6 +7,54 @@ import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
 import { Sparkles } from '@/components/ui/sparkles'
 import { useEffect, useState } from 'react'
+import { StructuredData } from '@/lib/seo/structured-data'
+
+const homepageFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Comment trouver des prestataires mariage vérifiés en France ?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'NUPLY vous met en relation avec des prestataires mariage vérifiés (photographes, traiteurs, DJ, wedding planners, fleuristes, salles de réception). Créez un compte gratuit, remplissez votre brief et recevez des propositions adaptées à votre style, budget et région.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Qu\'est-ce que le matching mariage NUPLY ?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Le matching NUPLY est un algorithme qui analyse votre profil (style de mariage, budget, région, date, traditions culturelles) et vous propose les prestataires les plus adaptés à votre projet. Fini la recherche fastidieuse sur Google : recevez des profils qualifiés directement dans votre espace.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'NUPLY est-il adapté aux mariages multiculturels ?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Oui, NUPLY est spécialisé dans les mariages multiculturels. La plateforme référence des prestataires expérimentés dans les cérémonies mixtes (franco-africain, franco-maghrébin, franco-indien, franco-asiatique...) et dispose d\'outils pour gérer plusieurs traditions dans un même planning.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Combien coûte NUPLY pour les couples ?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'L\'inscription de base est gratuite pour les couples. Des fonctionnalités avancées (matching illimité, budget détaillé, messagerie illimitée) sont disponibles dans les formules payantes. Consultez notre page tarifs pour les détails.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Quels types de prestataires mariage puis-je trouver sur NUPLY ?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'NUPLY référence tous les corps de métier du mariage : photographes, vidéastes, traiteurs, DJ et groupes de musique, wedding planners, fleuristes, décorateurs, salles et domaines de réception, officiants de cérémonie laïque et bien d\'autres.',
+      },
+    },
+  ],
+}
 
 // Lazy load below-the-fold components to improve initial load time
 const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks').then(mod => ({ default: mod.HowItWorks })), {
@@ -36,6 +84,9 @@ export default function HomePage() {
 
   return (
     <SmoothScrollProvider>
+      {/* Données structurées FAQ pour la homepage */}
+      <StructuredData data={homepageFaqSchema} />
+
       {/* Background de sparkles - léger et animé */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ width: '100vw', height: '100vh' }}>
         <Sparkles

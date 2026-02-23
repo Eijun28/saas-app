@@ -34,13 +34,23 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-[#2C1810] mb-4">Plateforme</h3>
             <ul className="space-y-2.5">
               <li>
-                <Link href="/tarifs" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
-                  Tarifs
+                <Link href="/organisation-mariage" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Organisation mariage
                 </Link>
               </li>
               <li>
-                <Link href="/notre-vision" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
-                  Notre vision
+                <Link href="/prestataires-mariage" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Prestataires mariage
+                </Link>
+              </li>
+              <li>
+                <Link href="/photographe-mariage" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Photographe mariage
+                </Link>
+              </li>
+              <li>
+                <Link href="/tarifs" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Tarifs
                 </Link>
               </li>
               <li>
@@ -57,7 +67,22 @@ export default function Footer() {
             <ul className="space-y-2.5">
               <li>
                 <Link href="/blog" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
-                  Blog
+                  Blog mariage
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog/guide-preparation-mariage-couples" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Guide organisation
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog/budget-mariage-comment-economiser" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Budget mariage
+                </Link>
+              </li>
+              <li>
+                <Link href="/notre-vision" className="text-sm text-[#6B7280] hover:text-[#823F91] transition-colors duration-200">
+                  Notre vision
                 </Link>
               </li>
               <li>

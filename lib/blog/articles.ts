@@ -408,6 +408,449 @@ export const articles: BlogArticle[] = [
 <p>Avec cette check-list, vous avez toutes les cl\u00e9s pour vivre votre jour J sans stress. L\u2019anticipation et la d\u00e9l\u00e9gation sont vos meilleurs alli\u00e9s. Et avec la <strong>timeline de NUPLY</strong>, vous pouvez organiser chaque \u00e9tape visuellement et vous assurer de ne rien laisser au hasard.</p>
 `,
   },
+
+  // ── Article 5 : Photographe mariage ──────────────────────────────────────
+  {
+    slug: 'choisir-photographe-mariage',
+    title: 'Comment choisir son photographe de mariage : le guide complet',
+    description: 'Style, tarifs, contrat, questions à poser... Tout ce que vous devez savoir pour trouver le photographe mariage idéal et ne pas rater vos souvenirs.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-10',
+    updatedAt: '2026-02-10',
+    tags: ['Photographe', 'Prestataires', 'Conseils'],
+    readingTime: '7 min',
+    content: `
+<p>Le photographe de mariage est l'un des prestataires les plus importants de votre jour J. Vos photos seront les seuls souvenirs tangibles qui traverseront les décennies. Voici comment faire le bon choix.</p>
+
+<h2>1. Définir votre style de photographie</h2>
+
+<p>Avant même de contacter des photographes, identifiez le style qui vous correspond :</p>
+
+<ul>
+  <li><strong>Reportage (ou photojournalisme) :</strong> Le photographe capte les moments spontanés sans mise en scène. Idéal si vous voulez des images authentiques et vivantes.</li>
+  <li><strong>Posé (ou classique) :</strong> Photos composées, portraits soignés, approche traditionnelle. Parfait pour un mariage élégant et formel.</li>
+  <li><strong>Lifestyle :</strong> Un mélange des deux — des mises en situation naturelles qui donnent l'impression de spontanéité tout en étant légèrement guidées.</li>
+  <li><strong>Fine art :</strong> Traitement lumineux, couleurs douces, style film ou argentique. Tendance très recherchée pour les mariages bohèmes et champêtres.</li>
+  <li><strong>Multiculturel :</strong> Certains photographes sont spécialisés dans les cérémonies mixtes (franco-africain, franco-indien, franco-maghrébin...). Une compétence précieuse si vous avez plusieurs traditions à valoriser.</li>
+</ul>
+
+<p><strong>Conseil :</strong> Créez un dossier Pinterest ou Instagram avec des photos qui vous inspirent. Cela vous aidera à définir et communiquer votre style à vos candidats.</p>
+
+<h2>2. Définir votre budget photographe</h2>
+
+<p>En France, les tarifs pour un photographe de mariage varient énormément :</p>
+
+<ul>
+  <li><strong>Débutant / étudiant :</strong> 500 à 1 200 €</li>
+  <li><strong>Photographe intermédiaire :</strong> 1 200 à 2 500 €</li>
+  <li><strong>Photographe expérimenté :</strong> 2 500 à 4 000 €</li>
+  <li><strong>Photographe reconnu / primé :</strong> 4 000 € et plus</li>
+</ul>
+
+<p>Le budget moyen pour un photographe en France se situe autour de 1 800 à 2 500 € pour une journée complète. Prévoyez entre 8 et 12 % de votre budget mariage total pour ce poste.</p>
+
+<p>Attention aux "bonnes affaires" : un photographe peu expérimenté peut ruiner vos souvenirs. La qualité a un prix.</p>
+
+<h2>3. Où trouver de bons photographes de mariage ?</h2>
+
+<ul>
+  <li><strong>Bouche à oreille :</strong> Demandez à vos proches récemment mariés. C'est souvent la meilleure recommandation.</li>
+  <li><strong>NUPLY :</strong> La plateforme vous met en relation avec des photographes mariage vérifiés selon vos critères (style, région, budget, disponibilité).</li>
+  <li><strong>Instagram et Pinterest :</strong> De nombreux photographes présentent leur portfolio sur ces réseaux.</li>
+  <li><strong>Salons du mariage :</strong> Vous pouvez rencontrer des photographes en direct et voir leurs albums physiques.</li>
+</ul>
+
+<h2>4. Les questions indispensables à poser</h2>
+
+<p>Lors de votre premier contact ou rendez-vous, posez toujours ces questions :</p>
+
+<ul>
+  <li>Êtes-vous disponible à la date de mon mariage ?</li>
+  <li>Combien de mariages photographiez-vous par an ?</li>
+  <li>Avez-vous déjà photographié dans ce lieu ou ce type de cérémonie ?</li>
+  <li>Combien de photos livrées (brutes et retouchées) ?</li>
+  <li>Dans quel délai livrez-vous les photos ?</li>
+  <li>Utilisez-vous des boitiers de secours ? (Très important !)</li>
+  <li>Que se passe-t-il si vous êtes malade ou indisponible le jour J ?</li>
+  <li>Comment sauvegardez-vous les fichiers ?</li>
+  <li>Faites-vous aussi de la vidéo ? (ou recommandez-vous un vidéaste ?)</li>
+</ul>
+
+<h2>5. Bien lire le contrat</h2>
+
+<p>Ne signez jamais sans contrat. Le contrat doit préciser :</p>
+
+<ul>
+  <li>Date, lieu et durée de la prestation</li>
+  <li>Nombre de photos livrées et délai de livraison</li>
+  <li>Format de livraison (galerie en ligne, clé USB, album papier...)</li>
+  <li>Droits d'utilisation des photos (le photographe peut-il les utiliser dans son portfolio ?)</li>
+  <li>Conditions d'annulation et de remboursement</li>
+  <li>Montant de l'acompte (généralement 30 à 50 %)</li>
+</ul>
+
+<h2>6. L'importance de la rencontre humaine</h2>
+
+<p>Au-delà du portfolio et du budget, le feeling avec votre photographe est crucial. Vous passerez votre journée entière avec lui ou elle. Assurez-vous d'être à l'aise, de pouvoir communiquer facilement et que sa personnalité s'accorde avec votre vision de la journée.</p>
+
+<p>Organisez toujours un rendez-vous (physique ou vidéo) avant de signer. Et si possible, une séance engagement (séance photo avant le mariage) pour vous mettre à l'aise devant l'objectif.</p>
+
+<h2>7. Utiliser NUPLY pour trouver votre photographe</h2>
+
+<p>Avec <strong>NUPLY</strong>, vous pouvez envoyer votre brief à plusieurs photographes vérifiés simultanément, comparer leurs propositions et échanger directement via la messagerie intégrée. Fini les heures passées à chercher sur Google : notre algorithme de matching vous propose des profils adaptés à votre style, votre région et votre budget.</p>
+`,
+  },
+
+  // ── Article 6 : Salle de mariage ─────────────────────────────────────────
+  {
+    slug: 'trouver-salle-mariage',
+    title: 'Trouver la salle de mariage parfaite : nos conseils pour bien choisir',
+    description: 'Château, mas, salle des fêtes, domaine... Comment choisir le lieu de réception de votre mariage ? Nos critères, astuces et questions à poser.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-14',
+    updatedAt: '2026-02-14',
+    tags: ['Lieu de réception', 'Organisation', 'Conseils'],
+    readingTime: '6 min',
+    content: `
+<p>Choisir la salle de mariage est souvent la première — et la plus importante — décision de votre organisation. Le lieu conditionne la date, la capacité d'accueil, l'ambiance et une grande partie de votre budget. Voici comment vous y prendre.</p>
+
+<h2>1. Les différents types de lieux de mariage</h2>
+
+<p>En France, les options sont nombreuses et très variées :</p>
+
+<ul>
+  <li><strong>Château ou manoir :</strong> L'élégance à la française. Idéal pour un mariage classique, romantique et impressionnant. Tarifs souvent élevés (3 000 à 15 000 € la location).</li>
+  <li><strong>Domaine ou mas (Sud de la France) :</strong> Ambiance provençale, jardins, terrasses. Parfait pour les mariages en plein air.</li>
+  <li><strong>Grange ou ferme rénovée :</strong> Très tendance pour les mariages champêtres ou bohèmes. Souvent plus accessible en termes de tarifs.</li>
+  <li><strong>Salle des fêtes municipale :</strong> Budget maîtrisé. Demande plus de travail de décoration pour la personnaliser.</li>
+  <li><strong>Hôtel ou restaurant :</strong> Pratique pour les petits comités. Traiteur souvent inclus dans la prestation.</li>
+  <li><strong>Loft ou espace industriel :</strong> Tendance, modulable, idéal pour des mariages urbains et modernes.</li>
+  <li><strong>Péniche ou rooftop :</strong> Pour un mariage original et inoubliable.</li>
+</ul>
+
+<h2>2. Les critères essentiels de sélection</h2>
+
+<h3>La capacité</h3>
+<p>Définissez d'abord votre nombre d'invités (au moins de façon approximative). Un lieu trop grand donnera une impression de vide ; trop petit, l'expérience sera désagréable. Prévoyez une marge de 10 à 15 %.</p>
+
+<h3>La localisation</h3>
+<ul>
+  <li>Distance depuis votre ville ou celle de vos proches</li>
+  <li>Accessibilité en transports et parking suffisant</li>
+  <li>Possibilités d'hébergement à proximité pour les invités qui viennent de loin</li>
+</ul>
+
+<h3>La disponibilité</h3>
+<p>Les meilleurs lieux se réservent 12 à 24 mois à l'avance, surtout pour les dates de mai à septembre (saison haute).</p>
+
+<h3>Le cadre juridique</h3>
+<ul>
+  <li>Le lieu est-il déclaré pour recevoir du public (ERP) ?</li>
+  <li>Y a-t-il des restrictions de bruit et des heures de fin de soirée imposées ?</li>
+  <li>Avez-vous la liberté de choisir vos propres prestataires (traiteur libre) ?</li>
+</ul>
+
+<h2>3. Les questions à poser lors de la visite</h2>
+
+<ul>
+  <li>Quelle est la capacité maximale assise et en cocktail ?</li>
+  <li>Y a-t-il une cuisine professionnelle ou un espace traiteur ?</li>
+  <li>Y a-t-il une salle de préparation (pour la mariée) ?</li>
+  <li>Y a-t-il des chambres ou un hébergement sur place ?</li>
+  <li>À quelle heure doit se terminer la musique ?</li>
+  <li>Êtes-vous disponible pour d'autres événements le même week-end ?</li>
+  <li>Que comprend exactement la location (mobilier, vaisselle, linge de table) ?</li>
+  <li>Quelles sont les conditions météo alternatives si la cérémonie est en plein air ?</li>
+</ul>
+
+<h2>4. Le budget : à quoi s'attendre ?</h2>
+
+<p>La location d'un lieu de mariage représente en moyenne 30 à 40 % du budget total. En France :</p>
+
+<ul>
+  <li><strong>Salle des fêtes :</strong> 300 à 1 500 €</li>
+  <li><strong>Domaine ou ferme :</strong> 2 000 à 6 000 €</li>
+  <li><strong>Château :</strong> 3 000 à 15 000 € et plus</li>
+  <li><strong>Hôtel 4-5 étoiles :</strong> variable selon le forfait</li>
+</ul>
+
+<p>Attention aux coûts cachés : état des lieux, caution, ménage, heures supplémentaires...</p>
+
+<h2>5. Penser à la cérémonie</h2>
+
+<p>Si vous souhaitez une cérémonie laïque ou religieuse sur place (avant le repas), vérifiez que le lieu dispose d'un espace extérieur ou d'une chapelle adaptée. De nombreux domaines proposent maintenant des espaces dédiés à la cérémonie.</p>
+
+<h2>6. Trouver votre lieu via NUPLY</h2>
+
+<p><strong>NUPLY</strong> vous permet d'accéder à des prestataires mariage vérifiés en France, dont des responsables de lieux de réception. Envoyez votre brief (date, nombre d'invités, style, budget) et recevez des propositions adaptées. Notre messagerie intégrée facilite les échanges et la comparaison des offres.</p>
+`,
+  },
+
+  // ── Article 7 : Budget mariage ────────────────────────────────────────────
+  {
+    slug: 'budget-mariage-comment-economiser',
+    title: 'Budget mariage : comment bien le répartir et réaliser des économies',
+    description: 'Combien coûte un mariage en France ? Comment répartir son budget par poste et faire des économies sans sacrifier la qualité ? Notre guide complet.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-17',
+    updatedAt: '2026-02-17',
+    tags: ['Budget', 'Organisation', 'Conseils'],
+    readingTime: '8 min',
+    content: `
+<p>Le budget est souvent le sujet qui stresse le plus les futurs mariés. Combien faut-il vraiment prévoir ? Comment éviter de se ruiner sans renoncer à ses rêves ? Ce guide vous donne toutes les clés pour piloter votre budget mariage sereinement.</p>
+
+<h2>1. Le budget moyen d'un mariage en France</h2>
+
+<p>En France, le budget moyen d'un mariage est d'environ :</p>
+
+<ul>
+  <li><strong>Mariage intime (moins de 50 personnes) :</strong> 8 000 à 15 000 €</li>
+  <li><strong>Mariage classique (80 à 150 personnes) :</strong> 15 000 à 30 000 €</li>
+  <li><strong>Grand mariage (150 personnes et plus) :</strong> 30 000 € et plus</li>
+</ul>
+
+<p>Ces montants varient beaucoup selon la région (Paris et Île-de-France sont 30 à 50 % plus chers), la saison et vos prestataires.</p>
+
+<h2>2. La répartition idéale par poste</h2>
+
+<p>Voici une répartition courante pour un mariage de 100 personnes :</p>
+
+<ul>
+  <li><strong>Lieu de réception :</strong> 30 à 35 % du budget</li>
+  <li><strong>Traiteur (repas + cocktail) :</strong> 25 à 30 %</li>
+  <li><strong>Photographe et vidéaste :</strong> 8 à 12 %</li>
+  <li><strong>Musique (DJ ou groupe) :</strong> 5 à 8 %</li>
+  <li><strong>Décoration et fleurs :</strong> 5 à 8 %</li>
+  <li><strong>Tenues (robe, costume, accessoires) :</strong> 5 à 10 %</li>
+  <li><strong>Papeterie (faire-part, menus, plan de table) :</strong> 1 à 3 %</li>
+  <li><strong>Transport (voiture de mariés, navettes) :</strong> 2 à 4 %</li>
+  <li><strong>Divers et imprévus :</strong> 5 à 10 %</li>
+</ul>
+
+<p><strong>Règle d'or :</strong> Toujours prévoir 10 % de budget "imprévus". Les surprises font partie de tout événement.</p>
+
+<h2>3. Les postes sur lesquels on peut économiser</h2>
+
+<h3>Le traiteur</h3>
+<ul>
+  <li>Choisissez un menu en 2 ou 3 plats plutôt qu'en 5 plats.</li>
+  <li>Optez pour un cocktail dînatoire plutôt qu'un repas assis si votre liste est longue.</li>
+  <li>Comparez plusieurs traiteurs via NUPLY : les écarts de prix peuvent être de 30 à 50 % pour une qualité similaire.</li>
+  <li>Privilégiez les produits de saison.</li>
+</ul>
+
+<h3>La décoration</h3>
+<ul>
+  <li>DIY (Do It Yourself) : beaucoup d'éléments déco peuvent être faits maison.</li>
+  <li>Louez plutôt qu'achetez (chandeliers, arches florales...).</li>
+  <li>Choisissez des fleurs de saison : moins chères et plus belles.</li>
+  <li>Cherchez sur Le Bon Coin ou des groupes Facebook de revente de décoration mariage.</li>
+</ul>
+
+<h3>La papeterie</h3>
+<ul>
+  <li>Les faire-part numériques (email ou site de mariage) permettent d'économiser 500 à 1 500 €.</li>
+  <li>Des sites comme Canva proposent des templates gratuits.</li>
+</ul>
+
+<h3>La musique</h3>
+<ul>
+  <li>Un bon DJ coûte souvent moins cher qu'un groupe live, pour un résultat tout aussi festif.</li>
+  <li>Pour la cérémonie, de nombreux couples utilisent une playlist Spotify via une enceinte Bluetooth.</li>
+</ul>
+
+<h2>4. Les postes sur lesquels ne pas économiser</h2>
+
+<p>Certains postes méritent un investissement sans trop rogner :</p>
+
+<ul>
+  <li><strong>Le photographe :</strong> Vos photos sont les seuls souvenirs qui traverseront le temps. Un photographe peu expérimenté peut gâcher votre mémoire de ce jour.</li>
+  <li><strong>Le traiteur :</strong> Vos invités se souviennent de la qualité de la nourriture et du service.</li>
+  <li><strong>Le lieu :</strong> Il donne le cadre général de la journée.</li>
+</ul>
+
+<h2>5. Comment gérer son budget au quotidien</h2>
+
+<p>L'outil <strong>Budget de NUPLY</strong> vous permet de :</p>
+
+<ul>
+  <li>Définir un plafond global et des plafonds par poste</li>
+  <li>Saisir chaque dépense au fur et à mesure (acomptes, soldes...)</li>
+  <li>Visualiser en temps réel l'état de votre budget par catégorie</li>
+  <li>Recevoir des alertes quand vous approchez d'un plafond</li>
+</ul>
+
+<p>Utiliser un outil dédié évite les mauvaises surprises et les dépenses non planifiées qui s'accumulent.</p>
+
+<h2>6. Financer son mariage : les options</h2>
+
+<ul>
+  <li><strong>Épargne personnelle :</strong> L'option la plus saine financièrement.</li>
+  <li><strong>Participation familiale :</strong> Les parents contribuent souvent. Définissez les montants dès le départ pour éviter les malentendus.</li>
+  <li><strong>Liste de mariage monétaire :</strong> Via des plateformes comme Lydia ou Pot Commun, vos invités peuvent contribuer à votre voyage de noces ou à votre budget mariage.</li>
+  <li><strong>Crédit à la consommation :</strong> À utiliser avec prudence. Pensez au remboursement mensuel après le mariage.</li>
+</ul>
+`,
+  },
+
+  // ── Article 8 : Liste de mariage ─────────────────────────────────────────
+  {
+    slug: 'liste-de-mariage-guide-complet',
+    title: 'Liste de mariage : comment la créer, où l\'ouvrir et quoi y mettre',
+    description: 'Liste de mariage classique, cagnotte voyage, liste expériences... Nos conseils pour créer une liste de mariage qui correspond vraiment à vos envies.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-19',
+    updatedAt: '2026-02-19',
+    tags: ['Liste de mariage', 'Organisation', 'Conseils'],
+    readingTime: '6 min',
+    content: `
+<p>La liste de mariage est une tradition bien ancrée, mais elle évolue. Fini la liste de vaisselle imposée par un grand magasin : aujourd'hui, les couples ont le choix entre une multitude de formats. Voici comment créer la liste de mariage qui vous ressemble.</p>
+
+<h2>1. Les différents types de listes de mariage</h2>
+
+<h3>La liste classique en magasin</h3>
+<p>Ouverte dans un grand magasin (Maisons du Monde, Ikea, Cyrillus, BHV...), elle permet à vos invités d'acheter des articles que vous avez présélectionnés. Simple, sécurisé, mais parfois limitant.</p>
+
+<h3>La liste de mariage en ligne</h3>
+<p>Des plateformes comme Wish, Zankyou ou Amazon permettent de créer une liste multi-boutiques en ligne. Vos invités commandent directement depuis chez eux, en France ou à l'étranger.</p>
+
+<h3>La cagnotte voyage ou "lune de miel"</h3>
+<p>Très populaire chez les couples qui ont déjà tout l'équipement nécessaire. Vos invités contribuent à votre voyage de noces ou à un projet commun (apport immobilier, véhicule, rénovation...). Plateformes : Pot Commun, Lydia, Leetchi.</p>
+
+<h3>La liste d'expériences</h3>
+<p>Pour les couples qui préfèrent les moments aux objets : dîner dans un grand restaurant, cours de cuisine, week-end bien-être, activités... Des plateformes comme La Belle Adresse ou Wonderbox proposent ce type de liste.</p>
+
+<h3>La liste mixte</h3>
+<p>Combinez une liste d'objets utiles et une cagnotte voyage. De nombreuses plateformes permettent maintenant de gérer les deux simultanément.</p>
+
+<h2>2. Quand ouvrir sa liste de mariage ?</h2>
+
+<p>Idéalement, ouvrez votre liste :</p>
+<ul>
+  <li><strong>6 à 8 mois avant</strong> le mariage pour les proches qui préfèrent anticiper</li>
+  <li><strong>En même temps que l'envoi des faire-part</strong> (3 à 4 mois avant), pour que l'information soit communiquée à tous les invités</li>
+</ul>
+
+<p>Incluez le lien ou l'adresse de la liste dans votre faire-part ou sur votre site de mariage.</p>
+
+<h2>3. Quoi mettre dans sa liste ?</h2>
+
+<h3>Les essentiels</h3>
+<ul>
+  <li>Articles pour la maison (vaisselle, linge de lit, électroménager)</li>
+  <li>Décoration d'intérieur</li>
+  <li>Cadeaux pratiques (robot culinaire, Thermomix, machine à café...)</li>
+</ul>
+
+<h3>Les idées originales</h3>
+<ul>
+  <li>Abonnements (Netflix, Spotify, box gastronomique, jardinerie...)</li>
+  <li>Don à une association qui vous tient à cœur</li>
+  <li>Cours (cuisine, danse, langue, dessin...)</li>
+  <li>Contribution à un projet commun (première maison, voiture, travaux)</li>
+</ul>
+
+<h2>4. Combien d'articles prévoir ?</h2>
+
+<p>Une règle simple : prévoyez environ 1,5 fois le nombre d'invités en articles ou contributions. Si vous avez 100 invités, proposez 130 à 150 articles ou tranches de cagnotte. Ainsi, tout le monde a le choix sans arriver trop tard.</p>
+
+<p>Variez les gammes de prix : de 20 à 30 € pour les cadeaux simples, jusqu'à 200 à 500 € pour les articles premium ou les grosses contributions à la cagnotte.</p>
+
+<h2>5. Comment communiquer sa liste à ses invités ?</h2>
+
+<ul>
+  <li><strong>Site de mariage :</strong> Créez une page dédiée avec le lien direct vers votre liste.</li>
+  <li><strong>Faire-part :</strong> Mentionnez l'existence de la liste (sans y inclure le lien — trop long — mais en renvoyant vers votre site ou en précisant le nom du magasin).</li>
+  <li><strong>Bouche à oreille :</strong> Les parents et témoins peuvent relayer l'information.</li>
+</ul>
+
+<h2>6. Après le mariage : les remerciements</h2>
+
+<p>Envoyez des cartes de remerciements personnalisées dans les 2 mois suivant le mariage. Mentionnez le cadeau spécifique reçu pour montrer que vous avez bien noté qui a offert quoi. Un petit geste qui fait toute la différence et que vos invités apprécieront vraiment.</p>
+`,
+  },
+
+  // ── Article 9 : Wedding planner ───────────────────────────────────────────
+  {
+    slug: 'wedding-planner-ou-organisation-solo',
+    title: 'Wedding planner ou organisation solo : que choisir pour votre mariage ?',
+    description: 'Faire appel à un wedding planner ou tout organiser soi-même ? Découvrez les avantages, les inconvénients et les alternatives pour organiser votre mariage sereinement.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-21',
+    updatedAt: '2026-02-21',
+    tags: ['Wedding Planner', 'Organisation', 'Conseils'],
+    readingTime: '7 min',
+    content: `
+<p>Faire appel à un wedding planner ou organiser soi-même son mariage : c'est l'une des premières questions que se posent les couples après les fiançailles. La réponse dépend de votre budget, de votre temps disponible et de votre appétit pour l'organisation.</p>
+
+<h2>1. Qu'est-ce qu'un wedding planner ?</h2>
+
+<p>Un wedding planner (ou coordinateur de mariage) est un professionnel qui vous accompagne dans l'organisation de votre mariage. Il existe plusieurs niveaux de prestation :</p>
+
+<ul>
+  <li><strong>Organisation complète (full wedding planning) :</strong> Le wedding planner prend en charge tout, du concept à la coordination le jour J. Idéal si vous manquez de temps ou habitez loin du lieu.</li>
+  <li><strong>Accompagnement partiel :</strong> Vous gérez certaines parties, le wedding planner intervient sur des aspects spécifiques (prestataires, logistique...).</li>
+  <li><strong>Coordination jour J :</strong> Le wedding planner n'intervient que le jour du mariage pour s'assurer que tout se passe comme prévu. C'est l'option la plus abordable.</li>
+</ul>
+
+<h2>2. Combien coûte un wedding planner en France ?</h2>
+
+<ul>
+  <li><strong>Coordination jour J uniquement :</strong> 1 000 à 2 500 €</li>
+  <li><strong>Accompagnement partiel :</strong> 2 000 à 5 000 €</li>
+  <li><strong>Organisation complète :</strong> 5 000 à 15 000 € (souvent calculé en pourcentage du budget total, 10 à 15 %)</li>
+</ul>
+
+<h2>3. Les avantages du wedding planner</h2>
+
+<ul>
+  <li><strong>Gain de temps considérable :</strong> Un wedding planner gère les recherches, les négociations, les relances et la coordination entre prestataires.</li>
+  <li><strong>Carnet d'adresses :</strong> Il ou elle connaît les meilleurs prestataires de la région et peut obtenir des tarifs préférentiels.</li>
+  <li><strong>Zéro stress le jour J :</strong> Vous profitez de votre mariage pendant qu'il coordonne les équipes dans les coulisses.</li>
+  <li><strong>Gestion des imprévus :</strong> Traiteur en retard, météo capricieuse, oubli d'un élément de décor... Le wedding planner gère.</li>
+  <li><strong>Budget maîtrisé :</strong> Paradoxalement, un bon wedding planner peut vous faire économiser de l'argent grâce à ses négociations et ses conseils.</li>
+</ul>
+
+<h2>4. Les inconvénients du wedding planner</h2>
+
+<ul>
+  <li><strong>Un coût supplémentaire :</strong> Il faut intégrer ses honoraires dans votre budget global.</li>
+  <li><strong>Perte de contrôle perçue :</strong> Certains couples tiennent à tout gérer eux-mêmes et trouvent difficile de déléguer.</li>
+  <li><strong>Trouver le bon :</strong> Tous les wedding planners ne se valent pas. Il faut prendre le temps de sélectionner quelqu'un qui comprend vraiment votre vision.</li>
+</ul>
+
+<h2>5. L'organisation en solo : pour qui ?</h2>
+
+<p>Organiser seul son mariage est tout à fait possible, surtout si :</p>
+<ul>
+  <li>Vous êtes naturellement organisé(e) et aimez les projets</li>
+  <li>Votre mariage est de taille moyenne (moins de 80 invités)</li>
+  <li>Vous disposez de temps (week-ends, soirées pour les recherches et démarches)</li>
+  <li>Vous avez de l'aide de proches fiables (témoins impliqués)</li>
+</ul>
+
+<p>Dans ce cas, des outils comme <strong>NUPLY</strong> peuvent vous aider à centraliser toute l'organisation : recherche de prestataires, budget, timeline, messagerie. Vous bénéficiez d'une plateforme structurée sans passer par un intermédiaire humain.</p>
+
+<h2>6. La solution intermédiaire : les outils d'organisation en ligne</h2>
+
+<p>Entre le wedding planner haut de gamme et la feuille Excel, des plateformes comme NUPLY offrent une troisième voie :</p>
+
+<ul>
+  <li>Matching intelligent avec des prestataires vérifiés</li>
+  <li>Suivi du budget en temps réel</li>
+  <li>Timeline et checklist personnalisables</li>
+  <li>Messagerie centralisée avec tous vos prestataires</li>
+</ul>
+
+<p>C'est idéal pour les couples qui veulent garder le contrôle tout en bénéficiant d'outils professionnels.</p>
+
+<h2>7. Notre recommandation</h2>
+
+<p>Si votre budget le permet, optez au minimum pour une <strong>coordination jour J</strong>. Le jour de votre mariage, vous méritez d'être présent(e) à 100 % dans vos émotions, pas en train de coordonner des prestataires par téléphone.</p>
+
+<p>Pour l'organisation en amont, <strong>NUPLY</strong> peut vous faire économiser de nombreuses heures tout en accédant à des prestataires de qualité vérifiée.</p>
+`,
+  },
 ]
 
 export function getArticleBySlug(slug: string): BlogArticle | undefined {
