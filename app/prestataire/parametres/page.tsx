@@ -141,7 +141,7 @@ export default function ParametresPage() {
         // Load existing profile data
         const { data: profile } = await supabase
           .from('profiles')
-          .select('prenom, nom')
+          .select('prenom, nom, notification_preferences')
           .eq('id', data.user.id)
           .single()
 
@@ -150,6 +150,16 @@ export default function ParametresPage() {
           nom: profile?.nom ?? '',
           email: data.user.email ?? '',
         })
+
+        if (profile?.notification_preferences && typeof profile.notification_preferences === 'object') {
+          const prefs = profile.notification_preferences as Partial<NotificationPrefs>
+          setNotifPrefs({
+            newRequests: prefs.newRequests ?? true,
+            messages: prefs.messages ?? true,
+            calendarReminders: prefs.calendarReminders ?? true,
+            newsletter: prefs.newsletter ?? false,
+          })
+        }
       }
     }
     fetchUser()
@@ -236,12 +246,30 @@ export default function ParametresPage() {
   }
 
   // ─── Notification toggle ──────────────────────────────────
-  const handleNotifToggle = (key: keyof NotificationPrefs) => {
-    setNotifPrefs(prev => {
-      const updated = { ...prev, [key]: !prev[key] }
-      toast.success('Préférences de notification mises à jour')
-      return updated
-    })
+  const handleNotifToggle = async (key: keyof NotificationPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] }
+    setNotifPrefs(updated)
+
+    try {
+      const supabase = createClient()
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ notification_preferences: updated })
+        .eq('id', authData.user.id)
+
+      if (error) {
+        setNotifPrefs(notifPrefs)
+        toast.error('Erreur lors de la mise à jour des préférences.')
+      } else {
+        toast.success('Préférences de notification mises à jour')
+      }
+    } catch {
+      setNotifPrefs(notifPrefs)
+      toast.error('Une erreur est survenue. Veuillez réessayer.')
+    }
   }
 
   // ─── Delete account ───────────────────────────────────────

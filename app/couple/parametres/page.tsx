@@ -132,7 +132,7 @@ export default function CoupleParametresPage() {
 
       const { data: coupleData } = await supabase
         .from('couples')
-        .select('partner_1_name, partner_2_name')
+        .select('partner_1_name, partner_2_name, notification_preferences')
         .eq('user_id', authData.user.id)
         .single()
 
@@ -141,6 +141,15 @@ export default function CoupleParametresPage() {
         partner2Name: coupleData?.partner_2_name ?? '',
         email: authData.user.email ?? '',
       })
+
+      if (coupleData?.notification_preferences && typeof coupleData.notification_preferences === 'object') {
+        const prefs = coupleData.notification_preferences as Partial<NotificationPrefs>
+        setNotifPrefs({
+          messages: prefs.messages ?? true,
+          calendarReminders: prefs.calendarReminders ?? true,
+          newsletter: prefs.newsletter ?? false,
+        })
+      }
     }
     fetchData()
   }, [])
@@ -222,12 +231,30 @@ export default function CoupleParametresPage() {
   }
 
   // ─── Notification toggle ──────────────────────────────────
-  const handleNotifToggle = (key: keyof NotificationPrefs) => {
-    setNotifPrefs(prev => {
-      const updated = { ...prev, [key]: !prev[key] }
-      toast.success('Préférences de notification mises à jour')
-      return updated
-    })
+  const handleNotifToggle = async (key: keyof NotificationPrefs) => {
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] }
+    setNotifPrefs(updated)
+
+    try {
+      const supabase = createClient()
+      const { data: authData } = await supabase.auth.getUser()
+      if (!authData.user) return
+
+      const { error } = await supabase
+        .from('couples')
+        .update({ notification_preferences: updated })
+        .eq('user_id', authData.user.id)
+
+      if (error) {
+        setNotifPrefs(notifPrefs)
+        toast.error('Erreur lors de la mise à jour des préférences.')
+      } else {
+        toast.success('Préférences de notification mises à jour')
+      }
+    } catch {
+      setNotifPrefs(notifPrefs)
+      toast.error('Une erreur est survenue. Veuillez réessayer.')
+    }
   }
 
   const cardClass = "card-section"
