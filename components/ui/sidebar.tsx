@@ -188,7 +188,10 @@ const Sidebar = React.forwardRef<
           >
             <div
               className="flex min-h-full w-full flex-col p-4"
-              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+              style={{
+                paddingTop: 'max(1rem, env(safe-area-inset-top))',
+                paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+              }}
             >
               {children}
             </div>
