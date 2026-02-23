@@ -1082,7 +1082,10 @@ function ChatView({
           </div>
 
           {/* Footer fixe avec input */}
-          <div className="border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 flex-shrink-0">
+          <div
+            className="border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 flex-shrink-0"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+          >
             <div className="max-w-3xl mx-auto relative">
               <div className="relative flex items-end gap-2 sm:gap-3">
                 {/* Avatar utilisateur à gauche */}

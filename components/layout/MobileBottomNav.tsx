@@ -127,7 +127,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
                       href={item.href}
                       onClick={onClose}
                       className={cn(
-                        'flex flex-col items-center gap-2 p-3 rounded-2xl transition-colors active:scale-95',
+                        'flex flex-col items-center gap-2 p-4 rounded-2xl transition-colors active:scale-95',
                         isActive ? activeItemClasses : 'text-gray-600 active:bg-gray-50'
                       )}
                     >
