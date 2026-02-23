@@ -20,6 +20,9 @@ import {
   Settings,
   PartyPopper,
   UserPlus,
+  CreditCard,
+  Receipt,
+  CalendarCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/use-notifications'
@@ -342,6 +345,7 @@ export function PrestataireMobileNav() {
       title: 'Compte',
       items: [
         { href: '/prestataire/profil-public', label: 'Profil public', icon: UserCircle },
+        { href: '/prestataire/disponibilites', label: 'Disponibilités', icon: CalendarCheck },
         { href: '/prestataire/parametres', label: 'Paramètres', icon: Settings },
       ],
     },
@@ -374,6 +378,13 @@ export function CoupleMobileNav() {
         { href: '/couple/timeline', label: 'Calendrier', icon: Calendar },
         { href: '/couple/evenements', label: 'Événements', icon: PartyPopper },
         { href: '/couple/collaborateurs', label: 'Collaborateurs', icon: UserPlus },
+      ],
+    },
+    {
+      title: 'Finances',
+      items: [
+        { href: '/couple/paiements', label: 'Paiements', icon: CreditCard },
+        { href: '/couple/factures', label: 'Factures', icon: Receipt },
       ],
     },
     {
