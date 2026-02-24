@@ -120,7 +120,7 @@ export async function signUp(
   let confirmationEmailFailed = false
   if (data.user && !data.user.email_confirmed_at) {
     try {
-      await sendConfirmationEmail(data.user.id, email, profileData.prenom)
+      await sendConfirmationEmail(data.user.id, email, profileData.prenom, role)
       logger.info('✅ Email de confirmation personnalisé envoyé', { email, userId: data.user.id })
     } catch (emailError: unknown) {
       // Ne pas bloquer l'inscription si l'email échoue, mais informer l'utilisateur
