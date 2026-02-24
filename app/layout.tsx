@@ -13,14 +13,6 @@ import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/str
 
 export const metadata: Metadata = {
   ...seoConfig.defaultMetadata,
-  openGraph: {
-    ...seoConfig.defaultMetadata.openGraph,
-    images: seoConfig.defaultMetadata.openGraph?.images ? [...seoConfig.defaultMetadata.openGraph.images] : undefined,
-  },
-  twitter: {
-    ...seoConfig.defaultMetadata.twitter,
-    images: seoConfig.defaultMetadata.twitter?.images ? [...seoConfig.defaultMetadata.twitter.images] : undefined,
-  },
   title: seoConfig.pages.home.title,
   description: seoConfig.pages.home.description,
   keywords: [...seoConfig.pages.home.keywords],

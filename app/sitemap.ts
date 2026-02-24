@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { createClient } from '@/lib/supabase/server';
+import { getAllArticles } from '@/lib/blog/articles';
 
 /**
  * Sitemap dynamique pour le SEO
@@ -60,7 +61,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
+    {
+      url: `${baseUrl}/cgu`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${baseUrl}/confidentialite`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
   ];
+
+  // Pages dynamiques : articles de blog
+  const blogArticles = getAllArticles();
+  const blogPages: MetadataRoute.Sitemap = blogArticles.map((article) => ({
+    url: `${baseUrl}/blog/${article.slug}`,
+    lastModified: article.updatedAt
+      ? new Date(article.updatedAt)
+      : new Date(article.publishedAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
 
   // Pages dynamiques : profils publics de prestataires
   let providerPages: MetadataRoute.Sitemap = [];
@@ -85,5 +109,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // En cas d'erreur DB, on continue sans les pages dynamiques
   }
 
-  return [...staticPages, ...providerPages];
+  return [...staticPages, ...blogPages, ...providerPages];
 }
