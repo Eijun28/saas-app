@@ -391,7 +391,7 @@ export function AvatarUploader({
 
       {/* Modal d'agrandissement */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-lg" showCloseButton={false}>
+        <DialogContent className="max-w-lg" showCloseButton={false} aria-describedby={undefined}>
           {/* DialogTitle caché pour l'accessibilité */}
           <DialogTitle className="sr-only">
             Photo de profil - {userName}

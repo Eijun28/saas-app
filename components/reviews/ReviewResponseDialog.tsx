@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -72,9 +73,9 @@ export function ReviewResponseDialog({
             <CornerDownRight className="h-4 w-4 text-[#823F91]" />
             {isEditing ? 'Modifier votre reponse' : 'Repondre a l\'avis'}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription className="text-sm text-muted-foreground">
             Avis de {coupleName}
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

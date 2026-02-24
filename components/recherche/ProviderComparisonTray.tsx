@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -179,6 +180,9 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
               <ArrowLeftRight className="h-5 w-5 text-[#823F91]" />
               Comparaison de prestataires
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Comparez les prestataires sélectionnés côte à côte
+            </DialogDescription>
           </DialogHeader>
 
           <div className="overflow-x-auto">

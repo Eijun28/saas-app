@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -174,9 +175,9 @@ export function ReviewDialog({
           <DialogTitle>
             {isEditing ? 'Modifier votre avis' : 'Laisser un avis'}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription className="text-sm text-muted-foreground">
             {providerName}
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-2">

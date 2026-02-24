@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -137,6 +138,9 @@ export function GuestForm({ open, onClose, onSaved, existing }: GuestFormProps) 
           <DialogTitle className="text-[#823F91] font-bold text-lg">
             {existing ? 'Modifier l\'invité' : 'Ajouter un invité'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {existing ? 'Modifier les informations de l\'invité' : 'Ajouter un nouvel invité à la liste'}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-1">

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -173,6 +174,9 @@ export function PaymentCsvImport({ open, onClose, onImported }: PaymentCsvImport
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Importer des paiements (CSV)</DialogTitle>
+          <DialogDescription className="sr-only">
+            Importez vos paiements depuis un fichier CSV
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -162,6 +163,9 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
       <DialogContent className="sm:max-w-[600px] max-h-[70vh] sm:max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Importer des services</DialogTitle>
+          <DialogDescription className="sr-only">
+            Importez vos services manuellement ou via l'IA
+          </DialogDescription>
         </DialogHeader>
 
         {!mode ? (

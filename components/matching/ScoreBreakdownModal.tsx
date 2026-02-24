@@ -4,6 +4,7 @@ import { ScoreBreakdown } from '@/types/matching';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -69,6 +70,9 @@ export default function ScoreBreakdownModal({
             <TrendingUp className="h-5 w-5 text-[#823F91]" />
             Détail du score - {providerName}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Détail du score de correspondance pour {providerName}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto p-6">

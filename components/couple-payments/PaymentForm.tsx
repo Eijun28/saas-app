@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -118,6 +119,9 @@ export function PaymentForm({ open, onClose, onSaved, existing }: PaymentFormPro
           <DialogTitle className="text-[#823F91] font-bold text-lg">
             {existing ? 'Modifier le paiement' : 'Ajouter un paiement'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {existing ? 'Modifier les informations du paiement' : 'Ajouter un nouveau paiement'}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-1">

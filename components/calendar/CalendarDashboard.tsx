@@ -1137,6 +1137,9 @@ export function CalendarDashboard({
         <DialogContent size="sm" className="sm:max-w-[450px] max-w-[calc(100vw-1rem)] max-h-[85vh] sm:max-h-[75vh] p-4 sm:p-6">
           <DialogHeader className="pb-2 sm:pb-4">
             <DialogTitle className="text-base sm:text-lg">Créer un événement</DialogTitle>
+            <DialogDescription className="sr-only">
+              Créer un nouvel événement dans le calendrier
+            </DialogDescription>
           </DialogHeader>
 
           <motion.div
@@ -1230,6 +1233,9 @@ export function CalendarDashboard({
         <DialogContent size="sm" className="sm:max-w-[450px] max-w-[calc(100vw-1rem)] max-h-[85vh] sm:max-h-[75vh] p-4 sm:p-6">
           <DialogHeader className="pb-2 sm:pb-4">
             <DialogTitle className="text-base sm:text-lg">Modifier l'événement</DialogTitle>
+            <DialogDescription className="sr-only">
+              Modifier les informations de l'événement
+            </DialogDescription>
           </DialogHeader>
 
           <motion.div

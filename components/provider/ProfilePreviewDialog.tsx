@@ -275,6 +275,7 @@ export function ProfilePreviewDialog({
           className="p-0 gap-0 border-0 shadow-2xl flex flex-col overflow-y-auto scrollbar-hide rounded-2xl max-h-[88vh]"
           style={{ backgroundColor: BEIGE }}
           showCloseButton={false}
+          aria-describedby={undefined}
         >
           <DialogTitle className="sr-only">
             Apercu du profil - {profile.nom_entreprise}

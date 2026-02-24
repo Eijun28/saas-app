@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -114,9 +115,9 @@ export function ServiceDialog({ isOpen, onClose, onSave, service }: ServiceDialo
           <DialogTitle>
             {service ? 'Modifier votre service' : 'Ajouter un service'}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-1">
+          <DialogDescription className="text-sm text-muted-foreground mt-1">
             Sélectionnez le type de prestation que vous proposez
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

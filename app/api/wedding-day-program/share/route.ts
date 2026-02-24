@@ -4,18 +4,18 @@ import { randomUUID } from 'crypto'
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
-async function getAuthenticatedCouple(supabase: Awaited<ReturnType<typeof createClient>>) {
+async function getAuthenticatedCoupleId(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return { couple: null, error: 'Non authentifié', status: 401 }
+  if (authError || !user) return { coupleId: null, error: 'Non authentifié', status: 401 as const }
 
-  const { data: couple } = await supabase
+  const { data: couple, error: dbError } = await supabase
     .from('couples')
-    .select('id, share_token')
+    .select('id')
     .eq('user_id', user.id)
     .single()
 
-  if (!couple) return { couple: null, error: 'Profil couple introuvable', status: 404 }
-  return { couple, error: null, status: 200 }
+  if (dbError || !couple) return { coupleId: null, error: 'Profil couple introuvable', status: 404 as const }
+  return { coupleId: couple.id as string, error: null, status: 200 as const }
 }
 
 // ─── POST /api/wedding-day-program/share ──────────────────────────────────────
@@ -24,16 +24,23 @@ async function getAuthenticatedCouple(supabase: Awaited<ReturnType<typeof create
 export async function POST() {
   try {
     const supabase = await createClient()
-    const { couple, error, status } = await getAuthenticatedCouple(supabase)
-    if (error || !couple) return NextResponse.json({ error }, { status })
+    const { coupleId, error, status } = await getAuthenticatedCoupleId(supabase)
+    if (error || !coupleId) return NextResponse.json({ error }, { status })
 
-    // Génère un token UUID si non déjà présent
-    const token = couple.share_token ?? randomUUID()
+    // Récupérer le token existant s'il existe déjà
+    const { data: coupleData } = await supabase
+      .from('couples')
+      .select('share_token')
+      .eq('id', coupleId)
+      .single()
+
+    const existingToken = (coupleData as { share_token?: string | null } | null)?.share_token
+    const token: string = existingToken ?? randomUUID()
 
     const { error: dbError } = await supabase
       .from('couples')
       .update({ share_token: token })
-      .eq('id', couple.id)
+      .eq('id', coupleId)
 
     if (dbError) return NextResponse.json({ error: 'Erreur lors de la génération du token' }, { status: 500 })
 
@@ -50,13 +57,13 @@ export async function POST() {
 export async function DELETE() {
   try {
     const supabase = await createClient()
-    const { couple, error, status } = await getAuthenticatedCouple(supabase)
-    if (error || !couple) return NextResponse.json({ error }, { status })
+    const { coupleId, error, status } = await getAuthenticatedCoupleId(supabase)
+    if (error || !coupleId) return NextResponse.json({ error }, { status })
 
     const { error: dbError } = await supabase
       .from('couples')
       .update({ share_token: null })
-      .eq('id', couple.id)
+      .eq('id', coupleId)
 
     if (dbError) return NextResponse.json({ error: 'Erreur lors de la révocation du token' }, { status: 500 })
 

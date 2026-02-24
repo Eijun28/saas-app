@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -80,10 +81,11 @@ export function ProgramShareDialog({ open, onClose }: ProgramShareDialogProps) {
           </DialogTitle>
         </DialogHeader>
 
+        <DialogDescription className="text-sm text-gray-500">
+          Partagez ce lien avec vos prestataires ou témoins pour qu'ils puissent consulter votre programme en lecture seule.
+        </DialogDescription>
+
         <div className="space-y-4">
-          <p className="text-sm text-gray-500">
-            Partagez ce lien avec vos prestataires ou témoins pour qu'ils puissent consulter votre programme en lecture seule.
-          </p>
 
           {loading ? (
             <div className="h-12 bg-gray-50 rounded-xl animate-pulse" />
