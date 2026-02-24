@@ -256,6 +256,54 @@ export async function POST(request: NextRequest) {
       providers = providersData || [];
     }
 
+    // FILTRES POST-CHARGEMENT : disponibilités + prestataires masqués
+    // Ces filtres réduisent l'ensemble avant l'enrichissement (évite des requêtes inutiles)
+
+    // Filtre 1 : Exclure les prestataires déjà réservés sur la date de mariage
+    if (search_criteria.wedding_date && providers.length > 0) {
+      try {
+        const weddingDate = search_criteria.wedding_date;
+        const loadedProviderIds = providers.map(p => String(p.id));
+        const { data: busyEvents } = await supabase
+          .from('events')
+          .select('prestataire_id')
+          .in('prestataire_id', loadedProviderIds)
+          .eq('status', 'confirmed')
+          .eq('date', weddingDate);
+
+        if (busyEvents && busyEvents.length > 0) {
+          const busyIds = new Set(busyEvents.map((e: { prestataire_id: string }) => String(e.prestataire_id)));
+          const before = providers.length;
+          providers = providers.filter(p => !busyIds.has(String(p.id)));
+          logger.info(`📅 Filtre disponibilités: ${before} -> ${providers.length} prestataires (${busyIds.size} déjà réservés le ${weddingDate})`);
+        }
+      } catch (availabilityError) {
+        // Table events peut ne pas exister ou avoir un schéma différent — non bloquant
+        logger.warn('⚠️ Filtre disponibilités ignoré (table events):', availabilityError);
+      }
+    }
+
+    // Filtre 2 : Exclure les prestataires que le couple a déjà masqués
+    if (couple_id && providers.length > 0) {
+      try {
+        const { data: hiddenLogs } = await supabase
+          .from('impression_logs')
+          .select('profile_id')
+          .eq('couple_id', couple_id)
+          .eq('event_type', 'hide');
+
+        if (hiddenLogs && hiddenLogs.length > 0) {
+          const hiddenIds = new Set(hiddenLogs.map((l: { profile_id: string }) => String(l.profile_id)));
+          const before = providers.length;
+          providers = providers.filter(p => !hiddenIds.has(String(p.id)));
+          logger.info(`🙈 Filtre masqués: ${before} -> ${providers.length} prestataires (${hiddenIds.size} masqués par le couple)`);
+        }
+      } catch (hideError) {
+        // Table impression_logs peut ne pas exister — non bloquant
+        logger.warn('⚠️ Filtre masqués ignoré (table impression_logs):', hideError);
+      }
+    }
+
     if (!providers || providers.length === 0) {
       logger.warn('⚠️ Aucun prestataire trouvé avec les critères:', {
         service_type: search_criteria.service_type,
