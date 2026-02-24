@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/organisation-mariage' },
   openGraph: {
     ...seoConfig.defaultMetadata.openGraph,
+    images: seoConfig.defaultMetadata.openGraph?.images ? [...seoConfig.defaultMetadata.openGraph.images] : undefined,
     title: seoConfig.pages.organisationMariage.title,
     description: seoConfig.pages.organisationMariage.description,
   },
