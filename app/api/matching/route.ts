@@ -184,9 +184,10 @@ export async function POST(request: NextRequest) {
 
     // Filtre budget si défini - LOGIQUE OPTIMISÉE
     // Chevauchement : (provider_min <= couple_max) ET (provider_max >= couple_min OR provider_max IS NULL)
+    // Important : les prestataires sans budget renseigné (NULL) restent éligibles
     if (search_criteria.budget_max) {
-      // Le prestataire doit avoir un budget_min <= budget_max du couple
-      query = query.lte('budget_min', search_criteria.budget_max);
+      // Le prestataire doit avoir un budget_min <= budget_max du couple OU pas de budget_min défini
+      query = query.or(`budget_min.is.null,budget_min.lte.${search_criteria.budget_max}`);
 
       // Si le couple a un budget_min, exclure les prestataires dont le budget_max est trop bas
       // On garde ceux qui n'ont pas de budget_max (NULL) OU dont budget_max >= budget_min du couple
@@ -445,15 +446,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ETAPE 2.5 : FILTRER PAR COMPLETION DU PROFIL (70% minimum)
-    // Seuls les prestataires avec un profil suffisamment complet sont visibles
-    const MINIMUM_PROFILE_COMPLETION = 70;
+    // ETAPE 2.5 : FILTRER PAR COMPLETION DU PROFIL
+    // Seuil adaptatif : 40% minimum (critères essentiels seulement)
+    // Fallback à 0% si aucun prestataire ne passe (évite les 0 résultats en dev/peu de données)
+    const MINIMUM_PROFILE_COMPLETION = 40;
 
-    const providersWithCompletion = enrichedProviders.filter((provider) => {
-      // Calculer le score de complétion (même logique que ProfileScoreCard)
+    const computeCompletion = (provider: Record<string, unknown>): number => {
       let score = 0;
-      const maxScore = 100;
-
       // Avatar: 15 pts
       if (provider.avatar_url) score += 15;
       // Nom entreprise: 10 pts
@@ -470,27 +469,21 @@ export async function POST(request: NextRequest) {
       if (Array.isArray(provider.zones) && provider.zones.length > 0) score += 10;
       // Portfolio (3+ photos): 15 pts
       if (typeof provider.portfolio_count === 'number' && provider.portfolio_count >= 3) score += 15;
-      // Réseaux sociaux: 5 pts (non vérifié ici car non chargé, on l'ignore)
-      // Le score max effectif est donc 95 pts
+      // Le score max effectif est 95 pts (réseaux sociaux non chargés ici)
+      return Math.round((score / 100) * 100);
+    };
 
-      const completionPercent = Math.round((score / maxScore) * 100);
-      return completionPercent >= MINIMUM_PROFILE_COMPLETION;
-    });
+    let providersWithCompletion = enrichedProviders.filter(
+      p => computeCompletion(p) >= MINIMUM_PROFILE_COMPLETION
+    );
 
     logger.info(`📊 Filtrage profil: ${enrichedProviders.length} -> ${providersWithCompletion.length} prestataires (>= ${MINIMUM_PROFILE_COMPLETION}% complétion)`);
 
-    // Si aucun prestataire ne passe le filtre de complétion, retourner un message explicatif
+    // Fallback : si aucun prestataire ne passe, montrer tous les prestataires disponibles
+    // (utile en développement avec peu de données ou profils incomplets)
     if (providersWithCompletion.length === 0 && enrichedProviders.length > 0) {
-      return NextResponse.json({
-        matches: [],
-        total_candidates: 0,
-        search_criteria,
-        suggestions: {
-          message: `Les prestataires de type "${search_criteria.service_type}" n'ont pas encore complété leur profil. Réessayez bientôt !`,
-          total_providers_for_service: enrichedProviders.length,
-          service_type: normalizedServiceType,
-        },
-      });
+      logger.warn(`⚠️ Aucun prestataire >= ${MINIMUM_PROFILE_COMPLETION}% de complétion — fallback sans filtre de complétion`);
+      providersWithCompletion = enrichedProviders;
     }
 
     // Remplacer enrichedProviders par les prestataires filtrés
