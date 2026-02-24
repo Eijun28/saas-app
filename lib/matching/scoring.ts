@@ -441,6 +441,42 @@ export function calculateCTRBonus(
 }
 
 /**
+ * Calcule le score de capacité invités (/10 points)
+ * Applicable aux services avec capacité (traiteur, salle, animation...)
+ * Retourne 0 si pas de données (pas de pénalité pour services sans capacité)
+ */
+export function calculateCapacityScore(
+  guestCount: number | undefined,
+  providerCapacityMin: number | undefined,
+  providerCapacityMax: number | undefined
+): number {
+  // Si le couple n'a pas précisé le nombre d'invités, pas de bonus/malus
+  if (!guestCount) return 0;
+
+  // Si le prestataire n'a pas renseigné sa capacité, neutre
+  if (!providerCapacityMin && !providerCapacityMax) return 0;
+
+  const min = providerCapacityMin || 0;
+  const max = providerCapacityMax ?? Infinity;
+
+  // Parfait : dans la capacité du prestataire
+  if (guestCount >= min && guestCount <= max) return 10;
+
+  // Légèrement en-dessous du minimum (≤ 20%) : acceptable
+  if (guestCount < min && guestCount >= min * 0.8) return 5;
+
+  // Dépasse la capacité max
+  if (providerCapacityMax && guestCount > providerCapacityMax) {
+    const overload = (guestCount - providerCapacityMax) / providerCapacityMax;
+    if (overload <= 0.1) return 5;  // +10% : faisable
+    if (overload <= 0.2) return 2;  // +20% : difficile
+    return -5;                      // >20% : probablement impossible
+  }
+
+  return 0;
+}
+
+/**
  * Interface etendue du provider pour le scoring avec equite
  */
 export interface ProviderWithFairness {
@@ -455,6 +491,8 @@ export interface ProviderWithFairness {
   tags?: string[];
   specialty_tags?: string[];
   fairness_data?: FairnessData;
+  guest_capacity_min?: number;
+  guest_capacity_max?: number;
   [key: string]: unknown;
 }
 
@@ -522,6 +560,13 @@ export function calculateTotalScore(
   // Calculate CTR bonus/malus (-3 to +5 points)
   const ctrBonus = calculateCTRBonus(provider.fairness_data);
 
+  // Calculate capacity score (/10 — applicable aux services avec capacité)
+  const capacityScore = calculateCapacityScore(
+    criteria.guest_count,
+    provider.guest_capacity_min,
+    provider.guest_capacity_max
+  );
+
   // Score algorithmique total avant equite
   const totalAlgo =
     culturalScore +
@@ -531,7 +576,8 @@ export function calculateTotalScore(
     locationScore +
     tagsScore +
     specialtyScore +
-    ctrBonus;
+    ctrBonus +
+    capacityScore;
 
   // Score avant application de l'equite (cap a 100)
   const scoreBeforeFairness = Math.min(100, Math.max(0, totalAlgo));
@@ -552,6 +598,7 @@ export function calculateTotalScore(
     reputation: reputationScore,
     experience: experienceScore,
     location_match: locationScore,
+    capacity_match: capacityScore !== 0 ? capacityScore : undefined,
     tags_match: tagsScore,
     specialty_match: specialtyScore,
     fairness_multiplier: fairnessMultiplier,

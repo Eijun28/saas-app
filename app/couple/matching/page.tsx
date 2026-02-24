@@ -1408,6 +1408,7 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, 
       <div className="py-8">
         <MatchResults
           matches={matchingResults.matches}
+          allMatches={matchingResults.all_matches}
           totalCandidates={matchingResults.total_candidates}
           matchingResult={matchingResults}
           onContactProvider={(id) => {

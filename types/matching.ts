@@ -26,6 +26,8 @@ export interface ProviderMatch {
     review_count?: number;
     response_rate?: number;
     portfolio_count?: number;
+    guest_capacity_min?: number;
+    guest_capacity_max?: number;
   };
   score: number;
   rank: number;
@@ -34,12 +36,13 @@ export interface ProviderMatch {
 }
 
 export interface ScoreBreakdown {
-  // Scores algorithmiques (base /90)
+  // Scores algorithmiques (base /100)
   cultural_match: number; // /30
   budget_match: number; // /20
   reputation: number; // /20
   experience: number; // /10
   location_match: number; // /10
+  capacity_match?: number; // /10 (si guest_count renseigné)
 
   // Tags match (bonus)
   tags_match?: number; // 0 a +10 points bonus

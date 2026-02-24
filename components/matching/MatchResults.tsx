@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { ProviderMatch, MatchingResult } from '@/types/matching';
 import { motion } from 'framer-motion';
-import { Sparkles, Save, AlertCircle, Search } from 'lucide-react';
+import { Sparkles, Save, AlertCircle, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import ProviderMatchCard from './ProviderMatchCard';
 
+const PAGE_SIZE = 3;
+
 interface MatchResultsProps {
   matches: ProviderMatch[];
+  allMatches?: ProviderMatch[]; // Tous les résultats pour pagination
   totalCandidates: number;
   matchingResult?: MatchingResult; // Résultat complet pour suggestions
   onContactProvider: (providerId: string) => void;
@@ -23,6 +26,7 @@ interface MatchResultsProps {
 
 export default function MatchResults({
   matches,
+  allMatches,
   totalCandidates,
   matchingResult,
   onContactProvider,
@@ -35,18 +39,22 @@ export default function MatchResults({
 }: MatchResultsProps) {
   const [sortBy, setSortBy] = useState<'score' | 'budget' | 'note'>('score');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(matches.length || PAGE_SIZE);
 
-  const hasResults = matches && matches.length > 0;
+  // Utiliser allMatches si disponible (contient tous les résultats), sinon matches
+  const baseList = (allMatches && allMatches.length > 0) ? allMatches : matches;
+
+  const hasResults = baseList && baseList.length > 0;
   const suggestions = matchingResult?.suggestions;
 
   // Unique service types for filter chips
   const serviceTypes = hasResults
-    ? [...new Set(matches.map((m) => m.provider.service_type))]
+    ? [...new Set(baseList.map((m) => m.provider.service_type))]
     : [];
 
-  // Sorted + filtered matches (UI-only, no API call)
-  const displayMatches = hasResults
-    ? [...matches]
+  // Sorted + filtered + paginated matches (UI-only, no API call)
+  const sortedFiltered = hasResults
+    ? [...baseList]
         .filter((m) => !activeFilter || m.provider.service_type === activeFilter)
         .sort((a, b) => {
           if (sortBy === 'budget') return (a.provider.budget_min || 0) - (b.provider.budget_min || 0);
@@ -54,6 +62,10 @@ export default function MatchResults({
           return b.score - a.score;
         })
     : [];
+
+  const displayMatches = sortedFiltered.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedFiltered.length;
+  const remaining = sortedFiltered.length - visibleCount;
 
   // Cas sans résultats
   if (!hasResults) {
@@ -170,7 +182,7 @@ export default function MatchResults({
           transition={{ delay: 0.2, duration: 0.4 }}
           className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3"
         >
-          ✨ {matches.length} prestataire{matches.length > 1 ? 's' : ''} parfait{matches.length > 1 ? 's' : ''} pour vous
+          ✨ {baseList.length} prestataire{baseList.length > 1 ? 's' : ''} {baseList.length <= 3 ? 'parfait' : 'trouvé'}{baseList.length > 1 ? 's' : ''} pour vous
         </motion.h2>
 
         <motion.p
@@ -320,6 +332,27 @@ export default function MatchResults({
             />
           </motion.div>
         ))}
+
+        {/* Bouton Voir plus */}
+        {hasMore && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex justify-center pt-2"
+          >
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setVisibleCount(prev => prev + PAGE_SIZE)}
+              className="gap-2 border-[#823F91] text-[#823F91] hover:bg-[#823F91]/5 hover:text-[#823F91]"
+            >
+              <ChevronDown className="w-4 h-4" />
+              Voir {Math.min(remaining, PAGE_SIZE)} prestataire{Math.min(remaining, PAGE_SIZE) > 1 ? 's' : ''} de plus
+              <span className="text-xs text-gray-400 ml-1">({remaining} restant{remaining > 1 ? 's' : ''})</span>
+            </Button>
+          </motion.div>
+        )}
       </div>
 
       {/* Footer Actions */}
