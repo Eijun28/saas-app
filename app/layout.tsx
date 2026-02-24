@@ -8,22 +8,42 @@ import FooterWrapper from "@/components/layout/FooterWrapper";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { seoConfig } from "@/lib/seo/config";
+import { siteConfig } from "@/config/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
 
+// Les images OG/Twitter sont gérées par opengraph-image.tsx et twitter-image.tsx
+// (convention Next.js file-based metadata — pas besoin de les déclarer ici)
 export const metadata: Metadata = {
-  ...seoConfig.defaultMetadata,
-  openGraph: {
-    ...seoConfig.defaultMetadata.openGraph,
-    images: seoConfig.defaultMetadata.openGraph?.images ? [...seoConfig.defaultMetadata.openGraph.images] : undefined,
-  },
-  twitter: {
-    ...seoConfig.defaultMetadata.twitter,
-    images: seoConfig.defaultMetadata.twitter?.images ? [...seoConfig.defaultMetadata.twitter.images] : undefined,
-  },
+  metadataBase: new URL(siteConfig.url),
   title: seoConfig.pages.home.title,
   description: seoConfig.pages.home.description,
   keywords: [...seoConfig.pages.home.keywords],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@nuply',
+    creator: '@nuply',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -64,10 +84,10 @@ export default function RootLayout({
           </MainWrapper>
         </main>
         <FooterWrapper />
-        
+
         {/* Chatbot désactivé temporairement - à réactiver plus tard */}
         {/* <Chatbot /> */}
-        
+
         {/* Toaster pour les notifications */}
         <Toaster />
         <Analytics />
