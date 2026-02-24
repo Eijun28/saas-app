@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ChevronLeft, ChevronRight, Plus, Clock, Calendar as CalendarIcon, Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DatePicker } from '@/components/ui/date-picker'
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, format, isBefore, startOfDay, isPast } from 'date-fns'
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, format, startOfDay, isPast } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export interface CalendarEvent {
@@ -357,23 +357,16 @@ export function CalendarDashboard({
   // Render Month View
   const renderMonthView = () => {
     const monthStart = startOfMonth(currentDate)
-    const monthEnd = endOfMonth(monthStart)
+    const monthEnd = endOfMonth(currentDate)
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 })
-    
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
+
     const days: Date[] = []
     let day = startDate
-    
-    // Générer uniquement jusqu'à la fin du mois (max 5 semaines)
-    while (days.length < 35) {
+    while (day <= endDate) {
       days.push(day)
       day = addDays(day, 1)
     }
-    
-    // Si le dernier jour n'est pas dans le mois suivant, on s'arrête
-    const filteredDays = days.filter((d, index) => {
-      if (index < 7) return true // Toujours garder la première semaine
-      return isSameMonth(d, currentDate) || isBefore(d, monthEnd)
-    })
 
     const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
@@ -395,9 +388,9 @@ export function CalendarDashboard({
           ))}
         </div>
 
-        {/* Grille des jours - DYNAMIQUE (5 semaines max) */}
+        {/* Grille des jours - DYNAMIQUE (5 ou 6 semaines selon le mois) */}
         <div className="flex-1 grid grid-cols-7 auto-rows-fr gap-0 overflow-hidden bg-white">
-          {filteredDays.map((day, index) => {
+          {days.map((day, index) => {
             const isCurrentMonth = isSameMonth(day, currentDate)
             const isToday = isSameDay(day, new Date())
             const isPastDay = isPast(startOfDay(day)) && !isToday
@@ -534,9 +527,9 @@ export function CalendarDashboard({
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
     const hours = Array.from({ length: 13 }, (_, i) => i + 8) // 8h à 20h
     const HOUR_HEIGHT = 64 // px par heure — plus aéré qu'avant (56px)
-    const TIME_COL_WIDTH = '60px'
-    const GRID_COLS = `${TIME_COL_WIDTH} repeat(7, minmax(90px, 1fr))`
-    const GRID_MIN_WIDTH = '690px'
+    const TIME_COL_WIDTH = '48px'
+    const GRID_COLS = `${TIME_COL_WIDTH} repeat(7, minmax(72px, 1fr))`
+    const GRID_MIN_WIDTH = '552px'
 
     // Indicateur heure courante
     const nowHour = currentTime.getHours()
@@ -610,14 +603,14 @@ export function CalendarDashboard({
             <div className="grid relative" style={{ gridTemplateColumns: GRID_COLS }}>
 
               {/* Colonne des heures */}
-              <div className="border-r border-gray-100 bg-gray-50/40">
+              <div className="border-r border-gray-100 bg-white sticky left-0 z-10">
                 {hours.map((hour) => (
                   <div
                     key={hour}
                     style={{ height: `${HOUR_HEIGHT}px` }}
-                    className="border-b border-gray-100 flex items-start justify-end pr-3 pt-1"
+                    className="border-b border-gray-100 flex items-start justify-end pr-2 pt-1"
                   >
-                    <span className="text-xs font-medium text-gray-400">{`${hour}:00`}</span>
+                    <span className="text-xs font-medium text-gray-400">{`${hour}h`}</span>
                   </div>
                 ))}
               </div>
@@ -747,9 +740,9 @@ export function CalendarDashboard({
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] sm:h-20 md:h-24 border-b border-gray-100 flex items-start justify-end pr-2 sm:pr-2.5 md:pr-3 pt-2 sm:pt-2"
+                  className="h-[72px] border-b border-gray-100 flex items-start justify-end pr-2.5 pt-2"
                 >
-                  <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-600">{`${hour}:00`}</span>
+                  <span className="text-xs font-semibold text-gray-600">{`${hour}:00`}</span>
                 </div>
               ))}
             </div>
@@ -759,7 +752,7 @@ export function CalendarDashboard({
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] sm:h-20 md:h-24 border-b border-gray-100 hover:bg-purple-50/50 active:bg-purple-50 transition-colors cursor-pointer touch-manipulation relative group"
+                  className="h-[72px] border-b border-gray-100 hover:bg-purple-50/50 active:bg-purple-50 transition-colors cursor-pointer touch-manipulation relative group"
                   onClick={() => {
                     const dateToUse = normalizeDate(displayDate)
                     setSelectedDate(dateToUse)
