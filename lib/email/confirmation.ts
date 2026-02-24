@@ -14,7 +14,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 export async function sendConfirmationEmail(
   userId: string,
   email: string,
-  prenom: string
+  prenom: string,
+  role?: 'couple' | 'prestataire'
 ) {
   if (!resendApiKey) {
     logger.warn('RESEND_API_KEY non configurée - email de confirmation non envoyé')
@@ -33,7 +34,9 @@ export async function sendConfirmationEmail(
       type: 'magiclink',
       email: email,
       options: {
-        redirectTo: `${siteUrl}/auth/callback`,
+        redirectTo: role
+          ? `${siteUrl}/auth/callback?role=${role}`
+          : `${siteUrl}/auth/callback`,
       }
     })
 
