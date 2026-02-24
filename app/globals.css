@@ -748,10 +748,11 @@ textarea::selection {
   }
 }
 
-/* Force la navbar en premier plan */
+/* Force la navbar publique en premier plan */
+/* Note: ne pas cibler nav[class*="fixed"] car ça matcherait aussi la barre
+   de navigation mobile (MobileBottomNav) et écraserait son z-index */
 [class*="NuplyNavbarMenu"],
-[class*="navbar"],
-nav[class*="fixed"] {
+[class*="navbar"] {
   z-index: 2147483647 !important;
   position: fixed !important;
   pointer-events: auto !important;
@@ -910,6 +911,22 @@ nav[class*="fixed"] {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+}
+
+/* === MOBILE — correctifs iOS Safari === */
+
+/* Empêche le zoom automatique d'iOS Safari sur le focus des inputs.
+   iOS zoome si font-size < 16px. On force 16px sur mobile sans toucher au
+   design desktop (les inputs restent à text-sm sur grand écran). */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select,
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="select-trigger"] {
+    font-size: 16px !important;
+  }
 }
 
 /* === SAFE AREA — gestion des encoches iOS (notch + home indicator) === */

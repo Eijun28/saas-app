@@ -106,7 +106,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
         {/* Sections — zone scrollable isolée */}
         <div
-          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain px-4 pt-3 space-y-4 scrollbar-hide"
+          className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain touch-pan-y px-4 pt-3 space-y-4 scrollbar-hide"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 20px)' }}
         >
           {sections.map((section, i) => (
@@ -197,17 +197,9 @@ export function MobileBottomNav({ items, moreItems, accentColor = 'violet' }: Mo
     setShowMore(false)
   }, [pathname])
 
-  // Bloque le scroll de la page quand le sheet est ouvert
-  useEffect(() => {
-    if (showMore) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [showMore])
+  // Pas besoin de bloquer le scroll du body — le layout est déjà un conteneur
+  // h-svh overflow-hidden, le body ne scrolle pas. Le bloc overflow:hidden sur
+  // iOS empêche également le scroll interne du MoreSheet (bug iOS Safari connu).
 
   const activeClasses = accentColor === 'pink' ? 'text-pink-500' : 'text-violet-600'
   const activeDotClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-violet-600'
