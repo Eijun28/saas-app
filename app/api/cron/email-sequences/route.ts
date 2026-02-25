@@ -258,10 +258,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Permettre aussi GET pour tests manuels (en dev uniquement)
+// Vercel cron jobs appellent toujours en GET — on délègue à POST avec la même logique d'auth
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Méthode non autorisée' }, { status: 405 })
-  }
   return POST(request)
 }
