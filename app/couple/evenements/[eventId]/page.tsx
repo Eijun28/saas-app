@@ -9,6 +9,9 @@ import {
   Edit2,
   Trash2,
   FileText,
+  MapPin,
+  Clock,
+  Tag,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,7 +19,9 @@ import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { EventForm } from '@/components/couple-events/EventForm'
+import { cn } from '@/lib/utils'
 import type { TimelineEvent, TimelineEventFormData } from '@/types/cultural-events.types'
+import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG } from '@/types/cultural-events.types'
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Non définie'
@@ -28,20 +33,31 @@ function formatDate(dateStr: string | null): string {
   })
 }
 
-export default function EventDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useUser()
-  const eventId = params.eventId as string
+function getDaysInfo(dateStr: string | null): { label: string; variant: 'today' | 'future' | 'past' } | null {
+  if (!dateStr) return null
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const eventDate = new Date(dateStr)
+  eventDate.setHours(0, 0, 0, 0)
+  const diff = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
-  const [loading, setLoading] = useState(true)
-  const [event, setEvent] = useState<TimelineEvent | null>(null)
+  if (diff === 0) return { label: "Aujourd'hui", variant: 'today' }
+  if (diff > 0)   return { label: `Dans ${diff} jour${diff > 1 ? 's' : ''}`, variant: 'future' }
+  return { label: `Il y a ${Math.abs(diff)} jour${Math.abs(diff) > 1 ? 's' : ''}`, variant: 'past' }
+}
+
+export default function EventDetailPage() {
+  const params   = useParams()
+  const router   = useRouter()
+  const { user } = useUser()
+  const eventId  = params.eventId as string
+
+  const [loading, setLoading]   = useState(true)
+  const [event, setEvent]       = useState<TimelineEvent | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   useEffect(() => {
-    if (user && eventId) {
-      loadEvent()
-    }
+    if (user && eventId) loadEvent()
   }, [user, eventId])
 
   const loadEvent = async () => {
@@ -78,11 +94,16 @@ export default function EventDetailPage() {
 
     const supabase = createClient()
     const payload = {
-      title: formData.title,
+      title:       formData.title,
       description: formData.description || null,
-      event_date: formData.event_date
+      event_date:  formData.event_date
         ? formData.event_date.toISOString().split('T')[0]
         : event.event_date,
+      status:      formData.status,
+      start_time:  formData.start_time || null,
+      end_time:    formData.end_time   || null,
+      location:    formData.location   || null,
+      category:    formData.category   || null,
     }
 
     try {
@@ -142,9 +163,17 @@ export default function EventDetailPage() {
     )
   }
 
+  const categoryConfig = event.category ? EVENT_CATEGORY_CONFIG[event.category] : null
+  const statusConfig   = event.status   ? EVENT_STATUS_CONFIG[event.status]     : null
+  const daysInfo       = getDaysInfo(event.event_date)
+  const timeLabel      =
+    event.start_time
+      ? `${event.start_time.slice(0, 5)}${event.end_time ? ` – ${event.end_time.slice(0, 5)}` : ''}`
+      : null
+
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Navigation retour */}
+      {/* Retour */}
       <motion.div
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -170,16 +199,52 @@ export default function EventDetailPage() {
         className="mb-6 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10 p-5 sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight mb-2">
-              {event.title}
-            </h1>
+          <div className="flex-1 min-w-0">
+            {/* Catégorie + titre */}
+            <div className="flex items-center gap-2.5 flex-wrap mb-2">
+              {categoryConfig && (
+                <span className="text-2xl leading-none">{categoryConfig.emoji}</span>
+              )}
+              <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight">
+                {event.title}
+              </h1>
+            </div>
+
+            {/* Badges : statut + J-X */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {statusConfig && (
+                <span
+                  className={cn(
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                    statusConfig.bgColor,
+                    statusConfig.color,
+                  )}
+                >
+                  {statusConfig.label}
+                </span>
+              )}
+              {daysInfo && (
+                <span
+                  className={cn(
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                    daysInfo.variant === 'today'  && 'bg-[#823F91]/10 text-[#823F91]',
+                    daysInfo.variant === 'future' && 'bg-blue-50 text-blue-600',
+                    daysInfo.variant === 'past'   && 'bg-gray-100 text-gray-500',
+                  )}
+                >
+                  {daysInfo.label}
+                </span>
+              )}
+            </div>
+
             {event.description && (
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="mt-3 text-sm text-gray-600 leading-relaxed">
                 {event.description}
               </p>
             )}
           </div>
+
+          {/* Actions */}
           <div className="flex gap-2 flex-shrink-0">
             <Button
               variant="outline"
@@ -202,9 +267,9 @@ export default function EventDetailPage() {
         </div>
       </motion.div>
 
-      {/* Cards */}
+      {/* Cards de détails */}
       <div className="grid gap-4 sm:grid-cols-2">
-        {/* Planning */}
+        {/* Date */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,12 +290,84 @@ export default function EventDetailPage() {
           </Card>
         </motion.div>
 
+        {/* Catégorie */}
+        {categoryConfig && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.12 }}
+          >
+            <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                    <Tag className="h-4 w-4 text-[#823F91]" />
+                  </div>
+                  Catégorie
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-medium text-gray-900">
+                  {categoryConfig.emoji} {categoryConfig.label}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Horaires */}
+        {timeLabel && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.14 }}
+          >
+            <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-[#823F91]" />
+                  </div>
+                  Horaire
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-medium text-gray-900">{timeLabel}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Lieu */}
+        {event.location && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.16 }}
+          >
+            <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                  <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-[#823F91]" />
+                  </div>
+                  Lieu
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm font-medium text-gray-900">{event.location}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Description */}
         {event.description && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
+            transition={{ duration: 0.4, delay: 0.18 }}
+            className={cn(!event.location && !timeLabel && !categoryConfig ? 'sm:col-span-1' : 'sm:col-span-2')}
           >
             <Card className="border-gray-200/80 hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
