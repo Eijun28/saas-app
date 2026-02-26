@@ -322,7 +322,13 @@ describe(`calculateCapacityScore`, () => {
     expect(calculateCapacityScore(230, 50, 200)).toBe(2);
   });
 
-  it(`invités dépassent massivement le max (>+20%) → pénalité (-5)`, () => {
+  it(`invités dépassent le max de +25% (≤ 35%) → pénalité légère (-2)`, () => {
+    // 250 invités, max 200 → overload = 0.25 ≤ 0.35 → palier intermédiaire -2pts
+    expect(calculateCapacityScore(250, 50, 200)).toBe(-2);
+  });
+
+  it(`invités dépassent massivement le max (>+35%) → pénalité forte (-5)`, () => {
+    // 300 invités, max 200 → overload = 0.5 > 0.35 → impossible
     expect(calculateCapacityScore(300, 50, 200)).toBe(-5);
   });
 });

@@ -173,12 +173,13 @@ export function calculateBudgetScore(
   };
 
   const penalty = penalties[flexibility as keyof typeof penalties] || 0.5;
-  
-  // Score décroissant selon l'écart, avec pénalité selon flexibilité
-  // Plus l'écart est grand, plus le score est faible
-  const score = Math.max(0, 15 - diffPercentage * 100 * penalty);
 
-  return Math.round(score);
+  // Décroissance exponentielle : maintient un gradient sur tous les écarts
+  // (remplacement de la formule linéaire qui tombait brutalement à 0)
+  // flexible + petit écart → ~12pts | strict + grand écart → proche de 0
+  const score = 15 * Math.exp(-diffPercentage * 2 * penalty);
+
+  return Math.max(0, Math.round(score));
 }
 
 /**
@@ -468,9 +469,10 @@ export function calculateCapacityScore(
   // Dépasse la capacité max
   if (providerCapacityMax && guestCount > providerCapacityMax) {
     const overload = (guestCount - providerCapacityMax) / providerCapacityMax;
-    if (overload <= 0.1) return 5;  // +10% : faisable
-    if (overload <= 0.2) return 2;  // +20% : difficile
-    return -5;                      // >20% : probablement impossible
+    if (overload <= 0.1) return 5;   // ≤ +10% : faisable avec ajustements
+    if (overload <= 0.2) return 2;   // ≤ +20% : difficile mais négociable
+    if (overload <= 0.35) return -2; // ≤ +35% : très difficile (palier intermédiaire)
+    return -5;                       // > +35% : probablement impossible
   }
 
   return 0;

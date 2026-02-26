@@ -469,8 +469,8 @@ export async function POST(request: NextRequest) {
       if (Array.isArray(provider.zones) && provider.zones.length > 0) score += 10;
       // Portfolio (3+ photos): 15 pts
       if (typeof provider.portfolio_count === 'number' && provider.portfolio_count >= 3) score += 15;
-      // Le score max effectif est 95 pts (réseaux sociaux non chargés ici)
-      return Math.round((score / 100) * 100);
+      // Score max = 95 pts (réseaux sociaux non chargés ici) → normalisation sur 95
+      return Math.round((score / 95) * 100);
     };
 
     let providersWithCompletion = enrichedProviders.filter(
@@ -690,7 +690,7 @@ export async function POST(request: NextRequest) {
 }
 
 function generateExplanation(
-  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number },
+  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
   provider: { average_rating: number; annees_experience: number },
   criteria: MatchingRequest['search_criteria']
 ): string {
@@ -698,18 +698,46 @@ function generateExplanation(
 
   if (breakdown.cultural_match > 20) {
     reasons.push(`Match culturel excellent (${breakdown.cultural_match}/30)`);
+  } else if (breakdown.cultural_match > 0) {
+    reasons.push(`Match culturel partiel (${breakdown.cultural_match}/30)`);
   }
-  if (breakdown.budget_match > 15) {
+
+  if (breakdown.budget_match >= 18) {
     reasons.push('Budget parfaitement aligné');
+  } else if (breakdown.budget_match >= 12) {
+    reasons.push('Budget compatible');
   }
+
   if (breakdown.reputation > 15) {
     reasons.push(`Excellente réputation (${provider.average_rating}/5)`);
+  } else if (breakdown.reputation > 10) {
+    reasons.push(`Bonne réputation (${provider.average_rating}/5)`);
   }
+
   if (breakdown.experience > 7) {
     reasons.push(`${provider.annees_experience} ans d'expérience`);
   }
+
   if (breakdown.location_match === 10) {
+    reasons.push('Intervient dans votre zone');
+  } else if (breakdown.location_match === 6) {
     reasons.push('Intervient dans votre région');
+  }
+
+  if (breakdown.tags_match !== undefined && breakdown.tags_match >= 8) {
+    reasons.push('Style parfaitement adapté');
+  } else if (breakdown.tags_match !== undefined && breakdown.tags_match >= 5) {
+    reasons.push('Style compatible');
+  }
+
+  if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 12) {
+    reasons.push('Toutes vos spécialités couvertes');
+  } else if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 8) {
+    reasons.push('Spécialités compatibles');
+  }
+
+  if (breakdown.capacity_match !== undefined && breakdown.capacity_match === 10) {
+    reasons.push('Capacité idéale pour vos invités');
   }
 
   return reasons.join(' • ') || 'Prestataire qualifié pour votre mariage';
