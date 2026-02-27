@@ -475,8 +475,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
                       >
                         <X className="h-3.5 w-3.5 text-white" />
                       </button>
-                      {/* Icône de drag */}
-                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-100">
+                      {/* Icône de drag — masquée sur mobile (drag HTML5 non supporté sur touch) */}
+                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 hidden md:flex items-center justify-center transition-colors z-10 opacity-100">
                         <GripVertical className="h-3.5 w-3.5 text-white" />
                       </div>
                     </Card>
