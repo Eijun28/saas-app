@@ -278,6 +278,12 @@ export async function sendInactivityReminder(
       html,
     })
 
+    await adminClient.from('email_logs').insert({
+      user_id: userId,
+      email_type: 'inactivity_reminder',
+      sent_at: new Date().toISOString(),
+    })
+
     logger.info('Email inactivité envoyé', { userId, role })
     return { success: true }
   } catch (error: unknown) {
@@ -337,6 +343,12 @@ export async function sendPendingRequestsReminder(providerId: string, pendingCou
       to: email,
       subject: `${pendingCount} demande${pendingCount > 1 ? 's' : ''} attendent votre réponse !`,
       html,
+    })
+
+    await adminClient.from('email_logs').insert({
+      user_id: providerId,
+      email_type: 'pending_requests_reminder',
+      sent_at: new Date().toISOString(),
     })
 
     logger.info('Email rappel demandes envoyé', { providerId, pendingCount })
