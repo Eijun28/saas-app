@@ -240,7 +240,7 @@ export default function FavorisPage() {
             animate={{ opacity: 1 }}
             className="text-center py-16 bg-white rounded-2xl border border-gray-100"
           >
-            <Heart className="h-12 w-12 text-gray-200 mx-auto mb-4" />
+            <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 text-lg font-medium">Aucun favori pour le moment</p>
             <p className="text-gray-400 text-sm mt-1">Ajoutez des prestataires en favori depuis la recherche</p>
           </motion.div>

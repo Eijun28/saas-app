@@ -42,9 +42,9 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Activite recente</h2>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Activité récente</h2>
             <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
-              Dernieres actions sur votre compte
+              Dernières actions sur votre compte
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -81,8 +81,8 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
                   <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
                     <Inbox className="h-8 w-8 text-gray-300" />
                   </div>
-                  <p className="text-sm font-medium text-gray-900 mb-1">Aucune activite recente</p>
-                  <p className="text-xs text-gray-500">Vos actions apparaitront ici</p>
+                  <p className="text-sm font-medium text-gray-900 mb-1">Aucune activité récente</p>
+                  <p className="text-xs text-gray-500">Vos actions apparaîtront ici</p>
                 </div>
               ) : (
                 <div className="space-y-2">

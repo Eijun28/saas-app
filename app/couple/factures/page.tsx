@@ -128,13 +128,13 @@ export default function CoupleFacturesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">Reste à régler</p>
-              <p className="text-xl font-bold text-[#823F91]">{formatEur(totalDu)}</p>
+              <p className="text-lg sm:text-xl font-bold text-[#823F91] truncate">{formatEur(totalDu)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">Déjà payé</p>
-              <p className="text-xl font-bold text-green-600">{formatEur(totalPaye)}</p>
+              <p className="text-lg sm:text-xl font-bold text-green-600 truncate">{formatEur(totalPaye)}</p>
             </CardContent>
           </Card>
         </motion.div>

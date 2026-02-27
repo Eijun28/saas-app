@@ -51,7 +51,7 @@ export default function NotificationsPage() {
         >
           <Card className="border-gray-100 shadow-sm">
             <CardContent className="p-8 sm:p-12 text-center">
-              <Bell className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-200" />
+              <Bell className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-600 font-medium mb-1">Aucune notification</p>
               <p className="text-sm text-gray-400">
                 Vous n&apos;avez aucune notification pour le moment.

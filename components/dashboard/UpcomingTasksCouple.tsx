@@ -115,9 +115,9 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
       >
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Preparatifs</h2>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Préparatifs</h2>
             <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
-              {loading ? 'Chargement...' : `${completedCount}/${totalCount} etape${totalCount > 1 ? 's' : ''} completee${completedCount > 1 ? 's' : ''}`}
+              {loading ? 'Chargement...' : `${completedCount}/${totalCount} étape${totalCount > 1 ? 's' : ''} complétée${completedCount > 1 ? 's' : ''}`}
             </p>
           </div>
           <ChevronDown className={cn(
@@ -185,8 +185,8 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
                       <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
                         <CheckCircle2 className="h-8 w-8 text-gray-300" />
                       </div>
-                      <p className="text-sm font-medium text-gray-900 mb-1">Aucune tache trouvee</p>
-                      <p className="text-xs text-gray-500">Vos preparatifs apparaitront ici</p>
+                      <p className="text-sm font-medium text-gray-900 mb-1">Aucune tâche trouvée</p>
+                      <p className="text-xs text-gray-500">Vos préparatifs apparaîtront ici</p>
                     </div>
                   ) : (
                     filteredTasks.map((task, index) => {
