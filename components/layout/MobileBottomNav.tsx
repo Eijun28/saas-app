@@ -350,6 +350,7 @@ export function PrestataireMobileNav() {
    Couple bottom nav — pink accent
    ───────────────────────────────────────────── */
 
+
 export function CoupleMobileNav() {
   const { counts } = useNotifications()
 
@@ -388,5 +389,5 @@ export function CoupleMobileNav() {
     },
   ]
 
-  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="violet" />
+  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="pink" />
 }
