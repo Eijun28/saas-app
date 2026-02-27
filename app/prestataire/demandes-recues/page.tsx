@@ -463,7 +463,7 @@ export default function DemandesRecuesPage() {
         <TabsList className="w-full h-auto p-1 bg-gray-100/80 rounded-xl grid grid-cols-3 gap-1">
           <TabsTrigger
             value="nouvelles"
-            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-[#823F91] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
           >
             Nouvelles
             {demandes.nouvelles.length > 0 && (
@@ -474,7 +474,7 @@ export default function DemandesRecuesPage() {
           </TabsTrigger>
           <TabsTrigger
             value="en-cours"
-            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-[#823F91] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
           >
             En cours
             {demandes.en_cours.length > 0 && (
@@ -485,7 +485,7 @@ export default function DemandesRecuesPage() {
           </TabsTrigger>
           <TabsTrigger
             value="terminees"
-            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-white data-[state=active]:text-[#823F91] data-[state=active]:shadow-sm transition-all"
+            className="rounded-lg py-2.5 text-sm font-medium text-gray-600 data-[state=active]:bg-[#823F91] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
           >
             Terminées
           </TabsTrigger>

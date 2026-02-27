@@ -948,7 +948,7 @@ export default function RecherchePage() {
                 key={r}
                 onClick={() => setMinRating(r)}
                 className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all ${
-                  minRating === r ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  minRating === r ? 'bg-[#823F91] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 {r === 0 ? 'Tous' : (
