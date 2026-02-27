@@ -437,7 +437,16 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: draggedImageId === image.id ? 0.5 : 1, scale: 1 }}
                     transition={{ duration: 0.2 }}
+                    className="relative"
                   >
+                    {/* Bouton de suppression — positionné en dehors du Card pour ne pas être rogné par overflow-hidden */}
+                    <button
+                      onClick={(e) => handleDelete(image.id, image.image_path, e)}
+                      className="absolute -top-2 -right-2 z-20 w-5 h-5 rounded-full bg-[#1c1c1e] hover:bg-[#3a3a3c] flex items-center justify-center transition-colors shadow-md"
+                      aria-label="Supprimer le fichier"
+                    >
+                      <X className="h-3 w-3 text-white" strokeWidth={2.5} />
+                    </button>
                     <Card className="relative overflow-hidden aspect-square border-2 border-transparent group-hover:border-[#823F91]/30 transition-colors">
                       {isPdf ? (
                         // Affichage PDF
@@ -467,17 +476,9 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
                           unoptimized
                         />
                       )}
-                      {/* Bouton de suppression avec croix */}
-                      <button
-                        onClick={(e) => handleDelete(image.id, image.image_path, e)}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                        aria-label="Supprimer le fichier"
-                      >
-                        <X className="h-3.5 w-3.5 text-white" />
-                      </button>
                       {/* Icône de drag */}
-                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                        <GripVertical className="h-3.5 w-3.5 text-white" />
+                      <div className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-black/50 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <GripVertical className="h-3 w-3 text-white" />
                       </div>
                     </Card>
                   </motion.div>
