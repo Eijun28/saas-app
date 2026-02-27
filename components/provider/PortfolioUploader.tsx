@@ -470,13 +470,13 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
                       {/* Bouton de suppression avec croix */}
                       <button
                         onClick={(e) => handleDelete(image.id, image.image_path, e)}
-                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 hover:bg-red-600 flex items-center justify-center transition-colors z-10 opacity-100"
                         aria-label="Supprimer le fichier"
                       >
                         <X className="h-3.5 w-3.5 text-white" />
                       </button>
                       {/* Icône de drag */}
-                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center transition-colors z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                      <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-black/70 flex items-center justify-center transition-colors z-10 opacity-0 group-hover:opacity-100">
                         <GripVertical className="h-3.5 w-3.5 text-white" />
                       </div>
                     </Card>
