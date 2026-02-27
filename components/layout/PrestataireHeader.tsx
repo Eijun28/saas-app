@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Bell, Inbox, Calendar, MessageSquare } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare, Home, BarChart3, FileText, UserCircle, CalendarOff, Settings as SettingsIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -19,6 +19,27 @@ import {
 import { User, LogOut, ChevronDown, Settings } from 'lucide-react'
 import Link from 'next/link'
 
+/* ─────────────────────────────────────────────
+   Page title map
+   ───────────────────────────────────────────── */
+
+const PAGE_TITLES: Record<string, { label: string; icon: React.ElementType }> = {
+  '/prestataire/dashboard':      { label: 'Tableau de bord', icon: Home },
+  '/prestataire/demandes-recues': { label: 'Demandes reçues', icon: Inbox },
+  '/prestataire/agenda':         { label: 'Agenda', icon: Calendar },
+  '/prestataire/disponibilites': { label: 'Disponibilités', icon: CalendarOff },
+  '/prestataire/messagerie':     { label: 'Messagerie', icon: MessageSquare },
+  '/prestataire/devis-factures': { label: 'Devis & Factures', icon: FileText },
+  '/prestataire/analytics':      { label: 'Statistiques', icon: BarChart3 },
+  '/prestataire/profil-public':  { label: 'Profil public', icon: UserCircle },
+  '/prestataire/parametres':     { label: 'Paramètres', icon: SettingsIcon },
+}
+
+function getPageInfo(pathname: string) {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  const match = Object.entries(PAGE_TITLES).find(([key]) => pathname.startsWith(key + '/'))
+  return match ? match[1] : { label: 'NUPLY', icon: Home }
+}
 
 export function PrestataireHeader() {
   const { user } = useUser()
@@ -127,6 +148,7 @@ export function PrestataireHeader() {
   }
 
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
+  const pageInfo = getPageInfo(pathname)
 
   const quickActions = pathname === '/prestataire/dashboard'
     ? [
@@ -147,6 +169,12 @@ export function PrestataireHeader() {
               <span className="h-1.5 w-1.5 rounded-full bg-violet-500 inline-block" />
               Prestataire
             </span>
+
+            {/* Page title — tablet only (md → lg) */}
+            <div className="hidden md:flex lg:hidden items-center gap-1.5 pl-3 border-l border-gray-100 min-w-0">
+              <pageInfo.icon className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[13px] font-semibold text-gray-700 truncate">{pageInfo.label}</span>
+            </div>
 
             {/* Quick actions — desktop dashboard only */}
             {quickActions.length > 0 && (

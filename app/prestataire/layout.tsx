@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { PrestataireSidebarWrapper } from "./sidebar-wrapper"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { TabletAwareSidebarProvider } from "@/components/layout/TabletAwareSidebarProvider"
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 import { getUserRoleServer } from "@/lib/auth/utils"
 import { UserProvider } from "@/lib/context/user-context"
@@ -37,12 +37,12 @@ export default async function PrestataireLayout({
 
   return (
     <UserProvider initialUser={user}>
-      <SidebarProvider>
+      <TabletAwareSidebarProvider>
         <PrestataireSidebarWrapper />
         <SidebarInsetWrapper>
           {children}
         </SidebarInsetWrapper>
-      </SidebarProvider>
+      </TabletAwareSidebarProvider>
     </UserProvider>
   )
 }
