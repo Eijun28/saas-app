@@ -1,6 +1,7 @@
 # NUPLY — Référence Architecture pour Claude/Cursor
 
 > Document de référence IA pour le projet NUPLY. Maintenir ce fichier à jour à chaque changement structurel important.
+> **v3.0.0 — 2026-02-27 — Généré depuis l'analyse réelle du codebase.**
 
 ---
 
@@ -11,8 +12,8 @@
 **Stack technique :**
 - Framework: Next.js 16.1.1 (App Router, Server Components par défaut)
 - Language: TypeScript 5.9.3 (strict mode)
-- UI: React 19.2.1 + TailwindCSS 4 + shadcn/ui (Radix primitives)
-- Animations: Framer Motion 12.23.26 + Lenis 1.3.15 (smooth scroll)
+- UI: React 19.2.1 + TailwindCSS 4 (`@import "tailwindcss"`) + shadcn/ui new-york style
+- Animations: Framer Motion 12.23.26 + Lenis 1.3.15 (smooth scroll) + tw-animate-css
 - Backend: Supabase (Auth, PostgreSQL, Storage, Realtime)
 - State: Zustand 5.0.8 + React Context
 - Forms: React Hook Form 7.67.0 + Zod 4.1.13
@@ -20,9 +21,11 @@
 - Email: Resend 6.9.0
 - Paiements: Stripe 17.7.0 + Stripe Connect
 - PDF: pdf-lib 1.17.1
+- Charts: Recharts 3.5.1
 - Monitoring: Sentry 10.38.0 + Vercel Analytics + Speed Insights
-- Déploiement: Vercel (cron job email sequences 09:00 daily)
-- Font: Geist (variable font)
+- Font: Geist Sans (variable, importé via `geist/font/sans`)
+- Icons: Lucide React 0.554.0
+- Déploiement: Vercel (cron job email sequences 09:00 UTC daily)
 
 ---
 
@@ -31,10 +34,12 @@
 ```
 saas-app/
 ├── app/                        # Next.js App Router
-│   ├── layout.tsx              # Root layout (Geist font, providers)
-│   ├── page.tsx                # Landing page publique
-│   ├── globals.css             # Styles globaux + design system tokens
+│   ├── layout.tsx              # Root layout (GeistSans, Toaster, Analytics, JSON-LD)
+│   ├── page.tsx                # Landing page publique (lazy-loaded sections)
+│   ├── globals.css             # ~1155 lignes (tokens CSS + composants + utilities)
 │   ├── error.tsx / global-error.tsx / not-found.tsx
+│   ├── opengraph-image.tsx / twitter-image.tsx  # OG images (file-based Next.js)
+│   ├── robots.ts / sitemap.ts  # SEO
 │   ├── (auth)/                 # Group auth (layout sans sidebar)
 │   │   └── auth/callback/      # OAuth callback Supabase
 │   ├── sign-in/ sign-up/       # Authentification
@@ -71,14 +76,15 @@ saas-app/
 │   │   ├── messagerie/         # Messages avec couples
 │   │   ├── analytics/          # Analytics prestataire
 │   │   ├── onboarding/         # Onboarding prestataire
+│   │   ├── devis-factures/     # Devis et factures prestataire
 │   │   └── parametres/
-│   ├── api/                    # API Routes
+│   ├── api/                    # API Routes (27+ endpoints)
 │   │   ├── auth/               # create-profile, signout
 │   │   ├── chatbot/ chatbot-advisor/   # IA chatbot (OpenAI GPT-4)
 │   │   ├── collaborateurs/
 │   │   ├── couple-payments/ couple/billing-info/
 │   │   ├── contact/
-│   │   ├── cron/email-sequences/      # Cron Vercel 09:00 daily
+│   │   ├── cron/email-sequences/      # Cron Vercel 09:00 UTC daily
 │   │   ├── devis/              # generate, quick-generate, templates, couples
 │   │   ├── factures/
 │   │   ├── generate-services/
@@ -104,8 +110,10 @@ saas-app/
 │   ├── programme/[token]/      # Programme de mariage public
 │   └── rsvp/[guestId]/         # RSVP invité
 ├── components/
-│   ├── ui/                     # shadcn/ui (30+ composants Radix)
-│   ├── layout/                 # Sidebar, TopBar, NavItem, RoleSwitcher, MobileMenu, Footer
+│   ├── ui/                     # shadcn/ui (70+ composants)
+│   ├── layout/                 # Sidebar, TopBar, AnimatedHeader, CoupleHeader,
+│   │                           # PrestataireHeader, MobileBottomNav, MobileMenu,
+│   │                           # NavItem, RoleSwitcher, Footer, FooterWrapper, MainWrapper
 │   ├── auth/                   # SignInForm, SignUpForm, PasswordReset, OAuthButtons
 │   ├── landing/ home/ pricing/ signup/  # Composants pages publiques
 │   ├── couple/shared/          # Composants partagés espace couple
@@ -120,25 +128,32 @@ saas-app/
 │   ├── sections/cta/ sections/hero/
 │   ├── animate-ui/ magicui/ shadcn-studio/  # Composants UI avancés
 │   ├── logos/ seo/ legal/
+│   ├── Chatbot.tsx             # Chatbot principal (désactivé temporairement)
+│   ├── CityAutocomplete.tsx    # Autocomplete villes
+│   ├── HeroFlipWords.tsx       # Animation hero
+│   ├── NuplyNavbarMenu.tsx     # Navbar principale
+│   ├── Particles.jsx / LightRays.jsx  # Effets de fond
 │   └── app/dashboard-sidebar-01/
 ├── lib/
-│   ├── utils.ts                # cn(), helpers généraux
-│   ├── animations.ts           # Framer Motion presets (FadeInOnScroll, SlideInOnScroll, StaggeredList)
+│   ├── utils.ts                # cn(), getErrorMessage(), extractSupabaseError()
+│   ├── animations.ts           # Framer Motion variants (fadeInUp, cardHover, ...)
 │   ├── scroll.ts               # Lenis smooth scroll init
 │   ├── logger.ts               # Logging utility
-│   ├── cache.ts                # Caching helpers (lru-cache)
+│   ├── cache.ts                # LRU cache helpers
 │   ├── rate-limit.ts           # Rate limiting
 │   ├── security.ts             # Security helpers
-│   ├── design-system.ts        # Design system utilities
+│   ├── design-system.ts        # Tokens TS exportés (colors, typography, spacing, ...)
 │   ├── api-error-handler.ts    # API error handling
 │   ├── subscription-guard.ts   # Subscription protection
 │   ├── constants.ts            # Constantes globales
 │   ├── google-calendar.ts      # Google Calendar utilities
 │   ├── auth/                   # middleware, roles, permissions, strategies
-│   ├── supabase/               # client.ts, server.ts, admin.ts, middleware.ts, messages.ts, queries/, migrations/
+│   ├── supabase/               # client.ts, server.ts, admin.ts, middleware.ts,
+│   │                           # messages.ts, conversations.ts, messaging.ts,
+│   │                           # chatbot-conversations.ts, queries/, migrations/
 │   ├── actions/                # Server actions (auth, profile, matching, ...)
-│   ├── validations/            # Zod schemas (auth, onboarding, collaborateur, marriage-admin, ...)
-│   ├── types/                  # database.types.ts (auto-généré), couple, matching, messages, vapi.d.ts, ...
+│   ├── validations/            # Zod schemas (auth, onboarding, collaborateur, ...)
+│   ├── types/                  # Types par domaine
 │   ├── constants/              # zones.ts, cultures.ts
 │   ├── config/ context/ stores/onboarding-store.ts
 │   ├── blog/ chatbot/ email/ profile/ matching/ marriage-admin/ pdf/ stripe/ seo/ utils/ errors/
@@ -149,19 +164,27 @@ saas-app/
 │   ├── use-user.ts             # Hook user actuel
 │   ├── use-toast.ts            # Hook toasts
 │   ├── use-textarea-resize.ts  # Auto-resize textarea
+│   ├── use-notifications.ts    # Notifications
+│   ├── use-provider-pricing.ts # Tarifs prestataire
+│   ├── use-is-in-view.tsx      # Intersection observer
+│   ├── useChatbot.ts           # State chatbot
 │   └── useScrollPosition.ts    # Position scroll
-├── types/                      # Types globaux (index.d.ts, database.types.ts, couple, matching, messages, vapi.d.ts, marriage-admin/)
+├── types/                      # Types globaux (18 fichiers dont database.types.ts auto-généré)
 ├── store/                      # onboarding-store.ts (Zustand)
+├── config/
+│   └── site.ts                 # siteConfig (url, nom, liens sociaux)
+├── constants/                  # zones.ts, cultures.ts
 ├── public/                     # Assets statiques (icons/, images/, readme/)
 ├── scripts/                    # test-api.sh, test-compatibility.ts
 ├── email-templates/            # Templates email Resend
 ├── supabase/migrations/        # Migrations SQL
-├── config/                     # Config projet
-├── constants/                  # Constantes globales
-├── docs/                       # Documentation (architecture/, deployment/, guides/, setup/, internal/, archive/)
-├── .github/workflows/          # CI/CD GitHub Actions
+├── skills/                     # Guides de référence IA par domaine
+├── docs/                       # Documentation (architecture/, deployment/, guides/, setup/, archive/)
+├── .github/workflows/
 │   └── auto-merge.yml          # Auto-merge PRs après checks
-└── [root config files]         # next.config.ts, tailwind.config.ts, tsconfig.json, vercel.json, jest.config.js, sentry.*.config.ts, eslint.config.mjs, components.json
+└── [root config files]         # next.config.ts, tailwind.config.ts, tsconfig.json,
+                                # vercel.json, jest.config.js, sentry.*.config.ts,
+                                # eslint.config.mjs, components.json
 ```
 
 ---
@@ -229,7 +252,7 @@ saas-app/
 1. `/sign-up` → Supabase Auth → trigger création `profiles` vide
 2. `/sign-in` → Supabase Auth → redirect selon rôle
 3. Première connexion → `/onboarding/role` → compléter profil → `onboarding_completed = true`
-4. Middleware (`lib/supabase/middleware.ts`) vérifie auth + rôle → protège `/couple/*` et `/prestataire/*` → redirect `/sign-in` si non authentifié
+4. Middleware (`lib/supabase/middleware.ts`) vérifie auth + rôle → protège `/couple/*` et `/prestataire/*`
 
 ### Helpers Supabase
 ```typescript
@@ -242,48 +265,139 @@ import { createAdminClient } from '@/lib/supabase/admin' // Opérations admin (b
 `/couple/dashboard`, `/couple/matching`, `/couple/recherche`, `/couple/budget`, `/couple/timeline`, `/couple/collaborateurs`, `/couple/demandes`, `/couple/evenements`, `/couple/factures`, `/couple/favoris`, `/couple/invites`, `/couple/jour-j`, `/couple/messagerie`, `/couple/notifications`, `/couple/paiements`, `/couple/profil`, `/couple/parametres`
 
 ### Rôle Prestataire — pages accessibles
-`/prestataire/dashboard`, `/prestataire/demandes-recues`, `/prestataire/profil-public`, `/prestataire/agenda`, `/prestataire/disponibilites`, `/prestataire/messagerie`, `/prestataire/analytics`, `/prestataire/onboarding`, `/prestataire/parametres`
+`/prestataire/dashboard`, `/prestataire/demandes-recues`, `/prestataire/profil-public`, `/prestataire/agenda`, `/prestataire/disponibilites`, `/prestataire/messagerie`, `/prestataire/analytics`, `/prestataire/onboarding`, `/prestataire/devis-factures`, `/prestataire/parametres`
 
 ---
 
 ## Design System
 
-### Couleurs
+> Source canonique : `app/globals.css` (tokens CSS) + `lib/design-system.ts` (tokens TypeScript)
+> **IMPORTANT** : Le fond de l'app est BEIGE (#FBF8F3), pas blanc. Ne jamais supposer un fond blanc.
+
+### Palette CSS réelle (dans globals.css)
+
 ```css
---primary:        #823F91   /* Violet premium */
---primary-hover:  #6D3478   /* Violet foncé */
---primary-light:  #E8D4EF   /* Violet clair */
---background:     #FFFFFF   /* Blanc pur */
---foreground:     #0B0E12   /* Dark Navy */
---text-primary:   #0B0E12
---text-secondary: #374151
---text-muted:     #6B7280
---border:         #E5E7EB   /* Gray-200 */
---muted-bg:       #F7F7F7   /* Light gray */
+/* Beige — fond et textes principaux */
+--beige-100: #FBF8F3   /* fond principal (--background) */
+--beige-200: #F5F0E8   /* sections alternées (--muted) */
+--beige-300: #EBE4DA   /* bordures (--border) */
+--beige-700: #6F5A48   /* texte muted (--muted-foreground) */
+--beige-800: #3E2F24   /* texte body */
+--beige-900: #221510   /* texte titres (--foreground) */
+
+/* Violet — brand */
+--violet-500: #823F91  /* brand (--primary) */
+--violet-600: #6D3478  /* hover */
+--violet-700: #5C2B66  /* active */
+--violet-100: #E8D4EF  /* bg doux */
+--violet-50:  #F5F0F7  /* bg très doux */
+
+/* Variables système shadcn */
+--background:       var(--beige-100)   → #FBF8F3
+--foreground:       var(--beige-900)   → #221510
+--primary:          var(--violet-500)  → #823F91
+--muted:            var(--beige-200)
+--muted-foreground: var(--beige-700)
+--border:           var(--beige-300)
+--ring:             var(--violet-500)
+--radius:           0.875rem
+
+/* Semantic */
+--color-success: #059669  (light: #ECFDF5, text: #065F46)
+--color-warning: #D97706  (light: #FFFBEB, text: #92400E)
+--color-danger:  #DC2626  (light: #FEF2F2, text: #991B1B)
+--color-info:    #2563EB  (light: #EFF6FF, text: #1E40AF)
 ```
 
-### Typographie (Geist)
-```
-h1: text-4xl font-bold tracking-tight      (700)
-h2: text-2xl font-semibold tracking-tight  (600)
-h3: text-xl font-medium                    (500)
-p:  text-base font-normal                  (400)
-button: text-base font-medium              (500)
+### Tokens TypeScript (lib/design-system.ts)
+```typescript
+import { colors, typography, spacing, radius, shadows, motionTokens, designTokens } from '@/lib/design-system'
+
+// Couleurs hex directes
+colors.primary500        // '#823F91'  brand
+colors.primaryHover      // '#5C2B66'  active
+colors.textPrimary       // '#111827'
+colors.textMuted         // '#6B7280'
+colors.border            // '#E5E7EB'
+
+// Tokens Tailwind prêts à l'emploi
+designTokens.buttonPrimary    // bg-[#823F91] hover:bg-[#5C2B66] rounded-xl font-semibold
+designTokens.buttonOutline    // border violet + hover léger
+designTokens.buttonGhost      // texte gray + hover gray
+designTokens.card             // bg-white rounded-2xl shadow + hover shadow
+designTokens.cardFlat         // bg-white rounded-2xl border
+designTokens.input            // rounded-xl shadow focus-ring violet
+designTokens.dashboardSection // card + overflow-hidden
+designTokens.dashboardSectionHeader // px-5 py-4 bg-gray-50/60
+
+// Motion
+motionTokens.fast    // '120ms ease-out'
+motionTokens.normal  // '180ms ease-out'
+motionTokens.slow    // '300ms ease-out'
+motionTokens.easeOut // [0.16, 1, 0.3, 1]
 ```
 
-### Composants shadcn/ui disponibles
-Navigation: `navigation-menu`, `tabs`, `breadcrumb`
-Inputs: `button`, `input`, `textarea`, `select`, `checkbox`, `radio-group`, `switch`, `slider`
-Feedback: `toast`, `alert`, `badge`, `progress`
-Overlays: `dialog`, `popover`, `dropdown-menu`, `hover-card`, `tooltip`, `drawer`
-Layout: `card`, `separator`, `scroll-area`, `accordion`, `collapsible`, `resizable`
-Data: `avatar`, `label`, `toggle`, `toggle-group`, `calendar`, `date-picker`
-
-### Responsive
+### Typographie réelle (globals.css)
 ```
-< 768px   : Mobile — menu hamburger, sidebar masquée, 1 colonne
-768-1024px: Tablet — sidebar icônes seulement
-> 1024px  : Desktop — sidebar complète, multi-colonnes
+h1:    font-weight: 800 (extrabold)   letter-spacing: -0.025em   line-height: 1.15
+h2:    font-weight: 700 (bold)        letter-spacing: -0.02em    line-height: 1.2
+h3:    font-weight: 600 (semibold)    letter-spacing: -0.01em    line-height: 1.3
+h4-h6: font-weight: 500 (medium)      letter-spacing: -0.005em
+p:     font-weight: 400 (normal)      color: beige-800            line-height: 1.65
+button: font-weight: 600 (semibold)   letter-spacing: -0.005em
+```
+
+### Classes utilitaires (globals.css)
+```css
+.card-section        /* glass card avec blur + border + shadow violet */
+.shadow-soft         /* ombre subtile 3 couches */
+.shadow-elevated     /* ombre 4 couches */
+.shadow-float        /* ombre flottante */
+.glass               /* backdrop-filter blur(20px) saturate(180%) */
+.glass-border        /* border 1px semi-transparent */
+.transition-smooth   /* cubic-bezier(0.4, 0, 0.2, 1) 0.3s */
+.transition-bounce   /* cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s */
+.hover-lift          /* translateY(-2px) au hover */
+.pattern-dots        /* fond pointillé radial-gradient */
+.tab-pill            /* onglet pill avec état actif violet gradient */
+.delta-positive / .delta-negative / .delta-neutral   /* badges KPI */
+.sparkline-*         /* micro-graphiques */
+.period-pill         /* filtre de période */
+.empty-state-card    /* états vides */
+```
+
+### Note textures
+Le body porte un grain subtil via pseudo-élément `::before` (SVG noise filter, opacity 0.4). Désactivé sur mobile via media query.
+
+### Responsive (breakpoints Tailwind)
+```
+xs:  475px   sm: 640px   md: 768px (mobile→tablet)
+lg:  1024px (sidebar complète)   xl: 1280px   2xl: 1536px   3xl: 1920px
+```
+
+---
+
+## Composants UI disponibles
+
+### shadcn/ui (new-york style, `components/ui/`)
+**Navigation**: `navigation-menu`, `tabs`, `breadcrumb`, `dropdown-menu`
+**Inputs**: `button`, `input`, `textarea`, `select`, `checkbox`, `radio-group`, `switch`, `toggle`, `toggle-group`, `calendar`, `date-picker`, `command`
+**Feedback**: `toast` (sonner), `alert`, `badge`, `progress`, `loading-spinner`, `empty-state`, `skeleton`
+**Overlays**: `dialog` (Framer Motion animé), `popover`, `hover-card`, `tooltip`, `drawer`, `sheet`
+**Layout**: `card`, `separator`, `scroll-area`, `accordion`, `collapsible`, `resizable`, `sidebar`
+**Data**: `avatar`, `user-avatar`, `table`, `chart` (Recharts), `carousel`
+
+### Composants UI avancés (`components/ui/`)
+`animated-beam`, `animated-counter`, `animated-list`, `avatar-circles`, `bento-grid`, `flip-card`, `flip-words`, `hero-video-dialog`, `marquee`, `modern-card`, `navbar-menu`, `pricing-column`, `pulsating-button`, `shine-border`, `shooting-stars`, `sparkles`, `spotlight`, `stars-background`
+
+### Button — variants réels
+```typescript
+variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+size:    'default' (h-11) | 'xs' (h-8) | 'sm' (h-10) | 'lg' (h-12) | 'icon' (size-11)
+// Base: rounded-xl font-semibold active:scale-[0.98]
+// default: gradient primary/60→primary/100 + shadow-md + hover:-translate-y-[1px]
+// outline: shadow violet subtil + hover:-translate-y-[1px]
+// ghost:   hover:bg-[#823F91]/10
 ```
 
 ---
@@ -294,7 +408,7 @@ Data: `avatar`, `label`, `toggle`, `toggle-group`, `calendar`, `date-picker`
 ```typescript
 // app/couple/dashboard/page.tsx
 export default async function DashboardPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase.from('demandes').select()
   return <div>...</div>
 }
@@ -303,7 +417,7 @@ export default async function DashboardPage() {
 ### Client Component
 ```typescript
 'use client'
-// Uniquement si nécessaire: state local, event handlers, hooks React
+// Uniquement si nécessaire: state local, event handlers, hooks React, browser APIs
 export function InteractiveComponent() {
   const [open, setOpen] = useState(false)
   return <button onClick={() => setOpen(true)}>...</button>
@@ -321,7 +435,16 @@ type FormData = z.infer<typeof schema>
 
 export function MyForm() {
   const form = useForm<FormData>({ resolver: zodResolver(schema) })
-  // ...
+}
+```
+
+### Gestion d'erreur
+```typescript
+import { getErrorMessage, extractSupabaseError } from '@/lib/utils'
+
+catch (error) {
+  const msg = getErrorMessage(error)                  // message simple
+  const details = extractSupabaseError(error)         // code, hint, statusCode
 }
 ```
 
@@ -341,27 +464,40 @@ export function MyForm() {
 - Utilities: `camelCase` (ex: `formatDate`)
 - Types/Interfaces: `PascalCase` (ex: `DemandeStatus`)
 - Constants: `UPPER_SNAKE_CASE` (ex: `MAX_FILE_SIZE`)
+- Routes API: kebab-case (ex: `/api/vendor-invitations/`)
+- Pages: kebab-case en français (ex: `/couple/jour-j/`)
 
 ### TypeScript
 - Strict mode activé — pas de `any`, utiliser `unknown` si nécessaire
 - Préférer `interface` pour les objets, `type` pour les unions/intersections
-- Toujours typer les props et return des fonctions publiques
 - `types/database.types.ts` est **auto-généré** depuis Supabase — ne pas modifier à la main
 
 ---
 
 ## Animations & Scroll
 
-### Framer Motion (`lib/animations.ts`)
+### lib/animations.ts — exports réels
 ```typescript
-<FadeInOnScroll>...</FadeInOnScroll>
-<SlideInOnScroll direction="up|down|left|right">...</SlideInOnScroll>
-<StaggeredList>...</StaggeredList>
-<FadeInScaleOnScroll>...</FadeInScaleOnScroll>
+import {
+  fadeInUp,          // {hidden: {opacity:0,y:20}, visible: {opacity:1,y:0}} + stagger par index
+  cardHover,         // {rest: {scale:1,y:0}, hover: {scale:1.02,y:-4}}
+  buttonHover,       // scale: 1.05
+  iconHover,         // scale: 1.1, rotate: 5
+  counterAnimation,  // initial {opacity:0,scale:0.5} → animate {opacity:1,scale:1}
+  typingIndicator,   // opacity[0.4,1,0.4] repeat Infinity
+  slideInRight,      // x:300→0 (notifications)
+  pulseBadge,        // scale[1,1.1,1] repeat Infinity
+} from '@/lib/animations'
+
+// Easing custom dans fadeInUp
+ease: [0.16, 1, 0.3, 1]  // Inspiré Linear/Stripe
 ```
 
 ### Lenis Smooth Scroll
-- Init dans `lib/scroll.ts` — scroll fluide global automatique
+Init automatique dans `lib/scroll.ts`. Pas de configuration nécessaire.
+
+### CSS keyframes (globals.css)
+`rippling`, `dialog-in/out`, `infinite-scroll` (marquee), `slideInUp`, `slideInFromBottom`, `fadeIn`
 
 ---
 
@@ -370,8 +506,7 @@ export function MyForm() {
 ### Création de demande
 ```
 Couple (matching ou recherche) → INSERT demandes (status: 'new')
-→ Notification prestataire
-→ Prestataire accepte/rejette → UPDATE demandes.status
+→ Notification prestataire → Prestataire accepte/rejette → UPDATE demandes.status
 → Notification couple
 ```
 
@@ -394,14 +529,7 @@ Couple sélectionne critères (type, ville, budget, culture)
 ## CI/CD & GitHub Actions
 
 ### Auto-merge des PRs
-Le workflow `.github/workflows/auto-merge.yml` merge automatiquement les PRs après passage des checks CI.
-
-**Déclenchement**: Dès qu'une PR est ouverte ou synchronisée, et quand les checks status passent.
-
-**Condition de merge**: La PR doit avoir le label `auto-merge` OU être de type dependabot. Tous les checks requis doivent passer. Merge via `squash` pour garder l'historique propre.
-
-### Workflow disponibles
-- `auto-merge.yml` — Merge automatique des PRs après CI réussi
+`auto-merge.yml` — merge automatique après CI. Requiert label `auto-merge` OU PR dependabot. Merge via squash.
 
 ---
 
@@ -410,60 +538,47 @@ Le workflow `.github/workflows/auto-merge.yml` merge automatiquement les PRs apr
 ### Scripts npm
 ```bash
 npm run dev              # Dev server (port 3000)
+npm run dev:turbo        # Dev avec Turbopack
 npm run build            # Build production
 npm run start            # Start production
 npm run lint             # ESLint
-npm run test             # Jest (tests unitaires)
-npm run test:api         # Test API (scripts/test-api.sh)
-npm run test:compatibility # Test compatibilité (scripts/test-compatibility.ts)
+npm run test             # Jest
+npm run test:api         # scripts/test-api.sh
+npm run test:compatibility # scripts/test-compatibility.ts
 ```
 
 ### Variables d'environnement (.env.local)
 ```bash
-# Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-
-# OpenAI
 OPENAI_API_KEY=
-
-# Resend (Email)
 RESEND_API_KEY=
-
-# Stripe
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-
-# Sentry
 SENTRY_DSN=
 SENTRY_AUTH_TOKEN=
-
-# N8N (Automation)
 N8N_WEBHOOK_URL=
-
-# Google Calendar
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
 
 ### Next.js Config (`next.config.ts`)
-- Security headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `CSP` strict, `HSTS`
-- Remote images: `images.unsplash.com`, domaine Supabase Storage
+- Remote images: `images.unsplash.com`, `*.supabase.co`
+- Security headers: CSP strict, HSTS, X-Frame-Options: DENY, X-Content-Type-Options
 - `removeConsole` en production (sauf error/warn)
-- Sentry intégré via withSentryConfig
+- Sentry via `withSentryConfig` (sourcemaps supprimés après upload)
 
 ### Vercel (`vercel.json`)
-- Cron: `/api/cron/email-sequences` tous les jours à 09:00 (`9 * * *`)
+- Cron: `/api/cron/email-sequences` — `"0 9 * * *"` (09:00 UTC daily)
 
 ---
 
 ## Commandes utiles
 
 ```bash
-# Type check
-npx tsc --noEmit
+npx tsc --noEmit   # Type check
 
 # Générer types Supabase
 npx supabase gen types typescript --project-id <PROJECT_ID> > types/database.types.ts
@@ -479,42 +594,22 @@ npx shadcn@latest add <component-name>
 ---
 
 ## Fichiers à ne PAS modifier sans raison explicite
-- `components.json` — config shadcn/ui (chemins, style)
-- `tailwind.config.ts` — config Tailwind (sauf ajout couleurs/plugins)
-- `next.config.ts` — sauf ajout de headers/images/env
+- `components.json` — config shadcn/ui (style: new-york, aliases, registries)
+- `tailwind.config.ts` — sauf ajout couleurs/plugins
+- `next.config.ts` — sauf ajout headers/images/env
 - `types/database.types.ts` — auto-généré depuis Supabase
 - `sentry.client.config.ts` / `sentry.server.config.ts` / `sentry.edge.config.ts`
 
 ---
 
-## Documentation interne (`/docs/`)
+## Guides détaillés (`/skills/`)
 
-```
-docs/
-├── architecture/       # Schéma DB, audit sécurité, architecture messaging, RLS
-├── deployment/         # ENV example, Vercel deployment, quick start
-├── guides/             # Budget, matching, messagerie, profil, icônes, ...
-├── setup/              # Supabase, Stripe, Resend, Google Calendar, admin setup
-├── internal/           # Fichiers internes Claude/Cursor (ce fichier)
-└── archive/            # Rapports d'analyse et diagnostics historiques
-```
+Des guides détaillés sont disponibles dans le dossier `/skills/` :
 
----
+- `skills/ui-components.md` — Design system complet, composants UI, patterns visuels
+- `skills/code-patterns.md` — Patterns TypeScript, Supabase, API routes, forms
 
-## Roadmap
-
-### À implémenter
-- [ ] Tests E2E (Playwright/Cypress)
-- [ ] PWA (service worker, manifest.json)
-- [ ] i18n (support FR/EN)
-- [ ] Storybook (documentation composants)
-- [ ] Webhooks N8N automation avancée
-
-### Optimisations
-- [ ] SWR/React Query pour caching requêtes client
-- [ ] Code splitting avancé (bundle analysis)
-- [ ] Lighthouse score > 90 (images, LCP)
-- [ ] WCAG AA compliance (accessibility)
+**Lire les skills avant de créer un nouveau composant ou une nouvelle route.**
 
 ---
 
@@ -524,13 +619,15 @@ docs/
 
 Règles fondamentales :
 1. **Lire avant de modifier** — toujours lire le fichier existant avant de proposer des changements
-2. **Server Components par défaut** — `'use client'` uniquement si nécessaire (state, events, browser APIs)
-3. **shadcn/ui en priorité** — utiliser les composants existants avant d'en créer de nouveaux
+2. **Server Components par défaut** — `'use client'` uniquement si nécessaire
+3. **shadcn/ui en priorité** — utiliser les composants existants avant d'en créer
 4. **Zod pour toute validation** — pas de validation manuelle
 5. **RLS est la sécurité** — ne jamais bypasser sans `createAdminClient()` justifié
 6. **Pas de `any`** — TypeScript strict, utiliser `unknown` ou types génériques
-7. **Animations via `lib/animations.ts`** — réutiliser les presets Framer Motion existants
+7. **Animations via `lib/animations.ts`** — réutiliser les variants Framer Motion existants
+8. **Fond BEIGE** — `--background` = `#FBF8F3`. Ne jamais supposer un fond blanc.
+9. **Skills en priorité** — lire `/skills/*.md` avant de créer un composant ou une route
 
 ---
 
-*Dernière mise à jour: 2026-02-23 — Version 2.0.0*
+*Dernière mise à jour: 2026-02-27 — Version 3.0.0*
