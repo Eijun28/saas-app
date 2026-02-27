@@ -330,7 +330,7 @@ export default function CollaborateursPage() {
                     <span className="text-xs font-medium text-gray-600">+94</span>
                   </div>
                 </div>
-                <p className="text-[#374151] font-medium">Rejoignez-nous</p>
+                <p className="text-gray-700 font-medium">Rejoignez-nous</p>
               </div>
             </CardContent>
           </Card>
@@ -573,7 +573,7 @@ export default function CollaborateursPage() {
         {collaborateurs.length === 0 ? (
           <Card className="border-gray-100 shadow-sm">
             <CardContent className="p-8 sm:p-12 text-center">
-              <Users className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-200" />
+              <Users className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-600 font-medium mb-1">Aucun collaborateur</p>
               <p className="text-sm text-gray-400 mb-5">
                 Invitez des proches pour vous aider dans l&apos;organisation
@@ -599,7 +599,7 @@ export default function CollaborateursPage() {
                 <Card className="h-full hover:shadow-md transition-all duration-150 border-gray-100 hover:border-[#823F91]/15 rounded-2xl">
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
-                      <CardTitle className="text-lg">{collab.name}</CardTitle>
+                      <CardTitle className="text-base sm:text-lg truncate">{collab.name}</CardTitle>
                       {editingCollaborateur === collab.id ? (
                         <div className="flex gap-2">
                           <Select
@@ -631,7 +631,7 @@ export default function CollaborateursPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-sm text-[#4A4A4A]">{collab.email}</p>
+                    <p className="text-sm text-gray-600">{collab.email}</p>
                     {collab.accepted_at ? (
                       <p className="text-xs text-green-600">{'\u2713'} Accepté</p>
                     ) : (

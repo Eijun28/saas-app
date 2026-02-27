@@ -1,17 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Send, MessageSquare, Search, CheckCheck } from 'lucide-react'
+import { Send, MessageSquare, Search, CheckCheck, ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 
 export default function MessageriePage() {
   const router = useRouter()
   const { user, loading: userLoading } = useUser()
+  const isMobile = useIsMobile()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const [coupleId, setCoupleId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<any[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
@@ -270,25 +273,67 @@ export default function MessageriePage() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
 
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
   if (userLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-[#4A4A4A]">Chargement...</p>
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+        <div className="h-8 w-40 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-4 w-56 bg-gray-100 rounded-lg animate-pulse" />
+        <div className="flex gap-4 flex-1 min-h-0">
+          <div className="w-full md:w-[340px] bg-white rounded-2xl border border-gray-100 animate-pulse" />
+          <div className="hidden md:flex flex-1 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+        </div>
       </div>
     )
   }
 
+  // On mobile: show list OR conversation, never both
+  const showList = !isMobile || !selectedConversation
+  const showConversation = !!selectedConversation && (!isMobile || selectedConversation !== null)
+
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4">
-        <PageTitle
-          title="Messagerie"
-          description="Communiquez avec vos prestataires"
-          className="pb-4"
-        />
+        {/* Header — hide on mobile when conversation is open */}
+        {(!isMobile || !selectedConversation) && (
+          <PageTitle
+            title="Messagerie"
+            description="Communiquez avec vos prestataires"
+            className="pb-4"
+          />
+        )}
 
-        <div className={`flex-1 min-h-0 flex gap-4 overflow-hidden ${!selectedConversation ? 'justify-center' : ''}`}>
-          {/* Carte gauche — liste des conversations (largeur mobile fixe) */}
-          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${selectedConversation ? 'w-[340px] xl:w-[375px]' : 'w-full max-w-[375px]'}`}>
+        {/* Mobile conversation header with back button */}
+        {isMobile && selectedConversation && (
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button
+              onClick={() => setSelectedConversation(null)}
+              className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors flex-shrink-0"
+              aria-label="Retour à la liste"
+            >
+              <ArrowLeft className="h-4 w-4 text-gray-700" />
+            </button>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage src={prestataireAvatars[selectedConversation] || undefined} />
+                <AvatarFallback className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold">
+                  {(prestataireNames[selectedConversation] || 'P').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-semibold text-gray-900 truncate text-sm">
+                {prestataireNames[selectedConversation] || 'Messages'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
+          {/* Left panel — conversation list */}
+          {showList && (
+          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${isMobile ? 'w-full' : selectedConversation ? 'w-[300px] xl:w-[340px]' : 'w-full max-w-[400px] mx-auto'}`}>
             {/* En-tête avec recherche */}
             <div className="p-3 sm:p-4 border-b border-gray-100">
               <div className="relative">
@@ -335,6 +380,8 @@ export default function MessageriePage() {
                           onClick={() => {
                             setSelectedConversation(conv.id)
                             loadMessages(conv.id)
+                            // On mobile, scroll to top of conversation area
+                            if (isMobile) window.scrollTo(0, 0)
                           }}
                           className={`
                             bg-white rounded-xl p-2.5 sm:p-3 cursor-pointer transition-all active:scale-[0.98]
@@ -402,15 +449,16 @@ export default function MessageriePage() {
               )}
             </div>
           </div>
+          )}
 
-          {/* Carte droite — conversation, se déploie depuis la droite */}
-          {selectedConversation && (
-            <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in slide-in-from-right-4 duration-300">
-              {/* En-tête de conversation */}
-              <div className="bg-white border-b border-gray-100 safe-area-top">
+          {/* Right panel — conversation */}
+          {showConversation && selectedConversation && (
+            <div className={`flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-in slide-in-from-right-4 duration-300 ${isMobile ? 'w-full' : 'flex-1'}`}>
+              {/* Desktop conversation header only (mobile has its own above) */}
+              {!isMobile && (
+              <div className="bg-white border-b border-gray-100">
                 <div className="px-3 sm:px-4 py-2.5 sm:py-3">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Avatar avec status online */}
                     <div className="relative flex-shrink-0">
                       <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                         <AvatarImage src={prestataireAvatars[selectedConversation] || undefined} />
@@ -419,8 +467,6 @@ export default function MessageriePage() {
                         </AvatarFallback>
                       </Avatar>
                     </div>
-
-                    {/* Nom et statut */}
                     <div className="flex-1 min-w-0">
                       <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
                         {prestataireNames[selectedConversation] || 'Messages'}
@@ -432,6 +478,7 @@ export default function MessageriePage() {
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Messages */}
               <div
@@ -502,13 +549,15 @@ export default function MessageriePage() {
                     )
                   })
                 )}
+                  {/* Scroll anchor */}
+                  <div ref={messagesEndRef} />
                 </div>
               </div>
 
-              {/* Zone de saisie */}
-              <div className="bg-white border-t border-gray-100 safe-area-bottom">
+              {/* Input zone */}
+              <div className="bg-white border-t border-gray-100">
                 <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                  <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:bg-white focus-within:border-gray-300 transition-all">
+                  <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:border-gray-300 transition-all">
                     <textarea
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
@@ -531,7 +580,7 @@ export default function MessageriePage() {
                           : 'bg-transparent text-gray-400 cursor-not-allowed'
                       }`}
                     >
-                      <Send className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.5} />
+                      <Send className="h-4 w-4" strokeWidth={2.5} />
                     </button>
                   </div>
                 </form>
