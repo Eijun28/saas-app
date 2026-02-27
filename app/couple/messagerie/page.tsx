@@ -448,6 +448,7 @@ export default function MessageriePage() {
                 </div>
               )}
             </div>
+          </div>
           )}
 
           {/* Right panel — conversation */}
