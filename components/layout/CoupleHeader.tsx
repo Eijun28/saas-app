@@ -231,6 +231,14 @@ export function CoupleHeader() {
                     </div>
                   )}
                 </div>
+                <div className="border-t border-gray-100 px-3 py-2">
+                  <Link
+                    href="/couple/notifications"
+                    className="block text-center text-[12px] font-medium text-[#823F91] hover:text-[#6D3478] py-1 transition-colors"
+                  >
+                    Voir toutes les notifications
+                  </Link>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 

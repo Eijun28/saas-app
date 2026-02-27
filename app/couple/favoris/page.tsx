@@ -262,9 +262,9 @@ export default function FavorisPage() {
                 {/* Header */}
                 <div className="relative h-20 bg-gradient-to-br from-[#823F91]/10 to-[#9D5FA8]/10 flex items-center justify-center">
                   {fav.avatar_url ? (
-                    <Image src={fav.avatar_url} alt="" width={56} height={56} className="h-14 w-14 rounded-full object-cover border-3 border-white shadow-md" />
+                    <Image src={fav.avatar_url} alt="" width={56} height={56} className="h-14 w-14 rounded-full object-cover border-[3px] border-white shadow-md" />
                   ) : (
-                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-3 border-white shadow-md">
+                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-[3px] border-white shadow-md">
                       <span className="text-lg font-semibold text-white">{getInitials(fav.nom_entreprise || 'P')}</span>
                     </div>
                   )}
@@ -384,14 +384,14 @@ export default function FavorisPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[201] bg-black/50 flex items-center justify-center p-4"
+              className="fixed inset-0 z-[201] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
               onClick={() => setShowCompare(false)}
             >
               <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-auto"
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-4xl max-h-[90dvh] overflow-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Compare header */}

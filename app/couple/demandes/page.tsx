@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -111,6 +112,7 @@ function getProviderDisplayName(p?: ProviderProfile): string {
 }
 
 export default function DemandesPage() {
+  const router = useRouter()
   const { user } = useUser()
   const [demandes, setDemandes] = useState<RequestRow[]>([])
   const [devis, setDevis] = useState<DevisRow[]>([])
@@ -604,7 +606,7 @@ export default function DemandesPage() {
               </p>
               <Button
                 className="mt-6 bg-[#823F91] hover:bg-[#6D3478] text-white"
-                onClick={() => window.location.href = '/couple/recherche'}
+                onClick={() => router.push('/couple/recherche')}
               >
                 Rechercher des prestataires
               </Button>
@@ -713,7 +715,7 @@ export default function DemandesPage() {
                                           <>
                                             <DropdownMenuItem
                                               className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
-                                              onClick={() => window.location.href = '/couple/messagerie'}
+                                              onClick={() => router.push('/couple/messagerie')}
                                             >
                                               <MessageSquare className="h-4 w-4 mr-2" />
                                               Envoyer un message
@@ -791,7 +793,7 @@ export default function DemandesPage() {
                                     <Button
                                       size="sm"
                                       className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
-                                      onClick={() => window.location.href = '/couple/messagerie'}
+                                      onClick={() => router.push('/couple/messagerie')}
                                     >
                                       <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
                                       Discuter
