@@ -307,14 +307,18 @@ export function GoogleCalendarSync({
 
       {/* Actions */}
       {!status?.connected ? (
-        <Button
-          onClick={handleConnect}
-          disabled={isConnecting}
-          className="w-full bg-[#4285F4] hover:bg-[#3367D6] text-white gap-2 h-9 text-sm touch-manipulation"
-        >
-          <Calendar className="w-4 h-4" />
-          {isConnecting ? 'Connexion...' : 'Connecter Google Calendar'}
-        </Button>
+        <div className="relative">
+          <Button
+            disabled
+            className="w-full bg-[#4285F4]/60 text-white gap-2 h-9 text-sm cursor-not-allowed"
+          >
+            <Calendar className="w-4 h-4" />
+            Connecter Google Calendar
+          </Button>
+          <span className="absolute -top-2.5 right-3 bg-[#823F91] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full pointer-events-none">
+            Bientôt disponible
+          </span>
+        </div>
       ) : (
         <div className="flex flex-col gap-2">
           {/* Boutons de sync */}
