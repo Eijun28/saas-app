@@ -287,7 +287,7 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
                 className={cn(
                   'px-2 py-1 rounded-full text-[11px] font-medium transition-all',
                   filterMode === f
-                    ? 'bg-white text-gray-900 shadow-sm'
+                    ? 'bg-[#823F91] text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                 )}
               >

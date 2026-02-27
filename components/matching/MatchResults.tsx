@@ -286,7 +286,7 @@ export default function MatchResults({
               className={cn(
                 'px-3 py-1 text-xs rounded-full border transition-all duration-150',
                 !activeFilter
-                  ? 'bg-gray-700 text-white border-gray-700'
+                  ? 'bg-[#823F91] text-white border-[#823F91]'
                   : 'border-gray-300 text-gray-600 hover:border-gray-500'
               )}
             >
@@ -299,7 +299,7 @@ export default function MatchResults({
                 className={cn(
                   'px-3 py-1 text-xs rounded-full border transition-all duration-150',
                   activeFilter === type
-                    ? 'bg-gray-700 text-white border-gray-700'
+                    ? 'bg-[#823F91] text-white border-[#823F91]'
                     : 'border-gray-300 text-gray-600 hover:border-gray-500'
                 )}
               >
