@@ -5,6 +5,7 @@ import { TabletAwareSidebarProvider } from "@/components/layout/TabletAwareSideb
 import { SidebarInsetWrapper } from "./sidebar-inset-wrapper"
 import { getUserRoleServer } from "@/lib/auth/utils"
 import { UserProvider } from "@/lib/context/user-context"
+import { WeddingAdvisorWidget } from "@/components/couple/shared/WeddingAdvisorWidget"
 
 export const dynamic = 'force-dynamic'
 
@@ -37,6 +38,7 @@ export default async function CoupleLayout({
           {children}
         </SidebarInsetWrapper>
       </TabletAwareSidebarProvider>
+      <WeddingAdvisorWidget />
     </UserProvider>
   )
 }
