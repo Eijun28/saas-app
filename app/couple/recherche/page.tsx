@@ -881,7 +881,7 @@ export default function RecherchePage() {
                   onClick={() => setSelectedCategory(null)}
                 >
                   Métier: {SERVICE_CATEGORIES.flatMap(c => c.services).find(s => s.value === selectedCategory)?.label}
-                  <X className="h-3 w-3 ml-2" />
+                  <X className="h-3.5 w-3.5 ml-1.5" />
                 </Badge>
               )}
               {selectedCulture && (
@@ -891,7 +891,7 @@ export default function RecherchePage() {
                   onClick={() => setSelectedCulture(null)}
                 >
                   Culture: {CULTURES.find(c => c.id === selectedCulture)?.label}
-                  <X className="h-3 w-3 ml-2" />
+                  <X className="h-3.5 w-3.5 ml-1.5" />
                 </Badge>
               )}
               {selectedCountry && (
@@ -901,7 +901,7 @@ export default function RecherchePage() {
                   onClick={() => setSelectedCountry(null)}
                 >
                   Pays: {selectedCountry}
-                  <X className="h-3 w-3 ml-2" />
+                  <X className="h-3.5 w-3.5 ml-1.5" />
                 </Badge>
               )}
               {selectedTags.map(tagId => {
@@ -915,7 +915,7 @@ export default function RecherchePage() {
                   >
                     <Tag className="h-3 w-3 mr-1" />
                     {tag.label}
-                    <X className="h-3 w-3 ml-2" />
+                    <X className="h-3.5 w-3.5 ml-1.5" />
                   </Badge>
                 ) : null
               })}
@@ -926,7 +926,7 @@ export default function RecherchePage() {
                   onClick={() => setSearchQuery('')}
                 >
                   "{searchQuery}"
-                  <X className="h-3 w-3 ml-2" />
+                  <X className="h-3.5 w-3.5 ml-1.5" />
                 </Badge>
               )}
             </div>
@@ -972,8 +972,8 @@ export default function RecherchePage() {
             />
             <span className="text-[11px] text-gray-400">&euro;</span>
             {budgetMax !== null && (
-              <button onClick={() => setBudgetMax(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="h-3 w-3" />
+              <button onClick={() => setBudgetMax(null)} className="text-gray-500 hover:text-gray-800 transition-colors">
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>

@@ -194,7 +194,7 @@ export function BudgetAssistant({ variant = 'full', className }: BudgetAssistant
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+              className="rounded-full p-2 text-gray-700 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors"
               aria-label="Fermer"
             >
               <X className="h-4 w-4" />

@@ -302,7 +302,6 @@ button, .button, .btn {
 }
 
 /* Texte sombre dans les modals Dialog pour être lisible sur fond clair */
-[data-slot="dialog-content"] *,
 [data-slot="dialog-content"] h1,
 [data-slot="dialog-content"] h2,
 [data-slot="dialog-content"] h3,
@@ -313,7 +312,11 @@ button, .button, .btn {
 [data-slot="dialog-description"],
 [data-slot="dialog-header"] *,
 [data-slot="dialog-content"] label,
-[data-slot="dialog-content"] p,
+[data-slot="dialog-content"] p {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Spans dans les dialogs : texte sombre par défaut */
 [data-slot="dialog-content"] span {
   color: hsl(var(--foreground)) !important;
 }
@@ -467,12 +470,12 @@ button.border-2[role="combobox"],
   color: hsl(var(--foreground)) !important;
 }
 
-/* Texte BLANC sur boutons violets/gradient */
+/* Texte BLANC sur boutons violets/gradient (class~= = mot exact, pas les variantes /10 /5 etc.) */
 button.gradient-primary,
 button.gradient-purple,
 button[class*="gradient-"],
 button.bg-primary,
-button[class*="bg-primary"],
+button[class~="bg-primary"],
 button[class*="bg-\[#823F91\]"],
 button[style*="background-color: #823F91"],
 button[style*="background-color: rgb(130, 63, 145)"],
@@ -481,7 +484,7 @@ button[style*="background-color: rgb(130, 63, 145)"],
 .bg-primary,
 [class*="gradient-primary"],
 [class*="gradient-purple"],
-[class*="bg-primary"] {
+[class~="bg-primary"] {
   color: white !important;
 }
 
@@ -491,13 +494,13 @@ button[style*="background-color: rgb(130, 63, 145)"],
 .bg-primary button,
 [class*="gradient-primary"] button,
 [class*="gradient-purple"] button,
-[class*="bg-primary"] button {
+[class~="bg-primary"] button {
   color: white !important;
 }
 
 /* Texte blanc pour tous les éléments enfants des boutons violets */
 button[class*="bg-\[#823F91\]"] *,
-button[class*="bg-primary"] *,
+button[class~="bg-primary"] *,
 button.gradient-primary *,
 button.gradient-purple * {
   color: white !important;
@@ -508,7 +511,7 @@ button.gradient-primary span,
 button.gradient-purple span,
 button.bg-primary span,
 button[class*="gradient-"] span,
-button[class*="bg-primary"] span,
+button[class~="bg-primary"] span,
 button[class*="bg-\[#823F91\]"] span,
 button[class*="bg-\[#823F91\]"] * {
   color: white !important;
@@ -519,16 +522,27 @@ button[class*="bg-\[#823F91\]"] * {
 [data-state="checked"].gradient-purple,
 [data-state="checked"][class*="gradient-"],
 [data-state="checked"].bg-primary,
-[data-state="checked"][class*="bg-primary"],
+[data-state="checked"][class~="bg-primary"],
 [aria-checked="true"].gradient-primary,
 [aria-checked="true"].gradient-purple,
 [aria-checked="true"][class*="gradient-"],
 [aria-checked="true"].bg-primary,
-[aria-checked="true"][class*="bg-primary"],
+[aria-checked="true"][class~="bg-primary"],
 [data-state="on"],
 [aria-pressed="true"] {
   color: white !important;
 }
+
+/* Restaurer texte blanc sur les badges/pills violet solid à l'intérieur des dialogs
+   (la règle [data-slot="dialog-content"] span l'écrase sinon) */
+[data-slot="dialog-content"] [class~="bg-primary"],
+[data-slot="dialog-content"] [data-slot="badge"][class~="bg-primary"],
+[data-slot="dialog-content"] span[class~="bg-primary"] {
+  color: white !important;
+}
+
+/* Variantes à opacité du primary (bg-primary/10, /5, /8, etc.) : ne pas forcer de couleur,
+   laisser les classes Tailwind (text-primary, text-foreground…) s'appliquer normalement */
 
 /* Texte NOIR sur fond BLANC - priorité absolue (doit venir après) */
 .bg-white,

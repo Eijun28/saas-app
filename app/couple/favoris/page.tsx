@@ -400,8 +400,8 @@ export default function FavorisPage() {
                     <h2 className="text-lg font-bold text-gray-900">Comparaison</h2>
                     <p className="text-sm text-gray-500">{compareProviders.length} prestataires</p>
                   </div>
-                  <button onClick={() => setShowCompare(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <X className="h-5 w-5 text-gray-400" />
+                  <button onClick={() => setShowCompare(false)} className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors">
+                    <X className="h-5 w-5 text-gray-700" />
                   </button>
                 </div>
 

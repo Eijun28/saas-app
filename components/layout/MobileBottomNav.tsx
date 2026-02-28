@@ -97,10 +97,10 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
           <p className="text-[15px] font-bold text-gray-900">Toutes les pages</p>
           <button
             onClick={onClose}
-            className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center active:bg-gray-200 transition-colors"
+            className="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center active:bg-gray-300 transition-colors"
             aria-label="Fermer"
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-gray-700" />
           </button>
         </div>
 
