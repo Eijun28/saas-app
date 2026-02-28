@@ -75,17 +75,17 @@ export async function GET(request: Request) {
 
       // Requests for current period
       supabase
-        .from('requests')
+        .from('demandes')
         .select('id, status, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .gte('created_at', startISO)
         .order('created_at', { ascending: true }),
 
       // Requests for previous period
       supabase
-        .from('requests')
+        .from('demandes')
         .select('id, status, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .gte('created_at', prevStartISO)
         .lt('created_at', prevEndISO),
 
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
       supabase
         .from('conversations')
         .select('id, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('created_at', { ascending: false }),
 
       // Devis for current period
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
       supabase
         .from('reviews')
         .select('id, rating, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('created_at', { ascending: false }),
     ])
 
@@ -141,7 +141,6 @@ export async function GET(request: Request) {
     const prevDevis: DevisEntry[] = prevDevisResult.data || []
     const factures: FactureEntry[] = facturesResult.data || []
     const reviews: ReviewEntry[] = reviewsResult.data || []
-    const impressionsAgg = impressionsResult.data || []
 
     // Impressions & clicks
     const impressions = logs.filter(l => l.event_type === 'impression').length
@@ -162,7 +161,7 @@ export async function GET(request: Request) {
     const totalRequests = requests.length
     const acceptedRequests = requests.filter(r => r.status === 'accepted').length
     const rejectedRequests = requests.filter(r => r.status === 'rejected').length
-    const pendingRequests = requests.filter(r => r.status === 'pending').length
+    const pendingRequests = requests.filter(r => r.status === 'new' || r.status === 'in-progress').length
     const prevTotalRequests = prevRequests.length
 
     const acceptanceRate = totalRequests > 0 ? Math.round((acceptedRequests / totalRequests) * 100) : 0

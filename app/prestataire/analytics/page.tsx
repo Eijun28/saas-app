@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart3, RefreshCw, Download } from 'lucide-react'
+import { BarChart3, RefreshCw } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
