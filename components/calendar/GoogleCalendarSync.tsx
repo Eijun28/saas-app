@@ -210,19 +210,18 @@ export function GoogleCalendarSync({
       <Button
         variant="outline"
         size="sm"
-        onClick={() => handleSync('both')}
-        disabled={isSyncing}
-        className={cn('gap-2 text-xs', className)}
+        disabled
+        className={cn('gap-2 text-xs opacity-50 pointer-events-none select-none', className)}
       >
-        <RefreshCw className={cn('w-3.5 h-3.5', isSyncing && 'animate-spin')} />
-        {isSyncing ? 'Sync...' : 'Sync Google'}
+        <RefreshCw className="w-3.5 h-3.5" />
+        Sync Google
       </Button>
     )
   }
 
   // ── Mode carte complète ───────────────────────────────────────────────────
   return (
-    <div className={cn('rounded-xl border border-gray-200 bg-white p-4 sm:p-5', className)}>
+    <div className={cn('rounded-xl border border-gray-200 bg-white p-4 sm:p-5 opacity-50 pointer-events-none select-none', className)}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 shadow-sm flex items-center justify-center flex-shrink-0">
@@ -236,12 +235,9 @@ export function GoogleCalendarSync({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-gray-900">Google Calendar</h3>
-            {status?.connected && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-                <CheckCircle2 className="w-3 h-3" />
-                Connecté
-              </span>
-            )}
+            <span className="inline-flex items-center text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+              Bientôt disponible
+            </span>
           </div>
           {status?.connected && status.last_sync && (
             <p className="text-xs text-gray-500 mt-0.5">
