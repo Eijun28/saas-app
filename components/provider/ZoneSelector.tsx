@@ -189,9 +189,9 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
               <Badge
                 key={id}
                 variant="secondary"
-                className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-gray-100 hover:bg-gray-200 transition-colors group"
+                className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-gray-100 hover:bg-gray-200 transition-colors"
               >
-                <span className="text-sm">{dept.label}</span>
+                <span className="text-sm text-gray-800">{dept.label}</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -199,10 +199,10 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
                     e.stopPropagation()
                     removeZone(id)
                   }}
-                  className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-gray-500 transition-colors"
+                  className="ml-0.5 p-0.5 rounded-full bg-black/15 text-gray-900 hover:bg-red-500 hover:text-white transition-colors flex-shrink-0"
                   title="Supprimer"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5 text-gray-900" strokeWidth={2.5} />
                 </button>
               </Badge>
             ) : null;
