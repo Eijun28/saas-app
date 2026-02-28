@@ -53,10 +53,7 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     const { data: incompleteProviders } = await adminClient
       .from('profiles')
-      .select(`
-        id, email, prenom, created_at,
-        prestataire_profiles!inner(nom_entreprise, type_prestation, description)
-      `)
+      .select('id, prenom, created_at')
       .eq('role', 'prestataire')
       .eq('onboarding_completed', false)
 
@@ -94,10 +91,7 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     const { data: incompleteCouples } = await adminClient
       .from('profiles')
-      .select(`
-        id, email, prenom, created_at,
-        couple_profiles!inner(date_marriage, ville_marriage, budget_min)
-      `)
+      .select('id, prenom, created_at')
       .eq('role', 'couple')
       .eq('onboarding_completed', false)
 
