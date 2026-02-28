@@ -20,7 +20,6 @@ import {
   Calendar,
   Newspaper,
   AlertTriangle,
-  ChevronRight,
   User,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -94,10 +93,6 @@ export default function ParametresPage() {
   const [showCurrent, setShowCurrent] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleteConfirmText, setDeleteConfirmText] = useState('')
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [isGoogleUser, setIsGoogleUser] = useState(false)
   const [isSavingInfo, setIsSavingInfo] = useState(false)
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
@@ -134,7 +129,6 @@ export default function ParametresPage() {
       const supabase = createClient()
       const { data } = await supabase.auth.getUser()
       if (data.user) {
-        setUserEmail(data.user.email ?? null)
         const provider = data.user.app_metadata?.provider
         setIsGoogleUser(provider === 'google')
 
@@ -272,20 +266,6 @@ export default function ParametresPage() {
     }
   }
 
-  // ─── Delete account ───────────────────────────────────────
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== 'SUPPRIMER') return
-
-    setIsDeletingAccount(true)
-    try {
-      toast.error('La suppression de compte sera bientôt disponible. Contactez le support pour toute demande.')
-    } finally {
-      setIsDeletingAccount(false)
-      setShowDeleteConfirm(false)
-      setDeleteConfirmText('')
-    }
-  }
-
   const cardClass = "card-section"
 
   return (
@@ -418,12 +398,9 @@ export default function ParametresPage() {
                   <p className="text-sm font-semibold text-foreground">Forfait Discovery</p>
                   <p className="text-sm text-muted-foreground">Gratuit</p>
                 </div>
-                <button
-                  onClick={() => toast.info('La gestion des abonnements sera disponible prochainement.')}
-                  className="text-sm font-semibold text-white px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200"
-                >
-                  Modifier l&apos;abonnement
-                </button>
+                <span className="text-xs font-medium text-amber-700 bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg">
+                  Offre lancement
+                </span>
               </div>
 
               {/* Launch offer info */}
@@ -729,13 +706,9 @@ export default function ParametresPage() {
                   <p className="text-xs text-muted-foreground">Téléchargez une copie de toutes vos données (profil, demandes, messages)</p>
                 </div>
               </div>
-              <button
-                onClick={() => toast.success('L\'export de données sera bientôt disponible.')}
-                className="flex items-center gap-1.5 text-sm font-medium text-[#823F91] hover:text-[#6D3478] transition-colors px-3 py-2 rounded-lg hover:bg-[#823F91]/5"
-              >
-                Exporter
-                <ChevronRight className="h-4 w-4" />
-              </button>
+              <span className="text-xs font-medium text-muted-foreground bg-muted px-3 py-1.5 rounded-lg">
+                Bientôt disponible
+              </span>
             </div>
 
             <div className="mx-4 border-t border-border/50 my-2" />
@@ -751,52 +724,19 @@ export default function ParametresPage() {
                   <p className="text-xs text-muted-foreground">Cette action est irréversible. Toutes vos données seront définitivement supprimées.</p>
                 </div>
               </div>
-
-              {!showDeleteConfirm ? (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-sm font-medium text-red-600 hover:text-red-700 px-4 py-2 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
-                >
-                  Supprimer mon compte
-                </button>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-red-50/50 border border-red-200 rounded-xl p-4 space-y-3"
-                >
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-red-700">
-                      Tapez <span className="font-mono font-bold">SUPPRIMER</span> pour confirmer la suppression définitive de votre compte.
-                    </p>
-                  </div>
-                  <Input
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="Tapez SUPPRIMER"
-                    className="h-10 border-red-200 bg-white rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-red-300 focus-visible:border-red-400"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleDeleteAccount}
-                      disabled={deleteConfirmText !== 'SUPPRIMER' || isDeletingAccount}
-                      className="text-sm font-semibold text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {isDeletingAccount ? 'Suppression...' : 'Confirmer la suppression'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDeleteConfirm(false)
-                        setDeleteConfirmText('')
-                      }}
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+              <div className="flex items-start gap-2 bg-red-50/50 border border-red-100 rounded-xl px-4 py-3">
+                <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-red-700">
+                  Pour supprimer votre compte, contactez{' '}
+                  <a
+                    href="mailto:support@nuply.fr?subject=Suppression de compte"
+                    className="font-medium underline underline-offset-2 hover:text-red-800 transition-colors"
+                  >
+                    support@nuply.fr
+                  </a>
+                  . Notre équipe traitera votre demande sous 48h.
+                </p>
+              </div>
             </div>
           </div>
         </Card>
@@ -813,12 +753,12 @@ export default function ParametresPage() {
       >
         <p className="text-sm text-muted-foreground">
           Besoin d&apos;aide ? Contactez notre{' '}
-          <button
-            onClick={() => toast.info('Le support sera disponible prochainement.')}
+          <a
+            href="mailto:support@nuply.fr"
             className="text-[#823F91] hover:text-[#6D3478] font-medium transition-colors underline underline-offset-2"
           >
             équipe support
-          </button>
+          </a>
         </p>
       </motion.div>
     </div>
