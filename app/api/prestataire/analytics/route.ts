@@ -75,17 +75,17 @@ export async function GET(request: Request) {
 
       // Requests for current period
       supabase
-        .from('demandes')
+        .from('requests')
         .select('id, status, created_at')
-        .eq('prestataire_id', user.id)
+        .eq('provider_id', user.id)
         .gte('created_at', startISO)
         .order('created_at', { ascending: true }),
 
       // Requests for previous period
       supabase
-        .from('demandes')
+        .from('requests')
         .select('id, status, created_at')
-        .eq('prestataire_id', user.id)
+        .eq('provider_id', user.id)
         .gte('created_at', prevStartISO)
         .lt('created_at', prevEndISO),
 
@@ -161,7 +161,7 @@ export async function GET(request: Request) {
     const totalRequests = requests.length
     const acceptedRequests = requests.filter(r => r.status === 'accepted').length
     const rejectedRequests = requests.filter(r => r.status === 'rejected').length
-    const pendingRequests = requests.filter(r => r.status === 'new' || r.status === 'in-progress').length
+    const pendingRequests = requests.filter(r => r.status === 'pending').length
     const prevTotalRequests = prevRequests.length
 
     const acceptanceRate = totalRequests > 0 ? Math.round((acceptedRequests / totalRequests) * 100) : 0

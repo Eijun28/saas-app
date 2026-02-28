@@ -79,11 +79,11 @@ export default function CoupleDashboardPage() {
           supabase
             .from('favoris')
             .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id),
+            .eq('couple_id', user.id),
           supabase
             .from('budget_items')
-            .select('id, category, amount, paid')
-            .eq('user_id', user.id),
+            .select('id, category, amount')
+            .eq('couple_id', user.id),
           supabase
             .from('requests')
             .select('id, created_at, status, provider_id')
@@ -189,7 +189,7 @@ export default function CoupleDashboardPage() {
 
   // Budget breakdown
   const budgetSpent = useMemo(() => {
-    return budgetItems.reduce((sum, item) => sum + (item.paid ? item.amount : 0), 0)
+    return budgetItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
   }, [budgetItems])
   const budgetRemaining = budgetTotal - budgetSpent
 
