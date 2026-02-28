@@ -95,7 +95,7 @@ function Section({
 }) {
   return (
     <Card className="card-section">
-      <div className="p-5 sm:p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex items-center gap-2.5 mb-5">
           <div className="p-1.5 rounded-lg bg-[#823F91]/10 flex-shrink-0">
             <Icon className="h-4 w-4 text-[#823F91]" />
@@ -269,10 +269,10 @@ export default function ProfilPublicPage() {
   ]
 
   return (
-    <div className="w-full max-w-4xl mx-auto pb-12">
+    <div className="w-full max-w-4xl mx-auto pb-12 px-3 sm:px-4 md:px-0">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between mb-6 gap-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="relative flex-shrink-0">
             <AvatarUploader
               userId={user.id}
@@ -289,52 +289,79 @@ export default function ProfilPublicPage() {
               </div>
             )}
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-foreground truncate">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base sm:text-xl font-bold text-foreground truncate leading-tight">
               {profile?.nom_entreprise || 'Mon Entreprise'}
             </h1>
             {profile?.service_type && (
-              <p className="text-sm text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
                 {getServiceTypeLabel(profile.service_type)}
               </p>
             )}
           </div>
         </div>
-        <ProfilePreviewDialog
-          userId={user.id}
-          profile={{
-            nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
-            service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
-            avatar_url: profile?.avatar_url || undefined,
-            prenom: profile?.prenom,
-            nom: profile?.nom,
-            description_courte: profile?.description_courte,
-            bio: profile?.bio,
-            budget_min: profile?.budget_min,
-            budget_max: profile?.budget_max,
-            annees_experience: profile?.annees_experience,
-            ville_principale: profile?.ville_principale,
-            is_early_adopter: profile?.is_early_adopter || false,
-            instagram_url: profile?.instagram_url,
-            facebook_url: profile?.facebook_url,
-            website_url: profile?.website_url,
-            linkedin_url: profile?.linkedin_url,
-            tiktok_url: profile?.tiktok_url,
-            pricing_unit: profile?.pricing_unit,
-          }}
-          cultures={cultures}
-          zones={zones}
-          portfolio={portfolio}
-          hasSiret={!!profile?.siret}
-          serviceDetails={serviceDetails}
-          serviceTypeValue={profile?.service_type}
-        />
+        <div className="flex-shrink-0">
+          <ProfilePreviewDialog
+            userId={user.id}
+            profile={{
+              nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
+              service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
+              avatar_url: profile?.avatar_url || undefined,
+              prenom: profile?.prenom,
+              nom: profile?.nom,
+              description_courte: profile?.description_courte,
+              bio: profile?.bio,
+              budget_min: profile?.budget_min,
+              budget_max: profile?.budget_max,
+              annees_experience: profile?.annees_experience,
+              ville_principale: profile?.ville_principale,
+              is_early_adopter: profile?.is_early_adopter || false,
+              instagram_url: profile?.instagram_url,
+              facebook_url: profile?.facebook_url,
+              website_url: profile?.website_url,
+              linkedin_url: profile?.linkedin_url,
+              tiktok_url: profile?.tiktok_url,
+              pricing_unit: profile?.pricing_unit,
+            }}
+            cultures={cultures}
+            zones={zones}
+            portfolio={portfolio}
+            hasSiret={!!profile?.siret}
+            serviceDetails={serviceDetails}
+            serviceTypeValue={profile?.service_type}
+          />
+        </div>
+      </div>
+
+      {/* ── Mobile nav — horizontal scroll ── */}
+      <div className="md:hidden -mx-3 sm:-mx-4 mb-4">
+        <div
+          className="flex overflow-x-auto gap-1.5 px-3 sm:px-4 pb-2"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {navSections.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveSection(id)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs whitespace-nowrap flex-shrink-0 transition-all duration-150 font-medium',
+                activeSection === id
+                  ? 'bg-[#823F91] text-white shadow-sm'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Two-column layout ── */}
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Left nav */}
-        <nav className="md:w-52 shrink-0">
+        {/* Left nav — desktop only */}
+        <nav className="hidden md:block md:w-52 shrink-0">
           <ul className="space-y-0.5">
             {navSections.map(({ id, label, icon: Icon }) => (
               <li key={id}>
