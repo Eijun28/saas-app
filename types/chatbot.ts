@@ -55,6 +55,10 @@ export interface SearchCriteria {
   must_haves?: string[];
   must_not_haves?: string[];
 
+  // Événements prévus (types de cérémonies/moments du mariage)
+  // ex: ['mariage_civil', 'mariage_religieux', 'henne', 'zaffa', 'reception']
+  event_types?: string[];
+
   // Données extraites du profil couple
   auto_filled_from_profile?: boolean;
 

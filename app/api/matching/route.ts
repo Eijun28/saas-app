@@ -83,6 +83,27 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
     'cake': 'patissier',
     'salle': 'salle',
     'lieu': 'salle',
+
+    // Types d'événements → service type correspondant
+    'mariage_religieux': 'officiant',
+    'mariage religieux': 'officiant',
+    'nikah': 'officiant',
+    'mariage civil': 'organisateur_ceremonie',
+    'mariage_civil': 'organisateur_ceremonie',
+    'ceremonie_laique': 'organisateur_ceremonie',
+    'ceremonie laique': 'organisateur_ceremonie',
+    'cérémonie laïque': 'organisateur_ceremonie',
+    'officiant': 'officiant',
+    'henne': 'henna_artiste',
+    'henné': 'henna_artiste',
+    'henna': 'henna_artiste',
+    'mehndi': 'henna_artiste',
+    'sangeet': 'animation',
+    'kina gecesi': 'animation',
+    'kina_gecesi': 'animation',
+    'baraat': 'animation',
+    'ceremonie': 'organisateur_ceremonie',
+    'cérémonie': 'organisateur_ceremonie',
   };
   
   // Chercher une correspondance exacte d'abord

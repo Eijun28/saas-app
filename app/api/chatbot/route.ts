@@ -402,7 +402,15 @@ RÈGLES ABSOLUES
    ÉTAPE 4 : CULTURES — Importance des traditions si le couple est multiculturel.
              "Les traditions [culture] sont importantes ? (essentielles / importantes / secondaires)"
              → cultural_importance : "essential" | "important" | "nice_to_have"
-             Si le couple n'a pas de culture spécifique → passer à l'étape 5.
+             Si le couple n'a pas de culture spécifique → passer à l'étape 4bis.
+
+   ÉTAPE 4bis : ÉVÉNEMENTS PRÉVUS — Quels types d'événements/cérémonies avez-vous au programme ?
+             → Exemples : mariage civil, mariage religieux (nikah/église/synagogue), cérémonie laïque,
+               soirée henné, zaffa, cocktail, réception dîner, enterrement de vie (EVJF/EVG)
+             → Si déjà mentionné dans la conversation (ex : "on a un henné") → pré-remplir et ne pas redemander
+             → Cette info enrichit le matching (prestataires expérimentés dans ces moments)
+             → Si évident (ex : couple européen sans mention particulière) → skip cette étape
+             → Extraire dans extracted_data.event_types[] (ex: ["mariage_religieux", "henne", "reception"])
 
    ÉTAPE 5 : SPÉCIFICITÉS PRESTATAIRE — 1 à 2 questions clés propres au service
              (voir section QUESTIONS SPÉCIFIQUES ci-dessous).
@@ -418,10 +426,20 @@ RÈGLES ABSOLUES
    → Étape 2 : "Budget par personne pour le traiteur ? (40–60€, 60–90€, 90€+)"
    → Étape 3 : date déjà dans le profil → skip
    → Étape 4 : "Les traditions maghrébines sont importantes ? (essentiel — halal certifié obligatoire / importantes / secondaires)"
+   → Étape 4bis : "Quels événements avez-vous ? (soirée henné, zaffa, nikah, réception, cocktail)"
    → Étape 5 : "Type de service ? (buffet, service à l'assiette, cocktail dinatoire)"
    → Résumé + validation
 
-6. ADAPTATION AU NIVEAU DE DÉTAIL
+6. CONTEXTUALISATION — RÉFÉRENCER LES RÉPONSES PRÉCÉDENTES (CRITIQUE)
+   - TOUJOURS relire la conversation avant de poser une question
+   - Si le couple a mentionné quelque chose (ex : "on fait un mariage marocain avec 150 invités"), UTILISER cette info dans les questions suivantes
+   - Jamais redemander une info déjà donnée dans la conversation, même implicitement
+   - Exemple de bonne contextualisation :
+     ✅ "Vous avez mentionné la zaffa — votre DJ doit-il s'en charger ou vous avez déjà quelqu'un ?"
+     ❌ "Avez-vous une zaffa prévue ?" (alors que le couple l'a déjà mentionné)
+   - Relier les questions au contexte : "Avec 150 invités et un buffet halal..."
+
+7. ADAPTATION AU NIVEAU DE DÉTAIL
    - Utilisateur bavard (>30 mots, donne beaucoup d'infos) → Extraire un maximum, poser seulement 1 question sur le critère manquant le plus important
    - Utilisateur concis (<15 mots) → Poser UNE question fermée avec choix explicites
    - Utilisateur moyen → Poser UNE question ouverte courte avec exemples
@@ -537,13 +555,27 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
     "wedding_ambiance": "string ou null",
     "specific_requirements": ["req1"] ou [],
     "tags": ["tag1", "tag2"],
-    "vision_description": "résumé court incluant les critères service-spécifiques collectés",
+    "event_types": ["mariage_civil", "henne", "zaffa"] ou [],
+    "vision_description": "résumé riche et personnalisé incluant TOUT ce qui a été dit dans la conversation (style, traditions, ambiance, moments clés, besoins spécifiques)",
     "must_haves": [] ou ["élément"],
     "must_not_haves": [] ou ["élément"]
   },
   "next_action": "continue" | "validate",
   "question_count": 1
 }
+
+RÈGLES pour event_types[] :
+- Extraire tous les types d'événements mentionnés dans la conversation
+- Valeurs possibles : "mariage_civil", "mariage_religieux", "ceremonie_laique", "henne", "zaffa", "reception", "cocktail", "evjf_evg", "nikah", "sangeet", "mehndi", "kina_gecesi", "dugun", "baraat", "mandap", "dot", "ceremonie_traditionnelle"
+- Si le couple mentionne "nikah" → ajouter "mariage_religieux" ET "nikah"
+- Si "soirée henné" → ajouter "henne"
+- Si le couple ne mentionne aucun événement particulier → laisser []
+
+RÈGLES pour vision_description :
+- Doit être un résumé PERSONNALISÉ de TOUTE la conversation, pas générique
+- Mentionner les éléments spécifiques cités par le couple
+- Ex : "Photographe reportage pour mariage maghrébin avec soirée henné et zaffa, ambiance chaleureuse, 150 invités, budget ~2000€"
+- PAS : "Photographe pour mariage avec traditions culturelles"
 
 RÈGLES pour suggestions[] :
 - TOUJOURS générer 2 à 4 suggestions de réponse rapide pertinentes
@@ -580,8 +612,13 @@ OU SI (priorité absolue, override tout) :
 Si confirmation utilisateur → VALIDATION IMMÉDIATE avec les données déjà collectées.
 Si critères manquent et pas de confirmation → CONTINUER et poser la question sur le critère manquant le plus important.
 
-NE PAS attendre : localisation exacte, date précise, nombre d'invités (si pas dans le profil).
-Ces infos viennent du profil couple ou sont gérées lors du contact prestataire.
+NOTIFICATION DES INFOS MANQUANTES (OBLIGATOIRE dans le message de validation) :
+→ Si wedding_date est absent du profil ET non mentionné dans la conversation :
+  Ajouter à la fin du résumé : "📅 Votre date de mariage n'est pas encore dans votre profil — ajoutez-la pour affiner les disponibilités."
+→ Si wedding_city/région est absent du profil ET non mentionné dans la conversation :
+  Ajouter : "📍 Votre lieu de mariage n'est pas encore renseigné — ajoutez-le dans votre profil pour un matching géographique précis."
+→ Si le couple a DONNÉ ces infos pendant la conversation → les incorporer dans extracted_data (ne pas afficher le message d'avertissement)
+→ Ces avertissements ne bloquent PAS la validation — ils informent le couple.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TON & STYLE
@@ -798,6 +835,11 @@ Exemple mauvais ton :
     // S'assurer que tags est un tableau
     if (!Array.isArray(parsedResponse.extracted_data.tags)) {
       parsedResponse.extracted_data.tags = [];
+    }
+
+    // S'assurer que event_types est un tableau
+    if (!Array.isArray(parsedResponse.extracted_data.event_types)) {
+      parsedResponse.extracted_data.event_types = [];
     }
 
     // Valider et normaliser les suggestions
