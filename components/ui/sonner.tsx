@@ -13,21 +13,27 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position={isMobile ? "top-center" : "bottom-right"}
+      offset={isMobile ? 12 : 24}
+      gap={6}
       toastOptions={{
         style: {
           background: 'white',
           color: '#1f2937',
           border: '1px solid #e5e7eb',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
+          fontSize: isMobile ? '13px' : '14px',
+          padding: isMobile ? '10px 14px' : '12px 16px',
+          borderRadius: '12px',
         },
         classNames: {
-          toast: 'bg-white text-gray-800 border border-gray-200 shadow-lg',
-          title: 'text-gray-900 font-medium',
-          description: 'text-gray-600',
-          success: 'bg-white border-green-200',
-          error: 'bg-white border-red-200',
-          info: 'bg-white border-blue-200',
-          warning: 'bg-white border-yellow-200',
+          toast: 'bg-white text-gray-800 border border-gray-200 shadow-lg !rounded-xl',
+          title: 'text-gray-900 font-semibold !text-[13px] leading-tight',
+          description: 'text-gray-500 !text-[12px] leading-snug',
+          success: 'border-l-4 border-l-green-500',
+          error: 'border-l-4 border-l-red-500',
+          info: 'border-l-4 border-l-blue-500',
+          warning: 'border-l-4 border-l-yellow-500',
+          icon: 'mt-0.5',
         },
       }}
       style={
@@ -41,6 +47,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--error-bg": "#ffffff",
           "--error-text": "#1f2937",
           "--error-border": "#fca5a5",
+          "--width": isMobile ? "calc(100vw - 32px)" : "356px",
+          "--mobile-offset": "12px",
         } as React.CSSProperties
       }
       {...props}
