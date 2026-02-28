@@ -376,10 +376,10 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
                           e.stopPropagation();
                           removeCulture(c.culture_id);
                         }}
-                        className="ml-0.5 p-0.5 rounded-full bg-black/15 text-gray-900 hover:bg-red-500 hover:text-white transition-colors flex-shrink-0"
+                        className="ml-0.5 flex-shrink-0 text-gray-900 hover:text-red-500 transition-colors"
                         title="Supprimer"
                       >
-                        <X className="h-3.5 w-3.5 text-gray-900 hover:text-white" strokeWidth={2.5} />
+                        <X className="h-3.5 w-3.5" strokeWidth={2.5} />
                       </button>
                     </Badge>
                   ) : null;
@@ -409,10 +409,10 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
                           e.stopPropagation();
                           removeCulture(c.culture_id);
                         }}
-                        className="ml-0.5 p-0.5 rounded-full bg-black/15 text-gray-900 hover:bg-red-500 hover:text-white transition-colors flex-shrink-0"
+                        className="ml-0.5 flex-shrink-0 text-gray-900 hover:text-red-500 transition-colors"
                         title="Supprimer"
                       >
-                        <X className="h-3.5 w-3.5 text-gray-900 hover:text-white" strokeWidth={2.5} />
+                        <X className="h-3.5 w-3.5" strokeWidth={2.5} />
                       </button>
                     </Badge>
                   ) : null;
