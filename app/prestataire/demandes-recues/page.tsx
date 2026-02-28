@@ -285,11 +285,7 @@ export default function DemandesRecuesPage() {
       console.error('Erreur envoi email notification:', emailError)
     }
 
-    // Le trigger devrait créer automatiquement la conversation lors du changement de statut
-    // Attendre un court délai pour laisser le trigger s'exécuter
-    await new Promise(resolve => setTimeout(resolve, 100))
-
-    // Vérifier si une conversation existe déjà, sinon la créer manuellement
+    // Vérifier si une conversation existe déjà (créée par trigger), sinon la créer manuellement
     const { data: existingConv } = await supabase
       .from('conversations')
       .select('id')
