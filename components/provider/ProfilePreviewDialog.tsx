@@ -262,11 +262,11 @@ export function ProfilePreviewDialog({
           variant="outline"
           size="default"
           onClick={() => setOpen(true)}
-          className="gap-2 text-[#6B3FA0] transition-colors shadow-sm hover:shadow-md hover:opacity-90"
+          className="gap-2 text-[#6B3FA0] transition-colors shadow-sm hover:shadow-md hover:opacity-90 px-2.5 sm:px-4"
           style={{ backgroundColor: WHITE }}
         >
-          <Eye className="h-4 w-4 text-[#6B3FA0]" />
-          Apercu du profil
+          <Eye className="h-4 w-4 text-[#6B3FA0] shrink-0" />
+          <span className="hidden sm:inline">Apercu du profil</span>
         </Button>
       )}
 
