@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -597,70 +597,101 @@ export default function CollaborateursPage() {
                 transition={{ duration: 0.2, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
               >
                 <Card className="h-full hover:shadow-md transition-all duration-150 border-gray-100 hover:border-[#823F91]/15 rounded-2xl">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <CardTitle className="text-base sm:text-lg truncate">{collab.name}</CardTitle>
+                  <CardContent className="p-5 space-y-4">
+
+                    {/* Avatar + Nom + Email + Rôle */}
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-[#823F91]/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-bold text-[#823F91]">
+                          {collab.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-gray-900 truncate text-sm">{collab.name}</p>
+                        <p className="text-xs text-gray-400 truncate">{collab.email}</p>
+                      </div>
                       {editingCollaborateur === collab.id ? (
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <Select
                             value={collab.role}
                             onValueChange={(value) => handleUpdateRole(collab.id, value)}
                           >
-                            <SelectTrigger className="w-[120px] h-8">
+                            <SelectTrigger className="w-[100px] h-7 text-xs">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               {roles.map((role) => (
-                                <SelectItem key={role} value={role}>
-                                  {role}
-                                </SelectItem>
+                                <SelectItem key={role} value={role}>{role}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
+                            className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
                             onClick={() => setEditingCollaborateur(null)}
                           >
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       ) : (
-                        <Badge variant="secondary">{collab.role}</Badge>
+                        <Badge variant="secondary" className="text-xs flex-shrink-0">{collab.role}</Badge>
                       )}
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600">{collab.email}</p>
-                    {collab.accepted_at ? (
-                      <p className="text-xs text-green-600">{'\u2713'} Accepté</p>
-                    ) : (
-                      <p className="text-xs text-yellow-600">{'\u23F3'} En attente</p>
-                    )}
-                    {/* Bouton copier le lien pour les invitations en attente */}
+
+                    {/* Statut + Actions icônes */}
+                    <div className="flex items-center justify-between">
+                      {collab.accepted_at ? (
+                        <Badge className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-50 text-xs gap-1 font-medium">
+                          <Check className="h-3 w-3" />
+                          Accepté
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-50 text-xs font-medium">
+                          En attente
+                        </Badge>
+                      )}
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-400 hover:text-[#823F91] hover:bg-[#823F91]/5"
+                          onClick={() => setEditingCollaborateur(collab.id)}
+                          title="Modifier le rôle"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => handleRemove(collab.id)}
+                          title="Retirer le collaborateur"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Copier le lien — uniquement pour les invitations en attente */}
                     {!collab.accepted_at && collab.invitation_token && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 pt-1 border-t border-gray-100">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 text-[#823F91] border-[#823F91]/30 hover:bg-[#823F91]/5"
+                          className="flex-1 text-xs h-8 text-[#823F91] border-[#823F91]/20 hover:bg-[#823F91]/5"
                           onClick={() => copyCollabLink(collab)}
                         >
                           {copiedCollabId === collab.id ? (
-                            <>
-                              <Check className="h-4 w-4 mr-1 text-green-500" />
-                              Lien copié
-                            </>
+                            <><Check className="h-3.5 w-3.5 mr-1.5 text-green-500" />Lien copié</>
                           ) : (
-                            <>
-                              <Copy className="h-4 w-4 mr-1" />
-                              Copier le lien
-                            </>
+                            <><Copy className="h-3.5 w-3.5 mr-1.5" />Copier le lien</>
                           )}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-8 w-8 p-0 border-[#823F91]/20 text-[#823F91] hover:bg-[#823F91]/5"
                           onClick={() => {
                             const baseUrl = window.location.origin
                             const url = `${baseUrl}/invitation/${collab.invitation_token}`
@@ -668,30 +699,10 @@ export default function CollaborateursPage() {
                           }}
                           title="Partager via WhatsApp"
                         >
-                          <MessageCircle className="h-4 w-4" />
+                          <MessageCircle className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     )}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setEditingCollaborateur(collab.id)}
-                      >
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Modifier le rôle
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-red-600 hover:text-red-700"
-                        onClick={() => handleRemove(collab.id)}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Retirer
-                      </Button>
-                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
