@@ -442,7 +442,7 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col">
+    <div className="h-[calc(100dvh-80px)] flex flex-col">
       <div className="flex items-start justify-between flex-shrink-0">
         <PageTitle
           title="Agenda"
