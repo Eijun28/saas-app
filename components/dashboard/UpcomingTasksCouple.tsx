@@ -106,12 +106,12 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
     >
       {/* Header - clickable on mobile to collapse */}
       <button
         onClick={() => setCollapsed(prev => !prev)}
-        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 lg:cursor-default"
+        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 cursor-pointer"
       >
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -121,7 +121,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             </p>
           </div>
           <ChevronDown className={cn(
-            "h-5 w-5 text-gray-400 transition-transform duration-200 lg:hidden",
+            "h-5 w-5 text-gray-400 transition-transform duration-200",
             !collapsed && "rotate-180"
           )} />
         </div>
@@ -150,7 +150,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden flex flex-col flex-1"
+            className="overflow-hidden flex flex-col"
           >
             {/* Filtres */}
             <div className="px-4 pt-4 sm:px-5 sm:pt-5">
@@ -173,7 +173,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             </div>
 
             {/* Liste des taches */}
-            <div className="flex-1 p-4 sm:p-5 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[300px] sm:max-h-[360px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 text-[#823F91] animate-spin" />
