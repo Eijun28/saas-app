@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ProviderMatch, MatchingResult } from '@/types/matching';
 import { motion } from 'framer-motion';
-import { Sparkles, Save, AlertCircle, Search, ChevronDown } from 'lucide-react';
+import { Sparkles, Save, AlertCircle, Search, ChevronDown, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import ProviderMatchCard from './ProviderMatchCard';
@@ -22,6 +22,7 @@ interface MatchResultsProps {
   onNewSearch: () => void;
   onSaveSearch?: () => void;
   isSaving?: boolean;
+  onViewRegional?: (serviceType: string, region?: string, date?: string) => void;
 }
 
 export default function MatchResults({
@@ -36,6 +37,7 @@ export default function MatchResults({
   onNewSearch,
   onSaveSearch,
   isSaving = false,
+  onViewRegional,
 }: MatchResultsProps) {
   const [sortBy, setSortBy] = useState<'score' | 'budget' | 'note'>('score');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -69,6 +71,9 @@ export default function MatchResults({
 
   // Cas sans résultats
   if (!hasResults) {
+    const criteria = matchingResult?.search_criteria;
+    const hasRegionalProviders = suggestions?.alternative_providers && suggestions.alternative_providers.length > 0;
+
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -92,44 +97,82 @@ export default function MatchResults({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2"
           >
-            Aucun résultat trouvé
+            Aucun prestataire ne correspond à votre demande
           </motion.h2>
 
-          {suggestions && (
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.4 }}
+            className="text-sm sm:text-base text-gray-500 mb-6"
+          >
+            {suggestions?.message || 'Vos critères sont très spécifiques — essayez d\'élargir votre recherche.'}
+          </motion.p>
+
+          {/* CTA régional — si des prestataires existent dans la région */}
+          {hasRegionalProviders && onViewRegional && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="bg-gray-50 rounded-xl p-6 mb-6 max-w-2xl mx-auto"
+              className="mb-8"
             >
-              <p className="text-sm sm:text-base text-gray-700 mb-4">
-                {suggestions.message}
-              </p>
-
-              {suggestions.alternative_providers && suggestions.alternative_providers.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-gray-900 mb-3">
-                    Prestataires disponibles pour ce service :
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6 max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <MapPin className="h-5 w-5 text-[#823F91]" />
+                  <p className="text-sm font-semibold text-[#823F91]">
+                    {suggestions!.total_providers_for_service} prestataire{suggestions!.total_providers_for_service > 1 ? 's' : ''} disponible{suggestions!.total_providers_for_service > 1 ? 's' : ''} dans votre région
                   </p>
-                  <div className="space-y-2">
-                    {suggestions.alternative_providers.map((provider) => (
-                      <div
-                        key={provider.id}
-                        className="bg-white rounded-lg p-3 border border-gray-200"
-                      >
-                        <p className="font-medium text-gray-900">{provider.nom_entreprise}</p>
-                        {provider.budget_min && provider.budget_max && (
-                          <p className="text-sm text-gray-600">
-                            Budget : {provider.budget_min}€ - {provider.budget_max}€
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              )}
+                <p className="text-sm text-gray-600 mb-5">
+                  Néanmoins, voici les prestataires de votre région disponibles le jour de votre événement.
+                </p>
+
+                {/* Cards des prestataires régionaux */}
+                <div className="grid gap-3 mb-5">
+                  {suggestions!.alternative_providers!.slice(0, 3).map((provider) => (
+                    <button
+                      key={provider.id}
+                      onClick={() => onViewRegional(
+                        suggestions!.service_type,
+                        criteria?.wedding_city || criteria?.wedding_department,
+                        criteria?.wedding_date
+                      )}
+                      className="bg-white rounded-xl p-4 border border-purple-100 hover:border-[#823F91] hover:shadow-sm transition-all text-left group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-gray-900 group-hover:text-[#823F91] transition-colors">
+                            {provider.nom_entreprise}
+                          </p>
+                          {provider.budget_min && provider.budget_max && (
+                            <p className="text-sm text-gray-500 mt-0.5">
+                              {Number(provider.budget_min).toLocaleString('fr-FR')}€ — {Number(provider.budget_max).toLocaleString('fr-FR')}€
+                            </p>
+                          )}
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-[#823F91] transition-colors flex-shrink-0 ml-3" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={() => onViewRegional(
+                    suggestions!.service_type,
+                    criteria?.wedding_city || criteria?.wedding_department,
+                    criteria?.wedding_date
+                  )}
+                  size="lg"
+                  className="w-full bg-gradient-to-br from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Voir tous les prestataires disponibles dans ma région
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
             </motion.div>
           )}
         </div>
@@ -142,12 +185,11 @@ export default function MatchResults({
         >
           <Button
             onClick={onNewSearch}
-            variant="default"
+            variant="outline"
             size="lg"
-            className="bg-gradient-to-br from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white"
           >
             <Search className="w-4 h-4 mr-2" />
-            Nouvelle recherche
+            Modifier ma recherche
           </Button>
         </motion.div>
       </motion.div>

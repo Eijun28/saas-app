@@ -28,7 +28,7 @@ import { ChatMessage, SearchCriteria, ChatbotConversation } from '@/types/chatbo
 import { MatchingResult } from '@/types/matching';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, Calendar } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import MatchResults from '@/components/matching/MatchResults';
 import LoadingMatching from '@/components/matching/LoadingMatching';
@@ -190,18 +190,10 @@ export default function MatchingPage() {
 
     const nextAction = await sendMessage(message);
 
-    // Si l'IA indique qu'on peut valider, passer à l'étape validation
+    // Si l'IA indique qu'on peut valider, lancer le matching directement (sans étape intermédiaire)
     if (nextAction === 'validate') {
-      // Sauvegarder automatiquement la conversation avant de passer à la validation
-      if (coupleId && extractedServiceType) {
-        try {
-          await handleSaveConversation();
-        } catch (error) {
-          console.error('Erreur sauvegarde conversation:', error);
-          // Ne pas bloquer le passage à la validation même si la sauvegarde échoue
-        }
-      }
-      setVue('validation');
+      setVue('validation'); // Passe en vue validation pour afficher le loading
+      handleLaunchMatching(); // Lance automatiquement (sauvegarde + matching, gère son propre état)
     }
   };
 
@@ -209,12 +201,8 @@ export default function MatchingPage() {
     if (isLoading) return;
     const nextAction = await sendMessage(suggestion);
     if (nextAction === 'validate') {
-      if (coupleId && extractedServiceType) {
-        try { await handleSaveConversation(); } catch (error) {
-          console.error('Erreur sauvegarde conversation:', error);
-        }
-      }
       setVue('validation');
+      handleLaunchMatching();
     }
   };
 
@@ -1307,6 +1295,21 @@ function ValidationView({
               </CriteriaCard>
             )}
 
+            {criteria.event_types && criteria.event_types.length > 0 && (
+              <CriteriaCard
+                icon={<Calendar className="h-4 w-4 text-[#823F91]" />}
+                label="Événements prévus"
+              >
+                <div className="flex flex-wrap gap-2">
+                  {criteria.event_types.map((evt, idx) => (
+                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-sm font-medium">
+                      {evt.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              </CriteriaCard>
+            )}
+
             {criteria.vision_description && (
               <CriteriaCard
                 icon={<Sparkles className="h-4 w-4 text-[#823F91]" />}
@@ -1424,6 +1427,13 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, 
           onNewSearch={onBack}
           onSaveSearch={onSaveSearch}
           isSaving={isSaving}
+          onViewRegional={(serviceType, region, date) => {
+            const params = new URLSearchParams();
+            if (serviceType) params.set('type', serviceType);
+            if (region) params.set('region', region);
+            if (date) params.set('date', date);
+            router.push(`/couple/recherche?${params.toString()}`);
+          }}
         />
       </div>
     </motion.div>

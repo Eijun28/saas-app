@@ -50,6 +50,9 @@ export interface ScoreBreakdown {
   // Specialty match (bonus pour besoins specifiques)
   specialty_match?: number; // 0 a +15 points bonus
 
+  // Event types coverage (bonus pour couverture des événements prévus)
+  event_types_match?: number; // 0 a +8 points bonus
+
   // Equite (pour eviter de toujours montrer les memes)
   fairness_multiplier?: number; // 0.85 a 1.15
   ctr_bonus?: number; // -3 a +5 points
