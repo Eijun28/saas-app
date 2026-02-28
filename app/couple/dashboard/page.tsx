@@ -516,7 +516,7 @@ export default function CoupleDashboardPage() {
         </div>
 
         {/* Tasks and Activity side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
           <UpcomingTasksCouple coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
           <RecentActivityCouple activities={recentActivities} />
         </div>

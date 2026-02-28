@@ -33,12 +33,12 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.3 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
     >
       {/* Header - clickable on mobile to collapse */}
       <button
         onClick={() => setCollapsed(prev => !prev)}
-        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 lg:cursor-default"
+        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 cursor-pointer"
       >
         <div className="flex items-center justify-between">
           <div>
@@ -58,7 +58,7 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
               </span>
             )}
             <ChevronDown className={cn(
-              "h-5 w-5 text-gray-400 transition-transform duration-200 lg:hidden",
+              "h-5 w-5 text-gray-400 transition-transform duration-200",
               !collapsed && "rotate-180"
             )} />
           </div>
@@ -73,9 +73,9 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden flex flex-col flex-1"
+            className="overflow-hidden flex flex-col"
           >
-            <div className="flex-1 p-4 sm:p-5 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[280px] sm:max-h-[340px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {displayedActivities.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
