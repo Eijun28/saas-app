@@ -144,6 +144,15 @@ export interface CreateDevisPayload {
 }
 
 /**
+ * Informations de signature électronique pour le PDF
+ */
+export interface DevisSignatureInfo {
+  signedAt: Date
+  signerName: string
+  signerIp?: string
+}
+
+/**
  * Données pour générer le PDF du devis
  */
 export interface DevisPdfData {
@@ -175,6 +184,9 @@ export interface DevisPdfData {
   includedServices: string[]
   excludedServices: string[]
   conditions?: string
+
+  // Signature électronique (présent uniquement sur le PDF signé)
+  signatureInfo?: DevisSignatureInfo
 }
 
 /**

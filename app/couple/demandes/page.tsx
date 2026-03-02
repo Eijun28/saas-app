@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
-import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare, ChevronDown, ChevronUp, Star } from 'lucide-react'
+import { Send, UserRound, X, RefreshCw, Clock, CheckCircle, XCircle, Ban, MoreVertical, MessageSquare, ChevronDown, ChevronUp, Star, FileText, PenLine, ExternalLink } from 'lucide-react'
 import { ReviewDialog } from '@/components/reviews/ReviewDialog'
+import { SignatureModal } from '@/components/devis/SignatureModal'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { useUser } from '@/hooks/use-user'
 import { extractSupabaseError } from '@/lib/utils'
@@ -121,6 +122,7 @@ export default function DemandesPage() {
   const [error, setError] = useState<string | null>(null)
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
   const [reviewTarget, setReviewTarget] = useState<{ providerId: string; providerName: string; requestId: string } | null>(null)
+  const [signatureTarget, setSignatureTarget] = useState<{ devisId: string; devisTitle: string; devisAmount: number; prestataireName: string } | null>(null)
   const [existingReviews, setExistingReviews] = useState<Map<string, { rating: number; comment: string | null; rating_quality?: number | null; rating_communication?: number | null; rating_value?: number | null; rating_punctuality?: number | null }>>(new Map())
 
   // Helper pour obtenir le couple_id depuis user_id
@@ -774,6 +776,72 @@ export default function DemandesPage() {
                                   </div>
                                 )}
 
+                                {/* Devis associés à cette demande (statut accepted) */}
+                                {r.status === 'accepted' && (() => {
+                                  const requestDevis = devis.filter(d => d.demande_id === r.id)
+                                  if (requestDevis.length === 0) return null
+                                  return (
+                                    <div className="mt-3 space-y-2">
+                                      {requestDevis.map(d => {
+                                        const providerForDevis = providerById.get(r.provider_id) || (r as any).prestataire
+                                        const providerNameForDevis = getProviderDisplayName(providerForDevis)
+                                        const isPending = d.status === 'pending'
+                                        const isAccepted = d.status === 'accepted'
+                                        return (
+                                          <div
+                                            key={d.id}
+                                            className={cn(
+                                              'rounded-xl border p-3 flex items-center justify-between gap-3',
+                                              isPending ? 'border-[#823F91]/20 bg-[#823F91]/[0.03]' : 'border-green-200 bg-green-50/40'
+                                            )}
+                                          >
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <FileText className={cn('h-4 w-4 flex-shrink-0', isPending ? 'text-[#823F91]' : 'text-green-600')} />
+                                              <div className="min-w-0">
+                                                <p className="text-xs font-semibold text-gray-900 truncate">
+                                                  {(d as any).description || 'Devis'}
+                                                </p>
+                                                <p className={cn('text-xs font-bold', isPending ? 'text-[#823F91]' : 'text-green-700')}>
+                                                  {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(d.amount)}
+                                                  {isAccepted && <span className="ml-1.5 text-green-600 font-medium">· Signé</span>}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                                              {(d as any).pdf_url && (
+                                                <a
+                                                  href={(d as any).pdf_url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-[#823F91] transition-colors"
+                                                >
+                                                  <ExternalLink className="h-3 w-3" />
+                                                  PDF
+                                                </a>
+                                              )}
+                                              {isPending && (
+                                                <Button
+                                                  size="sm"
+                                                  className="h-7 text-xs bg-[#823F91] hover:bg-[#6D3478] text-white px-3"
+                                                  onClick={() => setSignatureTarget({
+                                                    devisId: d.id,
+                                                    devisTitle: (d as any).description || 'Devis',
+                                                    devisAmount: d.amount,
+                                                    prestataireName: providerNameForDevis,
+                                                  })}
+                                                >
+                                                  <PenLine className="h-3 w-3 mr-1" />
+                                                  Signer
+                                                </Button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  )
+                                })()}
+
                                 {/* Actions rapides pour accepted */}
                                 {r.status === 'accepted' && (
                                   <div className="mt-4 flex items-center justify-end gap-2">
@@ -825,6 +893,22 @@ export default function DemandesPage() {
           requestId={reviewTarget.requestId}
           existingReview={existingReviews.get(reviewTarget.providerId) || undefined}
           onSubmitted={loadExistingReviews}
+        />
+      )}
+
+      {/* Modal signature devis */}
+      {signatureTarget && (
+        <SignatureModal
+          open={!!signatureTarget}
+          onOpenChange={(open) => { if (!open) setSignatureTarget(null) }}
+          devisId={signatureTarget.devisId}
+          devisTitle={signatureTarget.devisTitle}
+          devisAmount={signatureTarget.devisAmount}
+          prestataireName={signatureTarget.prestataireName}
+          onSigned={() => {
+            loadDevis()
+            setSignatureTarget(null)
+          }}
         />
       )}
     </div>
