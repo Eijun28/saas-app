@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   Clock,
   AlertCircle,
+  Send,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -112,6 +113,7 @@ export default function DevisFacturesPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [isLoadingFactures, setIsLoadingFactures] = useState(true)
   const [showQuickGenerator, setShowQuickGenerator] = useState(false)
+  const [sendingFactureId, setSendingFactureId] = useState<string | null>(null)
 
   // Charger les données
   const fetchAnalytics = async () => {
@@ -209,6 +211,25 @@ export default function DevisFacturesPage() {
       console.error('Erreur chargement factures:', error)
     } finally {
       setIsLoadingFactures(false)
+    }
+  }
+
+  const handleSendFacture = async (factureId: string) => {
+    setSendingFactureId(factureId)
+    try {
+      const response = await fetch(`/api/factures/${factureId}/send`, { method: 'POST' })
+      const data = await response.json()
+      if (!response.ok) {
+        toast.error(data.error || "Erreur lors de l'envoi de la facture")
+        return
+      }
+      toast.success('Facture envoyée au couple avec succès')
+      fetchFactures()
+      fetchAnalytics()
+    } catch {
+      toast.error("Erreur lors de l'envoi de la facture")
+    } finally {
+      setSendingFactureId(null)
     }
   }
 
@@ -683,6 +704,19 @@ export default function DevisFacturesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="z-[201]">
+                              {!['paid', 'cancelled'].includes(facture.status) && (
+                                <DropdownMenuItem
+                                  onClick={() => handleSendFacture(facture.id)}
+                                  disabled={sendingFactureId === facture.id}
+                                >
+                                  <Send className="h-4 w-4 mr-2" />
+                                  {sendingFactureId === facture.id
+                                    ? 'Envoi en cours…'
+                                    : facture.status === 'draft'
+                                      ? 'Envoyer au couple'
+                                      : 'Renvoyer au couple'}
+                                </DropdownMenuItem>
+                              )}
                               {facture.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(facture.pdf_url!, '_blank')}
