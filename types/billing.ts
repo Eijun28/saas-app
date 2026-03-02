@@ -144,6 +144,46 @@ export interface CreateDevisPayload {
 }
 
 /**
+ * Données pour générer le PDF d'une facture
+ */
+export interface FacturePdfData {
+  factureNumber: string
+  issueDate: Date
+  dueDate?: Date
+
+  // Prestataire
+  prestataireName: string
+  prestataireEmail: string
+  prestataireSiret?: string
+  prestataireTva?: string
+  prestataireAddress?: string
+  prestataireBankName?: string
+  prestataireIban?: string
+  prestataireBic?: string
+
+  // Client
+  clientName: string
+  clientAddress: string
+  clientEmail?: string
+  clientPhone?: string
+
+  // Contenu
+  title: string
+  includedServices: string[]
+
+  // Montants
+  amountHt: number
+  tvaRate: number
+  amountTva: number
+  amountTtc: number
+  currency: string
+
+  // Conditions
+  conditions?: string
+  paymentTerms?: string
+}
+
+/**
  * Informations de signature électronique pour le PDF
  */
 export interface DevisSignatureInfo {
