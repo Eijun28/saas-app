@@ -72,7 +72,7 @@ export async function POST(
         .single(),
       adminClient
         .from('couples')
-        .select('id, partner_1_name, partner_2_name, email')
+        .select('id, user_id, partner_1_name, partner_2_name, email')
         .eq('id', facture.couple_id)
         .single(),
     ])
@@ -96,6 +96,7 @@ export async function POST(
     const b = bankingInfo as BankingData | null
     const c = coupleRow as {
       id: string
+      user_id: string
       partner_1_name: string | null
       partner_2_name: string | null
       email?: string | null
@@ -107,13 +108,15 @@ export async function POST(
     const coupleName = [c?.partner_1_name, c?.partner_2_name].filter(Boolean).join(' et ') || 'Client'
 
     // Récupérer l'email du couple (via profiles ou couples.email)
-    const { data: coupleProfile } = await adminClient
-      .from('profiles')
-      .select('email')
-      .eq('id', (await adminClient.from('couples').select('user_id').eq('id', facture.couple_id).single()).data?.user_id ?? '')
-      .single()
-
-    const coupleEmail = (coupleProfile as { email?: string } | null)?.email || c?.email
+    let coupleEmail: string | undefined = c?.email || undefined
+    if (c?.user_id) {
+      const { data: coupleProfile } = await adminClient
+        .from('profiles')
+        .select('email')
+        .eq('id', c.user_id)
+        .single()
+      coupleEmail = (coupleProfile as { email?: string } | null)?.email || coupleEmail
+    }
 
     // Récupérer les infos de facturation du couple pour l'adresse
     const { data: coupleBilling } = await adminClient

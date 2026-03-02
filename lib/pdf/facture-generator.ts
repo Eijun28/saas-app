@@ -132,7 +132,6 @@ function drawParties(
 ): number {
   const { width } = page.getSize()
   const colWidth = (width - MARGIN * 2 - 40) / 2
-  const startY = yPos
   let leftY = yPos
   let rightY = yPos
 
