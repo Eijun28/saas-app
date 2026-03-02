@@ -94,7 +94,7 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <Card className="card-section">
+    <Card className="card-section" style={{ borderColor: '#823F91' }}>
       <div className="p-4 sm:p-6">
         <div className="flex items-center gap-2.5 mb-5">
           <div className="p-1.5 rounded-lg bg-[#823F91]/10 flex-shrink-0">
