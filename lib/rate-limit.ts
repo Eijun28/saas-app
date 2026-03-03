@@ -126,6 +126,86 @@ class ContactRateLimiter {
 
 export const contactLimiter = new ContactRateLimiter();
 
+// Rate limiter for OTP generation: max 5 requests per 10 minutes per user
+class OtpRateLimiter {
+  private cache: LRUCache<string, RateLimitEntry>;
+  private readonly maxRequests = 5;
+  private readonly windowMs = 10 * 60 * 1000; // 10 minutes
+
+  constructor() {
+    this.cache = new LRUCache<string, RateLimitEntry>({
+      max: 1000,
+      ttl: this.windowMs,
+    });
+  }
+
+  check(key: string): boolean {
+    const now = Date.now();
+    const entry = this.cache.get(key);
+
+    if (!entry) {
+      this.cache.set(key, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (now > entry.resetTime) {
+      this.cache.set(key, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (entry.count >= this.maxRequests) return false;
+
+    entry.count++;
+    this.cache.set(key, entry);
+    return true;
+  }
+
+  getResetTime(key: string): number {
+    const entry = this.cache.get(key);
+    if (!entry) return 0;
+    return Math.max(0, Math.ceil((entry.resetTime - Date.now()) / 1000));
+  }
+}
+
+export const otpLimiter = new OtpRateLimiter();
+
+// Rate limiter for admin setup: max 3 requests per hour per IP
+class AdminSetupRateLimiter {
+  private cache: LRUCache<string, RateLimitEntry>;
+  private readonly maxRequests = 3;
+  private readonly windowMs = 60 * 60 * 1000; // 1 hour
+
+  constructor() {
+    this.cache = new LRUCache<string, RateLimitEntry>({
+      max: 200,
+      ttl: this.windowMs,
+    });
+  }
+
+  check(ip: string): boolean {
+    const now = Date.now();
+    const entry = this.cache.get(ip);
+
+    if (!entry) {
+      this.cache.set(ip, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (now > entry.resetTime) {
+      this.cache.set(ip, { count: 1, resetTime: now + this.windowMs });
+      return true;
+    }
+
+    if (entry.count >= this.maxRequests) return false;
+
+    entry.count++;
+    this.cache.set(ip, entry);
+    return true;
+  }
+}
+
+export const adminSetupLimiter = new AdminSetupRateLimiter();
+
 /**
  * Récupère l'adresse IP depuis une requête Next.js
  */
