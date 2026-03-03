@@ -18,13 +18,14 @@ import type { Guest } from '@/types/guest'
 interface GuestSeatingPlanProps {
   guests: Guest[]
   onUpdated: (guest: Guest) => void
+  tableCount: number
+  onTableCountChange: (n: number) => void
 }
 
 const MAX_TABLES = 20
 
-export function GuestSeatingPlan({ guests, onUpdated }: GuestSeatingPlanProps) {
-  const existingMax = Math.max(0, ...guests.map(g => g.table_number ?? 0))
-  const [tableCount, setTableCount] = useState(Math.max(existingMax, 3))
+export function GuestSeatingPlan({ guests, onUpdated, tableCount, onTableCountChange }: GuestSeatingPlanProps) {
+  const maxOccupied = Math.max(0, ...guests.map(g => g.table_number ?? 0))
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const unassigned = guests.filter(g => !g.table_number)
@@ -125,15 +126,17 @@ ${unassigned.length > 0 ? `<div class="unassigned">
           <span className="text-sm text-gray-600 font-medium">Nombre de tables :</span>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setTableCount(n => Math.max(1, n - 1))}
-              className="h-7 w-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+              onClick={() => onTableCountChange(Math.max(maxOccupied, tableCount - 1))}
+              disabled={tableCount <= Math.max(1, maxOccupied)}
+              className="h-7 w-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
             <span className="w-8 text-center text-sm font-bold text-[#823F91]">{tableCount}</span>
             <button
-              onClick={() => setTableCount(n => Math.min(MAX_TABLES, n + 1))}
-              className="h-7 w-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+              onClick={() => onTableCountChange(Math.min(MAX_TABLES, tableCount + 1))}
+              disabled={tableCount >= MAX_TABLES}
+              className="h-7 w-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
