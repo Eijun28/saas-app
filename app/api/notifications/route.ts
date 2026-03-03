@@ -32,7 +32,7 @@ interface NotificationPayload {
 export async function POST(request: NextRequest) {
   try {
     // Vérifier que l'utilisateur est authentifié
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
