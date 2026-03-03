@@ -309,14 +309,14 @@ function MultiSelectField({
               type="button"
               onClick={() => onToggle(option.value)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all',
-                'border cursor-pointer',
+                'inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-full text-xs font-medium transition-all',
+                'border cursor-pointer min-h-[36px] sm:min-h-0',
                 isSelected
                   ? 'bg-[#823F91]/10 border-[#823F91]/30 text-[#823F91]'
                   : 'bg-white border-gray-200 text-gray-600 hover:border-[#823F91]/20 hover:bg-[#823F91]/5'
               )}
             >
-              {isSelected && <Check className="h-3 w-3" />}
+              {isSelected && <Check className="h-3 w-3 flex-shrink-0" />}
               {option.label}
             </button>
           )
@@ -377,10 +377,10 @@ function NumberField({
           placeholder={field.placeholder || ''}
           min={field.min}
           max={field.max}
-          className="max-w-[200px]"
+          className="w-full sm:max-w-[200px]"
         />
         {field.suffix && (
-          <span className="text-sm text-muted-foreground">{field.suffix}</span>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">{field.suffix}</span>
         )}
       </div>
     </div>
@@ -397,16 +397,20 @@ function BooleanField({
   onUpdate: (value: unknown) => void
 }) {
   return (
-    <div className="flex items-center gap-3 py-2">
+    <label
+      htmlFor={field.key}
+      className="flex items-center gap-3 py-2.5 px-3 rounded-xl border border-gray-100 bg-gray-50/50 cursor-pointer hover:bg-[#F5F0F7]/50 transition-colors group"
+    >
       <Checkbox
         id={field.key}
         checked={value}
         onCheckedChange={onUpdate}
+        className="data-[state=checked]:bg-[#823F91] data-[state=checked]:border-[#823F91]"
       />
-      <Label className="text-sm font-medium text-gray-700 cursor-pointer" htmlFor={field.key}>
+      <span className="text-sm font-medium text-gray-700 group-hover:text-[#823F91] transition-colors">
         {field.label}
-      </Label>
-    </div>
+      </span>
+    </label>
   )
 }
 

@@ -391,8 +391,8 @@ export default function DashboardPrestatairePage() {
                 </div>
                 <p className="text-xs text-amber-700 mt-1">Completez-le a au moins 70% pour etre visible par les couples.</p>
               </div>
-              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
-                <X className="h-3.5 w-3.5 text-amber-400" />
+              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-2 hover:bg-amber-100 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0 sm:hidden" title="Masquer">
+                <X className="h-4 w-4 text-amber-400" />
               </button>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -402,8 +402,8 @@ export default function DashboardPrestatairePage() {
               >
                 Completer <ArrowRight className="h-3.5 w-3.5" />
               </button>
-              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-1.5 hover:bg-amber-100 rounded-lg transition-colors min-w-[28px] min-h-[28px] hidden sm:flex items-center justify-center flex-shrink-0" title="Masquer">
-                <X className="h-3.5 w-3.5 text-amber-400" />
+              <button onClick={() => { localStorage.setItem('prestataire-profile-banner-dismissed', 'true'); setProfileBannerDismissed(true) }} className="p-2 hover:bg-amber-100 rounded-lg transition-colors min-w-[44px] min-h-[44px] hidden sm:flex items-center justify-center flex-shrink-0" title="Masquer">
+                <X className="h-4 w-4 text-amber-400" />
               </button>
             </div>
           </motion.div>
@@ -469,7 +469,7 @@ export default function DashboardPrestatairePage() {
                 <p className="text-sm sm:text-base text-white font-semibold truncate">{searchQuery}</p>
               </div>
             </div>
-            <button onClick={() => { setSearchQuery(''); sessionStorage.removeItem('prestataire_search_query') }} className="p-2 hover:bg-white/20 rounded-xl transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center" title="Effacer la recherche">
+            <button onClick={() => { setSearchQuery(''); sessionStorage.removeItem('prestataire_search_query') }} className="p-2.5 hover:bg-white/20 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" title="Effacer la recherche">
               <X className="h-4 w-4 text-white" />
             </button>
           </motion.div>
@@ -478,7 +478,7 @@ export default function DashboardPrestatairePage() {
         {/* Stats Grid */}
         <div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight mb-3 sm:mb-4">Vos indicateurs</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
           {[
             {
               icon: Bell, label: "Nouvelles demandes", value: stats.nouvelles_demandes, subtitle: "En attente de traitement",
@@ -593,7 +593,7 @@ export default function DashboardPrestatairePage() {
                 <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white rounded-lg sm:rounded-xl border border-[#823F91]/20 font-mono text-xs sm:text-sm font-bold text-[#823F91] tracking-wider">{referralCode}</div>
                 <button
                   onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); toast.success('Code copie !'); setTimeout(() => setReferralCopied(false), 2000) }}
-                  className={cn('p-2.5 rounded-xl transition-all min-w-[40px] min-h-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40', referralCopied ? 'bg-green-100 text-green-600' : 'bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20')}
+                  className={cn('p-2.5 rounded-xl transition-all min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/40', referralCopied ? 'bg-green-100 text-green-600' : 'bg-[#823F91]/10 text-[#823F91] hover:bg-[#823F91]/20')}
                   title="Copier le code"
                 >
                   {referralCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
