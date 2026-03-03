@@ -89,8 +89,21 @@ export default function CoupleFacturesPage() {
 
       if (error) throw error
       setFactures(data || [])
-    } catch {
-      toast.error('Impossible de charger les factures')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      if (message?.includes('does not exist') || message?.includes('relation')) {
+        toast.error('Fonctionnalité en cours de déploiement', {
+          description: 'Les factures seront disponibles très prochainement.',
+        })
+      } else if (message?.includes('permission') || message?.includes('policy')) {
+        toast.error('Accès refusé', {
+          description: 'Votre compte n\'a pas encore accès aux factures. Contactez le support si le problème persiste.',
+        })
+      } else {
+        toast.error('Impossible de charger les factures', {
+          description: 'Vérifiez votre connexion internet et rechargez la page.',
+        })
+      }
     } finally {
       setLoading(false)
     }

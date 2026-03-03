@@ -162,15 +162,15 @@ button, .button, .btn {
 /* ─── Tab pill — style premium SaaS ──────────────────────────────────────── */
 @layer components {
   .tab-pill {
-    color: hsl(var(--violet-500));
-    background: hsl(0 0% 100%);
+    color: hsl(var(--violet-600)) !important;
+    background: hsl(0 0% 100%) !important;
     font-weight: 500;
     font-size: 0.8125rem;
     transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
   }
   .tab-pill[data-state="active"] {
-    background: linear-gradient(135deg, hsl(var(--violet-500)), hsl(var(--violet-600)));
-    color: hsl(0 0% 100%);
+    background: linear-gradient(135deg, hsl(var(--violet-500)), hsl(var(--violet-600))) !important;
+    color: hsl(0 0% 100%) !important;
     box-shadow: 0 1px 4px hsl(var(--violet-500) / 0.25);
   }
   /* ─── Card section standard ─────────────────────────────────────────────── */

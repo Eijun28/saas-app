@@ -348,7 +348,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueEmail}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -403,7 +403,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueNames}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -456,7 +456,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueCompany}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -531,7 +531,7 @@ export default function SignUpPage() {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-12 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading ? (
                           <span className="flex items-center justify-center gap-2">

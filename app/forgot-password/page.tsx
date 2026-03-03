@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
                   <motion.div variants={itemVariants} className="pt-1">
                     <Link
                       href="/sign-in"
-                      className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 text-sm sm:text-base"
+                      className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 text-sm sm:text-base"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Retour à la connexion
@@ -222,7 +222,7 @@ export default function ForgotPasswordPage() {
                       disabled={isLoading}
                       whileHover={{ scale: isLoading ? 1 : 1.02 }}
                       whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                      className="group relative w-full h-12 sm:h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                      className="group relative w-full h-12 sm:h-12 min-h-[44px] rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">
                         {isLoading ? (
