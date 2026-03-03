@@ -272,18 +272,19 @@ export default function DemandesRecuesPage() {
       return
     }
 
-    // Envoyer l'email de notification au couple (sans bloquer le flow)
-    try {
-      const { sendRequestAcceptedEmail } = await import('@/lib/email/notifications')
-      await sendRequestAcceptedEmail(
-        requestData.couple_id,
-        requestData.provider_id,
-        requestId
-      )
-    } catch (emailError) {
-      // Ne pas bloquer si l'email échoue
-      console.error('Erreur envoi email notification:', emailError)
-    }
+    // Appel server-side via API route (jamais directement depuis le client)
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'request_accepted',
+        coupleId: requestData.couple_id,
+        providerId: requestData.provider_id,
+        requestId,
+      }),
+    }).catch((emailError) => {
+      console.error('Erreur envoi notification acceptation:', emailError)
+    })
 
     // Vérifier si une conversation existe déjà (créée par trigger), sinon la créer manuellement
     const { data: existingConv } = await supabase
@@ -390,18 +391,19 @@ export default function DemandesRecuesPage() {
       return
     }
 
-    // Envoyer l'email de notification au couple (sans bloquer le flow)
-    try {
-      const { sendRequestRejectedEmail } = await import('@/lib/email/notifications')
-      await sendRequestRejectedEmail(
-        requestData.couple_id,
-        requestData.provider_id,
-        requestId
-      )
-    } catch (emailError) {
-      // Ne pas bloquer si l'email échoue
-      console.error('Erreur envoi email notification:', emailError)
-    }
+    // Appel server-side via API route (jamais directement depuis le client)
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'request_rejected',
+        coupleId: requestData.couple_id,
+        providerId: requestData.provider_id,
+        requestId,
+      }),
+    }).catch((emailError) => {
+      console.error('Erreur envoi notification rejet:', emailError)
+    })
 
     toast.success('Demande refusée')
     fetchDemandes()

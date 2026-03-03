@@ -213,12 +213,20 @@ export function ProfilePreviewDialog({
       }
 
       if (data?.id) {
-        try {
-          const { sendNewRequestEmail } = await import('@/lib/email/notifications')
-          await sendNewRequestEmail(userId, currentCoupleId, data.id, demandeMessage.trim())
-        } catch (emailError) {
-          console.error('Erreur envoi email:', emailError)
-        }
+        // Appel server-side via API route (jamais directement depuis le client)
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_request',
+            providerId: userId,
+            coupleId: currentCoupleId,
+            requestId: data.id,
+            message: demandeMessage.trim(),
+          }),
+        }).catch((emailError) => {
+          console.error('Erreur envoi notification nouvelle demande:', emailError)
+        })
       }
 
       toast.success('Demande envoyée avec succès !')
