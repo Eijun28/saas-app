@@ -7,6 +7,7 @@ import {
   sendInactivityReminder,
   sendProviderLowCompletionReminder,
 } from '@/lib/email/sequences'
+import { sendNewMessageEmail } from '@/lib/email/notifications'
 import { getProviderProfileCompletion } from '@/lib/profile/completion'
 import { logger } from '@/lib/logger'
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
     pendingRequests: 0,
     inactivity: 0,
     providerLowCompletion: 0,
+    unreadMessages: 0,
     errors: 0,
   }
 
@@ -236,6 +238,77 @@ export async function POST(request: NextRequest) {
       )
       if (result.success) stats.providerLowCompletion++
       else stats.errors++
+    }
+
+    // ========================================================================
+    // 6. MESSAGES NON LUS (digest quotidien — remplace l'ancien cron horaire)
+    // ========================================================================
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString()
+
+    const { data: unreadMessages } = await adminClient
+      .from('messages')
+      .select(`
+        id,
+        conversation_id,
+        sender_id,
+        content,
+        created_at,
+        conversations!inner (
+          id,
+          couple_id,
+          provider_id
+        )
+      `)
+      .is('read_at', null)
+      .lt('created_at', oneHourAgo)   // Ignoré si lu dans l'heure
+      .gte('created_at', oneDayAgo)   // Fenêtre 24h seulement
+      .order('created_at', { ascending: false })
+
+    // Dédupliquer par conversation + destinataire pour n'envoyer qu'un seul email
+    const notifiedConversations = new Set<string>()
+
+    for (const msg of unreadMessages || []) {
+      const conv = msg.conversations as { id: string; couple_id: string; provider_id: string } | null
+      if (!conv) continue
+
+      const recipientId = conv.couple_id === msg.sender_id ? conv.provider_id : conv.couple_id
+      const dedupeKey = `${conv.id}:${recipientId}`
+
+      if (notifiedConversations.has(dedupeKey)) continue
+
+      // Vérifier qu'on n'a pas déjà notifié ce destinataire pour cette conversation aujourd'hui
+      const { data: recentLog } = await adminClient
+        .from('email_logs')
+        .select('id')
+        .eq('user_id', recipientId)
+        .eq('email_type', 'new_message')
+        .gte('sent_at', oneDayAgo)
+        .maybeSingle()
+
+      if (recentLog) {
+        notifiedConversations.add(dedupeKey)
+        continue
+      }
+
+      const isRecipientCouple = conv.couple_id === recipientId
+      try {
+        const result = await sendNewMessageEmail(
+          recipientId,
+          msg.sender_id,
+          conv.id,
+          msg.content,
+          isRecipientCouple
+        )
+        if (result.success) {
+          stats.unreadMessages++
+          notifiedConversations.add(dedupeKey)
+        } else {
+          stats.errors++
+        }
+      } catch {
+        stats.errors++
+      }
     }
 
     logger.info('Cron email sequences terminé', stats)
