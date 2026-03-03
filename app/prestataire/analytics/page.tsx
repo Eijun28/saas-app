@@ -10,6 +10,10 @@ import { KpiGrid } from '@/components/prestataire/analytics/KpiGrid'
 import { VisibilityChart } from '@/components/prestataire/analytics/VisibilityChart'
 import { ConversionFunnel } from '@/components/prestataire/analytics/ConversionFunnel'
 import { DevisStats } from '@/components/prestataire/analytics/DevisStats'
+import { RevenueChart } from '@/components/prestataire/analytics/RevenueChart'
+import { ReviewsEvolution } from '@/components/prestataire/analytics/ReviewsEvolution'
+import { TopRequestOrigins } from '@/components/prestataire/analytics/TopRequestOrigins'
+import { ResponseRateCard } from '@/components/prestataire/analytics/ResponseRateCard'
 import { cn } from '@/lib/utils'
 
 type Period = '7d' | '30d' | '90d'
@@ -47,6 +51,10 @@ interface AnalyticsData {
   funnel: { label: string; value: number }[]
   devisByStatus: { status: string; label: string; count: number }[]
   requestsByStatus: { status: string; label: string; count: number }[]
+  revenueByMonth: { month: string; revenue: number; label: string }[]
+  reviewsEvolution: { month: string; label: string; avgRating: number; count: number }[]
+  requestOrigins: { source: string; label: string; count: number }[]
+  responseRate: { rate: number; respondedCount: number; totalCount: number; avgResponseTime: number | null }
 }
 
 export default function AnalyticsPage() {
@@ -190,6 +198,33 @@ export default function AnalyticsPage() {
             totalRevenue: data.kpis.totalRevenue,
           }}
         />
+
+        {/* Revenue & Reviews row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          <RevenueChart
+            data={data.revenueByMonth}
+            totalRevenue={data.kpis.totalRevenue}
+          />
+          <ReviewsEvolution
+            data={data.reviewsEvolution}
+            currentAvg={data.kpis.avgRating}
+            reviewCount={data.kpis.reviewCount}
+          />
+        </div>
+
+        {/* Response rate & Request origins row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          <ResponseRateCard
+            responseRate={data.responseRate.rate}
+            avgResponseTime={data.responseRate.avgResponseTime}
+            respondedCount={data.responseRate.respondedCount}
+            totalCount={data.responseRate.totalCount}
+          />
+          <TopRequestOrigins
+            data={data.requestOrigins}
+            total={data.requestOrigins.reduce((s, o) => s + o.count, 0)}
+          />
+        </div>
 
         {/* Position info */}
         {data.kpis.avgPosition > 0 && (
