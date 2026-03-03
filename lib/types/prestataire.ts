@@ -96,7 +96,7 @@ export interface ProviderZone {
   created_at: string;
 }
 
-export type PortfolioFileType = 'image' | 'pdf';
+export type PortfolioFileType = 'image' | 'pdf' | 'video';
 
 export interface ProviderPortfolioImage {
   id: string;
