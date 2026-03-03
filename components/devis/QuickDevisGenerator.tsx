@@ -290,7 +290,7 @@ export function QuickDevisGenerator({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
+                <Sparkles className="h-5 w-5 text-[#823F91]" />
                 Génération rapide de devis
               </DialogTitle>
               <DialogDescription>
@@ -325,8 +325,8 @@ export function QuickDevisGenerator({
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                            <User className="h-5 w-5 text-purple-600" />
+                          <div className="h-10 w-10 rounded-full bg-[#E8D4EF] flex items-center justify-center">
+                            <User className="h-5 w-5 text-[#823F91]" />
                           </div>
                           <div>
                             <p className="font-medium">{formatCoupleName(couple)}</p>
@@ -371,7 +371,7 @@ export function QuickDevisGenerator({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-purple-600" />
+                <FileText className="h-5 w-5 text-[#823F91]" />
                 Créer un devis pour {formatCoupleName(selectedCouple)}
               </DialogTitle>
               <DialogDescription>
@@ -528,7 +528,7 @@ export function QuickDevisGenerator({
             </DialogHeader>
 
             <div className="py-4">
-              <Card className="border-purple-200 bg-purple-50/30">
+              <Card className="border-[#D4ADE0] bg-[#F5F0F7]/30">
                 <CardContent className="p-4 space-y-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -538,7 +538,7 @@ export function QuickDevisGenerator({
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-purple-600">
+                      <p className="text-2xl font-bold text-[#823F91]">
                         {formatAmount(formData.amount)}
                       </p>
                       <p className="text-xs text-muted-foreground">HT</p>

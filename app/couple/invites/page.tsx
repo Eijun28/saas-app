@@ -179,7 +179,7 @@ export default function InvitesPage() {
             variant="outline"
             size="icon"
             onClick={() => setFiltersOpen(p => !p)}
-            className={`h-10 w-10 rounded-xl flex-shrink-0 ${filtersOpen ? 'bg-purple-50 border-purple-200 text-[#823F91]' : ''}`}
+            className={`h-10 w-10 rounded-xl flex-shrink-0 ${filtersOpen ? 'bg-[#F5F0F7] border-[#D4ADE0] text-[#823F91]' : ''}`}
             aria-label="Filtres avancés"
           >
             <SlidersHorizontal className="h-4 w-4" />

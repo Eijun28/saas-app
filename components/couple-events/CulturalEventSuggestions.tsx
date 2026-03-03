@@ -442,7 +442,7 @@ export function CulturalEventSuggestions({ cultures, religions, onSelect }: Cult
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: i * 0.05 }}
             onClick={() => onSelect(event.title, event.description, event.category)}
-            className="group text-left p-4 rounded-xl border border-purple-100/80 bg-gradient-to-br from-purple-50/60 to-pink-50/40 hover:from-purple-100/60 hover:to-pink-100/40 hover:border-purple-200 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#823F91]/30"
+            className="group text-left p-4 rounded-xl border border-[#E8D4EF]/80 bg-gradient-to-br from-[#F5F0F7]/60 to-pink-50/40 hover:from-[#E8D4EF]/60 hover:to-pink-100/40 hover:border-[#D4ADE0] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#823F91]/30"
           >
             <div className="flex items-start gap-3">
               <span className="text-2xl leading-none mt-0.5 flex-shrink-0">{event.emoji}</span>

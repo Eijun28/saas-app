@@ -282,7 +282,7 @@ export function GoogleCalendarSync({
                 </div>
               )}
               {lastResult.pulled > 0 && (
-                <div className="flex items-center gap-2 text-purple-700">
+                <div className="flex items-center gap-2 text-[#6D3478]">
                   <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
                   {lastResult.pulled} date{lastResult.pulled > 1 ? 's' : ''} importée{lastResult.pulled > 1 ? 's' : ''} comme indisponible{lastResult.pulled > 1 ? 's' : ''}
                 </div>

@@ -367,7 +367,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
                         'px-2.5 py-1 text-xs rounded-full border transition-colors',
                         isSelected
                           ? 'bg-[#823F91] text-white border-[#823F91]'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#823F91]/50 hover:bg-purple-50'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#823F91]/50 hover:bg-[#F5F0F7]'
                       )}
                     >
                       {tag.label}

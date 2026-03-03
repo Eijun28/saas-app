@@ -287,7 +287,7 @@ const SkeletonMatchingFullWidth = () => {
                 >
                   {/* Avatar pour les messages de l'IA */}
                   {msg.from === "ai" && (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E8D4EF] flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                       <Image
                         src="/images/ai-assistant-avatar-3d.png"
                         alt="Assistant IA"

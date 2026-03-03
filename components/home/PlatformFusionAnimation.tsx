@@ -125,7 +125,7 @@ export function PlatformFusionAnimation() {
               ease: "easeInOut"
             }}
           >
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br from-rose-500 via-pink-600 to-purple-600 flex items-center justify-center shadow-2xl">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-gradient-to-br from-rose-500 via-pink-600 to-[#823F91] flex items-center justify-center shadow-2xl">
               <span className="text-5xl md:text-6xl font-bold text-white select-none">N</span>
             </div>
           </motion.div>

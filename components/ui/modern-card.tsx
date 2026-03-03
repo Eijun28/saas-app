@@ -41,7 +41,7 @@ export function ModernCard({
           'h-full rounded-xl transition-all duration-300 border-0 shadow-sm',
           'hover:shadow-md',
           'bg-white gap-4 py-4',
-          glassmorphism && 'backdrop-blur-md bg-purple-500/5',
+          glassmorphism && 'backdrop-blur-md bg-[#F5F0F7]0/5',
           className
         )}
       >

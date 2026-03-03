@@ -140,12 +140,12 @@ export default function RsvpPage() {
   const weddingDate = couple?.wedding_date ? formatDate(couple.wedding_date) : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F0F7] via-white to-pink-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] mb-3 shadow-lg shadow-purple-200">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#823F91] to-[#9D5FA8] mb-3 shadow-lg shadow-[#D4ADE0]">
             <Heart className="h-7 w-7 text-white fill-white" />
           </div>
           <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase">Nuply · Invitation</p>
@@ -199,7 +199,7 @@ export default function RsvpPage() {
                     </p>
 
                     {/* Noms des mariés */}
-                    <div className="text-center bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 mb-6">
+                    <div className="text-center bg-gradient-to-br from-[#F5F0F7] to-pink-50 rounded-2xl p-5 mb-6">
                       <p className="text-xl font-bold text-[#823F91]">
                         {couple?.partner_1_name} & {couple?.partner_2_name}
                       </p>

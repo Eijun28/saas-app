@@ -89,7 +89,7 @@ export function CreateDevisModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-purple-600" />
+                <FileText className="h-5 w-5 text-[#823F91]" />
                 Créer un devis
               </DialogTitle>
               <DialogDescription>
@@ -252,7 +252,7 @@ export function CreateDevisModal({
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-purple-600">
+                    <p className="text-2xl font-bold text-[#823F91]">
                       {new Intl.NumberFormat('fr-FR', {
                         style: 'currency',
                         currency: 'EUR',

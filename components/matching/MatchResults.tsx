@@ -119,7 +119,7 @@ export default function MatchResults({
               transition={{ delay: 0.3, duration: 0.4 }}
               className="mb-8"
             >
-              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-6 max-w-2xl mx-auto">
+              <div className="bg-[#F5F0F7] border border-[#D4ADE0] rounded-2xl p-6 max-w-2xl mx-auto">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <MapPin className="h-5 w-5 text-[#823F91]" />
                   <p className="text-sm font-semibold text-[#823F91]">
@@ -140,7 +140,7 @@ export default function MatchResults({
                         criteria?.wedding_city || criteria?.wedding_department,
                         criteria?.wedding_date
                       )}
-                      className="bg-white rounded-xl p-4 border border-purple-100 hover:border-[#823F91] hover:shadow-sm transition-all text-left group"
+                      className="bg-white rounded-xl p-4 border border-[#E8D4EF] hover:border-[#823F91] hover:shadow-sm transition-all text-left group"
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -259,7 +259,7 @@ export default function MatchResults({
           </div>
           <div className="flex flex-wrap gap-2">
             {matchingResult.search_criteria.service_type && (
-              <span className="px-2.5 py-1 text-xs rounded-full bg-purple-100 text-[#823F91] font-medium">
+              <span className="px-2.5 py-1 text-xs rounded-full bg-[#E8D4EF] text-[#823F91] font-medium">
                 {matchingResult.search_criteria.service_type}
               </span>
             )}

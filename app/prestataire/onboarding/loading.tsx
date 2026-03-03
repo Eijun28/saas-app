@@ -21,7 +21,7 @@ export default function PrestataireOnboardingLoading() {
               <div className="h-10 bg-gray-50 rounded-xl" />
             </div>
           ))}
-          <div className="h-10 bg-purple-100 rounded-xl mt-4" />
+          <div className="h-10 bg-[#E8D4EF] rounded-xl mt-4" />
         </div>
       </div>
     </div>

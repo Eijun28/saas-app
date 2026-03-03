@@ -507,19 +507,10 @@ export default function DevisFacturesPage() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 data-[state=active]:shadow-md"
-              style={{
-                backgroundColor: activeTab === tab.value ? '#823F91' : 'white',
-                color: activeTab === tab.value ? '#ffffff' : '#823F91',
-              }}
+              className="text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 text-[#823F91] data-[state=active]:shadow-md"
             >
-              <tab.icon
-                className="h-4 w-4 sm:mr-1.5"
-                style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}
-              />
-              <span className="hidden sm:inline" style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}>
-                {tab.label}
-              </span>
+              <tab.icon className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -557,7 +548,7 @@ export default function DevisFacturesPage() {
                       key={devis.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="p-4 border rounded-lg hover:border-purple-200 hover:shadow-sm transition-all"
+                      className="p-4 border rounded-lg hover:border-[#D4ADE0] hover:shadow-sm transition-all"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -573,7 +564,7 @@ export default function DevisFacturesPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <p className="text-lg font-bold text-purple-600">
+                          <p className="text-lg font-bold text-[#823F91]">
                             {formatAmount(devis.amount)}
                           </p>
 

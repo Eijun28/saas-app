@@ -65,10 +65,10 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
   const activeItemClasses =
     accentColor === 'pink'
       ? 'text-pink-600 bg-pink-50'
-      : 'text-violet-600 bg-violet-50'
+      : 'text-[#6D3478] bg-[#F5F0F7]'
   const activeIconClasses =
-    accentColor === 'pink' ? 'text-pink-500 bg-pink-100' : 'text-violet-600 bg-violet-100'
-  const badgeBg = accentColor === 'pink' ? 'bg-pink-500' : 'bg-violet-600'
+    accentColor === 'pink' ? 'text-pink-500 bg-pink-100' : 'text-[#6D3478] bg-[#E8D4EF]'
+  const badgeBg = accentColor === 'pink' ? 'bg-pink-500' : 'bg-[#823F91]'
 
   return (
     <>
@@ -144,7 +144,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
                               isActive
                                 ? accentColor === 'pink'
                                   ? 'text-pink-500'
-                                  : 'text-violet-600'
+                                  : 'text-[#6D3478]'
                                 : 'text-gray-500'
                             )}
                           />
@@ -166,7 +166,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
                           isActive
                             ? accentColor === 'pink'
                               ? 'text-pink-600'
-                              : 'text-violet-600'
+                              : 'text-[#6D3478]'
                             : 'text-gray-600'
                         )}
                       >
@@ -201,9 +201,9 @@ export function MobileBottomNav({ items, moreItems, accentColor = 'violet' }: Mo
   // h-svh overflow-hidden, le body ne scrolle pas. Le bloc overflow:hidden sur
   // iOS empêche également le scroll interne du MoreSheet (bug iOS Safari connu).
 
-  const activeClasses = accentColor === 'pink' ? 'text-pink-500' : 'text-violet-600'
-  const activeDotClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-violet-600'
-  const badgeBgClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-violet-600'
+  const activeClasses = accentColor === 'pink' ? 'text-pink-500' : 'text-[#6D3478]'
+  const activeDotClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-[#823F91]'
+  const badgeBgClasses = accentColor === 'pink' ? 'bg-pink-500' : 'bg-[#823F91]'
 
   // Le bouton "Plus" est actif si la page courante est dans moreItems
   const isMoreActive =

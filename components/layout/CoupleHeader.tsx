@@ -251,7 +251,7 @@ export function CoupleHeader() {
                 >
                   <Avatar className="h-7 w-7 rounded-lg ring-1 ring-gray-200 flex-shrink-0">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white text-[10px] font-bold rounded-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-[#823F91] text-white text-[10px] font-bold rounded-lg">
                       {profile?.name?.split(' ').filter(w => w !== '&').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'C'}
                     </AvatarFallback>
                   </Avatar>

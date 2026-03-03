@@ -196,7 +196,7 @@ export default function EventDetailPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="mb-6 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10 p-5 sm:p-6"
+        className="mb-6 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-[#F5F0F7] border border-[#823F91]/10 p-5 sm:p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">

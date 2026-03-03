@@ -577,7 +577,7 @@ export default function DashboardPrestatairePage() {
         {/* Parrainage */}
         {referralCode && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.6 }}
-            className="bg-gradient-to-r from-[#823F91]/5 via-purple-50 to-[#9D5FA8]/5 rounded-2xl border border-[#823F91]/10 overflow-hidden">
+            className="bg-gradient-to-r from-[#823F91]/5 via-[#F5F0F7] to-[#9D5FA8]/5 rounded-2xl border border-[#823F91]/10 overflow-hidden">
             <div className="px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-2.5 sm:gap-3">
                 <div className="p-2 sm:p-2.5 bg-[#823F91]/10 rounded-lg sm:rounded-xl flex-shrink-0"><Gift className="h-4 w-4 sm:h-5 sm:w-5 text-[#823F91]" /></div>

@@ -55,7 +55,7 @@ export default function ConfirmEmail() {
       <div className="flex min-h-screen items-center justify-center relative z-10">
         <div className="text-center max-w-md px-4 sm:px-6">
 
-          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#823F91] to-[#B855D6] shadow-lg shadow-purple-500/25">
+          <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#823F91] to-[#B855D6] shadow-lg shadow-[#823F91]/25">
             <Mail className="h-8 w-8 text-white" />
           </div>
 
@@ -82,7 +82,7 @@ export default function ConfirmEmail() {
 
           <Link href="/sign-in">
             <Button
-              className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base min-h-[44px]"
+              className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base min-h-[44px]"
             >
               Aller à la connexion
             </Button>

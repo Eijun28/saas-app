@@ -65,7 +65,7 @@ export default function BypassConfirmationPage() {
       case 'couple':
         return <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">Couple</Badge>
       case 'prestataire':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">Prestataire</Badge>
+        return <Badge variant="outline" className="bg-[#F5F0F7] text-[#6D3478] border-[#D4ADE0]">Prestataire</Badge>
       default:
         return <Badge variant="outline">{role}</Badge>
     }
@@ -102,7 +102,7 @@ export default function BypassConfirmationPage() {
             <Button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white"
             >
               {loading ? 'Generation en cours...' : 'Generer le lien de bypass'}
             </Button>

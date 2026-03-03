@@ -141,7 +141,7 @@ export function VisibilityStats({ userId, serviceType, className }: VisibilitySt
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#823F91]/5 to-transparent rounded-bl-full" />
 
         <div className="relative p-6 text-center">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-[#823F91]/10 to-purple-50 flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-[#823F91]/10 to-[#F5F0F7] flex items-center justify-center mb-4">
             <BarChart3 className="h-8 w-8 text-[#823F91]" />
           </div>
           <h3 className="font-semibold text-gray-900 mb-2">Vos statistiques arrivent bientot</h3>
@@ -165,13 +165,13 @@ export function VisibilityStats({ userId, serviceType, className }: VisibilitySt
       className
     )}>
       {/* Header gradient */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#823F91] via-purple-500 to-pink-500" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-pink-500" />
 
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-purple-50">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-[#F5F0F7]">
               <BarChart3 className="h-5 w-5 text-[#823F91]" />
             </div>
             <div>
@@ -210,11 +210,11 @@ export function VisibilityStats({ userId, serviceType, className }: VisibilitySt
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-100"
+            className="p-4 rounded-xl bg-gradient-to-br from-[#F5F0F7] to-[#E8D4EF]/50 border border-[#E8D4EF]"
           >
             <div className="flex items-center gap-2 mb-2">
-              <MousePointer2 className="h-4 w-4 text-purple-600" />
-              <span className="text-xs font-medium text-purple-600">Clics</span>
+              <MousePointer2 className="h-4 w-4 text-[#823F91]" />
+              <span className="text-xs font-medium text-[#823F91]">Clics</span>
             </div>
             <div className="text-2xl font-bold text-gray-900">
               <AnimatedCounter value={stats.clicks_this_week} />

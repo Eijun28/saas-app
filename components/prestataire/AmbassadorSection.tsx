@@ -103,7 +103,7 @@ export default function AmbassadorSection() {
       )}
 
       {/* Code de parrainage */}
-      <div className="rounded-2xl border border-[#823F91]/20 bg-gradient-to-br from-purple-50/60 to-white p-5 space-y-3">
+      <div className="rounded-2xl border border-[#823F91]/20 bg-gradient-to-br from-[#F5F0F7]/60 to-white p-5 space-y-3">
         <p className="text-sm font-medium text-gray-700">Votre code ambassadeur</p>
         <div className="flex items-center gap-3">
           <span className="font-mono text-2xl font-bold tracking-widest text-[#823F91]">
@@ -111,7 +111,7 @@ export default function AmbassadorSection() {
           </span>
           <button
             onClick={copyCode}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#823F91] hover:text-[#6D3478] px-3 py-1.5 rounded-lg border border-[#823F91]/30 hover:bg-purple-50 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-[#823F91] hover:text-[#6D3478] px-3 py-1.5 rounded-lg border border-[#823F91]/30 hover:bg-[#F5F0F7] transition-colors"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Copié' : 'Copier'}

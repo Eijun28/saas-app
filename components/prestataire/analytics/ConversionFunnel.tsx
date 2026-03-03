@@ -47,7 +47,7 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
                 'from-blue-400 to-blue-500',
                 'from-indigo-400 to-indigo-500',
                 'from-[#823F91] to-[#9D5FA8]',
-                'from-purple-500 to-purple-600',
+                'from-[#9D5FA8] to-[#6D3478]',
                 'from-emerald-400 to-emerald-500',
                 'from-emerald-500 to-emerald-600',
               ]

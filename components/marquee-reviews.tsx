@@ -69,14 +69,14 @@ const ReviewCard = ({
       )}
     >
       <div className="flex flex-row items-center gap-3 mb-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-600 text-white text-sm font-bold shrink-0">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#823F91] text-white text-sm font-bold shrink-0">
           {initials}
         </div>
         <div className="flex flex-col min-w-0">
           <figcaption className="text-sm font-semibold truncate">
             {name}
           </figcaption>
-          <p className="text-xs font-medium text-purple-600 truncate">
+          <p className="text-xs font-medium text-[#823F91] truncate">
             {culture}
           </p>
         </div>
