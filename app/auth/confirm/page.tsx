@@ -82,7 +82,7 @@ export default function ConfirmEmail() {
 
           <Link href="/sign-in">
             <Button
-              className="w-full sm:w-auto bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] text-white font-semibold shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base min-h-[44px]"
+              className="w-full sm:w-auto bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base min-h-[44px]"
             >
               Aller à la connexion
             </Button>

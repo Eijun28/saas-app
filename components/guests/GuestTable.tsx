@@ -268,8 +268,8 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
               >
                 {/* Nom + +1 */}
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#E8D4EF] to-pink-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-[13px] font-bold text-[#823F91]">{initials}</span>
+                  <div className="h-9 w-9 rounded-xl bg-[#F5F0F7] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[13px] font-bold text-[#6D3478]">{initials}</span>
                   </div>
                   <div>
                     <p className="text-[14px] font-semibold text-gray-900">{fullName}</p>
