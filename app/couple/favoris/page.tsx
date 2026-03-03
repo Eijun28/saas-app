@@ -319,7 +319,7 @@ export default function FavorisPage() {
                       </Badge>
                     )}
                     {fav.cultures.slice(0, 1).map(c => (
-                      <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0.5 bg-purple-50 border-purple-200 text-purple-700">
+                      <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0.5 bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]">
                         <Sparkles className="h-2.5 w-2.5 mr-0.5" />{c}
                       </Badge>
                     ))}
@@ -464,7 +464,7 @@ export default function FavorisPage() {
                       render: (p: FavProvider) => p.cultures.length > 0 ? (
                         <div className="flex flex-wrap justify-center gap-1">
                           {p.cultures.map(c => (
-                            <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0.5 bg-purple-50 border-purple-200 text-purple-700">{c}</Badge>
+                            <Badge key={c} variant="outline" className="text-[10px] px-1.5 py-0.5 bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]">{c}</Badge>
                           ))}
                         </div>
                       ) : <span className="text-gray-300">-</span>,

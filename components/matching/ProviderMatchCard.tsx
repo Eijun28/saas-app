@@ -221,10 +221,10 @@ export default function ProviderMatchCard({
 
         {/* Explication IA */}
         {explanation && (
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="bg-[#F5F0F7] p-4 rounded-lg border border-[#D4ADE0]">
             <div className="flex items-start gap-3">
-              <Lightbulb className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-purple-900 leading-relaxed">
+              <Lightbulb className="h-5 w-5 text-[#823F91] flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-[#5C2B66] leading-relaxed">
                 {explanation}
               </p>
             </div>
@@ -343,7 +343,7 @@ export default function ProviderMatchCard({
                     <div
                       className={cn(
                         'h-2 rounded-full',
-                        breakdown.ai_bonus >= 0 ? 'bg-purple-500' : 'bg-red-400'
+                        breakdown.ai_bonus >= 0 ? 'bg-[#F5F0F7]0' : 'bg-red-400'
                       )}
                       style={{
                         width: `${Math.min(Math.abs(breakdown.ai_bonus) * 10, 100)}%`,

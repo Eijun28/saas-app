@@ -706,7 +706,7 @@ export default function DemandesPage() {
                                         )}
                                         {(r.status === 'cancelled' || r.status === 'rejected') && (
                                           <DropdownMenuItem
-                                            className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                            className="text-[#823F91] focus:text-[#823F91] focus:bg-[#F5F0F7]"
                                             onClick={() => resendRequest(r)}
                                           >
                                             <RefreshCw className="h-4 w-4 mr-2" />
@@ -716,7 +716,7 @@ export default function DemandesPage() {
                                         {r.status === 'accepted' && (
                                           <>
                                             <DropdownMenuItem
-                                              className="text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                                              className="text-[#823F91] focus:text-[#823F91] focus:bg-[#F5F0F7]"
                                               onClick={() => router.push('/couple/messagerie')}
                                             >
                                               <MessageSquare className="h-4 w-4 mr-2" />

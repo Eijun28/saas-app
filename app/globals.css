@@ -275,7 +275,7 @@ button, .button, .btn {
 
 /* Fond opaque pour le menu dropdown utilisateur */
 [data-slot="dropdown-menu-content"] {
-  background: linear-gradient(to bottom right, rgb(243 232 255), rgb(250 245 255), rgb(255 255 255)) !important;
+  background: linear-gradient(to bottom right, hsl(var(--violet-100)), hsl(var(--violet-50)), hsl(0 0% 100%)) !important;
   backdrop-filter: none !important;
   color: hsl(var(--foreground)) !important;
 }
@@ -289,7 +289,7 @@ button, .button, .btn {
 
 /* Même fond pour les modals Dialog (comme "Créer un événement") */
 [data-slot="dialog-content"] {
-  background: linear-gradient(to bottom right, rgb(243 232 255), rgb(250 245 255), rgb(255 255 255)) !important;
+  background: linear-gradient(to bottom right, hsl(var(--violet-100)), hsl(var(--violet-50)), hsl(0 0% 100%)) !important;
   backdrop-filter: none !important;
   color: hsl(var(--foreground)) !important;
   position: fixed !important;

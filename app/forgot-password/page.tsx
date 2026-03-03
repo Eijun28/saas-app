@@ -130,9 +130,9 @@ export default function ForgotPasswordPage() {
           animate="visible"
           className="relative w-full max-w-full sm:max-w-md"
         >
-          <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-400/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-purple-500/15 to-violet-300/15 rounded-full blur-3xl pointer-events-none" />
+          <Card className="bg-white border-0 shadow-2xl shadow-[#823F91]/20 ring-1 ring-[#D4ADE0]/50 relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-[#823F91]/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-[#823F91]/15 to-[#D4ADE0]/15 rounded-full blur-3xl pointer-events-none" />
 
             <CardHeader className="text-center space-y-3 pb-2 relative z-10">
               <CardTitle className="text-2xl font-semibold bg-gradient-to-r from-[#823F91] to-[#B855D6] bg-clip-text text-transparent tracking-tight">
@@ -165,7 +165,7 @@ export default function ForgotPasswordPage() {
                   <motion.div variants={itemVariants} className="pt-1">
                     <Link
                       href="/sign-in"
-                      className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 text-sm sm:text-base"
+                      className="group relative flex items-center justify-center gap-2 w-full h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 text-sm sm:text-base"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Retour à la connexion
@@ -222,7 +222,7 @@ export default function ForgotPasswordPage() {
                       disabled={isLoading}
                       whileHover={{ scale: isLoading ? 1 : 1.02 }}
                       whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                      className="group relative w-full h-12 sm:h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                      className="group relative w-full h-12 sm:h-12 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">
                         {isLoading ? (

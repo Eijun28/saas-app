@@ -85,7 +85,7 @@ export const FloatingNav = ({
             ease: "easeInOut",
           }}
           className={cn(
-            "flex max-w-fit fixed top-10 inset-x-0 mx-auto border border-purple-200 rounded-full bg-white/90 backdrop-blur-xl z-[5000] px-8 py-2 items-center justify-center space-x-4 shadow-lg",
+            "flex max-w-fit fixed top-10 inset-x-0 mx-auto border border-[#D4ADE0] rounded-full bg-white/90 backdrop-blur-xl z-[5000] px-8 py-2 items-center justify-center space-x-4 shadow-lg",
             className
           )}
         >
@@ -95,7 +95,7 @@ export const FloatingNav = ({
             href={navItem.link}
             onClick={(e) => handleLinkClick(navItem.link, e)}
             className={cn(
-              "relative items-center flex space-x-1 text-neutral-600 hover:text-purple-600 transition-colors"
+              "relative items-center flex space-x-1 text-neutral-600 hover:text-[#823F91] transition-colors"
             )}
           >
             <span className="block sm:hidden">{navItem.icon}</span>
@@ -104,7 +104,7 @@ export const FloatingNav = ({
         ))}
         <Link
           href="/sign-up"
-          className="border text-sm font-medium relative border-purple-600 text-white px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 transition-colors"
+          className="border text-sm font-medium relative border-[#823F91] text-white px-4 py-2 rounded-full bg-[#823F91] hover:bg-[#6D3478] transition-colors"
         >
           <span>Commencer</span>
         </Link>

@@ -254,7 +254,7 @@ export default function OnboardingPage() {
                     isCompleted
                       ? "bg-emerald-500 text-white"
                       : isActive
-                      ? "bg-[#823F91] text-white shadow-lg shadow-purple-500/25"
+                      ? "bg-[#823F91] text-white shadow-lg shadow-[#823F91]/25"
                       : "bg-gray-100 text-gray-400"
                   )}>
                     {isCompleted ? (
@@ -292,7 +292,7 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="bg-white shadow-xl shadow-purple-500/10 border-0 ring-1 ring-purple-100/50 overflow-hidden">
+            <Card className="bg-white shadow-xl shadow-[#823F91]/10 border-0 ring-1 ring-[#E8D4EF]/50 overflow-hidden">
               <div className="p-5 sm:p-8">
                 {/* Step 1: Service Type + City */}
                 {currentStep === 1 && (
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                                 allSelected
                                   ? "bg-[#823F91] text-white"
                                   : someSelected
-                                  ? "bg-purple-50 text-[#823F91]"
+                                  ? "bg-[#F5F0F7] text-[#823F91]"
                                   : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                               )}
                             >
@@ -473,8 +473,8 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100">
-                      <p className="text-sm text-purple-800">
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-[#F5F0F7] to-pink-50 border border-[#E8D4EF]">
+                      <p className="text-sm text-[#5C2B66]">
                         <span className="font-semibold">Presque terminé !</span> Après cette étape, vous aurez accès à votre tableau de bord pour compléter votre portfolio, vos réseaux sociaux et plus encore.
                       </p>
                     </div>
@@ -499,7 +499,7 @@ export default function OnboardingPage() {
                   <Button
                     onClick={saveStepAndAdvance}
                     disabled={isSaving || !isStepValid()}
-                    className="bg-[#823F91] hover:bg-[#6D3478] text-white px-6 h-11 rounded-xl shadow-md shadow-purple-500/20"
+                    className="bg-[#823F91] hover:bg-[#6D3478] text-white px-6 h-11 rounded-xl shadow-md shadow-[#823F91]/20"
                   >
                     {isSaving ? (
                       'Enregistrement...'

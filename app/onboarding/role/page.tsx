@@ -43,7 +43,7 @@ export default function OnboardingRolePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F5F0F7] to-white px-4">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -66,9 +66,9 @@ export default function OnboardingRolePage() {
             whileTap={{ scale: 0.98 }}
             onClick={() => handleRoleSelect('couple')}
             disabled={!!isLoading}
-            className="flex items-center gap-4 w-full p-5 rounded-2xl border-2 border-purple-100 bg-white hover:border-[#823F91] hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+            className="flex items-center gap-4 w-full p-5 rounded-2xl border-2 border-[#E8D4EF] bg-white hover:border-[#823F91] hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
           >
-            <span className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 text-white shrink-0">
+            <span className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-pink-400 to-[#823F91] text-white shrink-0">
               <Heart className="h-6 w-6" />
             </span>
             <div>
@@ -89,7 +89,7 @@ export default function OnboardingRolePage() {
             whileTap={{ scale: 0.98 }}
             onClick={() => handleRoleSelect('prestataire')}
             disabled={!!isLoading}
-            className="flex items-center gap-4 w-full p-5 rounded-2xl border-2 border-purple-100 bg-white hover:border-[#823F91] hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+            className="flex items-center gap-4 w-full p-5 rounded-2xl border-2 border-[#E8D4EF] bg-white hover:border-[#823F91] hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-left"
           >
             <span className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-[#823F91] to-[#B855D6] text-white shrink-0">
               <Building2 className="h-6 w-6" />

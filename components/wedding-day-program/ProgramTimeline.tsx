@@ -54,7 +54,7 @@ export function ProgramTimeline({ items, onUpdated, onDeleted }: ProgramTimeline
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="h-16 w-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
+        <div className="h-16 w-16 rounded-2xl bg-[#F5F0F7] flex items-center justify-center mb-4">
           <CalendarClock className="h-8 w-8 text-[#823F91]/50" />
         </div>
         <p className="text-gray-500 font-medium">Aucun créneau planifié</p>

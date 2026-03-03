@@ -227,7 +227,7 @@ export function BudgetCategoriesSection({
     contacte: 'bg-gray-100 text-gray-700',
     devis_recu: 'bg-blue-100 text-blue-700',
     valide: 'bg-green-100 text-green-700',
-    paye: 'bg-purple-100 text-purple-700',
+    paye: 'bg-[#E8D4EF] text-[#6D3478]',
   }
 
   return (

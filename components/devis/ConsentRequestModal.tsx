@@ -34,7 +34,7 @@ export function ConsentRequestModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-purple-600" />
+            <Lock className="h-5 w-5 text-[#823F91]" />
             Demande d&apos;accès
           </DialogTitle>
           <DialogDescription>
@@ -44,8 +44,8 @@ export function ConsentRequestModal({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="rounded-lg bg-purple-50 p-4 border border-purple-100">
-            <p className="text-sm text-purple-900">
+          <div className="rounded-lg bg-[#F5F0F7] p-4 border border-[#E8D4EF]">
+            <p className="text-sm text-[#5C2B66]">
               Demander l&apos;accès aux informations de facturation de{' '}
               <span className="font-semibold">{coupleName}</span> ?
             </p>

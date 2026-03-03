@@ -221,7 +221,7 @@ export function ProfileScoreCard({
       >
         <div className="flex items-center gap-4">
           {/* Icon */}
-          <div className="flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-purple-50">
+          <div className="flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br from-[#823F91]/10 to-[#F5F0F7]">
             <Award className="h-5 w-5 text-[#823F91]" />
           </div>
 
@@ -340,7 +340,7 @@ export function ProfileScoreCard({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="p-3 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-purple-50 border border-[#823F91]/10"
+                  className="p-3 rounded-xl bg-gradient-to-r from-[#823F91]/5 to-[#F5F0F7] border border-[#823F91]/10"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-1.5 rounded-lg bg-[#823F91]/10 flex-shrink-0">

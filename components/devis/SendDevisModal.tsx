@@ -55,15 +55,15 @@ export function SendDevisModal({
           {/* Aperçu du devis */}
           <div className="rounded-lg border p-4 bg-muted/30">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-purple-100">
-                <FileText className="h-6 w-6 text-purple-600" />
+              <div className="p-2 rounded-lg bg-[#E8D4EF]">
+                <FileText className="h-6 w-6 text-[#823F91]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{devis.title}</p>
                 <p className="text-sm text-muted-foreground">
                   N° {devis.devis_number}
                 </p>
-                <p className="text-lg font-bold text-purple-600 mt-1">
+                <p className="text-lg font-bold text-[#823F91] mt-1">
                   {new Intl.NumberFormat('fr-FR', {
                     style: 'currency',
                     currency: devis.currency || 'EUR',

@@ -29,7 +29,7 @@ export default async function OnboardingLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-purple-50/30 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#F5F0F7]/30 to-white">
       {children}
     </div>
   )

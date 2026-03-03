@@ -97,7 +97,7 @@ export default function DisponibilitesPage() {
       </div>
 
       {/* Bandeau info */}
-      <div className="flex items-start gap-3 rounded-xl bg-purple-50 border border-purple-100 p-4">
+      <div className="flex items-start gap-3 rounded-xl bg-[#F5F0F7] border border-[#E8D4EF] p-4">
         <Info className="h-4 w-4 text-[#823F91] mt-0.5 flex-shrink-0" />
         <p className="text-[13px] text-[#823F91]">
           Par défaut vous êtes considéré·e <strong>disponible</strong> sur toute l'année.

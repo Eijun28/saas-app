@@ -185,7 +185,7 @@ export function PaymentCsvImport({ open, onClose, onImported }: PaymentCsvImport
           {!fileName ? (
             <div
               className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
-                dragging ? 'border-[#823F91] bg-purple-50' : 'border-gray-200 hover:border-[#823F91]/50'
+                dragging ? 'border-[#823F91] bg-[#F5F0F7]' : 'border-gray-200 hover:border-[#823F91]/50'
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
               onDragLeave={() => setDragging(false)}

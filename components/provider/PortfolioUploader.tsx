@@ -378,8 +378,8 @@ export function PortfolioUploader({ userId, maxImages = 10, onSave }: PortfolioU
           onDrop={handleUploadDrop}
           className={`
             relative border border-dashed border-[#823F91]/30 rounded-lg p-3 text-center transition-all bg-white/50
-            ${dragActive ? 'bg-purple-50/70 border-[#823F91] shadow-[0_2px_8px_rgba(130,63,145,0.2)]' : ''}
-            ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:bg-purple-50/40 hover:border-[#823F91]/50'}
+            ${dragActive ? 'bg-[#F5F0F7]/70 border-[#823F91] shadow-[0_2px_8px_rgba(130,63,145,0.2)]' : ''}
+            ${isUploading ? 'opacity-50 pointer-events-none' : 'cursor-pointer hover:bg-[#F5F0F7]/40 hover:border-[#823F91]/50'}
           `}
         >
           <input

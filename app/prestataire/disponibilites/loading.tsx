@@ -11,7 +11,7 @@ export default function DisponibilitesLoading() {
       </div>
 
       {/* Bandeau */}
-      <div className="h-14 rounded-xl bg-purple-50" />
+      <div className="h-14 rounded-xl bg-[#F5F0F7]" />
 
       {/* Grille */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
