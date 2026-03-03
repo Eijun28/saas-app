@@ -38,6 +38,9 @@ export interface ExtendedSearchCriteria extends SearchCriteria {
   // Tags specifiques demandes par le couple
   specialty_tags?: string[];
   style_tags?: string[];
+  // Hérités de SearchCriteria mais rappelés pour clarté
+  dietary_requirements?: string[];
+  required_languages?: string[];
 }
 
 /**
@@ -531,6 +534,67 @@ export function calculateCapacityScore(
 }
 
 /**
+ * Calcule le score de langue (/8 points bonus)
+ * Seul un bonus est accordé — pas de pénalité si non renseigné côté prestataire
+ * pour éviter d'éliminer des prestataires qui n'ont pas rempli ce champ
+ */
+export function calculateLanguageScore(
+  requiredLanguages: string[] | undefined,
+  providerLanguages: string[] | undefined
+): number {
+  // Le couple n'a pas exprimé de besoin linguistique → pas de bonus/malus
+  if (!requiredLanguages || requiredLanguages.length === 0) return 0;
+
+  // Prestataire n'a pas renseigné ses langues → neutre (on ne pénalise pas)
+  if (!providerLanguages || providerLanguages.length === 0) return 0;
+
+  const normalize = (lang: string) => lang.toLowerCase().trim();
+  const normalizedRequired = requiredLanguages.map(normalize);
+  const normalizedProvider = providerLanguages.map(normalize);
+
+  const matched = normalizedRequired.filter(l => normalizedProvider.includes(l));
+  const matchRatio = matched.length / normalizedRequired.length;
+
+  if (matchRatio >= 1) return 8;
+  if (matchRatio >= 0.5) return 4;
+  return 0;
+}
+
+/**
+ * Calcule le score alimentaire pour les services de restauration (/10 points bonus)
+ * Critique pour traiteur/pâtissier : forte pénalité si exigence non couverte
+ * Neutre pour les autres services (ne s'applique pas)
+ */
+export function calculateDietaryScore(
+  dietaryRequirements: string[] | undefined,
+  providerTags: string[] | undefined,
+  serviceType: string | undefined
+): number {
+  // Pas d'exigence alimentaire → pas de bonus/malus
+  if (!dietaryRequirements || dietaryRequirements.length === 0) return 0;
+
+  // Ne s'applique qu'aux services de restauration
+  const foodServices = ['traiteur', 'patissier'];
+  if (!serviceType || !foodServices.includes(serviceType)) return 0;
+
+  if (!providerTags || providerTags.length === 0) {
+    // Exigence alimentaire non couverte → forte pénalité
+    return -15;
+  }
+
+  const normalize = (t: string) => t.toLowerCase().trim();
+  const normalizedTags = providerTags.map(normalize);
+
+  const covered = dietaryRequirements.filter(req =>
+    normalizedTags.includes(normalize(req))
+  );
+
+  if (covered.length === dietaryRequirements.length) return 10;  // Tout couvert
+  if (covered.length > 0) return -5;                             // Partiel
+  return -15;                                                    // Rien couvert
+}
+
+/**
  * Interface etendue du provider pour le scoring avec equite
  */
 export interface ProviderWithFairness {
@@ -544,6 +608,8 @@ export interface ProviderWithFairness {
   ville_principale?: string;
   tags?: string[];
   specialty_tags?: string[];
+  languages?: string[];
+  service_type?: string;
   fairness_data?: FairnessData;
   guest_capacity_min?: number;
   guest_capacity_max?: number;
@@ -559,6 +625,8 @@ export interface ExtendedScoreBreakdown extends ScoreBreakdown {
   fairness_multiplier?: number;
   ctr_bonus?: number;
   score_before_fairness?: number;
+  language_match?: number;
+  dietary_match?: number;
 }
 
 /**
@@ -628,6 +696,19 @@ export function calculateTotalScore(
     provider.guest_capacity_max
   );
 
+  // Calculate language score (bonus +8 si langues demandées et couvertes)
+  const languageScore = calculateLanguageScore(
+    criteria.required_languages,
+    provider.languages
+  );
+
+  // Calculate dietary score (critique pour traiteur/pâtissier, -15 à +10)
+  const dietaryScore = calculateDietaryScore(
+    criteria.dietary_requirements,
+    provider.tags,
+    provider.service_type
+  );
+
   // Score algorithmique total avant equite
   const totalAlgo =
     culturalScore +
@@ -639,7 +720,9 @@ export function calculateTotalScore(
     specialtyScore +
     eventTypesScore +
     ctrBonus +
-    capacityScore;
+    capacityScore +
+    languageScore +
+    dietaryScore;
 
   // Score avant application de l'equite (cap a 100)
   const scoreBeforeFairness = Math.min(100, Math.max(0, totalAlgo));
@@ -664,6 +747,8 @@ export function calculateTotalScore(
     tags_match: tagsScore,
     specialty_match: specialtyScore,
     event_types_match: eventTypesScore !== 0 ? eventTypesScore : undefined,
+    language_match: languageScore !== 0 ? languageScore : undefined,
+    dietary_match: dietaryScore !== 0 ? dietaryScore : undefined,
     fairness_multiplier: fairnessMultiplier,
     ctr_bonus: ctrBonus,
     score_before_fairness: scoreBeforeFairness,

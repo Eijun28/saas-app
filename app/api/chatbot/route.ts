@@ -332,7 +332,9 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
     "specific_requirements": ["req1"] ou [],
     "vision_description": "résumé court",
     "must_haves": [] ou ["élément"],
-    "must_not_haves": [] ou ["élément"]
+    "must_not_haves": [] ou ["élément"],
+    "dietary_requirements": ["halal"] ou null,
+    "required_languages": ["français", "arabe"] ou null
   },
   "next_action": "continue" | "validate",
   "question_count": 1
@@ -558,7 +560,9 @@ FORMAT DE RÉPONSE JSON (STRICTEMENT RESPECTER)
     "event_types": ["mariage_civil", "henne", "zaffa"] ou [],
     "vision_description": "résumé riche et personnalisé incluant TOUT ce qui a été dit dans la conversation (style, traditions, ambiance, moments clés, besoins spécifiques)",
     "must_haves": [] ou ["élément"],
-    "must_not_haves": [] ou ["élément"]
+    "must_not_haves": [] ou ["élément"],
+    "dietary_requirements": ["halal"] ou null,
+    "required_languages": ["français", "arabe"] ou null
   },
   "next_action": "continue" | "validate",
   "question_count": 1
@@ -595,6 +599,21 @@ RÈGLES pour tags[] :
 - Exemples DJ : "oriental", "zaffa", "mix", "éclairage"
 - Exemples salle : "extérieur", "traiteur_inclus", "moderne", "château"
 - Toujours populer ce champ avec les tags pertinents identifiés
+
+RÈGLES pour dietary_requirements[] :
+- CRITIQUE pour traiteur/pâtissier : extraire les contraintes alimentaires comme tableau séparé
+- Valeurs possibles : "halal", "casher", "végétarien", "vegan", "sans_porc", "sans_alcool"
+- Si le couple dit "halal obligatoire", "halal certifié", "on est halal" → ["halal"]
+- Si "casher" → ["casher"]
+- Si "végétarien" ou "végétalien" → ["végétarien"] ou ["vegan"]
+- Si pas de restriction mentionnée → null (pas de filtrage)
+- Ces valeurs vont aussi dans tags[] en parallèle pour la recherche par tags
+
+RÈGLES pour required_languages[] :
+- Extraire uniquement si le couple mentionne explicitement une langue pour communiquer avec le prestataire
+- Pour faire-part bilingue : extraire les langues des invitations (ex: ["français", "arabe"])
+- Pour prestataire : "il faut qu'il parle arabe", "bilingue" → ["arabe", "français"]
+- Si non mentionné → null
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CRITÈRES DE VALIDATION (next_action: "validate")
@@ -840,6 +859,16 @@ Exemple mauvais ton :
     // S'assurer que event_types est un tableau
     if (!Array.isArray(parsedResponse.extracted_data.event_types)) {
       parsedResponse.extracted_data.event_types = [];
+    }
+
+    // Normaliser dietary_requirements (null si tableau vide)
+    if (Array.isArray(parsedResponse.extracted_data.dietary_requirements) && parsedResponse.extracted_data.dietary_requirements.length === 0) {
+      parsedResponse.extracted_data.dietary_requirements = null;
+    }
+
+    // Normaliser required_languages (null si tableau vide)
+    if (Array.isArray(parsedResponse.extracted_data.required_languages) && parsedResponse.extracted_data.required_languages.length === 0) {
+      parsedResponse.extracted_data.required_languages = null;
     }
 
     // Valider et normaliser les suggestions
