@@ -26,6 +26,8 @@ import {
   CreditCard,
   Receipt,
   Bell,
+  LayoutGrid,
+  CheckSquare,
 } from "lucide-react"
 import {
   Sidebar,
@@ -75,6 +77,7 @@ const sections: NavSection[] = [
     title: "Planning",
     items: [
       { href: "/couple/dashboard", icon: Home, label: "Accueil" },
+      { href: "/couple/checklist", icon: CheckSquare, label: "Checklist" },
       { href: "/couple/timeline", icon: Calendar, label: "Calendrier" },
       { href: "/couple/evenements", icon: PartyPopper, label: "Événements" },
       { href: "/couple/jour-j", icon: ClipboardList, label: "Programme Jour J" },
@@ -88,6 +91,7 @@ const sections: NavSection[] = [
       { href: "/couple/matching", icon: Sparkles, label: "Nuply Matching" },
       { href: "/couple/collaborateurs", icon: UserPlus, label: "Collaborateurs" },
       { href: "/couple/invites", icon: Users, label: "Invités" },
+      { href: "/couple/plan-de-table", icon: LayoutGrid, label: "Plan de table" },
     ],
   },
   {

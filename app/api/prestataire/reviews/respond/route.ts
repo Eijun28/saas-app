@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendReviewResponseEmail } from '@/lib/email/notifications'
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     // Verify the review belongs to this provider
     const { data: review, error: fetchError } = await supabase
       .from('reviews')
-      .select('id, provider_id, provider_response')
+      .select('id, provider_id, couple_id, provider_response')
       .eq('id', reviewId)
       .single()
 
@@ -47,8 +48,18 @@ export async function POST(request: Request) {
 
     if (updateError) throw updateError
 
+    // Send email notification to the couple (non-blocking)
+    sendReviewResponseEmail(
+      review.couple_id,
+      user.id,
+      reviewId,
+      response.trim()
+    ).catch((err: unknown) => {
+      console.error('Email réponse avis non envoyé:', err)
+    })
+
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Review respond error:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
