@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
     const notifiedConversations = new Set<string>()
 
     for (const msg of unreadMessages || []) {
-      const conv = msg.conversations as { id: string; couple_id: string; provider_id: string } | null
+      const conv = msg.conversations as unknown as { id: string; couple_id: string; provider_id: string } | null
       if (!conv) continue
 
       const recipientId = conv.couple_id === msg.sender_id ? conv.provider_id : conv.couple_id
