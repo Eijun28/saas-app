@@ -462,69 +462,48 @@ button.border-2[role="combobox"],
   border: none !important;
 }
 
-/* Boutons dans les modals - garder les couleurs d'origine sauf pour les boutons violets */
-[data-slot="dialog-content"] button:not([class*="bg-primary"]):not([class*="gradient-"]) {
+/* Boutons dans les modals - texte sombre sauf pour les boutons violets solides */
+/* Utilise ~= (correspondance de mot exact) au lieu de *= (sous-chaîne) */
+[data-slot="dialog-content"] button:not([class~="bg-primary"]):not([class~="bg-\[#823F91\]"]):not([class~="bg-\[#6D3478\]"]):not([class~="bg-\[#5C2B66\]"]) {
   color: hsl(var(--foreground)) !important;
 }
 
-/* Texte BLANC sur boutons violets/gradient */
-button.gradient-primary,
-button.gradient-purple,
-button[class*="gradient-"],
+/* Texte BLANC sur boutons violets solides uniquement (~= = mot exact, pas sous-chaîne) */
+/* IMPORTANT : *ne correspond PAS* à hover:bg-[#823F91]/8 ou bg-primary/10 */
 button.bg-primary,
-button[class*="bg-primary"],
-button[class*="bg-\[#823F91\]"],
+button[class~="bg-primary"],
+button[class~="bg-\[#823F91\]"],
+button[class~="bg-\[#6D3478\]"],
+button[class~="bg-\[#5C2B66\]"],
 button[style*="background-color: #823F91"],
 button[style*="background-color: rgb(130, 63, 145)"],
-.gradient-primary,
-.gradient-purple,
 .bg-primary,
-[class*="gradient-primary"],
-[class*="gradient-purple"],
-[class*="bg-primary"] {
+[class~="bg-primary"],
+[class~="bg-\[#823F91\]"],
+[class~="bg-\[#6D3478\]"] {
   color: white !important;
 }
 
-/* Texte blanc dans les boutons enfants des conteneurs gradient/primary */
-.gradient-primary button,
-.gradient-purple button,
+/* Texte blanc dans les boutons enfants des conteneurs violet solide */
 .bg-primary button,
-[class*="gradient-primary"] button,
-[class*="gradient-purple"] button,
-[class*="bg-primary"] button {
+[class~="bg-primary"] button,
+[class~="bg-\[#823F91\]"] button,
+[class~="bg-\[#6D3478\]"] button {
   color: white !important;
 }
 
-/* Texte blanc pour tous les éléments enfants des boutons violets */
-button[class*="bg-\[#823F91\]"] *,
-button[class*="bg-primary"] *,
-button.gradient-primary *,
-button.gradient-purple * {
+/* Texte blanc pour les enfants des boutons violets solides */
+button[class~="bg-\[#823F91\]"] *,
+button[class~="bg-\[#6D3478\]"] *,
+button[class~="bg-primary"] * {
   color: white !important;
 }
 
-/* Texte blanc dans les spans des boutons violets */
-button.gradient-primary span,
-button.gradient-purple span,
-button.bg-primary span,
-button[class*="gradient-"] span,
-button[class*="bg-primary"] span,
-button[class*="bg-\[#823F91\]"] span,
-button[class*="bg-\[#823F91\]"] * {
-  color: white !important;
-}
-
-/* Éléments sélectionnés avec background violet/gradient */
-[data-state="checked"].gradient-primary,
-[data-state="checked"].gradient-purple,
-[data-state="checked"][class*="gradient-"],
+/* Éléments sélectionnés avec background violet */
 [data-state="checked"].bg-primary,
-[data-state="checked"][class*="bg-primary"],
-[aria-checked="true"].gradient-primary,
-[aria-checked="true"].gradient-purple,
-[aria-checked="true"][class*="gradient-"],
+[data-state="checked"][class~="bg-primary"],
 [aria-checked="true"].bg-primary,
-[aria-checked="true"][class*="bg-primary"],
+[aria-checked="true"][class~="bg-primary"],
 [data-state="on"],
 [aria-pressed="true"] {
   color: white !important;
