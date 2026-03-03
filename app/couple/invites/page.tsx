@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { UserPlus, Search, SlidersHorizontal, X, LayoutGrid, List } from 'lucide-react'
@@ -56,6 +56,8 @@ export default function InvitesPage() {
   const [filters, setFilters]                   = useState<Filters>(DEFAULT_FILTERS)
   const [filtersOpen, setFiltersOpen]           = useState(false)
   const [view, setView]                         = useState<'liste' | 'plan'>('liste')
+  const [tableCount, setTableCount]             = useState(3)
+  const tableCountInitialized                   = useRef(false)
 
   // ─── Chargement des données ─────────────────────────────────────────────────
 
@@ -93,6 +95,15 @@ export default function InvitesPage() {
     setLoading(true)
     loadGuests()
   }, [user, loadGuests])
+
+  // Initialise tableCount une fois au premier chargement (depuis le max des tables assignées)
+  useEffect(() => {
+    if (!loading && !tableCountInitialized.current) {
+      tableCountInitialized.current = true
+      const max = Math.max(0, ...guests.map(g => g.table_number ?? 0))
+      setTableCount(Math.max(max, 3))
+    }
+  }, [loading, guests])
 
   // ─── Handlers mutations ─────────────────────────────────────────────────────
 
@@ -303,6 +314,8 @@ export default function InvitesPage() {
           <GuestSeatingPlan
             guests={guests}
             onUpdated={handleGuestUpdated}
+            tableCount={tableCount}
+            onTableCountChange={setTableCount}
           />
         ) : (
           <>
@@ -316,6 +329,7 @@ export default function InvitesPage() {
               onAdded={handleGuestAdded}
               onUpdated={handleGuestUpdated}
               onDeleted={handleGuestDeleted}
+              tableCount={tableCount}
             />
           </>
         )}
@@ -326,6 +340,7 @@ export default function InvitesPage() {
         open={showAddForm}
         onClose={() => setShowAddForm(false)}
         onSaved={handleGuestAdded}
+        tableCount={tableCount}
       />
     </div>
   )

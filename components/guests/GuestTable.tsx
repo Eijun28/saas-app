@@ -42,6 +42,7 @@ interface GuestTableProps {
   onAdded: (guest: Guest) => void
   onUpdated: (guest: Guest) => void
   onDeleted: (id: string) => void
+  tableCount?: number
 }
 
 const RSVP_OPTIONS: RsvpStatus[] = ['confirmed', 'maybe', 'declined', 'pending']
@@ -177,7 +178,7 @@ function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
 
 // ─── Table principale ─────────────────────────────────────────────────────────
 
-export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTableProps) {
+export function GuestTable({ guests, onAdded, onUpdated, onDeleted, tableCount }: GuestTableProps) {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingId, setDeletingId]     = useState<string | null>(null)
   const [updatingRsvp, setUpdatingRsvp] = useState<string | null>(null)
@@ -399,6 +400,7 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
           setEditingGuest(null)
         }}
         existing={editingGuest}
+        tableCount={tableCount}
       />
     </>
   )
