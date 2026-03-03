@@ -13,6 +13,7 @@ import {
   Store,
   ClipboardList,
   Package,
+  Languages,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
 import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
+import { LanguagesCapacityEditor } from '@/components/provider/LanguagesCapacityEditor'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { hasServiceFields } from '@/lib/constants/service-fields'
@@ -77,6 +79,9 @@ interface Profile {
   boutique_appointment_only?: boolean
   siret?: string | null
   pricing_unit?: string
+  languages?: string[]
+  guest_capacity_min?: number | null
+  guest_capacity_max?: number | null
   _timestamp?: number
 }
 
@@ -159,7 +164,7 @@ export default function ProfilPublicPage() {
         pricingResult,
         serviceDetailsResult,
       ] = await Promise.all([
-        sb.from('profiles').select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only').eq('id', userId).maybeSingle(),
+        sb.from('profiles').select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only, languages, guest_capacity_min, guest_capacity_max').eq('id', userId).maybeSingle(),
         sb.from('profiles').select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url').eq('id', userId).maybeSingle(),
         sb.from('provider_cultures').select('culture_id').eq('profile_id', userId),
         sb.from('provider_zones').select('zone_id').eq('profile_id', userId),
@@ -223,6 +228,9 @@ export default function ProfilPublicPage() {
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingResult.data?.pricing_unit || undefined,
+        languages: (profileData as unknown as { languages?: string[] })?.languages || [],
+        guest_capacity_min: (profileData as unknown as { guest_capacity_min?: number | null })?.guest_capacity_min ?? null,
+        guest_capacity_max: (profileData as unknown as { guest_capacity_max?: number | null })?.guest_capacity_max ?? null,
         _timestamp: Date.now(),
       })
       setCultures(mappedCultures)
@@ -262,6 +270,7 @@ export default function ProfilPublicPage() {
     { id: 'reseaux', label: 'Réseaux sociaux', icon: Share2 },
     { id: 'boutique', label: 'Lieu physique', icon: Store },
     ...(hasMetier ? [{ id: 'metier', label: 'Détails métier', icon: ClipboardList }] : []),
+    { id: 'langues', label: 'Langues & Capacité', icon: Languages },
     { id: 'cultures', label: 'Cultures', icon: Globe },
     { id: 'zones', label: "Zones d'intervention", icon: MapPin },
     { id: 'tags', label: 'Tags', icon: Tag },
@@ -466,6 +475,22 @@ export default function ProfilPublicPage() {
                 Renseignez les détails spécifiques à votre activité pour aider les couples à mieux vous trouver.
               </p>
               <ServiceDetailsEditor userId={user.id} serviceType={profile!.service_type!} onSave={() => loadAllData(user.id)} />
+            </Section>
+          )}
+
+          {activeSection === 'langues' && (
+            <Section icon={Languages} title="Langues & Capacité">
+              <p className="text-sm text-muted-foreground mb-4">
+                Ces informations améliorent votre score de matching avec les couples.
+              </p>
+              <LanguagesCapacityEditor
+                userId={user.id}
+                serviceType={profile?.service_type}
+                initialLanguages={profile?.languages || []}
+                initialCapacityMin={profile?.guest_capacity_min}
+                initialCapacityMax={profile?.guest_capacity_max}
+                onSave={() => loadAllData(user.id)}
+              />
             </Section>
           )}
 

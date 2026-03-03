@@ -613,6 +613,7 @@ export interface ProviderWithFairness {
   fairness_data?: FairnessData;
   guest_capacity_min?: number;
   guest_capacity_max?: number;
+  response_rate?: number;
   [key: string]: unknown;
 }
 
@@ -627,6 +628,21 @@ export interface ExtendedScoreBreakdown extends ScoreBreakdown {
   score_before_fairness?: number;
   language_match?: number;
   dietary_match?: number;
+  response_rate_bonus?: number;
+}
+
+/**
+ * Calcule un bonus de fiabilite base sur le taux de reponse du prestataire.
+ * Retourne 0 si la donnee est absente (evite tout malus sur prestataires non renseignes).
+ * +3 pts si response_rate >= 0.80
+ * 0  pt  si response_rate >= 0.50
+ * -2 pts si response_rate  < 0.50
+ */
+export function calculateResponseRateBonus(responseRate?: number | null): number {
+  if (responseRate === undefined || responseRate === null) return 0;
+  if (responseRate >= 0.80) return 3;
+  if (responseRate >= 0.50) return 0;
+  return -2;
 }
 
 /**
@@ -709,6 +725,9 @@ export function calculateTotalScore(
     provider.service_type
   );
 
+  // Calculate response rate bonus (+3 / 0 / -2)
+  const responseRateBonus = calculateResponseRateBonus(provider.response_rate);
+
   // Score algorithmique total avant equite
   const totalAlgo =
     culturalScore +
@@ -722,7 +741,8 @@ export function calculateTotalScore(
     ctrBonus +
     capacityScore +
     languageScore +
-    dietaryScore;
+    dietaryScore +
+    responseRateBonus;
 
   // Score avant application de l'equite (cap a 100)
   const scoreBeforeFairness = Math.min(100, Math.max(0, totalAlgo));
@@ -749,6 +769,7 @@ export function calculateTotalScore(
     event_types_match: eventTypesScore !== 0 ? eventTypesScore : undefined,
     language_match: languageScore !== 0 ? languageScore : undefined,
     dietary_match: dietaryScore !== 0 ? dietaryScore : undefined,
+    response_rate_bonus: responseRateBonus !== 0 ? responseRateBonus : undefined,
     fairness_multiplier: fairnessMultiplier,
     ctr_bonus: ctrBonus,
     score_before_fairness: scoreBeforeFairness,
