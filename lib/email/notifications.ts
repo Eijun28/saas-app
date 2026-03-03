@@ -441,3 +441,82 @@ export async function sendNewDevisEmail(
     return { success: false, error: getErrorMessage(error) }
   }
 }
+
+/**
+ * Envoie un email au couple lorsque le prestataire répond à son avis
+ */
+export async function sendReviewResponseEmail(
+  coupleId: string,
+  providerId: string,
+  reviewId: string,
+  providerResponse: string
+) {
+  if (!resendApiKey) {
+    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
+    return { success: false, error: 'RESEND_API_KEY non configurée' }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    // Récupérer l'email du couple via profiles
+    const { data: coupleProfile } = await adminClient
+      .from('profiles')
+      .select('id, prenom, nom, email')
+      .eq('id', coupleId)
+      .single()
+
+    if (!coupleProfile || !coupleProfile.email) {
+      logger.warn('Couple non trouvé ou email manquant', { coupleId })
+      return { success: false, error: 'Couple non trouvé' }
+    }
+
+    // Récupérer le nom du prestataire
+    const { data: provider } = await adminClient
+      .from('profiles')
+      .select('prenom, nom')
+      .eq('id', providerId)
+      .single()
+
+    const providerName = provider
+      ? `${provider.prenom || ''} ${provider.nom || ''}`.trim() || 'Le prestataire'
+      : 'Le prestataire'
+
+    const coupleName = coupleProfile.prenom || 'Bonjour'
+
+    const resend = new Resend(resendApiKey)
+    const subject = `💬 ${providerName} a répondu à votre avis`
+
+    const html = generateEmailTemplate({
+      title: 'Réponse à votre avis',
+      greeting: `Bonjour ${coupleName}`,
+      content: `
+        <p style="font-size: 16px; margin-bottom: 20px;">
+          <strong>${providerName}</strong> a répondu à l'avis que vous avez laissé.
+        </p>
+        ${generateContentBlock(
+          `<p style="margin: 0; color: #6D3478; font-weight: 600;">Leur réponse :</p>
+           ${generateMessagePreview(providerResponse)}`,
+          '#823F91'
+        )}
+      `,
+      buttonText: 'Voir le profil',
+      buttonUrl: `${siteUrl}/couple/recherche`,
+      footer: "Merci d'utiliser Nuply !<br><br>L'équipe Nuply 💜",
+      hideUnsubscribe: true,
+    })
+
+    await resend.emails.send({
+      from: fromEmail,
+      to: coupleProfile.email,
+      subject,
+      html,
+    })
+
+    logger.info('✅ Email réponse avis envoyé au couple', { coupleId, reviewId })
+    return { success: true }
+  } catch (error: unknown) {
+    logger.error('Erreur envoi email réponse avis:', error)
+    return { success: false, error: getErrorMessage(error) }
+  }
+}

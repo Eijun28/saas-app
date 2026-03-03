@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Star, MessageSquare, ThumbsUp, CornerDownRight } from 'lucide-react'
+import { Star, MessageSquare, ThumbsUp, CornerDownRight, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -21,6 +21,70 @@ interface Review {
   rating_communication: number | null
   rating_value: number | null
   rating_punctuality: number | null
+  photos: string[]
+}
+
+function PhotoLightbox({
+  photos,
+  initialIndex,
+  onClose,
+}: {
+  photos: string[]
+  initialIndex: number
+  onClose: () => void
+}) {
+  const [index, setIndex] = useState(initialIndex)
+
+  const prev = () => setIndex(i => (i - 1 + photos.length) % photos.length)
+  const next = () => setIndex(i => (i + 1) % photos.length)
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <button
+        className="absolute top-4 right-4 text-white/70 hover:text-white"
+        onClick={onClose}
+        aria-label="Fermer"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            className="absolute left-4 text-white/70 hover:text-white p-2"
+            onClick={(e) => { e.stopPropagation(); prev() }}
+            aria-label="Photo précédente"
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </button>
+          <button
+            className="absolute right-4 text-white/70 hover:text-white p-2"
+            onClick={(e) => { e.stopPropagation(); next() }}
+            aria-label="Photo suivante"
+          >
+            <ChevronRight className="h-8 w-8" />
+          </button>
+        </>
+      )}
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photos[index]}
+        alt={`Photo ${index + 1}`}
+        className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg"
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {photos.length > 1 && (
+        <p className="absolute bottom-4 text-white/60 text-sm">
+          {index + 1} / {photos.length}
+        </p>
+      )}
+    </div>
+  )
 }
 
 interface ReviewsListProps {
@@ -97,6 +161,7 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
   const [sortMode, setSortMode] = useState<SortMode>('recent')
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [votedReviews, setVotedReviews] = useState<Set<string>>(new Set())
+  const [lightbox, setLightbox] = useState<{ photos: string[]; index: number } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -105,7 +170,7 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
       const [reviewsResult, statsResult] = await Promise.all([
         supabase
           .from('reviews')
-          .select('id, rating, comment, created_at, couple_id, provider_response, provider_response_at, helpful_count, is_verified, rating_quality, rating_communication, rating_value, rating_punctuality')
+          .select('id, rating, comment, created_at, couple_id, provider_response, provider_response_at, helpful_count, is_verified, rating_quality, rating_communication, rating_value, rating_punctuality, photos')
           .eq('provider_id', providerId)
           .order('created_at', { ascending: false })
           .limit(limit || 50),
@@ -139,6 +204,7 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
           rating_communication: r.rating_communication,
           rating_value: r.rating_value,
           rating_punctuality: r.rating_punctuality,
+          photos: Array.isArray(r.photos) ? r.photos.filter(Boolean) : [],
         })))
 
         // Check which reviews user has already voted helpful
@@ -246,6 +312,13 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
 
   return (
     <div className={cn('space-y-4', className)}>
+      {lightbox && (
+        <PhotoLightbox
+          photos={lightbox.photos}
+          initialIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
       {/* Summary header */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
         <div className="flex items-center gap-3">
@@ -371,6 +444,28 @@ export function ReviewsList({ providerId, className, limit }: ReviewsListProps) 
               {/* Comment */}
               {review.comment && (
                 <p className="text-sm text-gray-700 leading-relaxed">{review.comment}</p>
+              )}
+
+              {/* Photos */}
+              {review.photos.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {review.photos.map((url, photoIndex) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => setLightbox({ photos: review.photos, index: photoIndex })}
+                      className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[#823F91]/30"
+                      aria-label={`Voir photo ${photoIndex + 1}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Photo avis ${photoIndex + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               )}
 
               {/* Provider response */}
