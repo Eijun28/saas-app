@@ -13,15 +13,8 @@ export async function POST(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET
   
   // En production, vérifier le secret si configuré
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    // En développement, on accepte aussi les appels locaux
-    const isLocal = request.headers.get('host')?.includes('localhost')
-    if (!isLocal) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
-    }
+  if (process.env.NODE_ENV === 'production' && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
   try {

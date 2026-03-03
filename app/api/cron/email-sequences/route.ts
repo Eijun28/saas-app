@@ -32,7 +32,9 @@ const LOW_COMPLETION_DELAYS_DAYS: Record<1 | 2 | 3, number> = {
 export async function POST(request: NextRequest) {
   // Vérification du secret
   const authHeader = request.headers.get('authorization')
-  if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${CRON_SECRET}`) {
+  // CRON_SECRET doit être défini dans les variables Vercel.
+  // Si non défini, le cron serait bloqué en production (Bearer undefined !== null).
+  if (process.env.NODE_ENV === 'production' && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
   }
 
