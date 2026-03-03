@@ -261,12 +261,13 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
       {/* ── Video preview modal ── */}
       {videoPreview && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-3 sm:p-4"
           onClick={() => setVideoPreview(null)}
         >
           <button
             onClick={() => setVideoPreview(null)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white transition-colors touch-manipulation"
+            aria-label="Fermer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -274,7 +275,7 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
             src={videoPreview}
             controls
             autoPlay
-            className="max-h-[85vh] max-w-full rounded-xl shadow-2xl"
+            className="w-full max-h-[80vh] sm:max-h-[85vh] sm:max-w-full rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
@@ -288,11 +289,11 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
           onDragOver={handleUploadDrag}
           onDrop={handleUploadDrop}
           className={cn(
-            'relative border border-dashed rounded-xl p-4 text-center transition-all',
+            'relative border border-dashed rounded-xl p-5 sm:p-4 text-center transition-all',
             dragActive
               ? 'bg-[#F5F0F7]/70 border-[#823F91] shadow-[0_2px_12px_rgba(130,63,145,0.2)]'
               : 'border-[#823F91]/30 bg-white/50',
-            !isUploading && 'cursor-pointer hover:bg-[#F5F0F7]/40 hover:border-[#823F91]/50',
+            !isUploading && 'cursor-pointer hover:bg-[#F5F0F7]/40 hover:border-[#823F91]/50 active:bg-[#F5F0F7]/60',
             isUploading && 'opacity-60 pointer-events-none'
           )}
         >
@@ -304,36 +305,37 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             disabled={isUploading || items.length >= maxImages}
           />
-          <div className="flex flex-col items-center gap-1.5">
+          <div className="flex flex-col items-center gap-2">
             {isUploading ? (
               <>
-                <Loader2 className="h-5 w-5 text-[#823F91] animate-spin" />
-                <p className="text-xs font-medium text-[#823F91]">
+                <Loader2 className="h-6 w-6 text-[#823F91] animate-spin" />
+                <p className="text-sm font-medium text-[#823F91]">
                   Upload en cours{uploadingCount > 1 ? ` (${uploadingCount} fichiers)` : ''}…
                 </p>
               </>
             ) : (
               <>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Upload className="h-5 w-5" />
+                  <Upload className="h-6 w-6" />
                 </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Glissez vos fichiers ici ou cliquez pour parcourir
+                <p className="text-sm font-medium text-muted-foreground">
+                  <span className="sm:hidden">Appuyez pour ajouter des fichiers</span>
+                  <span className="hidden sm:inline">Glissez vos fichiers ici ou cliquez pour parcourir</span>
                 </p>
                 {/* Formats supportés — pills */}
-                <div className="flex flex-wrap justify-center gap-1 mt-1">
+                <div className="flex flex-wrap justify-center gap-1.5 mt-0.5">
                   {[
                     { label: 'JPG / PNG', color: 'bg-blue-50 text-blue-600' },
                     { label: 'PDF', color: 'bg-red-50 text-red-600' },
                     { label: 'MP4 / WebM / MOV', color: 'bg-violet-50 text-violet-600' },
                   ].map(f => (
-                    <span key={f.label} className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', f.color)}>
+                    <span key={f.label} className={cn('text-xs font-semibold px-2.5 py-0.5 rounded-full', f.color)}>
                       {f.label}
                     </span>
                   ))}
                 </div>
-                <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                  Images & PDF max 10 MB · Vidéos max 200 MB · {items.length}/{maxImages} fichiers
+                <p className="text-xs text-muted-foreground/60">
+                  Photos & PDF max 10 MB · Vidéos max 200 MB · {items.length}/{maxImages}
                 </p>
               </>
             )}
@@ -379,10 +381,10 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
                     {/* ── Bouton suppression ── */}
                     <button
                       onClick={(e) => handleDelete(item.id, item.image_path, e)}
-                      className="absolute -top-2 -right-2 z-20 w-6 h-6 rounded-full bg-[#1c1c1e] hover:bg-red-600 flex items-center justify-center transition-colors shadow-md"
+                      className="absolute -top-2.5 -right-2.5 z-20 w-7 h-7 rounded-full bg-[#1c1c1e] hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors shadow-md touch-manipulation"
                       aria-label="Supprimer"
                     >
-                      <X className="h-3 w-3 text-white" strokeWidth={2.5} />
+                      <X className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
                     </button>
 
                     <Card
@@ -405,9 +407,9 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
                             preload="metadata"
                           />
                           {/* Overlay play */}
-                          <div className="absolute inset-0 bg-black/25 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                            <div className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                              <Play className="h-4 w-4 ml-0.5 text-gray-800" />
+                          <div className="absolute inset-0 bg-black/30 sm:bg-black/25 sm:group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                            <div className="h-11 w-11 sm:h-9 sm:w-9 rounded-full bg-white/90 flex items-center justify-center shadow-md sm:group-hover:scale-110 transition-transform">
+                              <Play className="h-5 w-5 sm:h-4 sm:w-4 ml-0.5 text-gray-800" />
                             </div>
                           </div>
                           {/* Durée badge (coin bas-gauche) */}
@@ -447,8 +449,8 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
 
                       {/* Poignée drag (sauf vidéo qui a déjà un overlay) */}
                       {!isVideo && (
-                        <div className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-black/50 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <GripVertical className="h-3 w-3 text-white" />
+                        <div className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center z-10 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <GripVertical className="h-3.5 w-3.5 text-white" />
                         </div>
                       )}
                     </Card>
@@ -461,13 +463,15 @@ export function PortfolioUploader({ userId, maxImages = 15, onSave }: PortfolioU
       )}
 
       {items.length === 0 && (
-        <div className="text-center py-10 text-muted-foreground">
+        <div className="text-center py-8 text-muted-foreground">
           <div className="flex items-center justify-center gap-3 mb-3 opacity-40">
-            <ImageIcon className="h-8 w-8" />
-            <Video className="h-8 w-8" />
+            <ImageIcon className="h-9 w-9" />
+            <Video className="h-9 w-9" />
           </div>
-          <p className="text-sm font-medium">Portfolio vide</p>
-          <p className="text-xs mt-1 opacity-70">Ajoutez des photos, vidéos ou PDFs pour présenter votre travail</p>
+          <p className="text-sm font-semibold">Portfolio vide</p>
+          <p className="text-xs mt-1.5 opacity-70 max-w-[240px] mx-auto leading-relaxed">
+            Ajoutez des photos, vidéos ou PDFs pour présenter votre travail
+          </p>
         </div>
       )}
     </div>
