@@ -58,8 +58,8 @@
   --secondary-foreground: var(--beige-900);
   --muted: var(--beige-200);
   --muted-foreground: var(--beige-700);
-  --accent: 320 70% 55%;
-  --accent-foreground: 0 0% 100%;
+  --accent: var(--violet-50);       /* 279 30% 96% — light violet #F5F0F7 */
+  --accent-foreground: var(--violet-600); /* 283 40% 35% — dark violet #6D3478 */
   --destructive: 0 75% 55%;
   --destructive-foreground: 0 0% 100%;
   --border: var(--beige-300);
