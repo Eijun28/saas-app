@@ -213,7 +213,7 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
         </span>
         <span className={cn(
           "px-2 py-1 rounded-full border",
-          specialiseCount >= MAX_SPECIALISE ? "bg-purple-50 border-purple-200 text-purple-700" : "bg-gray-50 border-gray-200 text-gray-600"
+          specialiseCount >= MAX_SPECIALISE ? "bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]" : "bg-gray-50 border-gray-200 text-gray-600"
         )}>
           {specialiseCount}/{MAX_SPECIALISE} spécialisé
         </span>
@@ -358,7 +358,7 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
           {/* Spécialisé */}
           {selectedCultures.filter(c => c.expertise_level === 'specialise').length > 0 && (
             <div>
-              <p className="text-xs font-medium text-purple-700 mb-1.5">Spécialisé</p>
+              <p className="text-xs font-medium text-[#6D3478] mb-1.5">Spécialisé</p>
               <div className="flex flex-wrap gap-2">
                 {selectedCultures.filter(c => c.expertise_level === 'specialise').map(c => {
                   const culture = getCultureById(c.culture_id);
@@ -366,9 +366,9 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
                     <Badge
                       key={c.culture_id}
                       variant="secondary"
-                      className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-colors"
+                      className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-[#F5F0F7] border border-[#D4ADE0] hover:bg-[#E8D4EF] transition-colors"
                     >
-                      <span className="text-sm text-purple-800">{culture.label}</span>
+                      <span className="text-sm text-[#5C2B66]">{culture.label}</span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -425,12 +425,13 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
 
       {/* Boutons Annuler/Enregistrer */}
       {hasChanges && (
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -438,7 +439,7 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="w-full sm:flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

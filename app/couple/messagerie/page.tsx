@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Send, MessageSquare, Search, CheckCheck, ArrowLeft } from 'lucide-react'
+import { Send, MessageSquare, Search, CheckCheck, ArrowLeft, Sparkles, SearchIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
+import { Button } from '@/components/ui/button'
 
 export default function MessageriePage() {
   const router = useRouter()
@@ -299,11 +300,31 @@ export default function MessageriePage() {
     <div className="flex-1 min-h-0 flex flex-col gap-4">
         {/* Header — hide on mobile when conversation is open */}
         {(!isMobile || !selectedConversation) && (
-          <PageTitle
-            title="Messagerie"
-            description="Communiquez avec vos prestataires"
-            className="pb-4"
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
+            <PageTitle
+              title="Messagerie"
+              description="Communiquez avec vos prestataires"
+            />
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/couple/recherche')}
+                className="gap-1.5 text-xs sm:text-sm"
+              >
+                <SearchIcon className="h-3.5 w-3.5" />
+                Rechercher un prestataire
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => router.push('/couple/matching')}
+                className="gap-1.5 text-xs sm:text-sm bg-[#823F91] hover:bg-[#6D3478] text-white"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Matchez vos prestataires
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Mobile conversation header with back button */}

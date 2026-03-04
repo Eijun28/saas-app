@@ -261,7 +261,7 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="w-full flex flex-col" style={{ height: 'calc(100dvh - 140px)', minHeight: '480px' }}>
+    <div className="h-[calc(100dvh-140px)] min-h-[480px] flex flex-col">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -6 }}
@@ -318,14 +318,28 @@ export default function TimelinePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2, delay: 0.05 }}
-        className="flex-1 overflow-hidden rounded-2xl border border-[#823F91]/15 bg-white shadow-sm"
+        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
       >
         <CalendarDashboard
           events={calendarEvents}
           onEventCreate={handleCalendarEventCreate}
-          showTime={false}
+          onEventUpdate={async (event) => {
+            const supabase = createClient()
+            await supabase
+              .from('events')
+              .update({ title: event.title, event_date: event.date, description: event.description ?? null })
+              .eq('id', event.id)
+              .eq('user_id', user?.id)
+            loadEvents()
+          }}
+          onEventDelete={async (eventId) => {
+            const supabase = createClient()
+            await supabase.from('events').delete().eq('id', eventId).eq('user_id', user?.id)
+            loadEvents()
+          }}
+          showTime={true}
           loading={loading}
-          defaultView="agenda"
+          defaultView="week"
         />
       </motion.div>
 

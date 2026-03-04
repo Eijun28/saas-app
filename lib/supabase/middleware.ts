@@ -18,14 +18,28 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
     const origin = request.headers.get('origin')
     const host = request.headers.get('host')
 
-    // Autoriser uniquement les requêtes du même origin
-    if (origin && host && !origin.includes(host)) {
-      return {
-        supabaseResponse: NextResponse.json(
-          { error: 'CSRF detected: Invalid origin' },
-          { status: 403 }
-        ),
-        user: null
+    // Autoriser uniquement les requêtes du même origin (comparaison stricte du hostname)
+    if (origin && host) {
+      try {
+        const originHostname = new URL(origin).hostname
+        const hostWithoutPort = host.split(':')[0]
+        if (originHostname !== hostWithoutPort) {
+          return {
+            supabaseResponse: NextResponse.json(
+              { error: 'CSRF detected: Invalid origin' },
+              { status: 403 }
+            ),
+            user: null
+          }
+        }
+      } catch {
+        return {
+          supabaseResponse: NextResponse.json(
+            { error: 'CSRF detected: Invalid origin' },
+            { status: 403 }
+          ),
+          user: null
+        }
       }
     }
 

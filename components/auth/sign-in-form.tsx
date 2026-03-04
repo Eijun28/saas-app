@@ -113,7 +113,7 @@ export function SignInForm() {
 
         <RippleButton
           type="submit"
-          className="w-full bg-gradient-to-r from-[#823F91] to-[#B855D6] hover:from-[#B855D6] hover:to-[#823F91] text-white h-12 text-base font-medium border-0"
+          className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white h-12 text-base font-medium border-0"
           rippleColor="#ffffff"
           disabled={isLoading}
         >

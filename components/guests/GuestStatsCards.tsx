@@ -14,8 +14,8 @@ const STAT_CARDS = [
     label: 'Total invités',
     icon: Users,
     color: 'text-[#823F91]',
-    bg: 'bg-purple-50',
-    border: 'border-purple-100',
+    bg: 'bg-[#F5F0F7]',
+    border: 'border-[#E8D4EF]',
   },
   {
     key: 'confirmed' as const,

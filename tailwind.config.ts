@@ -37,7 +37,7 @@ const config: Config = {
       addUtilities({
         '.scrollbar-thin': {
           'scrollbar-width': 'thin',
-          'scrollbar-color': '#d1b3d9 #f3f4f6',
+          'scrollbar-color': '#D4ADE0 #f3f4f6',
         },
         '.scrollbar-thin::-webkit-scrollbar': {
           width: '8px',
@@ -47,10 +47,10 @@ const config: Config = {
           borderRadius: '10px',
         },
         '.scrollbar-thin::-webkit-scrollbar-thumb': {
-          background: '#d1b3d9',
+          background: '#D4ADE0',
           borderRadius: '10px',
           '&:hover': {
-            background: '#c19dcc',
+            background: '#B999CC',
           },
         },
       })

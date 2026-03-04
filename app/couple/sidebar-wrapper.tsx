@@ -213,7 +213,7 @@ function SidebarUserFooter() {
                   "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
                 )}
               >
-                <div className="p-[2px] rounded-lg bg-gradient-to-br from-pink-400 via-violet-400 to-purple-600 flex-shrink-0">
+                <div className="p-[2px] rounded-lg bg-gradient-to-br from-pink-400 via-[#9D5FA8] to-[#823F91] flex-shrink-0">
                   <Avatar className="h-7 w-7 rounded-md">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
                     <AvatarFallback className="bg-[#5C2B66] text-white text-xs font-bold rounded-md">

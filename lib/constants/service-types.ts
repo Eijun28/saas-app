@@ -33,12 +33,13 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     label: 'Traiteur & Pâtisserie',
     icon: UtensilsCrossed,
     services: [
-      { value: 'traiteur', label: 'Traiteur', icon: UtensilsCrossed },
+      { value: 'traiteur', label: 'Traiteur (repas assis)', icon: UtensilsCrossed },
+      { value: 'event_station', label: 'Event Station / Cocktail dînatoire', icon: UtensilsCrossed },
       { value: 'patissier', label: 'Pâtissier (Wedding cake)', icon: Cake },
       { value: 'barman_cocktails', label: 'Barman / Bar à cocktails', icon: Wine },
       { value: 'food_truck', label: 'Food truck', icon: UtensilsCrossed },
-      { value: 'candy_bar', label: 'Candy bar / Fontaine chocolat / Barbe à papa', icon: Cake },
-      { value: 'glacier', label: 'Glacier artisanal', icon: IceCreamCone },
+      { value: 'candy_bar', label: 'Candy bar / Sweet table / Fontaine chocolat', icon: Cake },
+      { value: 'glacier', label: 'Glacier artisanal / Bar à glaces', icon: IceCreamCone },
     ],
   },
   {
@@ -64,8 +65,9 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     icon: Scissors,
     services: [
       { value: 'coiffure_maquillage', label: 'Coiffeur / Maquilleur', icon: Scissors },
-      { value: 'robe_mariee', label: 'Robe de mariée / Costume', icon: Shirt },
-      { value: 'bijoutier', label: 'Bijoutier', icon: Gem },
+      { value: 'robe_mariee', label: 'Robe de mariée / Costume marié', icon: Shirt },
+      { value: 'bijoutier', label: 'Bijoutier / Alliances & Joaillerie', icon: Gem },
+      { value: 'estheticienne', label: 'Esthéticienne / Soins beauté', icon: Sparkles },
     ],
   },
   {
@@ -73,7 +75,8 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     label: 'Décoration & Fleurs',
     icon: Flower2,
     services: [
-      { value: 'fleuriste', label: 'Décorateur / Fleuriste', icon: Flower2 },
+      { value: 'fleuriste', label: 'Fleuriste / Décoration florale', icon: Flower2 },
+      { value: 'decorateur_mariage', label: 'Décorateur de mariage', icon: Palette },
     ],
   },
   {
@@ -210,11 +213,12 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     label: 'Services',
     icon: ClipboardList,
     services: [
-      { value: 'wedding_planner', label: 'Wedding Planner', icon: ClipboardList },
-      { value: 'faire_part', label: 'Faire-part / Papeterie', icon: FileText },
-      { value: 'officiant', label: 'Officiant de cérémonie', icon: Scroll },
+      { value: 'wedding_planner', label: 'Wedding Planner / Coordinateur', icon: ClipboardList },
+      { value: 'faire_part', label: 'Faire-part / Papeterie de mariage', icon: FileText },
+      { value: 'officiant', label: 'Officiant de cérémonie laïque', icon: Scroll },
       { value: 'coach_ouverture_bal', label: 'Coach ouverture de bal', icon: Heart },
       { value: 'voiturier', label: 'Voiturier / Service parking', icon: Car },
+      { value: 'animateur_enfants', label: 'Animateur enfants / Baby-sitting', icon: Sparkles },
       { value: 'autre', label: 'Autre', icon: Sparkle },
     ],
   },

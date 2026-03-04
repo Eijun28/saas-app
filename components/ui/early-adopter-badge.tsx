@@ -26,7 +26,7 @@ export function EarlyAdopterBadge({
 
   return (
     <div className={cn(
-      'inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold',
+      'inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#823F91] to-pink-600 text-white font-semibold',
       sizeClasses[size],
       className
     )}>

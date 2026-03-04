@@ -1,7 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isAdminEmail } from '@/lib/config/admin'
 import { logger } from '@/lib/logger'
+import { adminSetupLimiter, getClientIp } from '@/lib/rate-limit'
+
+function safeCompareSecrets(a: string, b: string): boolean {
+  // Constant-time comparison to prevent timing attacks
+  if (a.length !== b.length) return false
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -12,14 +20,23 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
  *
  * Sécurisé par SUPABASE_SERVICE_ROLE_KEY en tant que secret.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 3 requests per IP per hour
+    const ip = getClientIp(request)
+    if (!adminSetupLimiter.check(ip)) {
+      return NextResponse.json(
+        { error: 'Trop de tentatives. Réessayez dans une heure.' },
+        { status: 429, headers: { 'Retry-After': '3600' } }
+      )
+    }
+
     const body = await request.json()
     const { email, secret } = body
 
     // Vérifier le secret (on utilise le service role key comme secret partagé)
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!secret || !serviceRoleKey || secret !== serviceRoleKey) {
+    if (!secret || !serviceRoleKey || !safeCompareSecrets(secret, serviceRoleKey)) {
       return NextResponse.json(
         { error: 'Secret invalide' },
         { status: 403 }

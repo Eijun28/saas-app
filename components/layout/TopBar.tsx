@@ -392,7 +392,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                           <div className={`mt-1 ${
                             notif.type === 'message' ? 'text-blue-500' :
                             notif.type === 'budget' ? 'text-green-500' :
-                            'text-purple-500'
+                            'text-[#823F91]'
                           }`}>
                             {getNotificationIcon(notif.type)}
                           </div>

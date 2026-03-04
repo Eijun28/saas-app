@@ -363,7 +363,7 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
 
       {/* Save button */}
       {hasChanges && (
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
@@ -381,6 +381,7 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
               setAppointmentOnly(initialData?.boutique_appointment_only || false)
             }}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -388,7 +389,7 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="w-full sm:flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

@@ -462,7 +462,7 @@ export default function MatchingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-white to-[#F5F0F7]">
       <AnimatePresence mode="wait">
         {vue === 'landing' && (
           <LandingView 
@@ -860,7 +860,7 @@ function ChatView({
                 <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 max-h-[400px] overflow-y-auto z-[201]">
+            <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-h-[400px] overflow-y-auto z-[201]">
               <div className="px-2 py-1.5 text-sm font-semibold text-gray-900">
                 Recherches sauvegardées
               </div>
@@ -964,7 +964,7 @@ function ChatView({
                 >
                   {/* Avatar bot - Image de l'assistant IA */}
                   {message.role === 'bot' && (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E8D4EF] flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {!botAvatarError ? (
                         <img
                           src="/images/ai-assistant-avatar-3d.png"
@@ -1036,7 +1036,7 @@ function ChatView({
                   className="flex gap-2 sm:gap-3 items-start"
                 >
                   {/* Avatar IA animé (#1) — pulse pendant le chargement */}
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-[#823F91]/50 ring-offset-1 animate-pulse">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E8D4EF] flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-[#823F91]/50 ring-offset-1 animate-pulse">
                     {!botAvatarError ? (
                       <img
                         src="/images/ai-assistant-avatar-3d.png"
@@ -1249,7 +1249,7 @@ function ValidationView({
               >
                 <div className="flex flex-wrap gap-2">
                   {criteria.cultures.map((culture, idx) => (
-                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-[#823F91] text-sm font-medium">
+                    <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full bg-[#F5F0F7] text-[#823F91] text-sm font-medium">
                       {culture}
                     </span>
                   ))}
@@ -1391,7 +1391,7 @@ function ResultsView({ matchingResults, onBack, router, onSaveSearch, isSaving, 
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen bg-gradient-to-br from-white to-purple-50"
+      className="min-h-screen bg-gradient-to-br from-white to-[#F5F0F7]"
     >
       {/* Header */}
       <header className="border-b border-gray-200 bg-white p-4">

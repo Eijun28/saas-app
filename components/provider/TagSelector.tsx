@@ -367,7 +367,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
                         'px-2.5 py-1 text-xs rounded-full border transition-colors',
                         isSelected
                           ? 'bg-[#823F91] text-white border-[#823F91]'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#823F91]/50 hover:bg-purple-50'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#823F91]/50 hover:bg-[#F5F0F7]'
                       )}
                     >
                       {tag.label}
@@ -438,12 +438,13 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
 
       {/* Save/Cancel buttons */}
       {hasChanges && (
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -451,7 +452,7 @@ export function TagSelector({ userId, maxTags = 15, onSave }: TagSelectorProps) 
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="w-full sm:flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

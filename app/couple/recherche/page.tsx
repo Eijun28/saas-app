@@ -824,7 +824,7 @@ export default function RecherchePage() {
                           return (
                             <button
                               key={tag.id}
-                              className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
+                              className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-[#E8D4EF]" : ""}`}
                               onClick={() => {
                                 if (isSelected) {
                                   setSelectedTags(prev => prev.filter(id => id !== tag.id))
@@ -910,7 +910,7 @@ export default function RecherchePage() {
                   <Badge
                     key={tagId}
                     variant="secondary"
-                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-purple-100"
+                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-[#E8D4EF]"
                     onClick={() => setSelectedTags(prev => prev.filter(id => id !== tagId))}
                   >
                     <Tag className="h-3 w-3 mr-1" />
@@ -1132,7 +1132,7 @@ export default function RecherchePage() {
                         <Badge
                           key={culture.id}
                           variant="outline"
-                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700"
+                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]"
                         >
                           <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 flex-shrink-0" />
                           <span className="truncate max-w-[70px] sm:max-w-none">{culture.label}</span>

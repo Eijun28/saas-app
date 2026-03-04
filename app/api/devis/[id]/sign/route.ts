@@ -7,7 +7,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { logger } from '@/lib/logger'
 import { sendEmail } from '@/lib/email/resend'
 import { generateEmailTemplate, generateContentBlock, escapeHtml } from '@/lib/email/templates'
-import { createHash } from 'crypto'
+import { createHash, randomInt } from 'crypto'
+import { otpLimiter } from '@/lib/rate-limit'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -16,11 +17,8 @@ function hashOtp(otp: string): string {
 }
 
 function generateOtp(): string {
-  // Génère un code 6 chiffres sécurisé via crypto
-  const array = new Uint32Array(1)
-  // En environnement Node.js, utiliser crypto.getRandomValues via globalThis
-  const code = Math.floor(100000 + (crypto.getRandomValues(array)[0] % 900000))
-  return String(code).padStart(6, '0')
+  // Use Node.js crypto.randomInt for unbiased uniform distribution [100000, 999999]
+  return String(randomInt(100000, 1000000)).padStart(6, '0')
 }
 
 /**
@@ -43,6 +41,14 @@ export async function POST(
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    // Rate limit: 5 OTP requests per 10 minutes per user
+    if (!otpLimiter.check(user.id)) {
+      return NextResponse.json(
+        { error: 'Trop de demandes. Réessayez dans quelques minutes.' },
+        { status: 429, headers: { 'Retry-After': '600' } }
+      )
     }
 
     // Récupérer le couple lié à cet utilisateur

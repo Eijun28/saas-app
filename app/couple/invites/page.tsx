@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { UserPlus, Search, SlidersHorizontal, X } from 'lucide-react'
+import { UserPlus, Search, SlidersHorizontal, X, LayoutGrid, List } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,6 +17,7 @@ import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { GuestStatsCards } from '@/components/guests/GuestStatsCards'
 import { GuestTable } from '@/components/guests/GuestTable'
 import { GuestForm } from '@/components/guests/GuestForm'
+import { GuestSeatingPlan } from '@/components/guests/GuestSeatingPlan'
 import { useUser } from '@/hooks/use-user'
 import type { Guest, GuestStats, GuestSide, GuestCategory, RsvpStatus } from '@/types/guest'
 import { SIDE_LABELS, CATEGORY_LABELS, RSVP_LABELS } from '@/types/guest'
@@ -54,6 +55,9 @@ export default function InvitesPage() {
   const [showAddForm, setShowAddForm]           = useState(false)
   const [filters, setFilters]                   = useState<Filters>(DEFAULT_FILTERS)
   const [filtersOpen, setFiltersOpen]           = useState(false)
+  const [view, setView]                         = useState<'liste' | 'plan'>('liste')
+  const [tableCount, setTableCount]             = useState(3)
+  const tableCountInitialized                   = useRef(false)
 
   // ─── Chargement des données ─────────────────────────────────────────────────
 
@@ -91,6 +95,15 @@ export default function InvitesPage() {
     setLoading(true)
     loadGuests()
   }, [user, loadGuests])
+
+  // Initialise tableCount une fois au premier chargement (depuis le max des tables assignées)
+  useEffect(() => {
+    if (!loading && !tableCountInitialized.current) {
+      tableCountInitialized.current = true
+      const max = Math.max(0, ...guests.map(g => g.table_number ?? 0))
+      setTableCount(Math.max(max, 3))
+    }
+  }, [loading, guests])
 
   // ─── Handlers mutations ─────────────────────────────────────────────────────
 
@@ -137,19 +150,46 @@ export default function InvitesPage() {
     <div className="w-full space-y-6">
 
       {/* En-tête */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <PageTitle
           title="Gestion des invités"
           description={`${stats.total} invité${stats.total > 1 ? 's' : ''} · ${stats.confirmed} confirmé${stats.confirmed > 1 ? 's' : ''} · ${stats.pending} en attente`}
         />
-        <Button
-          onClick={() => setShowAddForm(true)}
-          className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl gap-2 flex-shrink-0"
-        >
-          <UserPlus className="h-4 w-4" />
-          <span className="hidden sm:inline">Ajouter un invité</span>
-          <span className="sm:hidden">Ajouter</span>
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Toggle vue */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setView('liste')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                view === 'liste'
+                  ? 'bg-[#823F91] text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <List className="h-3.5 w-3.5" />
+              Liste
+            </button>
+            <button
+              onClick={() => setView('plan')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                view === 'plan'
+                  ? 'bg-[#823F91] text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Plan de table
+            </button>
+          </div>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="bg-[#823F91] hover:bg-[#6D3478] text-white rounded-xl gap-2"
+          >
+            <UserPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Ajouter un invité</span>
+            <span className="sm:hidden">Ajouter</span>
+          </Button>
+        </div>
       </div>
 
       {/* Statistiques */}
@@ -179,7 +219,7 @@ export default function InvitesPage() {
             variant="outline"
             size="icon"
             onClick={() => setFiltersOpen(p => !p)}
-            className={`h-10 w-10 rounded-xl flex-shrink-0 ${filtersOpen ? 'bg-purple-50 border-purple-200 text-[#823F91]' : ''}`}
+            className={`h-10 w-10 rounded-xl flex-shrink-0 ${filtersOpen ? 'bg-[#F5F0F7] border-[#D4ADE0] text-[#823F91]' : ''}`}
             aria-label="Filtres avancés"
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -258,7 +298,7 @@ export default function InvitesPage() {
         )}
       </motion.div>
 
-      {/* Liste des invités */}
+      {/* Contenu principal */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -270,9 +310,15 @@ export default function InvitesPage() {
               <div key={i} className="h-16 bg-white rounded-2xl border border-gray-100 animate-pulse" />
             ))}
           </div>
+        ) : view === 'plan' ? (
+          <GuestSeatingPlan
+            guests={guests}
+            onUpdated={handleGuestUpdated}
+            tableCount={tableCount}
+            onTableCountChange={setTableCount}
+          />
         ) : (
           <>
-            {/* Compteur résultats filtrés */}
             {hasActiveFilters && (
               <p className="text-sm text-gray-500 mb-3">
                 {guests.length} résultat{guests.length > 1 ? 's' : ''} trouvé{guests.length > 1 ? 's' : ''}
@@ -283,6 +329,7 @@ export default function InvitesPage() {
               onAdded={handleGuestAdded}
               onUpdated={handleGuestUpdated}
               onDeleted={handleGuestDeleted}
+              tableCount={tableCount}
             />
           </>
         )}
@@ -293,6 +340,7 @@ export default function InvitesPage() {
         open={showAddForm}
         onClose={() => setShowAddForm(false)}
         onSaved={handleGuestAdded}
+        tableCount={tableCount}
       />
     </div>
   )

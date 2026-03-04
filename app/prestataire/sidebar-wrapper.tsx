@@ -185,7 +185,7 @@ function SidebarUserFooter() {
                   "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
                 )}
               >
-                <div className="p-[2px] rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex-shrink-0">
+                <div className="p-[2px] rounded-lg bg-gradient-to-br from-[#9D5FA8] to-[#823F91] flex-shrink-0">
                   <Avatar className="h-7 w-7 rounded-md">
                     <AvatarImage
                       src={profile?.avatar ?? undefined}
@@ -368,7 +368,7 @@ export function PrestataireSidebarWrapper() {
                             isActive ? "font-semibold" : "font-medium"
                           )}>{item.label}</span>
                           {badgeCount > 0 && (
-                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(139,92,246,0.5)] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
+                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#823F91] text-white text-[10px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(130,63,145,0.5)] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
                               {badgeCount > 99 ? '99+' : badgeCount}
                             </span>
                           )}

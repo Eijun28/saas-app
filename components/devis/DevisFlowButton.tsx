@@ -132,7 +132,7 @@ export function DevisFlowButton({
         disabled={isDisabled}
         className={
           step === 'consent_approved'
-            ? 'bg-purple-600 hover:bg-purple-700'
+            ? 'bg-[#823F91] hover:bg-[#6D3478]'
             : ''
         }
       >

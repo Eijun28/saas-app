@@ -58,8 +58,8 @@
   --secondary-foreground: var(--beige-900);
   --muted: var(--beige-200);
   --muted-foreground: var(--beige-700);
-  --accent: 320 70% 55%;
-  --accent-foreground: 0 0% 100%;
+  --accent: var(--violet-50);       /* 279 30% 96% — light violet #F5F0F7 */
+  --accent-foreground: var(--violet-600); /* 283 40% 35% — dark violet #6D3478 */
   --destructive: 0 75% 55%;
   --destructive-foreground: 0 0% 100%;
   --border: var(--beige-300);
@@ -162,15 +162,15 @@ button, .button, .btn {
 /* ─── Tab pill — style premium SaaS ──────────────────────────────────────── */
 @layer components {
   .tab-pill {
-    color: hsl(var(--violet-500));
-    background: hsl(0 0% 100%);
+    color: hsl(var(--violet-600)) !important;
+    background: hsl(0 0% 100%) !important;
     font-weight: 500;
     font-size: 0.8125rem;
     transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
   }
   .tab-pill[data-state="active"] {
-    background: linear-gradient(135deg, hsl(var(--violet-500)), hsl(var(--violet-600)));
-    color: hsl(0 0% 100%);
+    background: linear-gradient(135deg, hsl(var(--violet-500)), hsl(var(--violet-600))) !important;
+    color: hsl(0 0% 100%) !important;
     box-shadow: 0 1px 4px hsl(var(--violet-500) / 0.25);
   }
   /* ─── Card section standard ─────────────────────────────────────────────── */
@@ -275,7 +275,7 @@ button, .button, .btn {
 
 /* Fond opaque pour le menu dropdown utilisateur */
 [data-slot="dropdown-menu-content"] {
-  background: linear-gradient(to bottom right, rgb(243 232 255), rgb(250 245 255), rgb(255 255 255)) !important;
+  background: linear-gradient(to bottom right, hsl(var(--violet-100)), hsl(var(--violet-50)), hsl(0 0% 100%)) !important;
   backdrop-filter: none !important;
   color: hsl(var(--foreground)) !important;
 }
@@ -289,7 +289,7 @@ button, .button, .btn {
 
 /* Même fond pour les modals Dialog (comme "Créer un événement") */
 [data-slot="dialog-content"] {
-  background: linear-gradient(to bottom right, rgb(243 232 255), rgb(250 245 255), rgb(255 255 255)) !important;
+  background: linear-gradient(to bottom right, hsl(var(--violet-100)), hsl(var(--violet-50)), hsl(0 0% 100%)) !important;
   backdrop-filter: none !important;
   color: hsl(var(--foreground)) !important;
   position: fixed !important;
@@ -462,69 +462,48 @@ button.border-2[role="combobox"],
   border: none !important;
 }
 
-/* Boutons dans les modals - garder les couleurs d'origine sauf pour les boutons violets */
-[data-slot="dialog-content"] button:not([class*="bg-primary"]):not([class*="gradient-"]) {
+/* Boutons dans les modals - texte sombre sauf pour les boutons violets solides */
+/* Utilise ~= (correspondance de mot exact) au lieu de *= (sous-chaîne) */
+[data-slot="dialog-content"] button:not([class~="bg-primary"]):not([class~="bg-\[#823F91\]"]):not([class~="bg-\[#6D3478\]"]):not([class~="bg-\[#5C2B66\]"]) {
   color: hsl(var(--foreground)) !important;
 }
 
-/* Texte BLANC sur boutons violets/gradient */
-button.gradient-primary,
-button.gradient-purple,
-button[class*="gradient-"],
+/* Texte BLANC sur boutons violets solides uniquement (~= = mot exact, pas sous-chaîne) */
+/* IMPORTANT : *ne correspond PAS* à hover:bg-[#823F91]/8 ou bg-primary/10 */
 button.bg-primary,
-button[class*="bg-primary"],
-button[class*="bg-\[#823F91\]"],
+button[class~="bg-primary"],
+button[class~="bg-\[#823F91\]"],
+button[class~="bg-\[#6D3478\]"],
+button[class~="bg-\[#5C2B66\]"],
 button[style*="background-color: #823F91"],
 button[style*="background-color: rgb(130, 63, 145)"],
-.gradient-primary,
-.gradient-purple,
 .bg-primary,
-[class*="gradient-primary"],
-[class*="gradient-purple"],
-[class*="bg-primary"] {
+[class~="bg-primary"],
+[class~="bg-\[#823F91\]"],
+[class~="bg-\[#6D3478\]"] {
   color: white !important;
 }
 
-/* Texte blanc dans les boutons enfants des conteneurs gradient/primary */
-.gradient-primary button,
-.gradient-purple button,
+/* Texte blanc dans les boutons enfants des conteneurs violet solide */
 .bg-primary button,
-[class*="gradient-primary"] button,
-[class*="gradient-purple"] button,
-[class*="bg-primary"] button {
+[class~="bg-primary"] button,
+[class~="bg-\[#823F91\]"] button,
+[class~="bg-\[#6D3478\]"] button {
   color: white !important;
 }
 
-/* Texte blanc pour tous les éléments enfants des boutons violets */
-button[class*="bg-\[#823F91\]"] *,
-button[class*="bg-primary"] *,
-button.gradient-primary *,
-button.gradient-purple * {
+/* Texte blanc pour les enfants des boutons violets solides */
+button[class~="bg-\[#823F91\]"] *,
+button[class~="bg-\[#6D3478\]"] *,
+button[class~="bg-primary"] * {
   color: white !important;
 }
 
-/* Texte blanc dans les spans des boutons violets */
-button.gradient-primary span,
-button.gradient-purple span,
-button.bg-primary span,
-button[class*="gradient-"] span,
-button[class*="bg-primary"] span,
-button[class*="bg-\[#823F91\]"] span,
-button[class*="bg-\[#823F91\]"] * {
-  color: white !important;
-}
-
-/* Éléments sélectionnés avec background violet/gradient */
-[data-state="checked"].gradient-primary,
-[data-state="checked"].gradient-purple,
-[data-state="checked"][class*="gradient-"],
+/* Éléments sélectionnés avec background violet */
 [data-state="checked"].bg-primary,
-[data-state="checked"][class*="bg-primary"],
-[aria-checked="true"].gradient-primary,
-[aria-checked="true"].gradient-purple,
-[aria-checked="true"][class*="gradient-"],
+[data-state="checked"][class~="bg-primary"],
 [aria-checked="true"].bg-primary,
-[aria-checked="true"][class*="bg-primary"],
+[aria-checked="true"][class~="bg-primary"],
 [data-state="on"],
 [aria-pressed="true"] {
   color: white !important;

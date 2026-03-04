@@ -407,7 +407,7 @@ export function CalendarDashboard({
                 transition={{ delay: index * 0.008 }}
                 className={cn(
                   'border-r border-b border-gray-100 p-1.5 sm:p-2 md:p-2.5',
-                  'hover:bg-purple-50/30 active:bg-purple-50/60 transition-all duration-150 cursor-pointer touch-manipulation',
+                  'hover:bg-[#F5F0F7]/30 active:bg-[#F5F0F7]/60 transition-all duration-150 cursor-pointer touch-manipulation',
                   'flex flex-col items-center sm:items-start justify-start min-h-[52px] sm:min-h-[80px] md:min-h-[90px]',
                   !isCurrentMonth && 'bg-gray-50/30',
                   isCurrentMonth && 'bg-white',
@@ -445,7 +445,7 @@ export function CalendarDashboard({
                         <div key={idx} className="w-1.5 h-1.5 rounded-full bg-[#823F91]" />
                       ))}
                       {dayEvents.length > 3 && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-300" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D4ADE0]" />
                       )}
                     </div>
                     {/* Desktop : pill avec titre */}
@@ -546,7 +546,7 @@ export function CalendarDashboard({
         {/* Conteneur scrollable horizontal + vertical */}
         <div
           ref={weekScrollRef}
-          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100"
+          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-gray-100"
         >
           <div style={{ minWidth: GRID_MIN_WIDTH }}>
 
@@ -565,8 +565,8 @@ export function CalendarDashboard({
                   <div
                     key={index}
                     className={cn(
-                      'text-center py-3 transition-all cursor-pointer touch-manipulation hover:bg-purple-50/40 border-r border-gray-100 last:border-r-0',
-                      isToday && 'bg-purple-50/60',
+                      'text-center py-3 transition-all cursor-pointer touch-manipulation hover:bg-[#F5F0F7]/40 border-r border-gray-100 last:border-r-0',
+                      isToday && 'bg-[#F5F0F7]/60',
                       isPastDay && 'opacity-50'
                     )}
                     onClick={() => {
@@ -590,7 +590,7 @@ export function CalendarDashboard({
                         ? 'bg-[#823F91] text-white shadow-md'
                         : isPastDay
                           ? 'text-gray-400'
-                          : 'text-gray-900 hover:bg-purple-100'
+                          : 'text-gray-900 hover:bg-[#E8D4EF]'
                     )}>
                       {format(day, 'd')}
                     </div>
@@ -628,7 +628,7 @@ export function CalendarDashboard({
                     key={dayIndex}
                     className={cn(
                       'relative border-r border-gray-100 last:border-r-0',
-                      isDayToday && 'bg-purple-50/20',
+                      isDayToday && 'bg-[#F5F0F7]/20',
                       isPastDay && 'opacity-60'
                     )}
                   >
@@ -636,7 +636,7 @@ export function CalendarDashboard({
                       <div
                         key={hour}
                         style={{ height: `${HOUR_HEIGHT}px` }}
-                        className="border-b border-gray-100 hover:bg-purple-50/40 active:bg-purple-50/70 transition-colors cursor-pointer touch-manipulation"
+                        className="border-b border-gray-100 hover:bg-[#F5F0F7]/40 active:bg-[#F5F0F7]/70 transition-colors cursor-pointer touch-manipulation"
                         onClick={() => {
                           const timeString = `${String(hour).padStart(2, '0')}:00`
                           setSelectedDate(normalizeDate(day))
@@ -733,7 +733,7 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* Grille des heures - SCROLLABLE - Sans en-tête */}
-        <div ref={dayScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-gray-100">
+        <div ref={dayScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-gray-100">
           <div className="grid min-h-full" style={{ gridTemplateColumns: '65px 1fr' }}>
             {/* Colonne des heures */}
             <div className="border-r border-gray-100 bg-gray-50/50 sticky left-0 z-10">
@@ -748,11 +748,11 @@ export function CalendarDashboard({
             </div>
 
             {/* Colonne du jour */}
-            <div className="relative bg-gradient-to-b from-white to-purple-50/10">
+            <div className="relative bg-gradient-to-b from-white to-[#F5F0F7]/10">
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] border-b border-gray-100 hover:bg-purple-50/50 active:bg-purple-50 transition-colors cursor-pointer touch-manipulation relative group"
+                  className="h-[72px] border-b border-gray-100 hover:bg-[#F5F0F7]/50 active:bg-[#F5F0F7] transition-colors cursor-pointer touch-manipulation relative group"
                   onClick={() => {
                     const dateToUse = normalizeDate(displayDate)
                     setSelectedDate(dateToUse)
@@ -866,7 +866,7 @@ export function CalendarDashboard({
             <div key={dateStr}>
               <div className={cn(
                 "flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2.5 xs:py-3 mb-2 xs:mb-3 rounded-lg sticky top-0 bg-white border-b border-gray-100 z-10",
-                isTodayDate && "bg-purple-50/50",
+                isTodayDate && "bg-[#F5F0F7]/50",
                 isPastDate && "opacity-50"
               )}>
                 <div className={cn(
@@ -900,7 +900,7 @@ export function CalendarDashboard({
                 {eventsForDate.map((event) => (
                   <div
                     key={event.id}
-                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-purple-50/50 cursor-pointer transition-all touch-manipulation min-h-[52px]"
+                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-[#F5F0F7]/50 cursor-pointer transition-all touch-manipulation min-h-[52px]"
                     onClick={() => handleEventClick(event)}
                   >
                     {event.time && (
@@ -948,7 +948,7 @@ export function CalendarDashboard({
             {/* Flèches de navigation mobile */}
             <button
               onClick={previousPeriod}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -957,13 +957,13 @@ export function CalendarDashboard({
             </h2>
             <button
               onClick={nextPeriod}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
             <button
               onClick={goToToday}
-              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-xs font-semibold text-[#823F91] hover:bg-purple-50 active:scale-95 transition-all touch-manipulation"
+              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-xs font-semibold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation"
             >
               Auj.
             </button>
@@ -975,7 +975,7 @@ export function CalendarDashboard({
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-purple-50 rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <Plus className="h-5 w-5" />
             </button>
@@ -999,7 +999,7 @@ export function CalendarDashboard({
                     'flex-1 py-2.5 rounded-md text-xs font-semibold transition-all active:scale-95 touch-manipulation min-h-[40px]',
                     viewMode === viewType
                       ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-sm'
-                      : 'text-[#823F91] hover:bg-purple-50'
+                      : 'text-[#823F91] hover:bg-[#F5F0F7]'
                   )}
                 >
                   {labels[viewType]}
@@ -1026,7 +1026,7 @@ export function CalendarDashboard({
                 variant="ghost"
                 size="icon"
                 onClick={previousPeriod}
-                className="h-8 w-8 text-[#823F91] hover:bg-purple-50"
+                className="h-8 w-8 text-[#823F91] hover:bg-[#F5F0F7]"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -1039,13 +1039,13 @@ export function CalendarDashboard({
                 variant="ghost"
                 size="icon"
                 onClick={nextPeriod}
-                className="h-8 w-8 text-[#823F91] hover:bg-purple-50"
+                className="h-8 w-8 text-[#823F91] hover:bg-[#F5F0F7]"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
               <button
                 onClick={goToToday}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-purple-50 ml-1"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-[#823F91] hover:bg-[#F5F0F7] ml-1"
               >
                 Aujourd'hui
               </button>
@@ -1069,7 +1069,7 @@ export function CalendarDashboard({
                       'px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all',
                       viewMode === viewType
                         ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-md'
-                        : 'text-[#823F91] hover:bg-purple-50'
+                        : 'text-[#823F91] hover:bg-[#F5F0F7]'
                     )}
                   >
                     {labels[viewType]}
@@ -1402,10 +1402,10 @@ export function CalendarDashboard({
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: idx * 0.1 }}
-                    className="p-2.5 xs:p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg xs:rounded-xl border border-purple-200 hover:shadow-md transition-shadow"
+                    className="p-2.5 xs:p-3 sm:p-4 bg-gradient-to-r from-[#F5F0F7] to-pink-50 rounded-lg xs:rounded-xl border border-[#D4ADE0] hover:shadow-md transition-shadow"
                   >
                     <div className="text-sm xs:text-base font-semibold text-gray-900">{event.title}</div>
-                    <div className="text-xs xs:text-sm text-purple-600 mt-0.5 xs:mt-1">
+                    <div className="text-xs xs:text-sm text-[#823F91] mt-0.5 xs:mt-1">
                       {format(new Date(event.date), 'HH:mm')}
                     </div>
                     {event.description && (

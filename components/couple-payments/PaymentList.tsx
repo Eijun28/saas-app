@@ -80,7 +80,7 @@ export function PaymentList({ payments, onUpdated, onDeleted }: PaymentListProps
   if (payments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="h-14 w-14 rounded-2xl bg-purple-50 flex items-center justify-center mb-3">
+        <div className="h-14 w-14 rounded-2xl bg-[#F5F0F7] flex items-center justify-center mb-3">
           <CreditCard className="h-7 w-7 text-[#823F91]/50" />
         </div>
         <p className="text-gray-500 font-medium">Aucun paiement enregistré</p>
