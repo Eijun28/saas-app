@@ -7,15 +7,18 @@ import { Calendar, MessageSquare, Check, X, ArrowRight } from 'lucide-react'
 import type { Demande } from '@/lib/types/prestataire'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { TagPills } from './RequestTags'
+import type { RequestTag } from './RequestTags'
 
 interface DemandeCardProps {
   demande: Demande
   onAccept?: (id: string) => void
   onReject?: (id: string) => void
   conversationId?: string | null
+  tags?: RequestTag[]
 }
 
-export function DemandeCard({ demande, onAccept, onReject, conversationId }: DemandeCardProps) {
+export function DemandeCard({ demande, onAccept, onReject, conversationId, tags = [] }: DemandeCardProps) {
   const router = useRouter()
 
   const getStatusBadge = (statut: Demande['statut']) => {
@@ -76,6 +79,13 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId }: Dem
               {formatDate(demande.created_at)}
             </span>
           </div>
+
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div className="mb-2">
+              <TagPills tags={tags} />
+            </div>
+          )}
 
           {/* Message */}
           {demande.message && (
