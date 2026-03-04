@@ -35,6 +35,9 @@ interface RequestWithCouple {
   initial_message: string
   created_at: string
   couple?: { partner_1_name?: string; partner_2_name?: string; wedding_date?: string } | null
+  budget_min?: number
+  budget_max?: number
+  city?: string
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -69,15 +72,14 @@ export default function DemandesRecuesPage() {
       const n2 = req.couple?.partner_2_name?.trim() || ''
       const coupleNom = n1 && n2 ? `${n1} & ${n2}` : n1 || n2 || 'Couple'
 
-      const coupleData = couplesMap.get(req.couple_id)
       const d: Demande = {
         id: req.id,
         couple_id: req.couple_id,
         couple_nom: coupleNom,
         date_evenement: req.couple?.wedding_date || '',
-        budget_min: (coupleData as any)?.budget_min ?? 0,
-        budget_max: (coupleData as any)?.budget_max ?? 0,
-        lieu: (coupleData as any)?.city ?? '',
+        budget_min: req.budget_min ?? 0,
+        budget_max: req.budget_max ?? 0,
+        lieu: req.city ?? '',
         statut: req.status === 'pending' ? 'nouvelle'
           : req.status === 'accepted' ? 'en_cours'
           : req.status === 'completed' ? 'terminee'
@@ -132,6 +134,9 @@ export default function DemandesRecuesPage() {
         status: r.status, initial_message: r.initial_message || '',
         created_at: r.created_at,
         couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined } : null,
+        budget_min: (c as any)?.budget_min ?? 0,
+        budget_max: (c as any)?.budget_max ?? 0,
+        city: (c as any)?.city ?? '',
       }
     })
 
