@@ -59,7 +59,6 @@ interface Provider {
   tags: ProviderTag[]
   completionPercentage?: number
   hasSiret?: boolean
-  languages?: string[]
   avgRating?: number
   reviewCount?: number
 }
