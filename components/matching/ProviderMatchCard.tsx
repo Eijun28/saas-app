@@ -217,6 +217,16 @@ export default function ProviderMatchCard({
               </p>
             </div>
           )}
+
+          {/* Langues */}
+          {provider.languages && provider.languages.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Langues</p>
+              <p className="text-sm font-medium text-gray-900 capitalize">
+                {provider.languages.join(', ')}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Explication IA */}

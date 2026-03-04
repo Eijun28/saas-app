@@ -53,6 +53,7 @@ interface Provider {
   website_url?: string | null
   linkedin_url?: string | null
   tiktok_url?: string | null
+  languages?: string[] | null
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
   tags: ProviderTag[]
@@ -209,7 +210,8 @@ export default function RecherchePage() {
           description_courte,
           budget_min,
           budget_max,
-          service_type
+          service_type,
+          languages
         `)
         .eq('role', 'prestataire')
 
@@ -506,7 +508,7 @@ export default function RecherchePage() {
           linkedin_url: fullProfileData.linkedin_url || null,
           tiktok_url: fullProfileData.tiktok_url || null,
           hasSiret: !!fullProfileData.siret,
-          languages: (fullProfileData as unknown as { languages?: string[] }).languages || [],
+          languages: fullProfileData.languages || null,
         } as Provider)
       }
     } catch (error) {
@@ -1213,6 +1215,7 @@ export default function RecherchePage() {
               website_url: selectedProvider.website_url || null,
               linkedin_url: selectedProvider.linkedin_url || null,
               tiktok_url: selectedProvider.tiktok_url || null,
+              languages: selectedProvider.languages || undefined,
             }}
             cultures={selectedProvider.cultures}
             zones={selectedProvider.zones}

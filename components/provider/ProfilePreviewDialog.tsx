@@ -42,6 +42,7 @@ interface ProfilePreviewDialogProps {
     linkedin_url?: string | null
     tiktok_url?: string | null
     pricing_unit?: string
+    languages?: string[]
   }
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
@@ -481,6 +482,23 @@ export function ProfilePreviewDialog({
                     </div>
                   )}
 
+                  {/* Langues */}
+                  {profile.languages && profile.languages.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Langues parlées</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {profile.languages.map((lang) => (
+                          <span
+                            key={lang}
+                            className="inline-flex items-center text-xs font-medium py-1 px-2.5 rounded-full bg-gray-100 text-gray-700 capitalize"
+                          >
+                            {lang}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Avis */}
                   <div className="pt-1 border-t border-gray-100">
                     <SectionLabel icon={Star}>Avis clients</SectionLabel>
@@ -488,7 +506,7 @@ export function ProfilePreviewDialog({
                   </div>
 
                   {/* Empty state */}
-                  {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && languages.length === 0 && (
+                  {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (!profile.languages || profile.languages.length === 0) && (
                     <div className="text-center py-10 text-gray-400 text-sm">
                       {isCoupleView
                         ? 'Ce prestataire n\'a pas encore complété son profil'
