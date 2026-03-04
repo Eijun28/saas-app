@@ -1,3 +1,5 @@
+'use client'
+
 import dynamic from 'next/dynamic'
 import Hero from '@/components/landing/Hero'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
