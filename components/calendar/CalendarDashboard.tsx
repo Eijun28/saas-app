@@ -983,7 +983,7 @@ export function CalendarDashboard({
         {/* Header */}
         <div className="flex-shrink-0 flex flex-col gap-2.5 sm:gap-0 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 bg-white border-b border-gray-200">
           {/* Mobile: Navigation compacte */}
-          <div className="flex items-center justify-between sm:hidden gap-1">
+          <div className="flex items-center justify-between sm:hidden">
             {showSidebar && (
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -992,25 +992,24 @@ export function CalendarDashboard({
                 {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             )}
-            {/* Flèches de navigation mobile */}
             <button
               onClick={previousPeriod}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-sm font-semibold bg-gradient-to-r from-[#823F91] to-[#9D5FA8] bg-clip-text text-transparent flex-1 text-center px-1 line-clamp-1">
+            <h2 className="text-xs font-bold text-[#823F91] flex-1 text-center px-1 truncate">
               {getPeriodTitle()}
             </h2>
             <button
               onClick={nextPeriod}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
             <button
               onClick={goToToday}
-              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-xs font-semibold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation"
+              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-[10px] font-bold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation"
             >
               Auj.
             </button>
@@ -1022,14 +1021,14 @@ export function CalendarDashboard({
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
-              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center bg-[#823F91] text-white rounded-lg active:scale-95 touch-manipulation shadow-sm"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
             </button>
           </div>
 
           {/* Mobile: Sélecteur de vue */}
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1 sm:hidden">
+          <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5 sm:hidden">
             {(['month', 'week', 'day', 'agenda'] as const).map((viewType) => {
               const labels = {
                 month: 'Mois',
@@ -1043,10 +1042,10 @@ export function CalendarDashboard({
                   key={viewType}
                   onClick={() => setViewMode(viewType)}
                   className={cn(
-                    'flex-1 py-2.5 rounded-md text-xs font-semibold transition-all active:scale-95 touch-manipulation min-h-[40px]',
+                    'flex-1 py-2 rounded-md text-[11px] font-bold transition-all active:scale-95 touch-manipulation min-h-[36px]',
                     viewMode === viewType
-                      ? 'bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white shadow-sm'
-                      : 'text-[#823F91] hover:bg-[#F5F0F7]'
+                      ? 'bg-[#823F91] text-white shadow-sm'
+                      : 'text-gray-600 hover:bg-white/60'
                   )}
                 >
                   {labels[viewType]}

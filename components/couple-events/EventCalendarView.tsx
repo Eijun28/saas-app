@@ -66,11 +66,11 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
       className="rounded-xl border border-gray-200 bg-white overflow-hidden"
     >
       {/* Navigation header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 bg-gray-50/50">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-9 w-9 sm:h-7 sm:w-7 touch-manipulation"
           onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -79,7 +79,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-9 w-9 sm:h-7 sm:w-7 touch-manipulation"
           onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
         >
           <ChevronRight className="h-4 w-4" />
@@ -87,11 +87,11 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
       </div>
 
       {/* Day-of-week labels */}
-      <div className="grid grid-cols-7 border-b border-gray-100">
+      <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/30">
         {DAY_LABELS.map(day => (
           <div
             key={day}
-            className="py-2.5 sm:py-3 text-center text-[11px] font-medium text-gray-400 uppercase tracking-wide"
+            className="py-2 sm:py-2.5 text-center text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider"
           >
             {day}
           </div>
@@ -109,9 +109,9 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
             <div
               key={idx}
               className={cn(
-                'min-h-[90px] sm:min-h-[100px] p-2 sm:p-2.5',
-                !isLastCol && 'border-r border-gray-50',
-                !isLastRow && 'border-b border-gray-50',
+                'min-h-[70px] sm:min-h-[90px] md:min-h-[100px] p-1 sm:p-2',
+                !isLastCol && 'border-r border-gray-100',
+                !isLastRow && 'border-b border-gray-100',
                 !day && 'bg-gray-50/40',
               )}
             >
@@ -119,7 +119,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
                 <>
                   <div
                     className={cn(
-                      'h-7 w-7 rounded-full flex items-center justify-center text-xs mb-1.5 mx-auto',
+                      'h-6 w-6 sm:h-7 sm:w-7 rounded-full flex items-center justify-center text-[11px] sm:text-xs mb-1 mx-auto',
                       isToday(day)
                         ? 'bg-[#823F91] text-white font-semibold'
                         : dayEvents.length > 0
@@ -130,31 +130,57 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
                     {day}
                   </div>
 
-                  <div className="space-y-1">
-                    {dayEvents.slice(0, 2).map(event => {
-                      const catEmoji   = event.category ? EVENT_CATEGORY_CONFIG[event.category]?.emoji : null
-                      const statusConf = event.status   ? EVENT_STATUS_CONFIG[event.status]             : null
-                      return (
-                        <button
-                          key={event.id}
-                          onClick={() => onEventClick(event)}
-                          title={event.title}
-                          className={cn(
-                            'w-full text-left text-[10px] leading-snug px-2 py-1 rounded truncate font-medium transition-colors',
-                            statusConf?.bgColor ?? 'bg-[#823F91]/10',
-                            statusConf?.color   ?? 'text-[#823F91]',
-                            'hover:opacity-80',
-                          )}
-                        >
-                          {catEmoji ? `${catEmoji} ` : ''}{event.title}
-                        </button>
-                      )
-                    })}
-                    {dayEvents.length > 2 && (
-                      <p className="text-[10px] text-gray-400 pl-1.5">
-                        +{dayEvents.length - 2} autre{dayEvents.length - 2 > 1 ? 's' : ''}
-                      </p>
+                  {/* Mobile: dots, Desktop: pills */}
+                  <div className="space-y-0.5 sm:space-y-1">
+                    {/* Mobile dots */}
+                    {dayEvents.length > 0 && (
+                      <div className="flex gap-0.5 justify-center sm:hidden">
+                        {dayEvents.slice(0, 3).map((event, i) => {
+                          const statusConf = event.status ? EVENT_STATUS_CONFIG[event.status] : null
+                          return (
+                            <div
+                              key={i}
+                              className={cn(
+                                'w-1.5 h-1.5 rounded-full',
+                                statusConf?.color ? 'bg-current' : 'bg-[#823F91]',
+                              )}
+                              style={statusConf?.color ? { color: statusConf.color.replace('text-', '') } : undefined}
+                              onClick={() => onEventClick(dayEvents[i])}
+                            />
+                          )
+                        })}
+                        {dayEvents.length > 3 && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        )}
+                      </div>
                     )}
+                    {/* Desktop pills */}
+                    <div className="hidden sm:block space-y-0.5">
+                      {dayEvents.slice(0, 2).map(event => {
+                        const catEmoji   = event.category ? EVENT_CATEGORY_CONFIG[event.category]?.emoji : null
+                        const statusConf = event.status   ? EVENT_STATUS_CONFIG[event.status]             : null
+                        return (
+                          <button
+                            key={event.id}
+                            onClick={() => onEventClick(event)}
+                            title={event.title}
+                            className={cn(
+                              'w-full text-left text-[10px] leading-snug px-1.5 py-0.5 rounded truncate font-medium transition-colors',
+                              statusConf?.bgColor ?? 'bg-[#823F91]/10',
+                              statusConf?.color   ?? 'text-[#823F91]',
+                              'hover:opacity-80',
+                            )}
+                          >
+                            {catEmoji ? `${catEmoji} ` : ''}{event.title}
+                          </button>
+                        )
+                      })}
+                      {dayEvents.length > 2 && (
+                        <p className="text-[9px] text-gray-400 pl-1">
+                          +{dayEvents.length - 2}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </>
               )}
