@@ -171,7 +171,7 @@ export default function DevisFacturesPage() {
         .limit(50)
 
       if (devisData && devisData.length > 0) {
-        const coupleIds = [...new Set(devisData.map(d => d.couple_id).filter(Boolean))]
+        const coupleIds = [...new Set(devisData.map(d => d.couple_id).filter((id): id is string => !!id))]
 
         const { data: couplesData } = await supabase
           .from('couples')

@@ -429,7 +429,7 @@ export default function BudgetPage() {
                         ))}
                       </Pie>
                       <RechartsTooltip
-                        content={({ active, payload }) => {
+                        content={({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number } }> }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload
                             const percentage = ((data.value / totalSpent) * 100).toFixed(1)

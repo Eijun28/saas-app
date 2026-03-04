@@ -646,7 +646,7 @@ export default function DemandesPage() {
                       {categoryDemandes.map((r, index) => {
                         const provider = providerById.get(r.provider_id) || (r as any).prestataire
                         const name = getProviderDisplayName(provider)
-                        const status = STATUS_CONFIG[r.status]
+                        const status = STATUS_CONFIG[r.status as RequestStatus]
                         const StatusIcon = status.icon
 
                         return (

@@ -20,7 +20,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { EventForm } from '@/components/couple-events/EventForm'
 import { cn } from '@/lib/utils'
-import type { TimelineEvent, TimelineEventFormData } from '@/types/cultural-events.types'
+import type { TimelineEvent, TimelineEventFormData, EventCategory, CoupleEventStatus } from '@/types/cultural-events.types'
 import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG } from '@/types/cultural-events.types'
 
 function formatDate(dateStr: string | null): string {
@@ -163,8 +163,8 @@ export default function EventDetailPage() {
     )
   }
 
-  const categoryConfig = event.category ? EVENT_CATEGORY_CONFIG[event.category] : null
-  const statusConfig   = event.status   ? EVENT_STATUS_CONFIG[event.status]     : null
+  const categoryConfig = event.category ? EVENT_CATEGORY_CONFIG[event.category as EventCategory] : null
+  const statusConfig   = event.status   ? EVENT_STATUS_CONFIG[event.status as CoupleEventStatus]  : null
   const daysInfo       = getDaysInfo(event.event_date)
   const timeLabel      =
     event.start_time
