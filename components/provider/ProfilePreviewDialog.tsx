@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, Image, ShieldCheck, Star, Check } from 'lucide-react'
+import { Eye, X, MapPin, Euro, Briefcase, MessageCircle, Camera, Sparkles, Instagram, Facebook, Globe, Linkedin, Music2, ExternalLink, Send, FileText, Heart, ChevronRight, User, Play, ShieldCheck, Star, Check, Languages } from 'lucide-react'
 import { ReviewsList } from '@/components/reviews/ReviewsList'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,7 +10,6 @@ import {
   DialogClose,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -47,6 +46,7 @@ interface ProfilePreviewDialogProps {
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
   portfolio: Array<{ id: string; image_url: string; title?: string; file_type?: 'image' | 'pdf' | 'video' }>
+  languages?: string[]
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTriggerButton?: boolean
@@ -63,6 +63,7 @@ export function ProfilePreviewDialog({
   cultures,
   zones,
   portfolio,
+  languages = [],
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   showTriggerButton = true,
@@ -248,12 +249,12 @@ export function ProfilePreviewDialog({
   }
 
   const socialLinks = [
-    profile.instagram_url && { icon: Instagram, url: profile.instagram_url, label: 'Instagram' },
-    profile.facebook_url && { icon: Facebook, url: profile.facebook_url, label: 'Facebook' },
-    profile.website_url && { icon: Globe, url: profile.website_url, label: 'Site web' },
-    profile.linkedin_url && { icon: Linkedin, url: profile.linkedin_url, label: 'LinkedIn' },
-    profile.tiktok_url && { icon: Music2, url: profile.tiktok_url, label: 'TikTok' },
-  ].filter(Boolean) as Array<{ icon: React.ElementType; url: string; label: string }>
+    profile.instagram_url && { icon: Instagram, url: profile.instagram_url, label: 'Instagram', color: 'text-pink-500' },
+    profile.facebook_url && { icon: Facebook, url: profile.facebook_url, label: 'Facebook', color: 'text-blue-600' },
+    profile.website_url && { icon: Globe, url: profile.website_url, label: 'Site web', color: 'text-gray-600' },
+    profile.linkedin_url && { icon: Linkedin, url: profile.linkedin_url, label: 'LinkedIn', color: 'text-blue-700' },
+    profile.tiktok_url && { icon: Music2, url: profile.tiktok_url, label: 'TikTok', color: 'text-gray-800' },
+  ].filter(Boolean) as Array<{ icon: React.ElementType; url: string; label: string; color: string }>
 
   const hasSocialLinks = socialLinks.length > 0
   const budgetDisplay = getBudgetDisplay()
@@ -274,76 +275,77 @@ export function ProfilePreviewDialog({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="p-0 gap-0 border border-gray-200 shadow-xl flex flex-col overflow-hidden rounded-2xl max-h-[88vh] bg-white"
+          className="p-0 gap-0 border border-gray-200 shadow-2xl flex flex-col overflow-hidden rounded-2xl max-h-[90vh] bg-white"
           showCloseButton={false}
         >
           <DialogTitle className="sr-only">
             Aperçu du profil — {profile.nom_entreprise}
           </DialogTitle>
 
-          {/* HEADER */}
-          <div className="flex items-start gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
-            <Avatar className="h-14 w-14 shrink-0 ring-1 ring-gray-200">
-              <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
-              <AvatarFallback className="text-base font-semibold bg-gray-100 text-gray-600">
-                {getInitials(profile.nom_entreprise)}
-              </AvatarFallback>
-            </Avatar>
+          {/* HEADER avec fond dégradé subtil */}
+          <div className="relative shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#823F91]/6 via-transparent to-transparent rounded-t-2xl" />
+            <div className="relative flex items-start gap-4 px-5 pt-5 pb-4 border-b border-gray-100">
+              <div className="relative shrink-0">
+                <Avatar className="h-16 w-16 ring-2 ring-white shadow-md">
+                  <AvatarImage src={avatarUrl || undefined} alt={profile.nom_entreprise} />
+                  <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-[#823F91]/15 to-[#823F91]/5 text-[#823F91]">
+                    {getInitials(profile.nom_entreprise)}
+                  </AvatarFallback>
+                </Avatar>
+                {(hasSiret || profile.is_early_adopter) && (
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#823F91] flex items-center justify-center shadow-sm ring-2 ring-white">
+                    {hasSiret
+                      ? <ShieldCheck className="h-3 w-3 text-white" />
+                      : <Sparkles className="h-3 w-3 text-white" />
+                    }
+                  </div>
+                )}
+              </div>
 
-            <div className="flex-1 min-w-0 pt-0.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-semibold text-gray-900 truncate">
-                  {profile.nom_entreprise}
-                </h2>
-                {hasSiret && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#823F91] bg-[#823F91]/8 px-2 py-0.5 rounded-full">
-                    <ShieldCheck className="h-3 w-3" />
-                    Vérifié
-                  </span>
-                )}
-                {profile.is_early_adopter && !hasSiret && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#823F91] bg-[#823F91]/8 px-2 py-0.5 rounded-full">
-                    <Sparkles className="h-3 w-3" />
-                    Early Adopter
-                  </span>
-                )}
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex items-start gap-2 flex-wrap">
+                  <h2 className="text-base font-bold text-gray-900 leading-tight">
+                    {profile.nom_entreprise}
+                  </h2>
+                </div>
+                <p className="text-sm text-[#823F91] font-medium mt-0.5">{profile.service_type}</p>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {profile.ville_principale && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin className="h-3 w-3 text-gray-400" />
+                      {profile.ville_principale}
+                    </span>
+                  )}
+                  {profile.annees_experience && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500">
+                      <Briefcase className="h-3 w-3 text-gray-400" />
+                      {profile.annees_experience} ans d'exp.
+                    </span>
+                  )}
+                  {budgetDisplay && (
+                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                      <Euro className="h-3 w-3" />
+                      {budgetDisplay}
+                      {profile.pricing_unit && (
+                        <span className="font-normal text-gray-400">{getPricingUnitLabel(profile.pricing_unit)}</span>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
-              <p className="text-sm text-gray-500 mt-0.5">{profile.service_type}</p>
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                {profile.ville_principale && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
-                    <MapPin className="h-3 w-3" />
-                    {profile.ville_principale}
-                  </span>
-                )}
-                {profile.annees_experience && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
-                    <Briefcase className="h-3 w-3" />
-                    {profile.annees_experience} ans d'expérience
-                  </span>
-                )}
-                {budgetDisplay && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
-                    <Euro className="h-3 w-3" />
-                    {budgetDisplay}
-                    {profile.pricing_unit && (
-                      <span>{getPricingUnitLabel(profile.pricing_unit)}</span>
-                    )}
-                  </span>
-                )}
-              </div>
+
+              <DialogClose asChild>
+                <button className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors mt-0.5">
+                  <X className="h-4 w-4" />
+                </button>
+              </DialogClose>
             </div>
-
-            <DialogClose asChild>
-              <button className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
-            </DialogClose>
           </div>
 
           {/* TABS */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex border-b border-gray-100 px-5">
+            <div className="flex border-b border-gray-100 px-5 shrink-0 bg-white">
               {[
                 { id: 'about', label: 'À propos', icon: User },
                 { id: 'portfolio', label: 'Portfolio', icon: Camera },
@@ -353,10 +355,10 @@ export function ProfilePreviewDialog({
                   key={id}
                   onClick={() => setActiveTab(id)}
                   className={cn(
-                    'flex items-center gap-1.5 px-1 py-3 mr-5 text-sm font-medium border-b-2 -mb-px transition-colors',
+                    'flex items-center gap-1.5 px-1 py-3 mr-5 text-sm font-medium border-b-2 -mb-px transition-all',
                     activeTab === id
                       ? 'border-[#823F91] text-[#823F91]'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      : 'border-transparent text-gray-400 hover:text-gray-600'
                   )}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -365,26 +367,32 @@ export function ProfilePreviewDialog({
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            {/* Contenu scrollable — scrollbar masquée */}
+            <div
+              className="flex-1 overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {/* TAB: À PROPOS */}
               {activeTab === 'about' && (
                 <div className="p-5 space-y-5">
                   {/* Description courte */}
                   {profile.description_courte && (
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {profile.description_courte}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {profile.description_courte}
+                      </p>
                       {(profile.prenom || profile.nom) && (
-                        <span className="block mt-1.5 text-sm text-gray-400">
+                        <p className="mt-2 text-xs text-gray-400 font-medium">
                           — {profile.prenom} {profile.nom}
-                        </span>
+                        </p>
                       )}
-                    </p>
+                    </div>
                   )}
 
                   {/* Bio */}
                   {profile.bio && (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Présentation</p>
+                      <SectionLabel>Présentation</SectionLabel>
                       <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                         {profile.bio}
                       </p>
@@ -394,8 +402,8 @@ export function ProfilePreviewDialog({
                   {/* Détails métier */}
                   {serviceTypeValue && hasServiceFields(serviceTypeValue) && Object.keys(serviceDetails).length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Détails métier</p>
-                      <div className="space-y-2">
+                      <SectionLabel>Détails métier</SectionLabel>
+                      <div className="bg-gray-50 rounded-xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
                         {getServiceFieldGroups(serviceTypeValue).map((group, gIdx) => {
                           const filledFields = group.fields.filter(f => {
                             const val = serviceDetails[f.key]
@@ -405,7 +413,7 @@ export function ProfilePreviewDialog({
                           })
                           if (filledFields.length === 0) return null
                           return (
-                            <div key={gIdx} className="space-y-2">
+                            <div key={gIdx} className="p-3 space-y-2.5">
                               {filledFields.map(field => (
                                 <ServiceDetailDisplay key={field.key} field={field} value={serviceDetails[field.key]} />
                               ))}
@@ -416,15 +424,33 @@ export function ProfilePreviewDialog({
                     </div>
                   )}
 
+                  {/* Langues */}
+                  {languages.length > 0 && (
+                    <div>
+                      <SectionLabel icon={Languages}>Langues maîtrisées</SectionLabel>
+                      <div className="flex flex-wrap gap-2">
+                        {languages.map((lang, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-full bg-blue-50 text-blue-700 border border-blue-100"
+                          >
+                            <Globe className="h-3 w-3 opacity-60" />
+                            {lang}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Cultures */}
                   {cultures.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Cultures maîtrisées</p>
-                      <div className="flex flex-wrap gap-1.5">
+                      <SectionLabel>Cultures maîtrisées</SectionLabel>
+                      <div className="flex flex-wrap gap-2">
                         {cultures.map((culture) => (
                           <span
                             key={culture.id}
-                            className="inline-flex items-center text-xs font-medium py-1 px-2.5 rounded-full bg-gray-100 text-gray-700"
+                            className="inline-flex items-center text-xs font-medium py-1.5 px-3 rounded-full bg-[#823F91]/8 text-[#823F91] border border-[#823F91]/15"
                           >
                             {culture.label}
                           </span>
@@ -436,19 +462,19 @@ export function ProfilePreviewDialog({
                   {/* Zones */}
                   {zones.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Zones d'intervention</p>
-                      <div className="flex flex-wrap gap-1.5">
+                      <SectionLabel icon={MapPin}>Zones d'intervention</SectionLabel>
+                      <div className="flex flex-wrap gap-2">
                         {zones.slice(0, 8).map((zone) => (
                           <span
                             key={zone.id}
-                            className="inline-flex items-center text-xs font-medium py-1 px-2.5 rounded-full bg-gray-100 text-gray-700"
+                            className="inline-flex items-center gap-1 text-xs font-medium py-1.5 px-3 rounded-full bg-gray-100 text-gray-600 border border-gray-200"
                           >
                             {zone.label}
                           </span>
                         ))}
                         {zones.length > 8 && (
-                          <span className="inline-flex items-center text-xs font-medium py-1 px-2.5 rounded-full bg-gray-100 text-gray-500">
-                            +{zones.length - 8}
+                          <span className="inline-flex items-center text-xs font-medium py-1.5 px-3 rounded-full bg-gray-100 text-gray-400 border border-gray-200">
+                            +{zones.length - 8} autres
                           </span>
                         )}
                       </div>
@@ -457,12 +483,12 @@ export function ProfilePreviewDialog({
 
                   {/* Avis */}
                   <div className="pt-1 border-t border-gray-100">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Avis</p>
+                    <SectionLabel icon={Star}>Avis clients</SectionLabel>
                     <ReviewsList providerId={userId} limit={5} />
                   </div>
 
                   {/* Empty state */}
-                  {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && (
+                  {!profile.description_courte && !profile.bio && cultures.length === 0 && zones.length === 0 && languages.length === 0 && (
                     <div className="text-center py-10 text-gray-400 text-sm">
                       {isCoupleView
                         ? 'Ce prestataire n\'a pas encore complété son profil'
@@ -533,14 +559,12 @@ export function ProfilePreviewDialog({
                           <>
                             {images.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                                  Photos ({images.length})
-                                </p>
+                                <SectionLabel>Photos ({images.length})</SectionLabel>
                                 <div className="grid grid-cols-3 gap-2">
                                   {images.map((item) => (
                                     <div
                                       key={item.id}
-                                      className="aspect-square rounded-lg overflow-hidden group cursor-pointer relative ring-1 ring-gray-200 hover:ring-gray-300 transition-all"
+                                      className="aspect-square rounded-xl overflow-hidden group cursor-pointer relative ring-1 ring-gray-200 hover:ring-[#823F91]/30 transition-all shadow-sm"
                                     >
                                       <img
                                         src={item.image_url}
@@ -561,15 +585,13 @@ export function ProfilePreviewDialog({
 
                             {videos.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                                  Vidéos ({videos.length})
-                                </p>
+                                <SectionLabel>Vidéos ({videos.length})</SectionLabel>
                                 <div className="grid grid-cols-2 gap-3">
                                   {videos.map((item) => (
                                     <button
                                       key={item.id}
                                       onClick={() => setVideoPreviewUrl(item.image_url)}
-                                      className="aspect-video rounded-lg overflow-hidden group cursor-pointer relative ring-1 ring-gray-200 hover:ring-gray-300 transition-all"
+                                      className="aspect-video rounded-xl overflow-hidden group cursor-pointer relative ring-1 ring-gray-200 hover:ring-[#823F91]/30 transition-all shadow-sm"
                                     >
                                       <video
                                         src={item.image_url}
@@ -578,7 +600,7 @@ export function ProfilePreviewDialog({
                                         preload="metadata"
                                       />
                                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                                        <div className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow">
+                                        <div className="h-10 w-10 rounded-full bg-white/95 flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
                                           <Play className="h-4 w-4 ml-0.5 text-gray-700" />
                                         </div>
                                       </div>
@@ -595,17 +617,17 @@ export function ProfilePreviewDialog({
 
                             {pdfs.length > 0 && (
                               <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                                  Documents ({pdfs.length})
-                                </p>
+                                <SectionLabel>Documents ({pdfs.length})</SectionLabel>
                                 <div className="space-y-2">
                                   {pdfs.map((item) => (
                                     <button
                                       key={item.id}
                                       onClick={() => setPdfPreviewUrl(item.image_url)}
-                                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-left"
+                                      className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 hover:border-[#823F91]/30 hover:bg-[#823F91]/3 transition-all text-left shadow-sm"
                                     >
-                                      <FileText className="h-5 w-5 text-gray-400 shrink-0" />
+                                      <div className="h-9 w-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                                        <FileText className="h-4.5 w-4.5 text-red-400" />
+                                      </div>
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-gray-700 truncate">{item.title || 'Document PDF'}</p>
                                         <p className="text-xs text-gray-400">Cliquer pour visualiser</p>
@@ -621,9 +643,11 @@ export function ProfilePreviewDialog({
                       })()}
                     </div>
                   ) : (
-                    <div className="text-center py-12">
-                      <Camera className="h-8 w-8 text-gray-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-400">
+                    <div className="text-center py-14">
+                      <div className="h-14 w-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                        <Camera className="h-7 w-7 text-gray-300" />
+                      </div>
+                      <p className="text-sm font-medium text-gray-400">
                         {isCoupleView
                           ? 'Aucun média dans le portfolio'
                           : 'Ajoutez des photos et vidéos à votre portfolio'}
@@ -635,26 +659,30 @@ export function ProfilePreviewDialog({
 
               {/* TAB: CONTACT */}
               {activeTab === 'contact' && (
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-5">
                   {hasSocialLinks && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Réseaux & liens</p>
-                      {socialLinks.map((social, i) => (
-                        <a
-                          key={i}
-                          href={social.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
-                        >
-                          <social.icon className="h-4 w-4 text-gray-500 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-700">{social.label}</p>
-                            <p className="text-xs text-gray-400 truncate">{social.url}</p>
-                          </div>
-                          <ExternalLink className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                        </a>
-                      ))}
+                    <div>
+                      <SectionLabel>Réseaux & liens</SectionLabel>
+                      <div className="space-y-2">
+                        {socialLinks.map((social, i) => (
+                          <a
+                            key={i}
+                            href={social.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all group"
+                          >
+                            <div className="h-9 w-9 rounded-lg bg-gray-100 group-hover:bg-white flex items-center justify-center shrink-0 transition-colors">
+                              <social.icon className={cn('h-4 w-4', social.color)} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-700">{social.label}</p>
+                              <p className="text-xs text-gray-400 truncate">{social.url}</p>
+                            </div>
+                            <ExternalLink className="h-3.5 w-3.5 text-gray-400 shrink-0 group-hover:text-gray-600 transition-colors" />
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -703,8 +731,11 @@ export function ProfilePreviewDialog({
                   )}
 
                   {!hasSocialLinks && !isCoupleView && (
-                    <div className="text-center py-8 text-gray-400 text-sm">
-                      Aucune information de contact disponible.
+                    <div className="text-center py-10">
+                      <div className="h-12 w-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                        <Send className="h-5 w-5 text-gray-300" />
+                      </div>
+                      <p className="text-sm text-gray-400">Aucune information de contact disponible.</p>
                     </div>
                   )}
                 </div>
@@ -713,10 +744,10 @@ export function ProfilePreviewDialog({
           </div>
 
           {/* FOOTER */}
-          <div className="px-5 py-3 border-t border-gray-100 shrink-0">
+          <div className="px-5 py-3.5 border-t border-gray-100 shrink-0 bg-gray-50/50">
             {isCoupleView && activeTab === 'contact' ? (
               <Button
-                className="w-full h-10 text-sm font-medium gap-2 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                className="w-full h-10 text-sm font-semibold gap-2 bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm"
                 onClick={handleCreateDemande}
                 disabled={isCreatingDemande || !demandeMessage.trim()}
               >
@@ -734,7 +765,7 @@ export function ProfilePreviewDialog({
               </Button>
             ) : isCoupleView ? (
               <Button
-                className="w-full h-10 text-sm font-medium gap-2 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                className="w-full h-10 text-sm font-semibold gap-2 bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm"
                 onClick={() => setActiveTab('contact')}
               >
                 <MessageCircle className="h-4 w-4" />
@@ -757,6 +788,16 @@ export function ProfilePreviewDialog({
   )
 }
 
+// Small helper for section labels
+function SectionLabel({ children, icon: Icon }: { children: React.ReactNode; icon?: React.ElementType }) {
+  return (
+    <div className="flex items-center gap-1.5 mb-2.5">
+      {Icon && <Icon className="h-3.5 w-3.5 text-gray-400" />}
+      <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{children}</p>
+    </div>
+  )
+}
+
 // Helper component for displaying a single service detail field in preview
 function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; value: unknown }) {
   if (value === undefined || value === null || value === '' || value === false) return null
@@ -769,10 +810,10 @@ function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; val
     })
     return (
       <div>
-        <p className="text-xs text-gray-400 mb-1">{field.label}</p>
+        <p className="text-xs text-gray-400 mb-1.5">{field.label}</p>
         <div className="flex flex-wrap gap-1.5">
           {labels.map((label, i) => (
-            <span key={i} className="text-xs font-medium py-0.5 px-2 rounded-full bg-gray-100 text-gray-700">
+            <span key={i} className="text-xs font-medium py-0.5 px-2.5 rounded-full bg-white border border-gray-200 text-gray-700 shadow-sm">
               {label}
             </span>
           ))}
@@ -786,7 +827,7 @@ function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; val
     return (
       <div className="flex items-center justify-between">
         <p className="text-xs text-gray-400">{field.label}</p>
-        <span className="text-xs font-medium text-gray-700">{opt?.label || value}</span>
+        <span className="text-xs font-semibold text-gray-700">{opt?.label || value}</span>
       </div>
     )
   }
@@ -795,7 +836,7 @@ function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; val
     return (
       <div className="flex items-center justify-between">
         <p className="text-xs text-gray-400">{field.label}</p>
-        <span className="text-xs font-medium text-gray-700">
+        <span className="text-xs font-semibold text-gray-700">
           {value}{field.suffix ? ` ${field.suffix}` : ''}
         </span>
       </div>
@@ -805,7 +846,9 @@ function ServiceDetailDisplay({ field, value }: { field: ServiceFieldConfig; val
   if (field.type === 'boolean' && value === true) {
     return (
       <div className="flex items-center gap-1.5">
-        <Check className="h-3.5 w-3.5 text-emerald-500" />
+        <div className="h-4 w-4 rounded-full bg-emerald-100 flex items-center justify-center">
+          <Check className="h-2.5 w-2.5 text-emerald-600" />
+        </div>
         <p className="text-xs font-medium text-gray-700">{field.label}</p>
       </div>
     )

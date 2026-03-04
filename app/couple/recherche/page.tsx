@@ -58,6 +58,7 @@ interface Provider {
   tags: ProviderTag[]
   completionPercentage?: number
   hasSiret?: boolean
+  languages?: string[]
   avgRating?: number
   reviewCount?: number
 }
@@ -474,7 +475,7 @@ export default function RecherchePage() {
       // Charger TOUTES les données du profil complet
       const { data: fullProfileData, error: profileError } = await supabase
         .from('profiles')
-        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, siret')
+        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, siret, languages')
         .eq('id', provider.id)
         .single()
       
@@ -505,6 +506,7 @@ export default function RecherchePage() {
           linkedin_url: fullProfileData.linkedin_url || null,
           tiktok_url: fullProfileData.tiktok_url || null,
           hasSiret: !!fullProfileData.siret,
+          languages: (fullProfileData as unknown as { languages?: string[] }).languages || [],
         } as Provider)
       }
     } catch (error) {
@@ -1226,6 +1228,7 @@ export default function RecherchePage() {
             isCoupleView={true}
             coupleId={user.id}
             hasSiret={selectedProvider.hasSiret}
+            languages={selectedProvider.languages || []}
           />
         )}
       </div>
