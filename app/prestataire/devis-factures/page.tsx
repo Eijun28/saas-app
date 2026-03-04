@@ -25,6 +25,7 @@ import {
   Clock,
   AlertCircle,
   Send,
+  FileDown,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -389,6 +390,41 @@ export default function DevisFacturesPage() {
     }
   }
 
+  const exportFacturesCSV = () => {
+    if (factures.length === 0) return
+
+    const rows = [
+      ['Numéro', 'Titre', 'Statut', 'Montant TTC (€)', 'TVA (€)', 'Taux TVA (%)', 'Date émission', 'Échéance'],
+      ...factures.map(f => [
+        f.facture_number ?? '',
+        f.title ?? '',
+        f.status === 'paid' ? 'Payée'
+          : f.status === 'sent' ? 'Envoyée'
+          : f.status === 'overdue' ? 'En retard'
+          : f.status === 'draft' ? 'Brouillon'
+          : 'Annulée',
+        String(f.amount_ttc ?? 0),
+        String(f.amount_tva ?? 0),
+        String(f.tva_rate ?? 0),
+        f.issue_date ? new Date(f.issue_date).toLocaleDateString('fr-FR') : '',
+        f.due_date ? new Date(f.due_date).toLocaleDateString('fr-FR') : '',
+      ]),
+    ]
+
+    const csvContent = rows
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+      .join('\n')
+
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `factures-nuply-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount)
   }
@@ -637,6 +673,17 @@ export default function DevisFacturesPage() {
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Factures</h2>
+                {factures.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportFacturesCSV}
+                    className="gap-2 text-[#823F91] border-[#D4ADE0] hover:bg-[#F7F0FA]"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Export CSV
+                  </Button>
+                )}
               </div>
 
               {isLoadingFactures ? (

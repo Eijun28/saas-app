@@ -19,6 +19,8 @@ import {
   LogOut,
   User,
   CalendarOff,
+  Package,
+  Users,
 } from "lucide-react"
 import {
   Sidebar,
@@ -84,6 +86,13 @@ const sections: NavSection[] = [
     items: [
       { href: "/prestataire/devis-factures", icon: FileText, label: "Devis & Factures" },
       { href: "/prestataire/analytics", icon: BarChart3, label: "Statistiques" },
+    ],
+  },
+  {
+    title: "Business",
+    items: [
+      { href: "/prestataire/services", icon: Package, label: "Catalogue de services" },
+      { href: "/prestataire/contacts", icon: Users, label: "Contacts CRM" },
     ],
   },
   {
