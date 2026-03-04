@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { MessageCircleCheck, Clock, TrendingUp } from 'lucide-react'
+import { MessageCircle, Clock, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ResponseRateCardProps {
@@ -58,7 +58,7 @@ export function ResponseRateCard({
     >
       <div className="flex items-center gap-2 mb-4">
         <div className="p-1.5 bg-[#823F91]/10 rounded-lg">
-          <MessageCircleCheck className="h-4 w-4 text-[#823F91]" />
+          <MessageCircle className="h-4 w-4 text-[#823F91]" />
         </div>
         <div>
           <h3 className="text-sm font-bold text-gray-900">Taux de réponse</h3>
