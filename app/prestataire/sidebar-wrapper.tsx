@@ -21,6 +21,8 @@ import {
   CalendarOff,
   Package,
   Users,
+  Star,
+  Bell,
 } from "lucide-react"
 import {
   Sidebar,
@@ -79,6 +81,8 @@ const sections: NavSection[] = [
     title: "Communication",
     items: [
       { href: "/prestataire/messagerie", icon: MessageCircle, label: "Messagerie" },
+      { href: "/prestataire/notifications", icon: Bell, label: "Notifications" },
+      { href: "/prestataire/avis", icon: Star, label: "Mes avis" },
     ],
   },
   {

@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, MessageSquare, Check, X, ArrowRight } from 'lucide-react'
+import { Calendar, MessageSquare, Check, X, ArrowRight, CheckCircle } from 'lucide-react'
 import type { Demande } from '@/lib/types/prestataire'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -14,11 +14,12 @@ interface DemandeCardProps {
   demande: Demande
   onAccept?: (id: string) => void
   onReject?: (id: string) => void
+  onComplete?: (id: string) => void
   conversationId?: string | null
   tags?: RequestTag[]
 }
 
-export function DemandeCard({ demande, onAccept, onReject, conversationId, tags = [] }: DemandeCardProps) {
+export function DemandeCard({ demande, onAccept, onReject, onComplete, conversationId, tags = [] }: DemandeCardProps) {
   const router = useRouter()
 
   const getStatusBadge = (statut: Demande['statut']) => {
@@ -117,15 +118,28 @@ export function DemandeCard({ demande, onAccept, onReject, conversationId, tags 
             </div>
           )}
 
-          {(demande.statut === 'en_cours' || demande.statut === 'terminee') && conversationId && (
-            <div className="pt-3 border-t border-gray-50">
-              <button
-                onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#823F91] text-sm font-semibold rounded-full shadow-[0_2px_12px_rgba(130,63,145,0.25)] border border-[#823F91]/20 hover:shadow-[0_4px_16px_rgba(130,63,145,0.35)] hover:border-[#823F91]/40 transition-all duration-200"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Voir la conversation
-              </button>
+          {(demande.statut === 'en_cours' || demande.statut === 'terminee') && (
+            <div className="flex gap-2 pt-3 border-t border-gray-50">
+              {conversationId && (
+                <button
+                  onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white text-[#823F91] text-sm font-semibold rounded-full shadow-[0_2px_12px_rgba(130,63,145,0.25)] border border-[#823F91]/20 hover:shadow-[0_4px_16px_rgba(130,63,145,0.35)] hover:border-[#823F91]/40 transition-all duration-200"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Voir la conversation
+                </button>
+              )}
+              {demande.statut === 'en_cours' && onComplete && (
+                <Button
+                  onClick={() => onComplete(demande.id)}
+                  size="sm"
+                  variant="outline"
+                  className="h-9 text-emerald-700 border-emerald-200 hover:bg-emerald-50 text-sm font-medium rounded-lg"
+                >
+                  <CheckCircle className="h-4 w-4 mr-1.5" />
+                  Terminer
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

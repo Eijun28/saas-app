@@ -33,10 +33,14 @@ const LOW_COMPLETION_DELAYS_DAYS: Record<1 | 2 | 3, number> = {
 export async function POST(request: NextRequest) {
   // Vérification du secret
   const authHeader = request.headers.get('authorization')
-  // CRON_SECRET doit être défini dans les variables Vercel.
-  // Si non défini, le cron serait bloqué en production (Bearer undefined !== null).
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  // En production, CRON_SECRET DOIT être défini. Bloquer si non défini pour éviter un accès non autorisé.
+  if (process.env.NODE_ENV === 'production') {
+    if (!CRON_SECRET) {
+      return NextResponse.json({ error: 'CRON_SECRET non configuré' }, { status: 500 })
+    }
+    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
   }
 
   const adminClient = createAdminClient()
@@ -93,11 +97,18 @@ export async function POST(request: NextRequest) {
     // ========================================================================
     // 2. RELANCES PROFILS INCOMPLETS - COUPLES
     // ========================================================================
-    const { data: incompleteCouples } = await adminClient
-      .from('profiles')
-      .select('id, prenom, created_at')
-      .eq('role', 'couple')
+    // Query couples table directly (profiles.role CHECK constraint prevents 'couple' value)
+    const { data: incompleteCoupleRows } = await adminClient
+      .from('couples')
+      .select('user_id, partner_1_name, created_at')
       .eq('onboarding_completed', false)
+
+    // Map to the same shape expected by the rest of the code
+    const incompleteCouples = (incompleteCoupleRows || []).map(c => ({
+      id: c.user_id,
+      prenom: c.partner_1_name,
+      created_at: c.created_at,
+    }))
 
     for (const couple of incompleteCouples || []) {
       const daysSinceCreation = Math.floor(
@@ -327,10 +338,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Permettre aussi GET pour tests manuels (en dev uniquement)
+// GET handler — Vercel Cron sends GET requests, so forward to POST
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Méthode non autorisée' }, { status: 405 })
-  }
   return POST(request)
 }

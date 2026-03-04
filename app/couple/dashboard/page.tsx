@@ -70,30 +70,40 @@ export default function CoupleDashboardPage() {
         const supabase = createClient()
 
         // Fetch all data in parallel
-        const [coupleResult, favoritesResult, budgetResult, requestsResult, shortlistedResult] = await Promise.all([
-          supabase
+        // First fetch the couple row to get couples.id (different from auth user.id)
+        const coupleResult = await supabase
             .from('couples')
             .select('id, partner_1_name, partner_2_name, wedding_date, budget_total, avatar_url')
             .eq('user_id', user.id)
-            .single(),
+            .single()
+
+        const coupleId = coupleResult.data?.id
+        if (!coupleId) {
+          // Couple profile not yet created — show empty dashboard
+          setLoading(false)
+          return
+        }
+
+        // Use coupleId (couples.id) for all FK-based queries
+        const [favoritesResult, budgetResult, requestsResult, shortlistedResult] = await Promise.all([
           supabase
             .from('favoris')
             .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id),
+            .eq('couple_id', coupleId),
           supabase
             .from('budget_items')
             .select('id, category, amount')
-            .eq('couple_id', user.id),
+            .eq('couple_id', coupleId),
           supabase
             .from('requests')
             .select('id, created_at, status, provider_id')
-            .eq('couple_id', user.id)
+            .eq('couple_id', coupleId)
             .order('created_at', { ascending: false })
             .limit(10),
           supabase
             .from('requests')
             .select('id', { count: 'exact', head: true })
-            .eq('couple_id', user.id)
+            .eq('couple_id', coupleId)
             .in('status', ['pending', 'accepted']),
         ])
 

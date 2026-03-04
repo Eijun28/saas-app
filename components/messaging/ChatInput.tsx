@@ -100,37 +100,103 @@ export function ChatInput({
     textareaRef.current?.focus()
   }
 
+  const [isUploading, setIsUploading] = useState(false)
+
   const handleFileSelect = (type: 'image' | 'document' | 'camera') => {
     if (type === 'camera') {
-      // TODO: Ouvrir la caméra pour prendre une photo
-      toast.info('Fonctionnalité caméra à venir')
+      // Use the file input with camera capture
+      if (fileInputRef.current) {
+        fileInputRef.current.accept = 'image/*'
+        fileInputRef.current.capture = 'environment'
+        fileInputRef.current.click()
+      }
       return
     }
 
-    fileInputRef.current?.click()
-    // TODO: Gérer l'upload des fichiers vers Supabase Storage
+    if (fileInputRef.current) {
+      fileInputRef.current.removeAttribute('capture')
+      fileInputRef.current.accept = type === 'image'
+        ? 'image/*,video/*'
+        : '.pdf,.doc,.docx,.xls,.xlsx,.txt'
+      fileInputRef.current.click()
+    }
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    // TODO: Upload vers Supabase Storage et créer message avec media
-    toast.info('Fonctionnalité d\'upload à venir')
     e.target.value = '' // Reset input
+
+    // Validate file size (10MB max)
+    const MAX_SIZE = 10 * 1024 * 1024
+    if (file.size > MAX_SIZE) {
+      toast.error('Le fichier est trop volumineux (max 10 Mo)')
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      // Upload to Supabase Storage
+      const ext = file.name.split('.').pop() || 'bin'
+      const filePath = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('message-attachments')
+        .upload(filePath, file, { contentType: file.type })
+
+      if (uploadError) throw uploadError
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('message-attachments')
+        .getPublicUrl(filePath)
+
+      const fileUrl = urlData.publicUrl
+
+      // Determine content type
+      const isImage = file.type.startsWith('image/')
+      const isVideo = file.type.startsWith('video/')
+      const contentType = isImage || isVideo ? 'image' : 'file'
+
+      // Create message with attachment info in content
+      const attachmentInfo = JSON.stringify({
+        name: file.name,
+        url: fileUrl,
+        size: file.size,
+        type: file.type,
+      })
+
+      const messageContent = contentType === 'image'
+        ? `[Image] ${file.name}`
+        : `[Fichier] ${file.name}`
+
+      const { error: msgError } = await supabase.from('messages').insert({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        content: messageContent,
+        metadata: { attachment: { name: file.name, url: fileUrl, size: file.size, type: file.type } },
+      })
+
+      if (msgError) throw msgError
+
+      onMessageSent?.()
+      toast.success('Fichier envoyé')
+    } catch (error: unknown) {
+      console.error('Erreur upload:', error)
+      toast.error("Erreur lors de l'envoi du fichier")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleVoiceRecord = () => {
     if (isRecording) {
-      // Arrêter l'enregistrement
       setIsRecording(false)
-      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
-      // TODO: Implémenter l'enregistrement vocal
+      toast.info("Enregistrement vocal bientôt disponible")
     } else {
-      // Démarrer l'enregistrement
       setIsRecording(true)
-      toast.info('Fonctionnalité d\'enregistrement vocal à venir')
-      // TODO: Implémenter l'enregistrement vocal
+      toast.info("Enregistrement vocal bientôt disponible")
     }
   }
 
@@ -177,11 +243,11 @@ export function ChatInput({
               placeholder="Message"
               className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] md:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[20px] sm:min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
               rows={1}
-              disabled={isSending}
+              disabled={isSending || isUploading}
             />
 
             {/* Bouton pièce jointe */}
-            {!hasContent && (
+            {!hasContent && !isUploading && (
               <div className="flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -234,8 +300,15 @@ export function ChatInput({
               </div>
             )}
 
+            {/* Upload indicator */}
+            {isUploading && (
+              <div className="flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+                <div className="h-4 w-4 border-2 border-[#823F91] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+
             {/* Bouton microphone ou send */}
-            {hasContent ? (
+            {!isUploading && hasContent ? (
               <button
                 type="submit"
                 disabled={!content.trim() || isSending}
@@ -244,7 +317,7 @@ export function ChatInput({
               >
                 <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
               </button>
-            ) : (
+            ) : !isUploading ? (
               <button
                 type="button"
                 onClick={handleVoiceRecord}
@@ -257,7 +330,7 @@ export function ChatInput({
               >
                 <Mic className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </form>

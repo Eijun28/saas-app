@@ -31,7 +31,7 @@ interface RequestWithCouple {
   id: string
   couple_id: string
   provider_id: string
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled'
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed'
   initial_message: string
   created_at: string
   couple?: { partner_1_name?: string; partner_2_name?: string; wedding_date?: string } | null
@@ -69,17 +69,19 @@ export default function DemandesRecuesPage() {
       const n2 = req.couple?.partner_2_name?.trim() || ''
       const coupleNom = n1 && n2 ? `${n1} & ${n2}` : n1 || n2 || 'Couple'
 
+      const coupleData = couplesMap.get(req.couple_id)
       const d: Demande = {
         id: req.id,
         couple_id: req.couple_id,
         couple_nom: coupleNom,
         date_evenement: req.couple?.wedding_date || '',
-        budget_min: 0,
-        budget_max: 0,
-        lieu: '',
+        budget_min: (coupleData as any)?.budget_min ?? 0,
+        budget_max: (coupleData as any)?.budget_max ?? 0,
+        lieu: (coupleData as any)?.city ?? '',
         statut: req.status === 'pending' ? 'nouvelle'
           : req.status === 'accepted' ? 'en_cours'
-          : req.status === 'rejected' ? 'terminee'
+          : req.status === 'completed' ? 'terminee'
+          : req.status === 'rejected' ? 'refusee'
           : 'annulee',
         message: req.initial_message,
         created_at: req.created_at,
@@ -121,7 +123,7 @@ export default function DemandesRecuesPage() {
 
     // Couples
     const coupleIds = Array.from(new Set<string>(requestsData.map((r: any) => r.couple_id as string)))
-    const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date'])
+    const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date', 'budget_min', 'budget_max', 'city'])
 
     const data: RequestWithCouple[] = requestsData.map((r: any) => {
       const c = couplesMap.get(r.couple_id)
@@ -201,6 +203,20 @@ export default function DemandesRecuesPage() {
       } catch {}
     }
     toast.success('Demande refusée')
+    fetchDemandes()
+  }
+
+  const handleComplete = async (requestId: string) => {
+    if (!user?.id) return
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('requests')
+      .update({ status: 'completed' })
+      .eq('id', requestId)
+      .eq('provider_id', user.id)
+      .eq('status', 'accepted')
+    if (error) { toast.error('Erreur lors de la clôture'); return }
+    toast.success('Prestation marquée comme terminée')
     fetchDemandes()
   }
 
@@ -329,7 +345,7 @@ export default function DemandesRecuesPage() {
             {([
               { value: 'nouvelles', label: 'Nouvelles', count: filtered.nouvelles.length },
               { value: 'en-cours',  label: 'En cours',  count: filtered.en_cours.length },
-              { value: 'terminees', label: 'Terminées', count: 0 },
+              { value: 'terminees', label: 'Terminées', count: filtered.terminees.length },
             ] as const).map(tab => (
               <TabsTrigger
                 key={tab.value}
@@ -376,6 +392,7 @@ export default function DemandesRecuesPage() {
                     <div key={d.id} onClick={() => handleCardClick(d)} className="cursor-pointer">
                       <DemandeCard
                         demande={d}
+                        onComplete={handleComplete}
                         conversationId={conversationIdsMap.get(d.id) || null}
                         tags={tagsMap.get(d.id) ?? []}
                       />

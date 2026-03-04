@@ -9,20 +9,19 @@ import {
   Bell,
   CheckCircle,
   MessageSquare,
-  FileText,
   Star,
-  Clock,
   Inbox,
   CheckCheck,
+  UserPlus,
 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
-import { PageTitle } from '@/components/couple/shared/PageTitle'
+import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { cn } from '@/lib/utils'
 
 interface Notification {
   id: string
-  type: 'request_accepted' | 'request_rejected' | 'new_message' | 'new_devis' | 'review_response'
+  type: 'new_request' | 'new_message' | 'new_review' | 'request_completed'
   title: string
   content: string
   href: string
@@ -31,19 +30,17 @@ interface Notification {
 }
 
 const NOTIF_ICONS: Record<string, typeof Bell> = {
-  request_accepted: CheckCircle,
-  request_rejected: Clock,
+  new_request: UserPlus,
   new_message: MessageSquare,
-  new_devis: FileText,
-  review_response: Star,
+  new_review: Star,
+  request_completed: CheckCircle,
 }
 
 const NOTIF_COLORS: Record<string, string> = {
-  request_accepted: 'bg-emerald-50 text-emerald-600',
-  request_rejected: 'bg-gray-50 text-gray-500',
-  new_message: 'bg-[#823F91]/10 text-[#823F91]',
-  new_devis: 'bg-blue-50 text-blue-600',
-  review_response: 'bg-amber-50 text-amber-600',
+  new_request: 'bg-[#823F91]/10 text-[#823F91]',
+  new_message: 'bg-blue-50 text-blue-600',
+  new_review: 'bg-amber-50 text-amber-600',
+  request_completed: 'bg-emerald-50 text-emerald-600',
 }
 
 function formatRelativeTime(dateString: string) {
@@ -53,7 +50,7 @@ function formatRelativeTime(dateString: string) {
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
-  if (diffMins < 1) return "À l'instant"
+  if (diffMins < 1) return "A l'instant"
   if (diffMins < 60) return `Il y a ${diffMins} min`
   if (diffHours < 24) return `Il y a ${diffHours}h`
   if (diffDays === 1) return 'Hier'
@@ -61,87 +58,72 @@ function formatRelativeTime(dateString: string) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 }
 
-export default function NotificationsPage() {
+export default function PrestaNotificationsPage() {
   const { user } = useUser()
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
-      loadNotifications()
-    }
+    if (user) loadNotifications()
   }, [user])
 
   const loadNotifications = async () => {
     if (!user) return
-
     setLoading(true)
     const supabase = createClient()
-
-    // Get couple ID
-    const { data: couple } = await supabase
-      .from('couples')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!couple) {
-      setLoading(false)
-      return
-    }
-
     const notifs: Notification[] = []
 
-    // Load recent request status changes (accepted/rejected in last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+    // New requests (last 30 days)
     const { data: requests } = await supabase
       .from('requests')
-      .select('id, provider_id, status, responded_at, created_at')
-      .eq('couple_id', couple.id)
-      .in('status', ['accepted', 'rejected'])
-      .gte('responded_at', thirtyDaysAgo)
-      .order('responded_at', { ascending: false })
+      .select('id, couple_id, status, created_at')
+      .eq('provider_id', user.id)
+      .eq('status', 'pending')
+      .gte('created_at', thirtyDaysAgo)
+      .order('created_at', { ascending: false })
       .limit(20)
 
     if (requests?.length) {
-      // Get provider names
-      const providerIds = [...new Set(requests.map(r => r.provider_id))]
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, prenom, nom, nom_entreprise')
-        .in('id', providerIds)
+      const coupleUserIds = [...new Set(requests.map(r => r.couple_id))]
+      const { data: couples } = await supabase
+        .from('couples')
+        .select('user_id, partner_1_name, partner_2_name')
+        .in('user_id', coupleUserIds)
 
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) ?? [])
+      const coupleMap = new Map(
+        couples?.map(c => {
+          const name = [c.partner_1_name, c.partner_2_name].filter(Boolean).join(' & ') || 'Un couple'
+          return [c.user_id, name]
+        }) ?? []
+      )
 
       for (const req of requests) {
-        const profile = profileMap.get(req.provider_id)
-        const name = profile?.nom_entreprise || [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || 'Un prestataire'
-
+        const name = coupleMap.get(req.couple_id) || 'Un couple'
         notifs.push({
           id: `req-${req.id}`,
-          type: req.status === 'accepted' ? 'request_accepted' : 'request_rejected',
-          title: req.status === 'accepted' ? 'Demande acceptée' : 'Demande déclinée',
-          content: req.status === 'accepted'
-            ? `${name} a accepté votre demande. Vous pouvez maintenant échanger via la messagerie.`
-            : `${name} a décliné votre demande.`,
-          href: req.status === 'accepted' ? '/couple/messagerie' : '/couple/demandes',
-          created_at: req.responded_at || req.created_at,
+          type: 'new_request',
+          title: 'Nouvelle demande',
+          content: `${name} vous a envoyé une demande de prestation.`,
+          href: '/prestataire/demandes-recues',
+          created_at: req.created_at,
           read: false,
         })
       }
     }
 
-    // Load recent unread messages (last 7 days)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    // Unread messages (last 7 days)
     const { data: conversations } = await supabase
       .from('conversations')
-      .select('id, provider_id')
-      .eq('couple_id', couple.id)
+      .select('id, couple_id')
+      .eq('prestataire_id', user.id)
 
     if (conversations?.length) {
       const convIds = conversations.map(c => c.id)
-      const providerMap = new Map(conversations.map(c => [c.id, c.provider_id]))
+      const coupleMap2 = new Map(conversations.map(c => [c.id, c.couple_id]))
 
       const { data: messages } = await supabase
         .from('messages')
@@ -154,30 +136,33 @@ export default function NotificationsPage() {
         .limit(10)
 
       if (messages?.length) {
-        const providerIds = [...new Set(messages.map(m => providerMap.get(m.conversation_id)).filter(Boolean))] as string[]
-        const { data: msgProfiles } = await supabase
-          .from('profiles')
-          .select('id, prenom, nom, nom_entreprise')
-          .in('id', providerIds)
+        const coupleUserIds = [...new Set(messages.map(m => coupleMap2.get(m.conversation_id)).filter(Boolean))] as string[]
+        const { data: msgCouples } = await supabase
+          .from('couples')
+          .select('user_id, partner_1_name, partner_2_name')
+          .in('user_id', coupleUserIds)
 
-        const msgProfileMap = new Map(msgProfiles?.map(p => [p.id, p]) ?? [])
+        const msgCoupleMap = new Map(
+          msgCouples?.map(c => {
+            const name = [c.partner_1_name, c.partner_2_name].filter(Boolean).join(' & ') || 'Un couple'
+            return [c.user_id, name]
+          }) ?? []
+        )
 
-        // Deduplicate by conversation
         const seenConvs = new Set<string>()
         for (const msg of messages) {
           if (seenConvs.has(msg.conversation_id)) continue
           seenConvs.add(msg.conversation_id)
 
-          const providerId = providerMap.get(msg.conversation_id)
-          const profile = providerId ? msgProfileMap.get(providerId) : null
-          const name = profile?.nom_entreprise || [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || 'Un prestataire'
+          const coupleUserId = coupleMap2.get(msg.conversation_id)
+          const name = coupleUserId ? msgCoupleMap.get(coupleUserId) || 'Un couple' : 'Un couple'
 
           notifs.push({
             id: `msg-${msg.id}`,
             type: 'new_message',
             title: 'Nouveau message',
             content: `${name} vous a envoyé un message`,
-            href: '/couple/messagerie',
+            href: '/prestataire/messagerie',
             created_at: msg.created_at,
             read: false,
           })
@@ -185,54 +170,92 @@ export default function NotificationsPage() {
       }
     }
 
-    // Load recent devis (last 30 days)
-    const { data: devisData } = await supabase
-      .from('devis')
-      .select('id, prestataire_id, amount, created_at')
-      .eq('couple_id', couple.id)
-      .eq('status', 'pending')
+    // New reviews (last 30 days)
+    const { data: reviews } = await supabase
+      .from('reviews')
+      .select('id, couple_id, rating, comment, created_at')
+      .eq('provider_id', user.id)
       .gte('created_at', thirtyDaysAgo)
       .order('created_at', { ascending: false })
       .limit(10)
 
-    if (devisData?.length) {
-      const providerIds = [...new Set(devisData.map(d => d.prestataire_id))]
-      const { data: devisProfiles } = await supabase
-        .from('profiles')
-        .select('id, prenom, nom, nom_entreprise')
-        .in('id', providerIds)
+    if (reviews?.length) {
+      const coupleUserIds = [...new Set(reviews.map(r => r.couple_id))]
+      const { data: revCouples } = await supabase
+        .from('couples')
+        .select('user_id, partner_1_name, partner_2_name')
+        .in('user_id', coupleUserIds)
 
-      const devisProfileMap = new Map(devisProfiles?.map(p => [p.id, p]) ?? [])
+      const revCoupleMap = new Map(
+        revCouples?.map(c => {
+          const name = [c.partner_1_name, c.partner_2_name].filter(Boolean).join(' & ') || 'Un couple'
+          return [c.user_id, name]
+        }) ?? []
+      )
 
-      for (const devis of devisData) {
-        const profile = devisProfileMap.get(devis.prestataire_id)
-        const name = profile?.nom_entreprise || [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || 'Un prestataire'
-
+      for (const rev of reviews) {
+        const name = revCoupleMap.get(rev.couple_id) || 'Un couple'
         notifs.push({
-          id: `devis-${devis.id}`,
-          type: 'new_devis',
-          title: 'Nouveau devis reçu',
-          content: `${name} vous a envoyé un devis de ${devis.amount?.toLocaleString('fr-FR')} €`,
-          href: '/couple/demandes',
-          created_at: devis.created_at,
+          id: `rev-${rev.id}`,
+          type: 'new_review',
+          title: 'Nouvel avis',
+          content: `${name} vous a laissé un avis (${rev.rating}/5)`,
+          href: '/prestataire/avis',
+          created_at: rev.created_at,
           read: false,
         })
       }
     }
 
-    // Sort by date
-    notifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    // Completed requests (last 30 days)
+    const { data: completedReqs } = await supabase
+      .from('requests')
+      .select('id, couple_id, created_at, updated_at')
+      .eq('provider_id', user.id)
+      .eq('status', 'completed')
+      .gte('updated_at', thirtyDaysAgo)
+      .order('updated_at', { ascending: false })
+      .limit(10)
 
+    if (completedReqs?.length) {
+      const coupleUserIds = [...new Set(completedReqs.map(r => r.couple_id))]
+      const { data: compCouples } = await supabase
+        .from('couples')
+        .select('user_id, partner_1_name, partner_2_name')
+        .in('user_id', coupleUserIds)
+
+      const compCoupleMap = new Map(
+        compCouples?.map(c => {
+          const name = [c.partner_1_name, c.partner_2_name].filter(Boolean).join(' & ') || 'Un couple'
+          return [c.user_id, name]
+        }) ?? []
+      )
+
+      for (const req of completedReqs) {
+        const name = compCoupleMap.get(req.couple_id) || 'Un couple'
+        notifs.push({
+          id: `comp-${req.id}`,
+          type: 'request_completed',
+          title: 'Prestation terminee',
+          content: `Votre prestation avec ${name} est marquee comme terminee.`,
+          href: '/prestataire/demandes-recues',
+          created_at: req.updated_at || req.created_at,
+          read: false,
+        })
+      }
+    }
+
+    notifs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     setNotifications(notifs)
     setLoading(false)
   }
 
   return (
-    <div className="w-full space-y-5 sm:space-y-6">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-4">
         <PageTitle
           title="Notifications"
-          description="Restez informé de toutes vos activités"
+          description="Suivez vos demandes, messages et avis"
         />
         {notifications.length > 0 && (
           <Button
@@ -268,7 +291,7 @@ export default function NotificationsPage() {
               </div>
               <p className="text-gray-600 font-medium mb-1">Aucune notification</p>
               <p className="text-sm text-gray-400">
-                Vos notifications apparaîtront ici lorsque des prestataires répondront à vos demandes.
+                Vos notifications apparaitront ici lorsque des couples vous contacteront.
               </p>
             </CardContent>
           </Card>
