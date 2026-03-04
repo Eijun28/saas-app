@@ -34,14 +34,14 @@ export const initSmoothScroll = () => {
   rafId = requestAnimationFrame(raf)
 
   // Exposer le cancel pour le cleanup
-  ;(lenis as Lenis & { _rafId?: number })._rafId = rafId
+  ;(lenis as unknown as { _rafId?: number })._rafId = rafId
 
   return lenis
 }
 
 export const destroySmoothScroll = (lenis: Lenis | null) => {
   if (!lenis) return
-  const id = (lenis as Lenis & { _rafId?: number })._rafId
+  const id = (lenis as unknown as { _rafId?: number })._rafId
   if (id) cancelAnimationFrame(id)
   lenis.destroy()
 }
