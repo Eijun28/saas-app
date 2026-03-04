@@ -5,6 +5,7 @@ import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
+import { calculateMarketAverage } from '@/lib/matching/market-averages';
 
 let openaiClient: OpenAI | null = null;
 
@@ -65,7 +66,53 @@ async function getProviderProfile(userId: string) {
   };
 }
 
-function buildSystemPrompt(providerData: Awaited<ReturnType<typeof getProviderProfile>>) {
+/**
+ * Fetches provider performance stats (demandes + reviews) for RAG context
+ */
+async function getProviderStats(userId: string) {
+  const supabase = await createClient();
+
+  const [
+    { data: demandes },
+    { data: reviews },
+  ] = await Promise.all([
+    supabase
+      .from('demandes')
+      .select('status')
+      .eq('prestataire_id', userId),
+    supabase
+      .from('reviews')
+      .select('rating')
+      .eq('prestataire_id', userId),
+  ]);
+
+  const total = demandes?.length || 0;
+  const accepted = demandes?.filter((d) => d.status === 'accepted' || d.status === 'completed').length || 0;
+  const rejected = demandes?.filter((d) => d.status === 'rejected').length || 0;
+  const pending = demandes?.filter((d) => d.status === 'new' || d.status === 'in-progress').length || 0;
+  const conversionRate = total > 0 ? Math.round((accepted / total) * 100) : null;
+
+  const ratings = reviews?.map((r) => r.rating).filter(Boolean) as number[] || [];
+  const avgRating = ratings.length > 0
+    ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+    : null;
+
+  return {
+    total,
+    accepted,
+    rejected,
+    pending,
+    conversionRate,
+    reviewCount: ratings.length,
+    avgRating,
+  };
+}
+
+function buildSystemPrompt(
+  providerData: Awaited<ReturnType<typeof getProviderProfile>>,
+  stats: Awaited<ReturnType<typeof getProviderStats>>,
+  marketAvg: Awaited<ReturnType<typeof calculateMarketAverage>>
+) {
   const p = providerData.profile;
   const serviceLabel = p?.service_type ? getServiceTypeLabel(p.service_type) : 'Non renseigné';
 
@@ -95,6 +142,41 @@ DONNEES COMPLEMENTAIRES :
 - Tags/Specialites : ${providerData.tags.length > 0 ? providerData.tags.join(', ') : 'AUCUN'}
 `;
 
+  // RAG block 1: Performance stats
+  const statsContext = stats.total > 0
+    ? `
+STATISTIQUES DE PERFORMANCE (données réelles) :
+- Demandes reçues au total : ${stats.total}
+- Demandes acceptées/terminées : ${stats.accepted}
+- Demandes rejetées : ${stats.rejected}
+- Demandes en attente : ${stats.pending}
+- Taux de conversion : ${stats.conversionRate !== null ? `${stats.conversionRate}%` : 'Non calculable (pas assez de données)'}
+- Avis clients : ${stats.reviewCount} avis${stats.avgRating !== null ? `, note moyenne ${stats.avgRating}/5` : ''}
+`
+    : `
+STATISTIQUES DE PERFORMANCE :
+- Aucune demande reçue pour l'instant (profil récent ou en attente d'activation matching)
+`;
+
+  // RAG block 2: Market benchmarks
+  const marketContext = marketAvg
+    ? `
+DONNÉES MARCHÉ NUPLY (${getServiceTypeLabel(p?.service_type || '')} — ${marketAvg.provider_count} prestataires actifs) :
+- Fourchette de prix moyenne : ${marketAvg.budget_range}
+- Note moyenne sur la plateforme : ${marketAvg.average_rating}/5
+- Expérience moyenne : ${marketAvg.average_experience} ans
+- Positionnement prix du prestataire : ${
+    p?.budget_min && marketAvg.budget_min_avg
+      ? p.budget_min < marketAvg.budget_min_avg * 0.8
+        ? 'En dessous du marché (risque de sous-évaluation)'
+        : p.budget_min > marketAvg.budget_max_avg * 1.2
+          ? 'Au-dessus du marché (justifier par la valeur ajoutée)'
+          : 'Dans la moyenne du marché'
+      : 'Indéterminé (prix non renseigné)'
+  }
+`
+    : '';
+
   // Calculate what's missing for matching
   const missingForMatching: string[] = [];
   if (!p?.service_type) missingForMatching.push('type de service');
@@ -117,7 +199,8 @@ DONNEES COMPLEMENTAIRES :
 Tu conseilles un PRESTATAIRE DE MARIAGE pour l'aider à optimiser son profil et comprendre le système de matching.
 
 ${profileSummary}
-
+${statsContext}
+${marketContext}
 STATUT MATCHING :
 ${matchingStatus}
 
@@ -218,8 +301,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch provider profile for context
-    const providerData = await getProviderProfile(user_id);
+    // Fetch provider profile + performance stats + market data in parallel (RAG)
+    const [providerData, stats] = await Promise.all([
+      getProviderProfile(user_id),
+      getProviderStats(user_id),
+    ]);
 
     if (!providerData.profile) {
       return NextResponse.json(
@@ -228,7 +314,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const systemPrompt = buildSystemPrompt(providerData);
+    // Fetch market averages for this service type (non-blocking if fails)
+    const marketAvg = providerData.profile.service_type
+      ? await calculateMarketAverage(providerData.profile.service_type).catch(() => null)
+      : null;
+
+    const systemPrompt = buildSystemPrompt(providerData, stats, marketAvg);
 
     // Convert messages to OpenAI format
     const openaiMessages: ChatCompletionMessageParam[] = messages
