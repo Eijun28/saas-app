@@ -120,7 +120,7 @@ export default function DemandesRecuesPage() {
     }
 
     // Couples
-    const coupleIds = [...new Set(requestsData.map((r: any) => r.couple_id))]
+    const coupleIds = Array.from(new Set<string>(requestsData.map((r: any) => r.couple_id as string)))
     const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date'])
 
     const data: RequestWithCouple[] = requestsData.map((r: any) => {
@@ -174,10 +174,11 @@ export default function DemandesRecuesPage() {
     const { error } = await supabase.from('requests').update({ status: 'accepted' }).eq('id', requestId).eq('provider_id', user.id)
     if (error) { toast.error('Erreur lors de l\'acceptation'); return }
 
-    try {
-      const { sendRequestAcceptedEmail } = await import('@/lib/email/notifications')
-      await sendRequestAcceptedEmail(req.couple_id, req.provider_id, requestId)
-    } catch {}
+    fetch(`/api/prestataire/requests/${requestId}/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'accepted' }),
+    }).catch(() => {})
 
     const { data: existingConv } = await supabase.from('conversations').select('id').eq('request_id', requestId).maybeSingle()
     if (!existingConv) {
@@ -218,13 +219,13 @@ export default function DemandesRecuesPage() {
   }
 
   const handleTagsChange = (requestId: string) => (tags: RequestTag[]) => {
-    setTagsMap(prev => new Map(prev).set(requestId, tags))
+    setTagsMap((prev: Map<string, RequestTag[]>) => new Map(prev).set(requestId, tags))
   }
 
   // ─── Filtrage ────────────────────────────────────────────────────────────────
 
   const allTagNames = Array.from(new Set(
-    Array.from(tagsMap.values()).flat().map(t => t.tag)
+    (Array.from(tagsMap.values()).flat() as RequestTag[]).map((t: RequestTag) => t.tag)
   ))
 
   const applyFilters = (list: Demande[]) => {
@@ -233,7 +234,7 @@ export default function DemandesRecuesPage() {
       if (q && !d.couple_nom.toLowerCase().includes(q) && !d.lieu.toLowerCase().includes(q)) return false
       if (filters.tag) {
         const dtags = tagsMap.get(d.id) ?? []
-        if (!dtags.some(t => t.tag === filters.tag)) return false
+        if (!dtags.some((t: RequestTag) => t.tag === filters.tag)) return false
       }
       if (filters.dateFrom && d.date_evenement && d.date_evenement < filters.dateFrom) return false
       if (filters.dateTo   && d.date_evenement && d.date_evenement > filters.dateTo)   return false
@@ -294,7 +295,7 @@ export default function DemandesRecuesPage() {
         <Input
           placeholder="Rechercher un couple…"
           value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
           className="pl-10 h-10 bg-white border-gray-200 rounded-xl"
         />
       </div>
@@ -304,7 +305,7 @@ export default function DemandesRecuesPage() {
         filters={filters}
         onChange={setFilters}
         open={filtersOpen}
-        onToggle={() => setFiltersOpen(p => !p)}
+        onToggle={() => setFiltersOpen((p: boolean) => !p)}
         allTags={allTagNames}
       />
 

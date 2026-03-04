@@ -29,7 +29,7 @@ export function RequestDetailSheet({
     d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+    <Sheet open={open} onOpenChange={(v: boolean) => !v && onClose()}>
       <SheetContent
         side="right"
         className="w-full sm:max-w-md overflow-y-auto flex flex-col gap-0 p-0"

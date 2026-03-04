@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
           />
           <TopRequestOrigins
             data={data.requestOrigins}
-            total={data.requestOrigins.reduce((s, o) => s + o.count, 0)}
+            total={(data.requestOrigins as Array<{ source: string; label: string; count: number }>).reduce((s, o) => s + o.count, 0)}
           />
         </div>
 

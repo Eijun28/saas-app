@@ -94,7 +94,7 @@ function KanbanCard({
       {demande.statut === 'nouvelle' && onAccept && onReject && (
         <div
           className="flex gap-1.5 mt-2 pt-2 border-t border-gray-50"
-          onClick={e => e.stopPropagation()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <Button
             size="sm"
@@ -119,7 +119,7 @@ function KanbanCard({
       {conversationId && (
         <div
           className="mt-2 pt-2 border-t border-gray-50"
-          onClick={e => e.stopPropagation()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <button
             onClick={() => router.push(`/prestataire/messagerie/${conversationId}`)}

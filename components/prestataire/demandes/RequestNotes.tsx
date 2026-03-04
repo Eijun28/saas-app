@@ -56,7 +56,7 @@ export function RequestNotes({ requestId }: RequestNotesProps) {
       })
       const json = await res.json()
       if (!res.ok) { toast.error(json.error || 'Erreur'); return }
-      setNotes(prev => [...prev, json.note])
+      setNotes((prev: Note[]) => [...prev, json.note as Note])
       setContent('')
     } catch {
       toast.error('Erreur réseau')
@@ -68,7 +68,7 @@ export function RequestNotes({ requestId }: RequestNotesProps) {
   async function handleDelete(noteId: string) {
     try {
       await fetch(`/api/prestataire/requests/${requestId}/notes?noteId=${noteId}`, { method: 'DELETE' })
-      setNotes(prev => prev.filter(n => n.id !== noteId))
+      setNotes((prev: Note[]) => prev.filter((n: Note) => n.id !== noteId))
     } catch {
       toast.error('Erreur lors de la suppression')
     }
@@ -92,7 +92,7 @@ export function RequestNotes({ requestId }: RequestNotesProps) {
           </div>
         ) : (
           <AnimatePresence initial={false}>
-            {notes.map(note => (
+            {notes.map((note: Note) => (
               <motion.div
                 key={note.id}
                 initial={{ opacity: 0, y: 6 }}
@@ -122,13 +122,13 @@ export function RequestNotes({ requestId }: RequestNotesProps) {
       <form onSubmit={handleSend} className="flex gap-2">
         <Textarea
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
           placeholder="Ajouter une note interne…"
           rows={2}
           className="resize-none text-sm rounded-xl flex-1"
           maxLength={2000}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e) }
+          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e as unknown as React.FormEvent) }
           }}
         />
         <Button

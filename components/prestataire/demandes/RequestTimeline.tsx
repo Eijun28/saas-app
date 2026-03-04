@@ -63,7 +63,7 @@ export function RequestTimeline({ demande, requestId }: RequestTimelineProps) {
         .eq('prestataire_id', (await supabase.auth.getUser()).data.user?.id ?? '')
         .order('created_at', { ascending: true })
 
-      devisData?.forEach(d => {
+      devisData?.forEach((d: { id: string; amount: number; created_at: string; title: string | null }) => {
         timeline.push({
           id: `devis-${d.id}`,
           type: 'devis',
@@ -88,7 +88,7 @@ export function RequestTimeline({ demande, requestId }: RequestTimelineProps) {
           .order('created_at', { ascending: true })
           .limit(20)
 
-        msgs?.forEach(m => {
+        msgs?.forEach((m: { id: string; content: string; created_at: string; sender_id: string }) => {
           timeline.push({
             id: `msg-${m.id}`,
             type: 'message',
@@ -125,7 +125,7 @@ export function RequestTimeline({ demande, requestId }: RequestTimelineProps) {
 
   return (
     <div className="relative space-y-0">
-      {events.map((event, i) => {
+      {events.map((event: TimelineEvent, i: number) => {
         const config = EVENT_CONFIG[event.type]
         const Icon = config.icon
         const isLast = i === events.length - 1

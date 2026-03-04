@@ -89,7 +89,7 @@ export function RequestTags({ requestId, tags, onChange }: RequestTagsProps) {
 
         <button
           type="button"
-          onClick={() => setShowPicker(p => !p)}
+          onClick={() => setShowPicker((p: boolean) => !p)}
           disabled={adding}
           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border border-dashed border-gray-300 text-gray-400 hover:border-[#823F91] hover:text-[#823F91] transition-colors"
         >
