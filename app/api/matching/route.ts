@@ -143,6 +143,13 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Vérifier l'authentification
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
     const body: MatchingRequest = await request.json();
     const { couple_id, conversation_id, search_criteria } = body;
 
@@ -154,12 +161,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier que le couple existe
-    // matching_history.couple_id référence maintenant couples(id) directement
+    // Vérifier que le couple appartient à l'utilisateur connecté (protection IDOR)
     const { data: couple } = await supabase
       .from('couples')
       .select('id')
       .eq('id', couple_id)
+      .eq('user_id', user.id)
       .single();
 
     if (!couple) {
