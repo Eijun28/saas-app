@@ -139,7 +139,7 @@ export default function FavorisPage() {
           description_courte: profile.description_courte,
           annees_experience: profile.annees_experience,
           avgRating: rating ? Number(rating.rating) : 0,
-          reviewCount: rating ? rating.total_reviews : 0,
+          reviewCount: rating ? (rating.total_reviews ?? 0) : 0,
           cultures: culturesByProvider.get(fav.prestataire_id) || [],
         }
       })
