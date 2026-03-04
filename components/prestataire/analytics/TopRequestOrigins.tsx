@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import { Sparkles, Search, HelpCircle } from 'lucide-react'
 
 interface RequestOrigin {
+  [key: string]: string | number
   source: string   // 'matching' | 'recherche' | 'unknown'
   label:  string
   count:  number
