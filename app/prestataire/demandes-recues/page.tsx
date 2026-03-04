@@ -248,7 +248,8 @@ export default function DemandesRecuesPage() {
     terminees: applyFilters(demandes.terminees),
   }
 
-  if (uiState.loading === 'loading') return <LoadingSpinner size="lg" text="Chargement des demandes..." />
+  const isLoading = uiState.loading === 'loading'
+  if (isLoading) return <LoadingSpinner size="lg" text="Chargement des demandes..." />
 
   // ─── Rendu ────────────────────────────────────────────────────────────────────
 
@@ -280,11 +281,11 @@ export default function DemandesRecuesPage() {
             variant="ghost"
             size="icon"
             onClick={fetchDemandes}
-            disabled={uiState.loading === 'loading'}
+            disabled={isLoading}
             className="h-8 w-8 rounded-lg"
             title="Rafraîchir"
           >
-            <RefreshCw className={cn('h-3.5 w-3.5', uiState.loading === 'loading' && 'animate-spin')} />
+            <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
           </Button>
         </div>
       </div>
