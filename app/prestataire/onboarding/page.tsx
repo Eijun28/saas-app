@@ -334,7 +334,7 @@ export default function OnboardingPage() {
                           <div className="border border-gray-200 rounded-xl overflow-hidden">
                             {/* Search bar */}
                             <div className="relative border-b border-gray-100">
-                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                               <input
                                 type="text"
                                 value={pickerSearch}
@@ -344,15 +344,15 @@ export default function OnboardingPage() {
                                   else { setPickerStep('category'); setPickerCategory(null) }
                                 }}
                                 placeholder="Rechercher un métier..."
-                                className="w-full pl-9 pr-4 py-3 text-sm bg-white outline-none placeholder-gray-400"
+                                className="w-full pl-9 pr-9 py-3 text-sm bg-white outline-none placeholder-gray-400 min-w-0"
                               />
                               {pickerSearch && (
                                 <button
                                   type="button"
                                   onClick={() => { setPickerSearch(''); setPickerStep('category'); setPickerCategory(null) }}
-                                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                                 >
-                                  <X className="h-4 w-4 text-gray-400" />
+                                  <X className="h-4 w-4" />
                                 </button>
                               )}
                             </div>
