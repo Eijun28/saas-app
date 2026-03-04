@@ -105,13 +105,8 @@ export async function getConversationsClient(userId: string): Promise<Conversati
       .order('created_at', { ascending: false })
       .limit(conversationIds.length * 5),
 
-    // 5. Messages non lus : seulement le champ conversation_id (léger)
-    supabase
-      .from('messages')
-      .select('conversation_id')
-      .in('conversation_id', conversationIds)
-      .neq('sender_id', userId)
-      .is('read_at', null),
+    // 5. Messages non lus : read_at n'existe pas encore en DB → retourne vide
+    Promise.resolve({ data: [] as { conversation_id: string }[], error: null }),
   ])
 
   // Maps pour accès O(1)
