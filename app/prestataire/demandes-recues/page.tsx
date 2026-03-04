@@ -129,7 +129,7 @@ export default function DemandesRecuesPage() {
         id: r.id, couple_id: r.couple_id, provider_id: r.provider_id,
         status: r.status, initial_message: r.initial_message || '',
         created_at: r.created_at,
-        couple: c ? { partner_1_name: c.partner_1_name, partner_2_name: c.partner_2_name, wedding_date: c.wedding_date } : null,
+        couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined } : null,
       }
     })
 

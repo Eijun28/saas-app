@@ -30,7 +30,8 @@ export default async function AmbassadeursPage() {
     admin.from('referral_usages').select('referrer_id').eq('conversion_bonus_credited', true).in('referrer_id', providerIds),
   ])
 
-  const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+  type ProfileRow = { id: string; prenom: string | null; nom: string | null; nom_entreprise: string | null; email: string }
+  const profileMap = new Map<string, ProfileRow>((profiles as ProfileRow[] || []).map(p => [p.id, p]))
 
   const earningsByAmb = new Map<string, { total: number; pending: number; paid: number }>()
   for (const e of earningsRaw || []) {

@@ -55,7 +55,8 @@ export async function GET() {
     .select('id, prenom, nom, nom_entreprise, email')
     .in('id', providerIds)
 
-  const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+  type ProfileRow = { id: string; prenom: string | null; nom: string | null; nom_entreprise: string | null; email: string }
+  const profileMap = new Map<string, ProfileRow>((profiles as ProfileRow[] || []).map(p => [p.id, p]))
 
   // Stats de gains par ambassadeur
   const { data: earningsRaw } = await admin
