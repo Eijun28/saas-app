@@ -66,7 +66,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
       className="rounded-xl border border-gray-200 bg-white overflow-hidden"
     >
       {/* Navigation header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
         <Button
           variant="ghost"
           size="icon"
@@ -91,7 +91,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
         {DAY_LABELS.map(day => (
           <div
             key={day}
-            className="py-2 text-center text-[11px] font-medium text-gray-400 uppercase tracking-wide"
+            className="py-2.5 sm:py-3 text-center text-[11px] font-medium text-gray-400 uppercase tracking-wide"
           >
             {day}
           </div>
@@ -109,7 +109,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
             <div
               key={idx}
               className={cn(
-                'min-h-[80px] p-1.5',
+                'min-h-[90px] sm:min-h-[100px] p-2 sm:p-2.5',
                 !isLastCol && 'border-r border-gray-50',
                 !isLastRow && 'border-b border-gray-50',
                 !day && 'bg-gray-50/40',
@@ -119,7 +119,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
                 <>
                   <div
                     className={cn(
-                      'h-6 w-6 rounded-full flex items-center justify-center text-xs mb-1 mx-auto',
+                      'h-7 w-7 rounded-full flex items-center justify-center text-xs mb-1.5 mx-auto',
                       isToday(day)
                         ? 'bg-[#823F91] text-white font-semibold'
                         : dayEvents.length > 0
@@ -130,7 +130,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
                     {day}
                   </div>
 
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     {dayEvents.slice(0, 2).map(event => {
                       const catEmoji   = event.category ? EVENT_CATEGORY_CONFIG[event.category]?.emoji : null
                       const statusConf = event.status   ? EVENT_STATUS_CONFIG[event.status]             : null
@@ -140,7 +140,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
                           onClick={() => onEventClick(event)}
                           title={event.title}
                           className={cn(
-                            'w-full text-left text-[10px] leading-snug px-1.5 py-0.5 rounded truncate font-medium transition-colors',
+                            'w-full text-left text-[10px] leading-snug px-2 py-1 rounded truncate font-medium transition-colors',
                             statusConf?.bgColor ?? 'bg-[#823F91]/10',
                             statusConf?.color   ?? 'text-[#823F91]',
                             'hover:opacity-80',
@@ -165,7 +165,7 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
 
       {/* Message si aucun événement ce mois */}
       {eventsByDay.size === 0 && (
-        <div className="py-3 text-center text-xs text-gray-400 border-t border-gray-50">
+        <div className="py-4 text-center text-xs text-gray-400 border-t border-gray-50">
           Aucun événement ce mois-ci
         </div>
       )}

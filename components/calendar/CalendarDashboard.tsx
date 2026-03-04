@@ -381,7 +381,7 @@ export function CalendarDashboard({
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center py-2.5 sm:py-3 md:py-3.5 text-xs sm:text-sm md:text-base font-semibold text-gray-600"
+              className="text-center py-3 sm:py-3.5 md:py-4 text-xs sm:text-sm md:text-base font-semibold text-gray-600"
             >
               {day}
             </div>
@@ -406,9 +406,9 @@ export function CalendarDashboard({
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.008 }}
                 className={cn(
-                  'border-r border-b border-gray-100 p-1.5 sm:p-2 md:p-2.5',
+                  'border-r border-b border-gray-100 p-2 sm:p-2.5 md:p-3',
                   'hover:bg-[#F5F0F7]/30 active:bg-[#F5F0F7]/60 transition-all duration-150 cursor-pointer touch-manipulation',
-                  'flex flex-col items-center sm:items-start justify-start min-h-[52px] sm:min-h-[80px] md:min-h-[90px]',
+                  'flex flex-col items-center sm:items-start justify-start min-h-[60px] sm:min-h-[90px] md:min-h-[100px]',
                   !isCurrentMonth && 'bg-gray-50/30',
                   isCurrentMonth && 'bg-white',
                   isPastDay && 'opacity-50'
@@ -421,7 +421,7 @@ export function CalendarDashboard({
                 }}
               >
                 {/* Numéro du jour */}
-                <div className="flex items-center justify-center mb-1.5 sm:mb-1 flex-shrink-0">
+                <div className="flex items-center justify-center mb-2 sm:mb-1.5 flex-shrink-0">
                   <span
                     className={cn(
                       'w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm sm:text-base md:text-lg font-semibold transition-all',
@@ -565,7 +565,7 @@ export function CalendarDashboard({
                   <div
                     key={index}
                     className={cn(
-                      'text-center py-3 transition-all cursor-pointer touch-manipulation hover:bg-[#F5F0F7]/40 border-r border-gray-100 last:border-r-0',
+                      'text-center py-3.5 sm:py-4 transition-all cursor-pointer touch-manipulation hover:bg-[#F5F0F7]/40 border-r border-gray-100 last:border-r-0',
                       isToday && 'bg-[#F5F0F7]/60',
                       isPastDay && 'opacity-50'
                     )}
@@ -855,7 +855,7 @@ export function CalendarDashboard({
     }
 
     return (
-      <div className="max-w-4xl mx-auto p-3 xs:p-4 sm:p-5 md:p-6 space-y-4 xs:space-y-5 sm:space-y-6 overflow-y-auto">
+      <div className="max-w-4xl mx-auto p-4 xs:p-5 sm:p-6 md:p-7 space-y-4 xs:space-y-5 sm:space-y-6 overflow-y-auto">
         {dates.map((dateStr) => {
           const date = new Date(dateStr)
           const eventsForDate = groupedEvents[dateStr]
@@ -900,7 +900,7 @@ export function CalendarDashboard({
                 {eventsForDate.map((event) => (
                   <div
                     key={event.id}
-                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-[#F5F0F7]/50 cursor-pointer transition-all touch-manipulation min-h-[52px]"
+                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3.5 sm:p-4 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-[#F5F0F7]/50 cursor-pointer transition-all touch-manipulation min-h-[56px]"
                     onClick={() => handleEventClick(event)}
                   >
                     {event.time && (
@@ -934,7 +934,7 @@ export function CalendarDashboard({
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col gap-3 sm:gap-0 px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-white border-b border-gray-100">
+        <div className="flex-shrink-0 flex flex-col gap-3 sm:gap-0 px-4 sm:px-5 md:px-6 py-3.5 sm:py-4 md:py-5 bg-white border-b border-gray-100">
           {/* Mobile: Navigation compacte */}
           <div className="flex items-center justify-between sm:hidden gap-1">
             {showSidebar && (
