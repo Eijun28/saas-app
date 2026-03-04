@@ -136,8 +136,14 @@ export default function MessageriePage() {
               .in('id', prestataireIds) : { data: null }
           ])
           
-          const prestataireMap = new Map(prestataireProfiles.data?.map(p => [p.user_id, p]) || [])
-          const profileMap = new Map(profiles.data?.map(p => [p.id, p]) || [])
+          type MsgPrestataireProfile = { user_id: string; nom_entreprise: string | null }
+          type MsgProfileResult = { id: string; prenom: string | null; nom: string | null; avatar_url: string | null }
+          const prestataireMap = new Map<string, MsgPrestataireProfile>(
+            (prestataireProfiles.data as MsgPrestataireProfile[] ?? []).map(p => [p.user_id, p])
+          )
+          const profileMap = new Map<string, MsgProfileResult>(
+            (profiles.data as MsgProfileResult[] ?? []).map(p => [p.id, p])
+          )
           
           // Charger les derniers messages pour chaque conversation
           for (const conv of data) {

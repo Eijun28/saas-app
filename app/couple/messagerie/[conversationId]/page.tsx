@@ -24,8 +24,11 @@ export default async function ConversationPage({ params }: ConversationPageProps
     notFound()
   }
 
+  // Non-null assertion: notFound() throws so conversation is guaranteed defined here
+  const safeConversation = conversation!
+
   // Vérifier que la request associée est acceptée
-  if (conversation.request?.status !== 'accepted') {
+  if (safeConversation.request?.status !== 'accepted') {
     redirect('/couple/messagerie')
   }
 
@@ -33,7 +36,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
   const initialMessages = await getMessagesServer(conversationId)
 
   // Déterminer l'autre partie
-  const otherPartyId = conversation.couple_id === user.id ? conversation.provider_id : conversation.couple_id
+  const otherPartyId = safeConversation.couple_id === user.id ? safeConversation.provider_id : safeConversation.couple_id
 
   // Récupérer toutes les conversations pour la liste
   const allConversations = await getConversationsServer(user.id)
@@ -56,13 +59,13 @@ export default async function ConversationPage({ params }: ConversationPageProps
       <div className="flex flex-col h-full bg-white overflow-hidden">
         <ChatHeader
           conversation={{
-            id: conversation.id,
-            couple_id: conversation.couple_id,
-            provider_id: conversation.provider_id,
-            request_id: conversation.request_id,
-            created_at: conversation.created_at,
+            id: safeConversation.id,
+            couple_id: safeConversation.couple_id,
+            provider_id: safeConversation.provider_id,
+            request_id: safeConversation.request_id,
+            created_at: safeConversation.created_at,
           }}
-          otherParty={conversation.other_party || { id: otherPartyId, name: 'Utilisateur' }}
+          otherParty={safeConversation.other_party || { id: otherPartyId, name: 'Utilisateur' }}
           userType="couple"
         />
 

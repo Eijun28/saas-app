@@ -266,7 +266,7 @@ export default function RsvpPage() {
                     className="text-center py-6"
                   >
                     {(() => {
-                      const cfg = STATUS_CONFIG[selected]
+                      const cfg = STATUS_CONFIG[selected as RsvpStatus]
                       return (
                         <>
                           <div className={`w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center ${cfg.doneBg}`}>

@@ -276,7 +276,11 @@ export default function DashboardPrestatairePage() {
         const activities: any[] = []
         const { data: recentRequests } = await supabase.from('requests').select('id, couple_id, created_at, status').eq('provider_id', user.id).order('created_at', { ascending: false }).limit(5)
         if (recentRequests && recentRequests.length > 0) {
-          const coupleUserIds = [...new Set(recentRequests.map(r => r.couple_id).filter((id): id is string => !!id))]
+          const coupleUserIds: string[] = [...new Set(
+            (recentRequests as { id: string; couple_id: string | null; created_at: string; status: string }[])
+              .map(r => r.couple_id)
+              .filter((id): id is string => !!id)
+          )]
           const couplesMap = await getCouplesByUserIds(coupleUserIds, ['user_id', 'partner_1_name', 'partner_2_name'])
           recentRequests.forEach((req: any) => {
             const couple = couplesMap.get(req.couple_id)
