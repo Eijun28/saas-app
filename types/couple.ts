@@ -266,9 +266,7 @@ export interface Devis {
   valid_until?: string | null
   validity_date?: string // Ancien champ, pour compatibilité
   pdf_url?: string | null
-  attachment_url?: string | null
   status: 'pending' | 'accepted' | 'rejected' | 'negotiating'
-  viewed_at?: string | null
   accepted_at?: string | null
   rejected_at?: string | null
   created_at: string

@@ -22,14 +22,12 @@ export interface CouplePreferences {
   id: string
   couple_id: string
   primary_culture_id: string | null
-  secondary_culture_ids: string[] | null
   cultural_preferences: object | null
   languages: string[]
   essential_services: string[]
   optional_services: string[]
   service_priorities: object | null
   budget_breakdown: object | null
-  special_requests: string | null
   wedding_description: string | null
   profile_completed: boolean
   completion_percentage: number

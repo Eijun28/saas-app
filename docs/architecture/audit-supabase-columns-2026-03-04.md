@@ -4,6 +4,7 @@
 **Scope :** 49 tables publiques, ~450 colonnes
 **Methode :** Scan automatisé du code source (.ts/.tsx/.sql) croisé avec le schema Supabase réel
 **Exclusions :** node_modules, .next, types/database.types.ts (auto-généré), fichiers de migration SQL
+**Statut :** NETTOYAGE APPLIQUÉ — migration `cleanup_dead_columns` exécutée + types TS mis à jour
 
 ---
 
