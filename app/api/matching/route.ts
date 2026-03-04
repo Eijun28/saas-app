@@ -731,10 +731,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateExplanation(
-  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
-  provider: { average_rating: number; annees_experience: number },
-  criteria: MatchingRequest['search_criteria']
 /**
  * Génère une explication de match avec GPT-4o-mini pour les top 3 résultats.
  * Une seule requête pour les 3 prestataires (efficacité).
