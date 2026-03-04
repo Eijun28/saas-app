@@ -322,6 +322,11 @@ export async function POST(request: NextRequest) {
 
     // ÉTAPE 1 : FILTRES DURS avec jointures optimisées
     // Utilisation de jointures Supabase pour éviter les requêtes N+1
+    // Cap à 200 candidats pour éviter de charger tout le catalogue en mémoire.
+    // Le scoring en mémoire sur 200 providers est largement suffisant pour retourner
+    // les top 3 pertinents — au-delà, le gain de qualité est négligeable.
+    const MATCHING_CANDIDATES_LIMIT = 200;
+
     let query = supabase
       .from('profiles')
       .select(`
@@ -350,7 +355,8 @@ export async function POST(request: NextRequest) {
           zone_id
         )
       `)
-      .eq('role', 'prestataire');
+      .eq('role', 'prestataire')
+      .limit(MATCHING_CANDIDATES_LIMIT);
 
     // Recherche flexible du service_type (insensible à la casse et aux variations)
     // D'abord essayer une correspondance exacte
@@ -413,7 +419,8 @@ export async function POST(request: NextRequest) {
             )
           `)
           .eq('role', 'prestataire')
-          .eq('service_type', normalizedServiceType);
+          .eq('service_type', normalizedServiceType)
+          .limit(MATCHING_CANDIDATES_LIMIT);
         
         if (fallbackError) {
           return NextResponse.json(
