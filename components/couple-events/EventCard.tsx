@@ -63,23 +63,23 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
         )}
         onClick={onClick}
       >
-        <CardContent className="p-4 sm:p-5 border-l-[3px] border-l-[#823F91]/40 group-hover:border-l-[#823F91]">
-          <div className="flex items-start justify-between gap-3">
+        <CardContent className="p-3 sm:p-4 md:p-5 border-l-[3px] border-l-[#823F91]/40 group-hover:border-l-[#823F91]">
+          <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div className="flex-1 min-w-0">
               {/* Titre + badge statut */}
-              <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-1.5 flex-wrap">
                 {categoryConfig && (
-                  <span className="text-base leading-none flex-shrink-0" title={categoryConfig.label}>
+                  <span className="text-sm sm:text-base leading-none flex-shrink-0" title={categoryConfig.label}>
                     {categoryConfig.emoji}
                   </span>
                 )}
-                <h3 className="text-base font-semibold text-gray-900 truncate">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                   {event.title}
                 </h3>
                 {statusConfig && (
                   <span
                     className={cn(
-                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0',
+                      'inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium flex-shrink-0',
                       statusConfig.bgColor,
                       statusConfig.color,
                     )}
@@ -91,28 +91,28 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
 
               {/* Description */}
               {event.description && (
-                <p className="text-sm text-gray-500 mb-2.5 line-clamp-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-2.5 line-clamp-2 leading-relaxed">
                   {event.description}
                 </p>
               )}
 
               {/* Meta : date, lieu, horaire */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-gray-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-[#823F91]/60" />
-                  {formatDate(event.event_date)}
+              <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5">
+                  <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#823F91]/60 flex-shrink-0" />
+                  <span className="truncate">{formatDate(event.event_date)}</span>
                 </span>
 
                 {event.location && (
-                  <span className="inline-flex items-center gap-1.5 max-w-[200px]">
-                    <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 max-w-[150px] sm:max-w-[200px]">
+                    <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 flex-shrink-0" />
                     <span className="truncate">{event.location}</span>
                   </span>
                 )}
 
                 {timeLabel && (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-                    <Clock className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-gray-400">
+                    <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 flex-shrink-0" />
                     {timeLabel}
                   </span>
                 )}
@@ -120,11 +120,11 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
             </div>
 
             {/* Badge J-X + flèche */}
-            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            <div className="flex flex-col items-end gap-1.5 sm:gap-2 flex-shrink-0">
               {daysInfo && (
                 <span
                   className={cn(
-                    'text-[11px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap',
+                    'text-[10px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap',
                     daysInfo.variant === 'today'  && 'bg-[#823F91]/10 text-[#823F91]',
                     daysInfo.variant === 'future' && 'bg-blue-50 text-blue-600',
                     daysInfo.variant === 'past'   && 'bg-gray-100 text-gray-400',
@@ -133,7 +133,7 @@ export function EventCard({ event, index, onClick }: EventCardProps) {
                   {daysInfo.label}
                 </span>
               )}
-              <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-[#823F91] transition-colors mt-auto" />
+              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300 group-hover:text-[#823F91] transition-colors mt-auto" />
             </div>
           </div>
         </CardContent>

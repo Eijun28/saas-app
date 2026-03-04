@@ -96,12 +96,12 @@ export function EventForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[520px] max-w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-4 sm:p-6">
+        <DialogHeader className="pb-1 sm:pb-2">
+          <DialogTitle className="text-base sm:text-lg">
             {isEditing ? "Modifier l'événement" : 'Ajouter un événement'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             {isEditing
               ? 'Modifiez les détails de votre événement'
               : 'Créez un nouvel événement pour votre mariage'}
@@ -109,33 +109,34 @@ export function EventForm({
         </DialogHeader>
 
         <motion.div
-          className="space-y-4 py-4"
+          className="space-y-3 sm:space-y-4 py-2 sm:py-4"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
         >
           {/* Titre */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Titre *</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="title" className="text-sm">Titre *</Label>
             <Input
               id="title"
               value={form.title}
               onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))}
               placeholder="Titre de votre événement"
+              className="h-9 sm:h-10"
             />
           </div>
 
           {/* Catégorie + Statut côte à côte */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Catégorie</Label>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-sm">Catégorie</Label>
               <Select
                 value={form.category}
                 onValueChange={(val) =>
                   setForm(prev => ({ ...prev, category: val as EventCategory | '' }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 sm:h-10 text-sm">
                   <SelectValue placeholder="Catégorie..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -153,15 +154,15 @@ export function EventForm({
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Statut</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-sm">Statut</Label>
               <Select
                 value={form.status}
                 onValueChange={(val) =>
                   setForm(prev => ({ ...prev, status: val as CoupleEventStatus }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-9 sm:h-10 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,49 +182,50 @@ export function EventForm({
           </div>
 
           {/* Date */}
-          <div className="space-y-2">
-            <Label>Date</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-sm">Date</Label>
             <DatePicker
               value={form.event_date || undefined}
               onChange={(date) => setForm(prev => ({ ...prev, event_date: date || null }))}
               placeholder="Date de l'événement"
+              className="h-9 sm:h-10"
             />
           </div>
 
           {/* Horaires */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="start_time" className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-gray-400" />
-                Heure de début
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="start_time" className="flex items-center gap-1 text-sm">
+                <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
+                Début
               </Label>
               <Input
                 id="start_time"
                 type="time"
                 value={form.start_time}
                 onChange={(e) => setForm(prev => ({ ...prev, start_time: e.target.value }))}
-                className="text-sm"
+                className="text-sm h-9 sm:h-10"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="end_time" className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-gray-400" />
-                Heure de fin
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="end_time" className="flex items-center gap-1 text-sm">
+                <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
+                Fin
               </Label>
               <Input
                 id="end_time"
                 type="time"
                 value={form.end_time}
                 onChange={(e) => setForm(prev => ({ ...prev, end_time: e.target.value }))}
-                className="text-sm"
+                className="text-sm h-9 sm:h-10"
               />
             </div>
           </div>
 
           {/* Lieu */}
-          <div className="space-y-2">
-            <Label htmlFor="location" className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-gray-400" />
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="location" className="flex items-center gap-1 text-sm">
+              <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
               Lieu
             </Label>
             <Input
@@ -231,34 +233,36 @@ export function EventForm({
               value={form.location}
               onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
               placeholder="Salle, adresse, ville..."
+              className="h-9 sm:h-10"
             />
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="description" className="text-sm">Description</Label>
             <Textarea
               id="description"
               value={form.description}
               onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Décrivez votre événement..."
-              className="min-h-[80px] resize-none"
-              rows={3}
+              className="min-h-[60px] sm:min-h-[80px] resize-none text-sm"
+              rows={2}
             />
           </div>
         </motion.div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0 pt-2 sm:pt-0">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={submitting || loading}
+            className="w-full sm:w-auto h-9 sm:h-10 text-sm"
           >
             Annuler
           </Button>
           <Button
             onClick={handleSubmit}
-            className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="bg-[#823F91] hover:bg-[#6D3478] text-white w-full sm:w-auto h-9 sm:h-10 text-sm"
             disabled={!form.title || submitting || loading}
           >
             {submitting

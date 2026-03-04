@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2, CalendarCheck, CalendarDays, Heart } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -260,24 +260,41 @@ export default function TimelinePage() {
     )
   }
 
+  // Stats
+  const now = new Date()
+  const todayKey = now.toISOString().split('T')[0]
+  const todayCalEvents = calendarEvents.filter(e => e.date === todayKey)
+  const weekEnd = new Date(now)
+  weekEnd.setDate(now.getDate() + 7)
+  const weekEndKey = weekEnd.toISOString().split('T')[0]
+  const weekCalEvents = calendarEvents.filter(e => e.date >= todayKey && e.date <= weekEndKey)
+
+  // Days until wedding
+  const daysUntilWedding = dateMarriage ? (() => {
+    const date = new Date(dateMarriage)
+    const today = new Date()
+    const diff = date.getTime() - today.getTime()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  })() : null
+
   return (
-    <div className="h-[calc(100dvh-140px)] min-h-[480px] flex flex-col">
+    <div className="h-[calc(100dvh-80px)] sm:h-[calc(100dvh-140px)] min-h-[400px] flex flex-col gap-3 sm:gap-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.15 }}
-        className="mb-4 sm:mb-5 flex-shrink-0"
+        className="flex-shrink-0 space-y-3"
       >
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-[#823F91] tracking-tight mb-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#823F91] tracking-tight mb-0.5 sm:mb-1">
               Calendrier de mariage
             </h1>
             {dateMarriage ? (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
-                <CalendarIcon className="h-4 w-4 text-[#823F91] flex-shrink-0" />
-                <span>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
+                <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91] flex-shrink-0" />
+                <span className="hidden sm:inline">
                   {(() => {
                     const dateStr = new Date(dateMarriage).toLocaleDateString('fr-FR', {
                       weekday: 'long',
@@ -288,21 +305,24 @@ export default function TimelinePage() {
                     return dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
                   })()}
                 </span>
+                <span className="sm:hidden">
+                  {new Date(dateMarriage).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
                 <span className="text-gray-300">•</span>
                 <span className="font-semibold text-[#823F91]">
-                  {(() => {
-                    const date = new Date(dateMarriage)
-                    const today = new Date()
-                    const diff = date.getTime() - today.getTime()
-                    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-                    if (days > 0) return `J-${days}`
-                    if (days === 0) return "Aujourd'hui !"
-                    return `Il y a ${Math.abs(days)} j`
-                  })()}
+                  {daysUntilWedding !== null && (
+                    daysUntilWedding > 0 ? `J-${daysUntilWedding}` :
+                    daysUntilWedding === 0 ? "Aujourd'hui !" :
+                    `Il y a ${Math.abs(daysUntilWedding)} j`
+                  )}
                 </span>
               </div>
             ) : (
-              <p className="text-sm text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-400">
                 <a href="/couple/profil" className="text-[#823F91] hover:text-[#6D3478] underline">
                   Définir la date de mariage
                 </a>{' '}
@@ -311,6 +331,54 @@ export default function TimelinePage() {
             )}
           </div>
         </div>
+
+        {/* Stats cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="grid grid-cols-3 gap-2 sm:gap-3"
+        >
+          {daysUntilWedding !== null && daysUntilWedding > 0 ? (
+            <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-pink-50 flex-shrink-0">
+                <Heart className="h-4 w-4 text-pink-500" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg sm:text-xl font-bold text-gray-900">J-{daysUntilWedding}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Mariage</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#823F91]/10 flex-shrink-0">
+                <CalendarCheck className="h-4 w-4 text-[#823F91]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg sm:text-xl font-bold text-gray-900">{todayCalEvents.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Aujourd'hui</p>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#9D5FA8]/10 flex-shrink-0">
+              <CalendarDays className="h-4 w-4 text-[#9D5FA8]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-gray-900">{weekCalEvents.length}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 truncate">Cette semaine</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#B87FC0]/10 flex-shrink-0">
+              <CalendarIcon className="h-4 w-4 text-[#B87FC0]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-lg sm:text-xl font-bold text-gray-900">{calendarEvents.length}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 truncate">Total</p>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* Calendrier plein écran */}
@@ -318,7 +386,7 @@ export default function TimelinePage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2, delay: 0.05 }}
-        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+        className="flex-1 min-h-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
       >
         <CalendarDashboard
           events={calendarEvents}
