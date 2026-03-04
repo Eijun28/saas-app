@@ -1,14 +1,25 @@
 // app/api/matching/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import OpenAI from 'openai';
 import {
   calculateTotalScore,
   enrichProviderWithFairness,
   type FairnessData,
   type ExtendedSearchCriteria,
+  type ExtendedScoreBreakdown,
 } from '@/lib/matching/scoring';
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
+import type { SearchCriteria } from '@/types/chatbot';
 import { logger } from '@/lib/logger';
+
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 /**
  * Normalise le service_type extrait par le chatbot pour correspondre au format de la base
@@ -83,6 +94,27 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
     'cake': 'patissier',
     'salle': 'salle',
     'lieu': 'salle',
+
+    // Types d'événements → service type correspondant
+    'mariage_religieux': 'officiant',
+    'mariage religieux': 'officiant',
+    'nikah': 'officiant',
+    'mariage civil': 'organisateur_ceremonie',
+    'mariage_civil': 'organisateur_ceremonie',
+    'ceremonie_laique': 'organisateur_ceremonie',
+    'ceremonie laique': 'organisateur_ceremonie',
+    'cérémonie laïque': 'organisateur_ceremonie',
+    'officiant': 'officiant',
+    'henne': 'henna_artiste',
+    'henné': 'henna_artiste',
+    'henna': 'henna_artiste',
+    'mehndi': 'henna_artiste',
+    'sangeet': 'animation',
+    'kina gecesi': 'animation',
+    'kina_gecesi': 'animation',
+    'baraat': 'animation',
+    'ceremonie': 'organisateur_ceremonie',
+    'cérémonie': 'organisateur_ceremonie',
   };
   
   // Chercher une correspondance exacte d'abord
@@ -593,6 +625,9 @@ export async function POST(request: NextRequest) {
           ...provider,
           tags: allTagsMap.get(providerId) || [],
           specialty_tags: specialtyTagsMap.get(providerId) || [],
+          // languages est deja dans provider via le SELECT, on s'assure qu'il est transmis
+          languages: Array.isArray(provider.languages) ? provider.languages : [],
+          service_type: provider.service_type,
         },
         fairnessDataMap.get(providerId) || null
       );
@@ -602,20 +637,13 @@ export async function POST(request: NextRequest) {
         enrichedProvider
       );
 
-      // Generer explication simple
-      const providerForExplanation = {
-        average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
-        annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
-      };
-      const explanation = generateExplanation(breakdown, providerForExplanation, search_criteria);
-
       return {
         provider_id: provider.id,
         provider,
         score,
         rank: 0, // Sera defini apres tri
         breakdown,
-        explanation,
+        explanation: '', // Rempli après tri par GPT
       };
     });
 
@@ -627,6 +655,20 @@ export async function POST(request: NextRequest) {
 
     // Selectionner les top 3 pour l'affichage initial
     const topMatches = sortedProviders.slice(0, 3);
+
+    // ETAPE 4.5 : GENERER LES EXPLICATIONS GPT POUR LES TOP 3
+    // (en parallèle, avec fallback rule-based si GPT indisponible)
+    try {
+      const gptExplanations = await generateGPTExplanations(
+        topMatches.map(m => ({ breakdown: m.breakdown, provider: m.provider, score: m.score })),
+        search_criteria
+      );
+      topMatches.forEach((match, i) => {
+        match.explanation = gptExplanations[i] ?? match.explanation;
+      });
+    } catch (explainErr) {
+      logger.warn('⚠️ Explication GPT non bloquante ignorée:', explainErr);
+    }
 
     // ETAPE 5 : SAUVEGARDER DANS MATCHING_HISTORY
     // matching_history.couple_id reference maintenant couples(id) directement
@@ -693,6 +735,93 @@ function generateExplanation(
   breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
   provider: { average_rating: number; annees_experience: number },
   criteria: MatchingRequest['search_criteria']
+/**
+ * Génère une explication de match avec GPT-4o-mini pour les top 3 résultats.
+ * Une seule requête pour les 3 prestataires (efficacité).
+ * Fallback rule-based si GPT indisponible ou en erreur.
+ */
+async function generateGPTExplanations(
+  providers: Array<{
+    breakdown: ExtendedScoreBreakdown;
+    provider: Record<string, unknown>;
+    score: number;
+  }>,
+  criteria: SearchCriteria
+): Promise<string[]> {
+  // Fallback toujours disponible
+  const fallbacks = providers.map(({ breakdown, provider }) =>
+    generateFallbackExplanation(breakdown, {
+      average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
+      annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
+    })
+  );
+
+  if (!process.env.OPENAI_API_KEY) return fallbacks;
+
+  try {
+    const providersContext = providers.map(({ provider, breakdown, score }, i) => {
+      const rating = typeof provider.average_rating === 'number' ? provider.average_rating : 0;
+      const reviews = typeof provider.review_count === 'number' ? provider.review_count : 0;
+      const exp = typeof provider.annees_experience === 'number' ? provider.annees_experience : 0;
+      const name = typeof provider.nom_entreprise === 'string' ? provider.nom_entreprise : `Prestataire ${i + 1}`;
+      const city = typeof provider.ville_principale === 'string' ? provider.ville_principale : '';
+      return [
+        `Prestataire ${i + 1} : ${name}${city ? ` (${city})` : ''}`,
+        `- Score global : ${score}/100`,
+        `- Match culturel : ${breakdown.cultural_match}/30`,
+        `- Budget : ${breakdown.budget_match}/20`,
+        `- Réputation : ${rating}/5 (${reviews} avis)`,
+        `- Expérience : ${exp} an${exp > 1 ? 's' : ''}`,
+        `- Localisation : ${breakdown.location_match}/10`,
+        breakdown.event_types_match ? `- Couverture événements : ${breakdown.event_types_match}/8` : '',
+        breakdown.dietary_match ? `- Alimentaire : ${breakdown.dietary_match > 0 ? '✓ couvert' : '✗ non couvert'}` : '',
+        breakdown.language_match ? `- Langues : ${breakdown.language_match > 0 ? '✓ couvertes' : ''}` : '',
+      ].filter(Boolean).join('\n');
+    }).join('\n\n');
+
+    const criteriaLines = [
+      `Service : ${criteria.service_type}`,
+      criteria.cultures?.length ? `Cultures : ${criteria.cultures.join(', ')} (importance : ${criteria.cultural_importance})` : '',
+      (criteria.budget_min || criteria.budget_max) ? `Budget : ${criteria.budget_min ?? ''}€ – ${criteria.budget_max ?? ''}€` : '',
+      criteria.wedding_city ? `Lieu : ${criteria.wedding_city}` : '',
+      criteria.event_types?.length ? `Événements : ${criteria.event_types.join(', ')}` : '',
+      criteria.dietary_requirements?.length ? `Alimentation requise : ${criteria.dietary_requirements.join(', ')}` : '',
+      criteria.vision_description ? `Vision du couple : ${criteria.vision_description}` : '',
+    ].filter(Boolean).join('\n');
+
+    const response = await getOpenAI().chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `Tu es un conseiller mariage expert et chaleureux. Pour chaque prestataire, génère une explication de match personnalisée (2 phrases max, en français) qui explique CONCRÈTEMENT pourquoi ce prestataire correspond à ce couple. Sois précis et humain, mentionne des éléments spécifiques (culture, budget, événements). Réponds uniquement en JSON : {"explanations": ["explication1", "explication2", "explication3"]}`,
+        },
+        {
+          role: 'user',
+          content: `Critères du couple :\n${criteriaLines}\n\n${providersContext}`,
+        },
+      ],
+      temperature: 0.65,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+    });
+
+    const parsed = JSON.parse(response.choices[0].message.content ?? '{}');
+    if (Array.isArray(parsed.explanations) && parsed.explanations.length === providers.length) {
+      return parsed.explanations.map((e: unknown) =>
+        typeof e === 'string' && e.trim() ? e.trim() : fallbacks[0]
+      );
+    }
+  } catch (err) {
+    logger.warn('⚠️ GPT explanation failed, fallback rule-based:', err instanceof Error ? err.message : err);
+  }
+
+  return fallbacks;
+}
+
+function generateFallbackExplanation(
+  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number },
+  provider: { average_rating: number; annees_experience: number }
 ): string {
   const reasons = [];
 

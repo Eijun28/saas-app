@@ -18,7 +18,7 @@ export function HeroFlipWords() {
   };
 
   return (
-    <section className="relative h-[90vh] flex items-center justify-center px-4 bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <section className="relative h-[90vh] flex items-center justify-center px-4 bg-gradient-to-br from-[#F5F0F7] via-white to-pink-50">
       <div className="container mx-auto max-w-7xl">
         <div className="text-center space-y-8">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-neutral-900 leading-tight">
@@ -76,7 +76,7 @@ export function HeroFlipWords() {
       </div>
 
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-200 rounded-full blur-3xl opacity-20 animate-pulse" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#D4ADE0] rounded-full blur-3xl opacity-20 animate-pulse" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-pink-200 rounded-full blur-3xl opacity-20 animate-pulse" />
       </div>
     </section>

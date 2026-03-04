@@ -189,9 +189,9 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
               <Badge
                 key={id}
                 variant="secondary"
-                className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-gray-100 hover:bg-gray-200 transition-colors group"
+                className="pl-3 pr-1.5 py-1.5 flex items-center gap-1 bg-gray-100 hover:bg-gray-200 transition-colors"
               >
-                <span className="text-sm">{dept.label}</span>
+                <span className="text-sm text-gray-800">{dept.label}</span>
                 <button
                   type="button"
                   onClick={(e) => {
@@ -199,10 +199,10 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
                     e.stopPropagation()
                     removeZone(id)
                   }}
-                  className="ml-0.5 p-0.5 rounded-full hover:bg-red-100 hover:text-red-600 text-gray-500 transition-colors"
+                  className="ml-0.5 flex-shrink-0 text-gray-900 hover:text-red-500 transition-colors"
                   title="Supprimer"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" strokeWidth={2.5} />
                 </button>
               </Badge>
             ) : null;
@@ -212,12 +212,13 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
 
       {/* Boutons */}
       {hasChanges && (
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -225,7 +226,7 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="w-full sm:flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

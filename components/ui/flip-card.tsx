@@ -37,7 +37,7 @@ export default function FlipCard({
       >
         {/* Front of card */}
         <div
-          className="absolute inset-0 backface-hidden rounded-2xl p-8 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200/50 shadow-lg flex flex-col items-center justify-center text-center"
+          className="absolute inset-0 backface-hidden rounded-2xl p-8 bg-gradient-to-br from-[#F5F0F7] to-pink-50 border-2 border-[#D4ADE0]/50 shadow-lg flex flex-col items-center justify-center text-center"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(0deg)' }}
         >
           <div className="mb-6">

@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   Clock,
   AlertCircle,
+  Send,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -112,6 +113,7 @@ export default function DevisFacturesPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [isLoadingFactures, setIsLoadingFactures] = useState(true)
   const [showQuickGenerator, setShowQuickGenerator] = useState(false)
+  const [sendingFactureId, setSendingFactureId] = useState<string | null>(null)
 
   // Charger les données
   const fetchAnalytics = async () => {
@@ -209,6 +211,25 @@ export default function DevisFacturesPage() {
       console.error('Erreur chargement factures:', error)
     } finally {
       setIsLoadingFactures(false)
+    }
+  }
+
+  const handleSendFacture = async (factureId: string) => {
+    setSendingFactureId(factureId)
+    try {
+      const response = await fetch(`/api/factures/${factureId}/send`, { method: 'POST' })
+      const data = await response.json()
+      if (!response.ok) {
+        toast.error(data.error || "Erreur lors de l'envoi de la facture")
+        return
+      }
+      toast.success('Facture envoyée au couple avec succès')
+      fetchFactures()
+      fetchAnalytics()
+    } catch {
+      toast.error("Erreur lors de l'envoi de la facture")
+    } finally {
+      setSendingFactureId(null)
     }
   }
 
@@ -486,19 +507,10 @@ export default function DevisFacturesPage() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 data-[state=active]:shadow-md"
-              style={{
-                backgroundColor: activeTab === tab.value ? '#823F91' : 'white',
-                color: activeTab === tab.value ? '#ffffff' : '#823F91',
-              }}
+              className="text-xs sm:text-sm font-medium rounded-lg py-2.5 transition-all duration-200 text-[#823F91] data-[state=active]:shadow-md"
             >
-              <tab.icon
-                className="h-4 w-4 sm:mr-1.5"
-                style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}
-              />
-              <span className="hidden sm:inline" style={{ color: activeTab === tab.value ? '#ffffff' : '#823F91' }}>
-                {tab.label}
-              </span>
+              <tab.icon className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -536,7 +548,7 @@ export default function DevisFacturesPage() {
                       key={devis.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="p-4 border rounded-lg hover:border-purple-200 hover:shadow-sm transition-all"
+                      className="p-4 border rounded-lg hover:border-[#D4ADE0] hover:shadow-sm transition-all"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -552,7 +564,7 @@ export default function DevisFacturesPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <p className="text-lg font-bold text-purple-600">
+                          <p className="text-lg font-bold text-[#823F91]">
                             {formatAmount(devis.amount)}
                           </p>
 
@@ -683,6 +695,19 @@ export default function DevisFacturesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="z-[201]">
+                              {!['paid', 'cancelled'].includes(facture.status) && (
+                                <DropdownMenuItem
+                                  onClick={() => handleSendFacture(facture.id)}
+                                  disabled={sendingFactureId === facture.id}
+                                >
+                                  <Send className="h-4 w-4 mr-2" />
+                                  {sendingFactureId === facture.id
+                                    ? 'Envoi en cours…'
+                                    : facture.status === 'draft'
+                                      ? 'Envoyer au couple'
+                                      : 'Renvoyer au couple'}
+                                </DropdownMenuItem>
+                              )}
                               {facture.pdf_url && (
                                 <DropdownMenuItem
                                   onClick={() => window.open(facture.pdf_url!, '_blank')}

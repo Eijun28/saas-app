@@ -4,6 +4,9 @@
 import { PDFDocument, rgb, StandardFonts, PDFFont, PDFPage } from 'pdf-lib'
 import type { DevisPdfData } from '@/types/billing'
 
+// Couleur verte pour la signature
+const SUCCESS_GREEN = rgb(0.04, 0.47, 0.25)
+
 // Couleurs du thème Nuply
 const COLORS = {
   primary: rgb(0.51, 0.25, 0.57), // #823F91
@@ -55,6 +58,12 @@ export async function generateDevisPdf(data: DevisPdfData): Promise<Uint8Array> 
 
   // === FOOTER ===
   drawFooter(page, data, helvetica)
+
+  // === PAGE DE SIGNATURE (si devis signé) ===
+  if (data.signatureInfo) {
+    const sigPage = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT])
+    drawSignaturePage(sigPage, data, helvetica, helveticaBold)
+  }
 
   return await pdfDoc.save()
 }
@@ -509,11 +518,211 @@ function drawFooter(page: PDFPage, data: DevisPdfData, font: PDFFont): void {
   }
 
   // Numéro de page
-  page.drawText('Page 1/1', {
+  const pageLabel = data.signatureInfo ? 'Page 1/2' : 'Page 1/1'
+  page.drawText(pageLabel, {
     x: width - MARGIN - 40,
     y: 40,
     size: 8,
     font: font,
+    color: COLORS.textMuted,
+  })
+}
+
+/**
+ * Page de signature électronique (page 2 du PDF signé)
+ */
+function drawSignaturePage(
+  page: PDFPage,
+  data: DevisPdfData,
+  font: PDFFont,
+  boldFont: PDFFont
+): void {
+  const { width } = page.getSize()
+  const sig = data.signatureInfo!
+  let y = A4_HEIGHT - MARGIN
+
+  // En-tête "BON POUR ACCORD"
+  page.drawRectangle({
+    x: 0,
+    y: A4_HEIGHT - 90,
+    width,
+    height: 90,
+    color: SUCCESS_GREEN,
+  })
+
+  page.drawText('BON POUR ACCORD', {
+    x: MARGIN,
+    y: A4_HEIGHT - 45,
+    size: 26,
+    font: boldFont,
+    color: rgb(1, 1, 1),
+  })
+
+  page.drawText('Signature électronique — NUPLY.fr', {
+    x: MARGIN,
+    y: A4_HEIGHT - 68,
+    size: 11,
+    font,
+    color: rgb(0.8, 1, 0.8),
+  })
+
+  y = A4_HEIGHT - 130
+
+  // Titre du devis
+  page.drawText('Devis concerné', {
+    x: MARGIN,
+    y,
+    size: 10,
+    font: boldFont,
+    color: COLORS.primary,
+  })
+  y -= 18
+
+  page.drawText(`N° ${data.devisNumber} — ${data.title}`, {
+    x: MARGIN,
+    y,
+    size: 13,
+    font: boldFont,
+    color: COLORS.text,
+  })
+  y -= 14
+
+  const amountText = new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: data.currency,
+  }).format(data.amount)
+
+  page.drawText(`Montant : ${amountText}`, {
+    x: MARGIN,
+    y,
+    size: 11,
+    font,
+    color: COLORS.textLight,
+  })
+
+  y -= 40
+
+  // Encadré de signature
+  const boxHeight = 160
+  page.drawRectangle({
+    x: MARGIN,
+    y: y - boxHeight,
+    width: width - MARGIN * 2,
+    height: boxHeight,
+    color: rgb(0.97, 1, 0.97),
+    borderColor: SUCCESS_GREEN,
+    borderWidth: 1.5,
+  })
+
+  page.drawText('SIGNATAIRE', {
+    x: MARGIN + 15,
+    y: y - 22,
+    size: 9,
+    font: boldFont,
+    color: SUCCESS_GREEN,
+  })
+
+  page.drawText(sig.signerName, {
+    x: MARGIN + 15,
+    y: y - 42,
+    size: 14,
+    font: boldFont,
+    color: COLORS.text,
+  })
+
+  page.drawText(`Client — ${data.clientName}`, {
+    x: MARGIN + 15,
+    y: y - 60,
+    size: 10,
+    font,
+    color: COLORS.textLight,
+  })
+
+  // Séparateur
+  page.drawLine({
+    start: { x: MARGIN + 15, y: y - 74 },
+    end: { x: width - MARGIN - 15, y: y - 74 },
+    thickness: 0.5,
+    color: rgb(0.85, 0.93, 0.85),
+  })
+
+  // Date et heure de signature
+  const dateStr = sig.signedAt.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  const timeStr = sig.signedAt.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+
+  page.drawText('Date et heure de signature', {
+    x: MARGIN + 15,
+    y: y - 94,
+    size: 9,
+    font: boldFont,
+    color: COLORS.textMuted,
+  })
+
+  page.drawText(`${dateStr} à ${timeStr} (heure française)`, {
+    x: MARGIN + 15,
+    y: y - 110,
+    size: 10,
+    font,
+    color: COLORS.text,
+  })
+
+  // Adresse IP
+  if (sig.signerIp && sig.signerIp !== 'unknown') {
+    page.drawText(`Adresse IP : ${sig.signerIp}`, {
+      x: MARGIN + 15,
+      y: y - 128,
+      size: 9,
+      font,
+      color: COLORS.textMuted,
+    })
+  }
+
+  y -= boxHeight + 30
+
+  // Mentions légales de la signature
+  const mentions = [
+    'Ce document constitue une preuve de consentement électronique conformément à l\'article 1366 du Code civil français.',
+    'La signature a été réalisée via un code OTP à usage unique envoyé à l\'adresse email du signataire.',
+    `Document généré le ${new Date().toLocaleDateString('fr-FR')} via NUPLY.fr`,
+  ]
+
+  for (const mention of mentions) {
+    const lines = wrapText(mention, font, 8, width - MARGIN * 2)
+    for (const line of lines) {
+      page.drawText(line, {
+        x: MARGIN,
+        y,
+        size: 8,
+        font,
+        color: COLORS.textMuted,
+      })
+      y -= 11
+    }
+    y -= 4
+  }
+
+  // Footer numéro de page
+  page.drawLine({
+    start: { x: MARGIN, y: 80 },
+    end: { x: width - MARGIN, y: 80 },
+    thickness: 0.5,
+    color: COLORS.border,
+  })
+
+  page.drawText('Page 2/2 — Document signé électroniquement via NUPLY.fr', {
+    x: MARGIN,
+    y: 65,
+    size: 8,
+    font,
     color: COLORS.textMuted,
   })
 }

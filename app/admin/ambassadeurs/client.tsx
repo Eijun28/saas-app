@@ -158,7 +158,7 @@ export default function AmbassadeursClient({ ambassadeurs: initial }: Props) {
                   </div>
 
                   {/* Code */}
-                  <span className="font-mono text-xs text-[#823F91] bg-purple-50 px-2 py-1 rounded-md w-fit">
+                  <span className="font-mono text-xs text-[#823F91] bg-[#F5F0F7] px-2 py-1 rounded-md w-fit">
                     {amb.referral_code}
                   </span>
 

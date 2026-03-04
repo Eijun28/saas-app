@@ -92,22 +92,14 @@ export function ConnectOnboardingCard() {
   const isNotConnected = !status?.connected
 
   return (
-    <Card className="bg-white/70 backdrop-blur-sm shadow-sm">
+    <Card className="bg-white/70 backdrop-blur-sm shadow-sm opacity-50 pointer-events-none select-none">
       <CardContent className="p-4 sm:p-6 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <StripeLogo className="h-5 w-5 text-[#635BFF]" />
               <h2 className="text-lg font-bold">Paiement en ligne</h2>
-              {isActive && (
-                <Badge className="bg-green-50 text-green-700 border-green-200">Actif</Badge>
-              )}
-              {isPending && (
-                <Badge className="bg-amber-50 text-amber-700 border-amber-200">En attente</Badge>
-              )}
-              {isNotConnected && (
-                <Badge className="bg-gray-100 text-gray-600">Non configuré</Badge>
-              )}
+              <Badge className="bg-gray-100 text-gray-500 border-gray-200">Bientôt disponible</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               {isActive

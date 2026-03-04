@@ -110,7 +110,7 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
                 {providers.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 rounded-full pl-1.5 pr-2 py-1 flex-shrink-0"
+                    className="flex items-center gap-1.5 bg-[#F5F0F7] border border-[#D4ADE0] rounded-full pl-1.5 pr-2 py-1 flex-shrink-0"
                   >
                     {p.avatar_url ? (
                       <Image
@@ -283,7 +283,7 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
                         <Badge
                           key={c.id}
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 bg-purple-50 border-purple-200 text-purple-700"
+                          className="text-[10px] px-1.5 py-0 bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]"
                         >
                           {c.label}
                         </Badge>

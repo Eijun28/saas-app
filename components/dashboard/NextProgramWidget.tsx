@@ -81,7 +81,7 @@ export function NextProgramWidget({ coupleId, weddingDate }: NextProgramWidgetPr
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-4">
-          <Clock className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+          <Clock className="h-8 w-8 text-gray-300 mx-auto mb-2" />
           <p className="text-xs text-gray-400">Aucun créneau planifié</p>
         </div>
       ) : (

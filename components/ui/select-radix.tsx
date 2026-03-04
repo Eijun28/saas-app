@@ -96,8 +96,8 @@ const SelectContent = React.forwardRef<
       <SelectPrimitive.Viewport
         className={cn(
           "p-1",
-          "scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-transparent",
-          "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-purple-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent",
+          "scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-transparent",
+          "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-[#D4ADE0] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent",
           position === "popper" &&
             "w-full min-w-[var(--radix-select-trigger-width)]"
         )}

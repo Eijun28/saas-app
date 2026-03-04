@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Star, ImagePlus, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { createClient } from '@/lib/supabase/client'
+import { uploadReviewPhoto } from '@/lib/supabase/storage'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +29,7 @@ interface ExistingReview {
   rating_communication?: number | null
   rating_value?: number | null
   rating_punctuality?: number | null
+  photos?: string[] | null
 }
 
 interface ReviewDialogProps {
@@ -47,6 +49,8 @@ const SUB_CRITERIA = [
   { key: 'rating_value' as const, label: 'Rapport qualite-prix', emoji: '💰' },
   { key: 'rating_punctuality' as const, label: 'Ponctualite', emoji: '⏰' },
 ]
+
+const MAX_PHOTOS = 3
 
 function MiniStarRating({
   value,
@@ -91,6 +95,11 @@ function MiniStarRating({
   )
 }
 
+interface PhotoPreview {
+  file: File
+  objectUrl: string
+}
+
 export function ReviewDialog({
   open,
   onOpenChange,
@@ -113,12 +122,45 @@ export function ReviewDialog({
   const [showSubRatings, setShowSubRatings] = useState(
     !!(existingReview?.rating_quality || existingReview?.rating_communication || existingReview?.rating_value || existingReview?.rating_punctuality)
   )
+  // Photos: URLs déjà en DB (édition) + nouvelles previews locales
+  const [existingPhotoUrls, setExistingPhotoUrls] = useState<string[]>(existingReview?.photos || [])
+  const [newPhotos, setNewPhotos] = useState<PhotoPreview[]>([])
   const [isSaving, setIsSaving] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isEditing = !!existingReview
+  const totalPhotos = existingPhotoUrls.length + newPhotos.length
 
   const updateSubRating = (key: keyof SubRatings, value: number) => {
     setSubRatings(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+
+    const remaining = MAX_PHOTOS - totalPhotos
+    const toAdd = files.slice(0, remaining)
+
+    const previews: PhotoPreview[] = toAdd.map(f => ({
+      file: f,
+      objectUrl: URL.createObjectURL(f),
+    }))
+
+    setNewPhotos(prev => [...prev, ...previews])
+    // Reset input so same file can be re-selected
+    e.target.value = ''
+  }
+
+  const removeExistingPhoto = (url: string) => {
+    setExistingPhotoUrls(prev => prev.filter(u => u !== url))
+  }
+
+  const removeNewPhoto = (index: number) => {
+    setNewPhotos(prev => {
+      URL.revokeObjectURL(prev[index].objectUrl)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   async function handleSubmit() {
@@ -131,15 +173,26 @@ export function ReviewDialog({
     try {
       const supabase = createClient()
 
+      // Upload new photos to Supabase Storage
+      // We use a temporary reviewId placeholder; for upsert flow we use coupleId+providerId as key
+      const uploadedUrls: string[] = []
+      for (const photo of newPhotos) {
+        const tempReviewId = `${providerId}-${Date.now()}`
+        const { url } = await uploadReviewPhoto(photo.file, coupleId, tempReviewId)
+        uploadedUrls.push(url)
+      }
+
+      const allPhotoUrls = [...existingPhotoUrls, ...uploadedUrls]
+
       const reviewData: Record<string, unknown> = {
         couple_id: coupleId,
         provider_id: providerId,
         request_id: requestId || null,
         rating,
         comment: comment.trim() || null,
+        photos: allPhotoUrls,
       }
 
-      // Add sub-ratings only if the user expanded and filled them
       if (showSubRatings) {
         if (subRatings.rating_quality > 0) reviewData.rating_quality = subRatings.rating_quality
         if (subRatings.rating_communication > 0) reviewData.rating_communication = subRatings.rating_communication
@@ -153,12 +206,16 @@ export function ReviewDialog({
 
       if (error) throw error
 
+      // Revoke object URLs to avoid memory leaks
+      newPhotos.forEach(p => URL.revokeObjectURL(p.objectUrl))
+
       toast.success(isEditing ? 'Avis modifie' : 'Avis publie, merci !')
       onOpenChange(false)
       onSubmitted?.()
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Erreur lors de la publication'
       console.error('Erreur publication avis:', error)
-      toast.error(error?.message || 'Erreur lors de la publication')
+      toast.error(msg)
     } finally {
       setIsSaving(false)
     }
@@ -254,6 +311,83 @@ export function ReviewDialog({
             </p>
           </div>
 
+          {/* Upload photos */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              Photos (facultatif, max {MAX_PHOTOS})
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {/* Photos existantes (édition) */}
+              {existingPhotoUrls.map((url) => (
+                <div key={url} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt="Photo avis"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingPhoto(url)}
+                    className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Supprimer la photo"
+                  >
+                    <X className="h-3 w-3 text-white" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Nouvelles photos (preview locale) */}
+              {newPhotos.map((photo, i) => (
+                <div key={photo.objectUrl} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.objectUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeNewPhoto(i)}
+                    className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="Supprimer la photo"
+                  >
+                    <X className="h-3 w-3 text-white" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Bouton ajouter */}
+              {totalPhotos < MAX_PHOTOS && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-[#823F91]/50 hover:text-[#823F91] transition-colors"
+                  aria-label="Ajouter une photo"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  <span className="text-[10px] font-medium">Photo</span>
+                </button>
+              )}
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+            />
+
+            {totalPhotos > 0 && (
+              <p className="text-[11px] text-gray-400">
+                {totalPhotos}/{MAX_PHOTOS} photo{totalPhotos > 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3">
             <Button
@@ -269,7 +403,12 @@ export function ReviewDialog({
               disabled={isSaving || rating === 0}
               className="flex-1 bg-[#823F91] hover:bg-[#6D3478]"
             >
-              {isSaving ? 'Publication...' : isEditing ? 'Modifier' : 'Publier'}
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Publication...
+                </span>
+              ) : isEditing ? 'Modifier' : 'Publier'}
             </Button>
           </div>
         </div>

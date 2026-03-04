@@ -123,12 +123,13 @@ export function BioEditor({
       </div>
 
       {hasChanges && (
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
+            className="w-full sm:w-auto"
           >
             Annuler
           </Button>
@@ -136,7 +137,7 @@ export function BioEditor({
             type="button"
             onClick={handleSave}
             disabled={isSaving || bioLength > MAX_BIO_LENGTH}
-            className="flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
+            className="w-full sm:flex-1 bg-[#823F91] hover:bg-[#6D3478] text-white"
           >
             {isSaving ? 'Enregistrement...' : 'Enregistrer'}
           </Button>

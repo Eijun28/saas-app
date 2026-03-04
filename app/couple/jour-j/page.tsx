@@ -164,7 +164,7 @@ export default function JourJPage() {
             variant="outline"
             size="sm"
             onClick={() => setFiltersOpen(p => !p)}
-            className={`h-9 gap-2 rounded-xl ${filtersOpen ? 'bg-purple-50 border-purple-200 text-[#823F91]' : ''}`}
+            className={`h-9 gap-2 rounded-xl ${filtersOpen ? 'bg-[#F5F0F7] border-[#D4ADE0] text-[#823F91]' : ''}`}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             Filtrer par catégorie

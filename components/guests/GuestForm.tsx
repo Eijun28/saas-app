@@ -35,6 +35,8 @@ interface GuestFormProps {
   onSaved: (guest: Guest) => void
   /** Si fourni, on est en mode édition */
   existing?: Guest | null
+  /** Nombre de tables disponibles dans le plan de table */
+  tableCount?: number
 }
 
 const EMPTY_FORM: CreateGuestInput = {
@@ -51,7 +53,7 @@ const EMPTY_FORM: CreateGuestInput = {
   notes:                null,
 }
 
-export function GuestForm({ open, onClose, onSaved, existing }: GuestFormProps) {
+export function GuestForm({ open, onClose, onSaved, existing, tableCount }: GuestFormProps) {
   const [form, setForm]       = useState<CreateGuestInput>(EMPTY_FORM)
   const [rsvp, setRsvp]       = useState<string>('pending')
   const [saving, setSaving]   = useState(false)
@@ -132,7 +134,7 @@ export function GuestForm({ open, onClose, onSaved, existing }: GuestFormProps) 
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:w-0">
         <DialogHeader>
           <DialogTitle className="text-[#823F91] font-bold text-lg">
             {existing ? 'Modifier l\'invité' : 'Ajouter un invité'}
@@ -243,18 +245,35 @@ export function GuestForm({ open, onClose, onSaved, existing }: GuestFormProps) 
 
           {/* Table */}
           <div className="space-y-1.5">
-            <Label htmlFor="table_number">Numéro de table</Label>
-            <Input
-              id="table_number"
-              type="number"
-              min={1}
-              value={form.table_number ?? ''}
-              onChange={e => setForm(p => ({
-                ...p,
-                table_number: e.target.value ? parseInt(e.target.value) : null,
-              }))}
-              placeholder="Laisser vide si non assigné"
-            />
+            <Label>Table assignée</Label>
+            {tableCount ? (
+              <Select
+                value={form.table_number ? String(form.table_number) : '0'}
+                onValueChange={v => setForm(p => ({ ...p, table_number: v === '0' ? null : parseInt(v) }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sans table" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Sans table</SelectItem>
+                  {Array.from({ length: tableCount }, (_, i) => i + 1).map(n => (
+                    <SelectItem key={n} value={String(n)}>Table {n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                id="table_number"
+                type="number"
+                min={1}
+                value={form.table_number ?? ''}
+                onChange={e => setForm(p => ({
+                  ...p,
+                  table_number: e.target.value ? parseInt(e.target.value) : null,
+                }))}
+                placeholder="Laisser vide si non assigné"
+              />
+            )}
           </div>
 
           {/* +1 */}

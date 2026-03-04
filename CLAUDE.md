@@ -86,7 +86,6 @@ saas-app/
 │   │   ├── guests/
 │   │   ├── marriage-admin/     # create, generate-document, generate-pdf, upload-document
 │   │   ├── matching/ matching/track/
-│   │   ├── messages/check-unread/
 │   │   ├── payments/ billing-consent/
 │   │   ├── prestataire/        # ambassador, analytics, reviews/respond
 │   │   ├── provider-availability/

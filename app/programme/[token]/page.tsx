@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { CalendarDays, MapPin, User, Clock } from 'lucide-react'
 import type { ProgramItem, ProgramCategory } from '@/types/wedding-day-program'
@@ -23,7 +23,8 @@ export default async function PublicProgramPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const supabase = await createClient()
+  // createAdminClient bypass RLS → page accessible aux visiteurs anonymes via le token
+  const supabase = createAdminClient()
 
   // Find couple by share token
   const { data: couple } = await supabase
@@ -169,7 +170,7 @@ export default async function PublicProgramPage({
 
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data: couple } = await supabase
     .from('couples')
     .select('partner_1_name, partner_2_name, wedding_date')

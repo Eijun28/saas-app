@@ -22,7 +22,7 @@ const actions: Action[] = [
   },
   {
     label: "Nuply Matching",
-    description: "Parler a Nora IA",
+    description: "Parler à Nora IA",
     href: "/couple/matching",
     icon: Sparkles,
   },
@@ -34,7 +34,7 @@ const actions: Action[] = [
   },
   {
     label: "Budget",
-    description: "Gerer les depenses",
+    description: "Gérer les dépenses",
     href: "/couple/budget",
     icon: DollarSign,
   },
@@ -58,7 +58,7 @@ export function QuickActionsCouple() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Actions rapides</h2>
-            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">Acces direct aux fonctionnalites</p>
+            <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">Accès direct aux fonctionnalités</p>
           </div>
           <ChevronDown className={cn(
             "h-5 w-5 text-gray-400 transition-transform duration-200 lg:hidden",
@@ -78,7 +78,7 @@ export function QuickActionsCouple() {
             className="overflow-hidden"
           >
             <div className="p-4 sm:p-5">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 {actions.map((action, index) => {
                   const Icon = action.icon
                   return (

@@ -37,7 +37,7 @@ export default function LoadingMatching() {
   const totalDuration = steps.reduce((acc, step) => acc + step.duration, 0);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-[#F5F0F7] p-4">
       <div className="max-w-md w-full mx-auto text-center">
         {/* Logo NUPLY animé */}
         <motion.div

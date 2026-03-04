@@ -50,6 +50,7 @@ export async function GET(request: Request) {
       prevDevisResult,
       facturesResult,
       reviewsResult,
+      allRequestsResult,
     ] = await Promise.all([
       // Aggregated impressions
       supabase
@@ -93,7 +94,7 @@ export async function GET(request: Request) {
       supabase
         .from('conversations')
         .select('id, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('created_at', { ascending: false }),
 
       // Devis for current period
@@ -121,8 +122,14 @@ export async function GET(request: Request) {
       supabase
         .from('reviews')
         .select('id, rating, created_at')
-        .eq('provider_id', user.id)
+        .eq('prestataire_id', user.id)
         .order('created_at', { ascending: false }),
+
+      // All requests (for response rate — not period-filtered)
+      supabase
+        .from('requests')
+        .select('id, status, created_at')
+        .eq('provider_id', user.id),
     ])
 
     // --- Compute KPIs ---
@@ -141,7 +148,7 @@ export async function GET(request: Request) {
     const prevDevis: DevisEntry[] = prevDevisResult.data || []
     const factures: FactureEntry[] = facturesResult.data || []
     const reviews: ReviewEntry[] = reviewsResult.data || []
-    const impressionsAgg = impressionsResult.data || []
+    const allRequests: RequestEntry[] = allRequestsResult.data || []
 
     // Impressions & clicks
     const impressions = logs.filter(l => l.event_type === 'impression').length
@@ -233,6 +240,43 @@ export async function GET(request: Request) {
       { status: 'rejected', label: 'Refusees', count: rejectedRequests },
     ]
 
+    // --- French month labels helper ---
+    const MONTH_LABELS = ['Jan.', 'Fév.', 'Mar.', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août', 'Sep.', 'Oct.', 'Nov.', 'Déc.']
+
+    // --- Revenue by month (last 6 months, from paid factures) ---
+    const revenueByMonth: { month: string; revenue: number; label: string }[] = []
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const monthRevenue = factures
+        .filter(f => f.status === 'paid' && f.created_at.startsWith(monthKey))
+        .reduce((sum, f) => sum + (Number(f.amount_ttc) || 0), 0)
+      revenueByMonth.push({ month: monthKey, revenue: monthRevenue, label: MONTH_LABELS[d.getMonth()] })
+    }
+
+    // --- Reviews evolution (last 6 months) ---
+    const reviewsEvolution: { month: string; label: string; avgRating: number; count: number }[] = []
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const monthReviews = reviews.filter(r => r.created_at.startsWith(monthKey))
+      const avg = monthReviews.length > 0
+        ? Math.round(monthReviews.reduce((s, r) => s + r.rating, 0) / monthReviews.length * 10) / 10
+        : 0
+      reviewsEvolution.push({ month: monthKey, label: MONTH_LABELS[d.getMonth()], avgRating: avg, count: monthReviews.length })
+    }
+
+    // --- Request origins (matching vs recherche — no source field yet, return empty) ---
+    const requestOrigins: { source: string; label: string; count: number }[] = []
+
+    // --- Response rate (all-time requests) ---
+    const respondedStatuses = ['accepted', 'rejected', 'completed']
+    const respondedCount = allRequests.filter(r => respondedStatuses.includes(r.status)).length
+    const totalRequestsAllTime = allRequests.length
+    const responseRateValue = totalRequestsAllTime > 0
+      ? Math.round((respondedCount / totalRequestsAllTime) * 100)
+      : 0
+
     return NextResponse.json({
       period,
       kpis: {
@@ -266,6 +310,15 @@ export async function GET(request: Request) {
       funnel,
       devisByStatus,
       requestsByStatus,
+      revenueByMonth,
+      reviewsEvolution,
+      requestOrigins,
+      responseRate: {
+        rate: responseRateValue,
+        respondedCount,
+        totalCount: totalRequestsAllTime,
+        avgResponseTime: null,
+      },
     })
   } catch (error: any) {
     console.error('Analytics API error:', error)
@@ -281,6 +334,10 @@ export async function GET(request: Request) {
         funnel: [],
         devisByStatus: [],
         requestsByStatus: [],
+        revenueByMonth: [],
+        reviewsEvolution: [],
+        requestOrigins: [],
+        responseRate: { rate: 0, respondedCount: 0, totalCount: 0, avgResponseTime: null },
       })
     }
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

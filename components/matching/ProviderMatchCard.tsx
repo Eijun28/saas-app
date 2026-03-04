@@ -217,14 +217,24 @@ export default function ProviderMatchCard({
               </p>
             </div>
           )}
+
+          {/* Langues */}
+          {provider.languages && provider.languages.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Langues</p>
+              <p className="text-sm font-medium text-gray-900 capitalize">
+                {provider.languages.join(', ')}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Explication IA */}
         {explanation && (
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="bg-[#F5F0F7] p-4 rounded-lg border border-[#D4ADE0]">
             <div className="flex items-start gap-3">
-              <Lightbulb className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-purple-900 leading-relaxed">
+              <Lightbulb className="h-5 w-5 text-[#823F91] flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-[#5C2B66] leading-relaxed">
                 {explanation}
               </p>
             </div>
@@ -325,33 +335,51 @@ export default function ProviderMatchCard({
                 />
               </div>
 
-              {breakdown.ai_bonus !== undefined && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">Bonus IA</span>
+              {/* Bonus de compatibilité */}
+              {[
+                breakdown.language_match !== undefined && breakdown.language_match !== 0
+                  ? { label: 'Langues', score: breakdown.language_match }
+                  : null,
+                breakdown.dietary_match !== undefined && breakdown.dietary_match !== 0
+                  ? { label: 'Régimes alim.', score: breakdown.dietary_match }
+                  : null,
+                breakdown.tags_match !== undefined && breakdown.tags_match !== 0
+                  ? { label: 'Style', score: breakdown.tags_match }
+                  : null,
+                breakdown.specialty_match !== undefined && breakdown.specialty_match !== 0
+                  ? { label: 'Spécialités', score: breakdown.specialty_match }
+                  : null,
+                breakdown.capacity_match !== undefined && breakdown.capacity_match !== 0
+                  ? { label: 'Capacité', score: breakdown.capacity_match }
+                  : null,
+                breakdown.event_types_match !== undefined && breakdown.event_types_match !== 0
+                  ? { label: 'Événements', score: breakdown.event_types_match }
+                  : null,
+                breakdown.ctr_bonus !== undefined && breakdown.ctr_bonus !== 0
+                  ? { label: 'Engagement', score: breakdown.ctr_bonus }
+                  : null,
+                breakdown.response_rate_bonus !== undefined && breakdown.response_rate_bonus !== 0
+                  ? { label: 'Taux de réponse', score: breakdown.response_rate_bonus }
+                  : null,
+                breakdown.ai_bonus !== undefined && breakdown.ai_bonus !== 0
+                  ? { label: 'Bonus IA', score: breakdown.ai_bonus }
+                  : null,
+              ]
+                .filter(Boolean)
+                .map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">{item!.label}</span>
                     <span
                       className={cn(
                         'text-sm font-semibold',
-                        breakdown.ai_bonus >= 0 ? 'text-green-600' : 'text-red-600'
+                        item!.score > 0 ? 'text-green-600' : 'text-red-600'
                       )}
                     >
-                      {breakdown.ai_bonus >= 0 ? '+' : ''}
-                      {Math.round(breakdown.ai_bonus)}
+                      {item!.score > 0 ? '+' : ''}
+                      {Math.round(item!.score)} pts
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={cn(
-                        'h-2 rounded-full',
-                        breakdown.ai_bonus >= 0 ? 'bg-purple-500' : 'bg-red-400'
-                      )}
-                      style={{
-                        width: `${Math.min(Math.abs(breakdown.ai_bonus) * 10, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </>
-              )}
+                ))}
 
               <div className="pt-2 border-t border-gray-200">
                 <div className="flex items-center justify-between">
@@ -404,6 +432,7 @@ export default function ProviderMatchCard({
         onClose={() => setShowBreakdownModal(false)}
         breakdown={breakdown}
         providerName={provider.nom_entreprise}
+        explanation={explanation}
       />
     </div>
   );

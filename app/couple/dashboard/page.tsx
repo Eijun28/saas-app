@@ -79,11 +79,11 @@ export default function CoupleDashboardPage() {
           supabase
             .from('favoris')
             .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id),
+            .eq('couple_id', user.id),
           supabase
             .from('budget_items')
-            .select('id, category, amount, paid')
-            .eq('user_id', user.id),
+            .select('id, category, amount')
+            .eq('couple_id', user.id),
           supabase
             .from('requests')
             .select('id, created_at, status, provider_id')
@@ -189,7 +189,7 @@ export default function CoupleDashboardPage() {
 
   // Budget breakdown
   const budgetSpent = useMemo(() => {
-    return budgetItems.reduce((sum, item) => sum + (item.paid ? item.amount : 0), 0)
+    return budgetItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
   }, [budgetItems])
   const budgetRemaining = budgetTotal - budgetSpent
 
@@ -230,7 +230,7 @@ export default function CoupleDashboardPage() {
         <div className="h-8 w-64 bg-gray-100 rounded-xl animate-pulse" />
         <div className="h-4 w-48 bg-gray-100 rounded-lg animate-pulse" />
         {/* Skeleton stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-40 bg-white rounded-2xl border border-gray-100 animate-pulse" />
           ))}
@@ -364,7 +364,7 @@ export default function CoupleDashboardPage() {
         {/* Stats Grid — 4 KPI cards */}
         <div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight mb-3 sm:mb-4">Vos indicateurs</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full items-stretch">
 
             {/* Prestataires shortlistes */}
             <motion.div
@@ -510,13 +510,13 @@ export default function CoupleDashboardPage() {
         <QuickActionsCouple />
 
         {/* Upcoming deadlines widgets */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <UpcomingPaymentsWidget coupleId={coupleData?.id} />
           <NextProgramWidget coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
         </div>
 
         {/* Tasks and Activity side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
           <UpcomingTasksCouple coupleId={coupleData?.id} weddingDate={coupleData?.wedding_date} />
           <RecentActivityCouple activities={recentActivities} />
         </div>

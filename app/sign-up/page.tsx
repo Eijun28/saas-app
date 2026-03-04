@@ -171,7 +171,7 @@ export default function SignUpPage() {
               className={cn(
                 'h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300',
                 i === currentStepIndex
-                  ? 'bg-[#823F91] text-white shadow-sm shadow-purple-500/30'
+                  ? 'bg-[#823F91] text-white shadow-sm shadow-[#823F91]/30'
                   : i < currentStepIndex
                   ? 'bg-[#823F91]/20 text-[#823F91]'
                   : 'bg-neutral-100 text-neutral-400'
@@ -221,9 +221,9 @@ export default function SignUpPage() {
           className="w-full max-w-sm flex flex-col gap-4"
         >
           {/* Carte principale */}
-          <Card className="bg-white border-0 shadow-2xl shadow-purple-500/20 ring-1 ring-purple-200/50 relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-400/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-purple-500/15 to-violet-300/15 rounded-full blur-3xl pointer-events-none" />
+          <Card className="bg-white border-0 shadow-2xl shadow-[#823F91]/20 ring-1 ring-[#D4ADE0]/50 relative overflow-hidden">
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-[#823F91]/20 to-pink-300/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-[#823F91]/15 to-[#D4ADE0]/15 rounded-full blur-3xl pointer-events-none" />
 
             <CardHeader className="space-y-4 pb-4 text-center relative z-10">
               <div className="flex items-center justify-center gap-2">
@@ -243,7 +243,7 @@ export default function SignUpPage() {
                   className={cn(
                     'px-5 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     selectedRole === 'prestataire'
-                      ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
+                      ? 'bg-[#823F91] text-white shadow-md shadow-[#823F91]/20'
                       : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                   )}
                 >
@@ -258,7 +258,7 @@ export default function SignUpPage() {
                   className={cn(
                     'px-5 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     selectedRole === 'couple'
-                      ? 'bg-[#823F91] text-white shadow-md shadow-purple-500/20'
+                      ? 'bg-[#823F91] text-white shadow-md shadow-[#823F91]/20'
                       : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                   )}
                 >
@@ -348,7 +348,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueEmail}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-purple-500/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -403,7 +403,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueNames}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-purple-500/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -456,7 +456,7 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={handleContinueCompany}
-                        className="w-full h-11 rounded-xl bg-gradient-to-r from-[#823F91] to-[#B855D6] text-white font-semibold text-sm shadow-md shadow-purple-500/20 hover:shadow-lg transition-all"
+                        className="w-full h-11 rounded-xl bg-[#823F91] hover:bg-[#6D3478] text-white font-semibold text-sm shadow-md shadow-[#823F91]/20 hover:shadow-lg transition-all"
                       >
                         Continuer
                       </button>
@@ -531,7 +531,7 @@ export default function SignUpPage() {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full h-12 rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading ? (
                           <span className="flex items-center justify-center gap-2">

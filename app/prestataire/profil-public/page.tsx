@@ -13,6 +13,7 @@ import {
   Store,
   ClipboardList,
   Package,
+  Languages,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ import { SocialLinksEditor } from '@/components/provider/SocialLinksEditor'
 import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
+import { LanguagesCapacityEditor } from '@/components/provider/LanguagesCapacityEditor'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { hasServiceFields } from '@/lib/constants/service-fields'
@@ -77,6 +79,9 @@ interface Profile {
   boutique_appointment_only?: boolean
   siret?: string | null
   pricing_unit?: string
+  languages?: string[]
+  guest_capacity_min?: number | null
+  guest_capacity_max?: number | null
   _timestamp?: number
 }
 
@@ -94,8 +99,8 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <Card className="card-section">
-      <div className="p-5 sm:p-6">
+    <Card className="card-section" style={{ borderColor: '#823F91' }}>
+      <div className="p-4 sm:p-6">
         <div className="flex items-center gap-2.5 mb-5">
           <div className="p-1.5 rounded-lg bg-[#823F91]/10 flex-shrink-0">
             <Icon className="h-4 w-4 text-[#823F91]" />
@@ -159,7 +164,7 @@ export default function ProfilPublicPage() {
         pricingResult,
         serviceDetailsResult,
       ] = await Promise.all([
-        sb.from('profiles').select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only').eq('id', userId).maybeSingle(),
+        sb.from('profiles').select('avatar_url, prenom, nom, description_courte, bio, nom_entreprise, budget_min, budget_max, ville_principale, annees_experience, is_early_adopter, service_type, siret, has_physical_location, boutique_name, boutique_address, boutique_address_complement, boutique_postal_code, boutique_city, boutique_country, boutique_phone, boutique_email, boutique_hours, boutique_notes, boutique_appointment_only, languages, guest_capacity_min, guest_capacity_max').eq('id', userId).maybeSingle(),
         sb.from('profiles').select('instagram_url, facebook_url, website_url, linkedin_url, tiktok_url').eq('id', userId).maybeSingle(),
         sb.from('provider_cultures').select('culture_id').eq('profile_id', userId),
         sb.from('provider_zones').select('zone_id').eq('profile_id', userId),
@@ -223,6 +228,9 @@ export default function ProfilPublicPage() {
         boutique_notes: profileData?.boutique_notes || null,
         boutique_appointment_only: profileData?.boutique_appointment_only || false,
         pricing_unit: pricingResult.data?.pricing_unit || undefined,
+        languages: (profileData as unknown as { languages?: string[] })?.languages || [],
+        guest_capacity_min: (profileData as unknown as { guest_capacity_min?: number | null })?.guest_capacity_min ?? null,
+        guest_capacity_max: (profileData as unknown as { guest_capacity_max?: number | null })?.guest_capacity_max ?? null,
         _timestamp: Date.now(),
       })
       setCultures(mappedCultures)
@@ -262,6 +270,7 @@ export default function ProfilPublicPage() {
     { id: 'reseaux', label: 'Réseaux sociaux', icon: Share2 },
     { id: 'boutique', label: 'Lieu physique', icon: Store },
     ...(hasMetier ? [{ id: 'metier', label: 'Détails métier', icon: ClipboardList }] : []),
+    { id: 'langues', label: 'Langues & Capacité', icon: Languages },
     { id: 'cultures', label: 'Cultures', icon: Globe },
     { id: 'zones', label: "Zones d'intervention", icon: MapPin },
     { id: 'tags', label: 'Tags', icon: Tag },
@@ -269,10 +278,10 @@ export default function ProfilPublicPage() {
   ]
 
   return (
-    <div className="w-full max-w-4xl mx-auto pb-12">
+    <div className="w-full max-w-4xl mx-auto pb-12 px-3 sm:px-4 md:px-0">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between mb-6 gap-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="relative flex-shrink-0">
             <AvatarUploader
               userId={user.id}
@@ -289,52 +298,80 @@ export default function ProfilPublicPage() {
               </div>
             )}
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-foreground truncate">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base sm:text-xl font-bold text-foreground truncate leading-tight">
               {profile?.nom_entreprise || 'Mon Entreprise'}
             </h1>
             {profile?.service_type && (
-              <p className="text-sm text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
                 {getServiceTypeLabel(profile.service_type)}
               </p>
             )}
           </div>
         </div>
-        <ProfilePreviewDialog
-          userId={user.id}
-          profile={{
-            nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
-            service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
-            avatar_url: profile?.avatar_url || undefined,
-            prenom: profile?.prenom,
-            nom: profile?.nom,
-            description_courte: profile?.description_courte,
-            bio: profile?.bio,
-            budget_min: profile?.budget_min,
-            budget_max: profile?.budget_max,
-            annees_experience: profile?.annees_experience,
-            ville_principale: profile?.ville_principale,
-            is_early_adopter: profile?.is_early_adopter || false,
-            instagram_url: profile?.instagram_url,
-            facebook_url: profile?.facebook_url,
-            website_url: profile?.website_url,
-            linkedin_url: profile?.linkedin_url,
-            tiktok_url: profile?.tiktok_url,
-            pricing_unit: profile?.pricing_unit,
-          }}
-          cultures={cultures}
-          zones={zones}
-          portfolio={portfolio}
-          hasSiret={!!profile?.siret}
-          serviceDetails={serviceDetails}
-          serviceTypeValue={profile?.service_type}
-        />
+        <div className="flex-shrink-0">
+          <ProfilePreviewDialog
+            userId={user.id}
+            profile={{
+              nom_entreprise: profile?.nom_entreprise || 'Mon Entreprise',
+              service_type: profile?.service_type ? getServiceTypeLabel(profile.service_type) : 'Prestataire',
+              avatar_url: profile?.avatar_url || undefined,
+              prenom: profile?.prenom,
+              nom: profile?.nom,
+              description_courte: profile?.description_courte,
+              bio: profile?.bio,
+              budget_min: profile?.budget_min,
+              budget_max: profile?.budget_max,
+              annees_experience: profile?.annees_experience,
+              ville_principale: profile?.ville_principale,
+              is_early_adopter: profile?.is_early_adopter || false,
+              instagram_url: profile?.instagram_url,
+              facebook_url: profile?.facebook_url,
+              website_url: profile?.website_url,
+              linkedin_url: profile?.linkedin_url,
+              tiktok_url: profile?.tiktok_url,
+              pricing_unit: profile?.pricing_unit,
+            }}
+            cultures={cultures}
+            zones={zones}
+            portfolio={portfolio}
+            languages={profile?.languages || []}
+            hasSiret={!!profile?.siret}
+            serviceDetails={serviceDetails}
+            serviceTypeValue={profile?.service_type}
+          />
+        </div>
+      </div>
+
+      {/* ── Mobile nav — horizontal scroll ── */}
+      <div className="md:hidden -mx-3 sm:-mx-4 mb-4">
+        <div
+          className="flex overflow-x-auto gap-1.5 px-3 sm:px-4 pb-2"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {navSections.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveSection(id)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs whitespace-nowrap flex-shrink-0 transition-all duration-150 font-medium',
+                activeSection === id
+                  ? 'bg-[#823F91] text-white shadow-sm'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Two-column layout ── */}
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Left nav */}
-        <nav className="md:w-52 shrink-0">
+        {/* Left nav — desktop only */}
+        <nav className="hidden md:block md:w-52 shrink-0">
           <ul className="space-y-0.5">
             {navSections.map(({ id, label, icon: Icon }) => (
               <li key={id}>
@@ -439,6 +476,22 @@ export default function ProfilPublicPage() {
                 Renseignez les détails spécifiques à votre activité pour aider les couples à mieux vous trouver.
               </p>
               <ServiceDetailsEditor userId={user.id} serviceType={profile!.service_type!} onSave={() => loadAllData(user.id)} />
+            </Section>
+          )}
+
+          {activeSection === 'langues' && (
+            <Section icon={Languages} title="Langues & Capacité">
+              <p className="text-sm text-muted-foreground mb-4">
+                Ces informations améliorent votre score de matching avec les couples.
+              </p>
+              <LanguagesCapacityEditor
+                userId={user.id}
+                serviceType={profile?.service_type}
+                initialLanguages={profile?.languages || []}
+                initialCapacityMin={profile?.guest_capacity_min}
+                initialCapacityMax={profile?.guest_capacity_max}
+                onSave={() => loadAllData(user.id)}
+              />
             </Section>
           )}
 

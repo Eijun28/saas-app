@@ -53,11 +53,13 @@ interface Provider {
   website_url?: string | null
   linkedin_url?: string | null
   tiktok_url?: string | null
+  languages?: string[] | null
   cultures: Array<{ id: string; label: string }>
   zones: Array<{ id: string; label: string }>
   tags: ProviderTag[]
   completionPercentage?: number
   hasSiret?: boolean
+  languages?: string[]
   avgRating?: number
   reviewCount?: number
 }
@@ -208,7 +210,8 @@ export default function RecherchePage() {
           description_courte,
           budget_min,
           budget_max,
-          service_type
+          service_type,
+          languages
         `)
         .eq('role', 'prestataire')
 
@@ -474,7 +477,7 @@ export default function RecherchePage() {
       // Charger TOUTES les données du profil complet
       const { data: fullProfileData, error: profileError } = await supabase
         .from('profiles')
-        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, siret')
+        .select('bio, annees_experience, is_early_adopter, instagram_url, facebook_url, website_url, linkedin_url, tiktok_url, siret, languages')
         .eq('id', provider.id)
         .single()
       
@@ -505,6 +508,7 @@ export default function RecherchePage() {
           linkedin_url: fullProfileData.linkedin_url || null,
           tiktok_url: fullProfileData.tiktok_url || null,
           hasSiret: !!fullProfileData.siret,
+          languages: fullProfileData.languages || null,
         } as Provider)
       }
     } catch (error) {
@@ -824,7 +828,7 @@ export default function RecherchePage() {
                           return (
                             <button
                               key={tag.id}
-                              className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-purple-100" : ""}`}
+                              className={`w-full text-left px-3 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-[#E8D4EF]" : ""}`}
                               onClick={() => {
                                 if (isSelected) {
                                   setSelectedTags(prev => prev.filter(id => id !== tag.id))
@@ -910,7 +914,7 @@ export default function RecherchePage() {
                   <Badge
                     key={tagId}
                     variant="secondary"
-                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-purple-100"
+                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-[#E8D4EF]"
                     onClick={() => setSelectedTags(prev => prev.filter(id => id !== tagId))}
                   >
                     <Tag className="h-3 w-3 mr-1" />
@@ -948,7 +952,7 @@ export default function RecherchePage() {
                 key={r}
                 onClick={() => setMinRating(r)}
                 className={`px-2 py-1 rounded-full text-[11px] font-medium transition-all ${
-                  minRating === r ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  minRating === r ? 'bg-[#823F91] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 {r === 0 ? 'Tous' : (
@@ -1132,7 +1136,7 @@ export default function RecherchePage() {
                         <Badge
                           key={culture.id}
                           variant="outline"
-                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-purple-50 border-purple-200 text-purple-700"
+                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 bg-[#F5F0F7] border-[#D4ADE0] text-[#6D3478]"
                         >
                           <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 flex-shrink-0" />
                           <span className="truncate max-w-[70px] sm:max-w-none">{culture.label}</span>
@@ -1211,6 +1215,7 @@ export default function RecherchePage() {
               website_url: selectedProvider.website_url || null,
               linkedin_url: selectedProvider.linkedin_url || null,
               tiktok_url: selectedProvider.tiktok_url || null,
+              languages: selectedProvider.languages || undefined,
             }}
             cultures={selectedProvider.cultures}
             zones={selectedProvider.zones}
@@ -1226,6 +1231,7 @@ export default function RecherchePage() {
             isCoupleView={true}
             coupleId={user.id}
             hasSiret={selectedProvider.hasSiret}
+            languages={selectedProvider.languages || []}
           />
         )}
       </div>

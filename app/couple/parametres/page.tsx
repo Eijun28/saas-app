@@ -349,7 +349,7 @@ export default function CoupleParametresPage() {
                   disabled={isSavingInfo}
                   whileHover={{ scale: isSavingInfo ? 1 : 1.01 }}
                   whileTap={{ scale: isSavingInfo ? 1 : 0.98 }}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {isSavingInfo ? (
                     <>
@@ -500,7 +500,7 @@ export default function CoupleParametresPage() {
                     disabled={isLoadingPassword}
                     whileHover={{ scale: isLoadingPassword ? 1 : 1.01 }}
                     whileTap={{ scale: isLoadingPassword ? 1 : 0.98 }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-[#823F91] via-[#9D5FA8] to-[#B855D6] font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     {isLoadingPassword ? (
                       <>

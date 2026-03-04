@@ -55,6 +55,18 @@ export interface SearchCriteria {
   must_haves?: string[];
   must_not_haves?: string[];
 
+  // Événements prévus (types de cérémonies/moments du mariage)
+  // ex: ['mariage_civil', 'mariage_religieux', 'henne', 'zaffa', 'reception']
+  event_types?: string[];
+
+  // Exigences alimentaires (critique pour traiteur/pâtissier)
+  // ex: ['halal', 'végétarien', 'casher', 'sans_porc']
+  dietary_requirements?: string[];
+
+  // Langues requises pour communication avec le prestataire
+  // ex: ['français', 'arabe', 'anglais']
+  required_languages?: string[];
+
   // Données extraites du profil couple
   auto_filled_from_profile?: boolean;
 

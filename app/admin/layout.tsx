@@ -30,7 +30,7 @@ export default async function AdminLayout({
           </p>
           <a 
             href="/" 
-            className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="inline-block px-4 py-2 bg-[#823F91] text-white rounded-lg hover:bg-[#6D3478] transition-colors"
           >
             Retour à l'accueil
           </a>
@@ -48,25 +48,25 @@ export default async function AdminLayout({
             <div className="flex items-center gap-4">
               <a
                 href="/admin/bypass-confirmation"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
               >
                 Bypass confirmation
               </a>
               <a
                 href="/admin/invitations-prestataires"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
               >
                 Invitations
               </a>
               <a
                 href="/admin/early-adopters-alerts"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
               >
                 Early Adopters
               </a>
               <a
                 href="/admin/ambassadeurs"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
               >
                 Ambassadeurs
               </a>

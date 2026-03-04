@@ -89,8 +89,21 @@ export default function CoupleFacturesPage() {
 
       if (error) throw error
       setFactures(data || [])
-    } catch {
-      toast.error('Impossible de charger les factures')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      if (message?.includes('does not exist') || message?.includes('relation')) {
+        toast.error('Fonctionnalité en cours de déploiement', {
+          description: 'Les factures seront disponibles très prochainement.',
+        })
+      } else if (message?.includes('permission') || message?.includes('policy')) {
+        toast.error('Accès refusé', {
+          description: 'Votre compte n\'a pas encore accès aux factures. Contactez le support si le problème persiste.',
+        })
+      } else {
+        toast.error('Impossible de charger les factures', {
+          description: 'Vérifiez votre connexion internet et rechargez la page.',
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -128,13 +141,13 @@ export default function CoupleFacturesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">Reste à régler</p>
-              <p className="text-xl font-bold text-[#823F91]">{formatEur(totalDu)}</p>
+              <p className="text-lg sm:text-xl font-bold text-[#823F91] truncate">{formatEur(totalDu)}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">Déjà payé</p>
-              <p className="text-xl font-bold text-green-600">{formatEur(totalPaye)}</p>
+              <p className="text-lg sm:text-xl font-bold text-green-600 truncate">{formatEur(totalPaye)}</p>
             </CardContent>
           </Card>
         </motion.div>

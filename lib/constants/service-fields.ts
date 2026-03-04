@@ -334,6 +334,149 @@ const FOOD_TRUCK_FIELDS: ServiceFieldGroup[] = [
   },
 ]
 
+const EVENT_STATION_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Format & Concept',
+    description: 'Pour les prestataires spécialisés en cocktails dînatoires, food stations et réceptions debout',
+    fields: [
+      {
+        key: 'formats_proposes',
+        label: 'Formats proposés',
+        type: 'multi-select',
+        options: opts('Cocktail dînatoire', 'Food stations', 'Open bar', 'Brunch', 'Apéritif dinatoire', 'Buffet standing', 'Live cooking', 'Menu dégustation en stations'),
+      },
+      {
+        key: 'inclus_service',
+        label: 'Inclus dans la prestation',
+        type: 'multi-select',
+        options: opts('Personnel de service', 'Vaisselle & couverts', 'Mobilier (mange-debout, tables)', 'Décoration des stations', 'Mise en place', 'Nettoyage', 'Boissons & Open bar', 'Barman'),
+      },
+    ],
+  },
+  {
+    title: 'Cuisine & Régimes',
+    fields: [
+      {
+        key: 'styles_culinaires',
+        label: 'Styles culinaires',
+        type: 'multi-select',
+        options: opts('Français', 'Maghrébin', 'Africain', 'Indien', 'Asiatique', 'Libanais / Oriental', 'Antillais / Créole', 'Fusion', 'Gastronomique', 'Méditerranéen', 'Turc'),
+      },
+      {
+        key: 'regime_alimentaire',
+        label: 'Régimes alimentaires gérés',
+        type: 'multi-select',
+        options: opts('Halal', 'Casher', 'Végétarien', 'Végan', 'Sans gluten', 'Sans lactose', 'Sans porc', 'Bio'),
+      },
+    ],
+  },
+  {
+    title: 'Capacité',
+    fields: [
+      {
+        key: 'min_personnes',
+        label: 'Minimum de convives',
+        type: 'number',
+        suffix: 'personnes',
+        min: 1,
+        max: 2000,
+        placeholder: 'ex: 50',
+      },
+      {
+        key: 'max_personnes',
+        label: 'Maximum de convives',
+        type: 'number',
+        suffix: 'personnes',
+        min: 1,
+        max: 2000,
+        placeholder: 'ex: 500',
+      },
+      {
+        key: 'degustation_prealable',
+        label: 'Propose des dégustations avant le jour J',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const CANDY_BAR_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Créations & Spécialités',
+    fields: [
+      {
+        key: 'types_creations',
+        label: 'Types de créations',
+        type: 'multi-select',
+        options: opts('Candy bar / Table sucrée', 'Sweet table sur mesure', 'Fontaine chocolat', 'Barbe à papa', 'Popcorn artisanal', 'Donuts décorés', 'Cupcakes & mignardises', 'Gaufres / Crêpes', 'Bonbons personnalisés', 'Sac gourmands'),
+      },
+      {
+        key: 'styles',
+        label: 'Styles de présentation',
+        type: 'multi-select',
+        options: opts('Romantique / Pastel', 'Boho / Champêtre', 'Luxe / Doré', 'Moderne / Géométrique', 'Oriental', 'Coloré / Fun', 'Vintage', 'Sur mesure (couleurs mariés)'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'regime_alimentaire',
+        label: 'Régimes gérés',
+        type: 'multi-select',
+        options: opts('Halal', 'Casher', 'Végétarien', 'Végan', 'Sans gluten', 'Sans lactose'),
+      },
+      {
+        key: 'livraison_installation',
+        label: 'Livraison et installation incluses',
+        type: 'boolean',
+      },
+      {
+        key: 'personnalisation',
+        label: 'Personnalisation aux couleurs du mariage',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const GLACIER_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Offre glacée',
+    fields: [
+      {
+        key: 'types_glaces',
+        label: 'Types de produits',
+        type: 'multi-select',
+        options: opts('Glaces artisanales', 'Sorbets fruitiers', 'Bar à glaces à la coupe', 'Cônes personnalisés', 'Glaces sur bâtonnet', 'Sandwichs glacés', 'Chariot à glaces', 'Azote liquide / Glaces fumantes'),
+      },
+      {
+        key: 'parfums_speciaux',
+        label: 'Parfums & spécialités',
+        type: 'multi-select',
+        options: opts('Rose / Fleur d\'oranger', 'Pistache', 'Fruits exotiques', 'Thé à la menthe', 'Baklava', 'Chai / Cardamome', 'Fleur de coton', 'Personnalisé sur demande'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'regime_alimentaire',
+        label: 'Régimes gérés',
+        type: 'multi-select',
+        options: opts('Halal', 'Casher', 'Végétalien (sans lait)', 'Sans gluten', 'Sans lactose'),
+      },
+      {
+        key: 'livraison_installation',
+        label: 'Livraison et installation incluses',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
 // ============================================================
 // MUSIQUE & ANIMATION
 // ============================================================
@@ -460,6 +603,83 @@ const COIFFURE_MAQUILLAGE_FIELDS: ServiceFieldGroup[] = [
   },
 ]
 
+const BIJOUTIER_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Spécialités & Collections',
+    fields: [
+      {
+        key: 'type_service',
+        label: 'Services proposés',
+        type: 'multi-select',
+        options: opts('Alliances sur mesure', 'Bagues de fiançailles', 'Bijoux de mariée (parure)', 'Bijoux traditionnels', 'Gravure personnalisée', 'Création sur mesure', 'Retouche & réparation', 'Location de bijoux'),
+      },
+      {
+        key: 'materiaux',
+        label: 'Matériaux & Métaux',
+        type: 'multi-select',
+        options: opts('Or jaune', 'Or blanc', 'Or rose', 'Platine', 'Argent', 'Vermeil', 'Acier inoxydable'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'pierres',
+        label: 'Pierres précieuses',
+        type: 'multi-select',
+        options: opts('Diamant', 'Saphir', 'Rubis', 'Émeraude', 'Zirconium', 'Perle', 'Moissanite', 'Pierre de couleur au choix'),
+      },
+      {
+        key: 'traditions',
+        label: 'Bijoux traditionnels',
+        type: 'multi-select',
+        options: opts('Bijoux marocains', 'Bijoux algériens', 'Bijoux tunisiens', 'Bijoux africains', 'Bijoux indiens', 'Bijoux turcs', 'Bijoux orientaux'),
+      },
+      {
+        key: 'rdv_conseil',
+        label: 'Rendez-vous conseil et essayages proposés',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const ESTHETICIENNE_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Soins proposés',
+    fields: [
+      {
+        key: 'prestations',
+        label: 'Prestations beauté',
+        type: 'multi-select',
+        options: opts('Soin du visage mariée', 'Épilation intégrale', 'Manucure / Nail art', 'Pédicure', 'Bronzage UV / Autobronzant', 'Soin du corps', 'Massage relaxant', 'Hammam / Gommage', 'Pose de faux ongles', 'Extension de cils'),
+      },
+      {
+        key: 'soins_avant_mariage',
+        label: 'Forfaits pré-mariage',
+        type: 'multi-select',
+        options: opts('Programme beauté 3 mois', 'Préparation peau J-30', 'Soin lissant / Défrisage', 'Forfait enterrement de vie de jeune fille'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'deplacement',
+        label: 'Déplacement sur le lieu de préparation',
+        type: 'boolean',
+      },
+      {
+        key: 'groupe',
+        label: 'Prestation possible pour groupe (invitées, demoiselles d\'honneur)',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
 const ROBE_MARIEE_FIELDS: ServiceFieldGroup[] = [
   {
     title: 'Collections & Styles',
@@ -502,6 +722,177 @@ const ROBE_MARIEE_FIELDS: ServiceFieldGroup[] = [
 // ============================================================
 // DECORATION & FLEURS
 // ============================================================
+
+const DECORATEUR_MARIAGE_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Style & Concept',
+    fields: [
+      {
+        key: 'style_decoration',
+        label: 'Styles de décoration',
+        type: 'multi-select',
+        options: opts('Romantique', 'Bohème / Champêtre', 'Moderne / Minimaliste', 'Luxe / Opulent', 'Oriental / Maghrébin', 'Africain', 'Indien', 'Tropical', 'Vintage / Rétro', 'Industriel / Loft', 'Sur mesure'),
+      },
+      {
+        key: 'prestations',
+        label: 'Prestations proposées',
+        type: 'multi-select',
+        options: opts('Décoration cérémonie', 'Décoration salle de réception', 'Centres de table', 'Arche / Backdrop', 'Photocall / Mur floral', 'Éclairage d\'ambiance', 'Mobilier décoratif', 'Chemin de table', 'Déco voiture', 'Plan de table & signalétique'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'themes_speciaux',
+        label: 'Thèmes spéciaux',
+        type: 'multi-select',
+        options: opts('Décoration orientale (amariya, trône)', 'Décoration africaine', 'Décoration indienne', 'Décoration florale', 'Light design', 'Balloon art'),
+      },
+      {
+        key: 'installation_demontage',
+        label: 'Installation et démontage inclus',
+        type: 'boolean',
+      },
+      {
+        key: 'location_incluse',
+        label: 'Location du matériel incluse dans le prix',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const FAIRE_PART_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Créations & Services',
+    fields: [
+      {
+        key: 'types_produits',
+        label: 'Produits proposés',
+        type: 'multi-select',
+        options: opts('Faire-part de mariage', 'Save the date', 'Menus', 'Plan de table', 'Marque-places', 'Livret de cérémonie', 'Affiche / Signalétique', 'Boîte bonbons / Dragées', 'Tampons & sceaux', 'Site internet de mariage'),
+      },
+      {
+        key: 'styles',
+        label: 'Styles graphiques',
+        type: 'multi-select',
+        options: opts('Classique / Élégant', 'Moderne / Minimaliste', 'Aquarelle', 'Calligraphie', 'Bohème / Floral', 'Oriental', 'Africain / Wax', 'Indien', 'Vintage', 'Sur mesure'),
+      },
+    ],
+  },
+  {
+    title: 'Options techniques',
+    fields: [
+      {
+        key: 'techniques_impression',
+        label: 'Techniques d\'impression',
+        type: 'multi-select',
+        options: opts('Impression numérique', 'Dorure à chaud', 'Letterpress', 'Embossage', 'Papier luxe', 'Découpe laser', 'Fichier numérique seul'),
+      },
+      {
+        key: 'langues',
+        label: 'Langues disponibles',
+        type: 'multi-select',
+        options: opts('Français', 'Anglais', 'Arabe', 'Hindi / Ourdou', 'Hébreu', 'Autre'),
+      },
+      {
+        key: 'calligraphie_manuelle',
+        label: 'Propose de la calligraphie manuelle',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const ANIMATEUR_ENFANTS_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Animations proposées',
+    fields: [
+      {
+        key: 'types_animations',
+        label: 'Types d\'animations',
+        type: 'multi-select',
+        options: opts('Garde d\'enfants (crèche événementielle)', 'Espace jeux aménagé', 'Spectacle de magie', 'Espace maquillage enfant', 'Atelier créatif', 'Chasse au trésor', 'Danse / Chorégraphie', 'Clown / Personnage déguisé', 'Gonflables / Trampoline'),
+      },
+      {
+        key: 'tranches_age',
+        label: 'Tranches d\'âge',
+        type: 'multi-select',
+        options: opts('0-3 ans', '3-6 ans', '6-10 ans', '10-14 ans', 'Tous âges'),
+      },
+    ],
+  },
+  {
+    title: 'Capacité & Équipe',
+    fields: [
+      {
+        key: 'nb_enfants_max',
+        label: 'Nombre max d\'enfants pris en charge',
+        type: 'number',
+        suffix: 'enfants',
+        min: 5,
+        max: 100,
+      },
+      {
+        key: 'personnel',
+        label: 'Personnel d\'encadrement',
+        type: 'single-select',
+        options: opts('1 animateur', '2 animateurs', '3 animateurs et plus', 'Variable selon effectif'),
+      },
+      {
+        key: 'diplomes',
+        label: 'Animateurs diplômés (BAFA, BPJEPS...)',
+        type: 'boolean',
+      },
+    ],
+  },
+]
+
+const COUTURIER_FIELDS: ServiceFieldGroup[] = [
+  {
+    title: 'Créations & Style',
+    fields: [
+      {
+        key: 'type_service',
+        label: 'Types de service',
+        type: 'multi-select',
+        options: opts('Création sur mesure', 'Prêt-à-porter', 'Location de tenues', 'Retouches & ajustements', 'Tenues de cérémonie', 'Tenues de soirée'),
+      },
+      {
+        key: 'tenues_proposees',
+        label: 'Tenues proposées',
+        type: 'multi-select',
+        options: opts('Boubou / Grand Boubou', 'Tenue en Wax / Bogolan', 'Kente / Pagne tissé', 'Tenue kabyle / Robe algérienne', 'Gandoura', 'Burnous', 'Tenue antillaise / Madras', 'Tenue indienne (Sherwani, Nehru)', 'Tenue personnalisée'),
+      },
+    ],
+  },
+  {
+    title: 'Options',
+    fields: [
+      {
+        key: 'pour',
+        label: 'Pour qui',
+        type: 'multi-select',
+        options: opts('La mariée', 'Le marié', 'Tenues assortis couple', 'Famille (parents, fratrie)', 'Demoiselles d\'honneur', 'Témoins', 'Tous les invités'),
+      },
+      {
+        key: 'essayages',
+        label: 'Nombre d\'essayages inclus',
+        type: 'number',
+        min: 1,
+        max: 10,
+        suffix: 'essayages',
+      },
+      {
+        key: 'livraison',
+        label: 'Livraison à domicile possible',
+        type: 'boolean',
+      },
+    ],
+  },
+]
 
 const FLEURISTE_FIELDS: ServiceFieldGroup[] = [
   {
@@ -872,11 +1263,12 @@ export const SERVICE_FIELD_GROUPS: Record<string, ServiceFieldGroup[]> = {
 
   // Traiteur & Pâtisserie
   traiteur: TRAITEUR_FIELDS,
+  event_station: EVENT_STATION_FIELDS,
   patissier: PATISSIER_FIELDS,
   barman_cocktails: BARMAN_COCKTAILS_FIELDS,
   food_truck: FOOD_TRUCK_FIELDS,
-  candy_bar: FOOD_TRUCK_FIELDS, // même structure simplifiée
-  glacier: FOOD_TRUCK_FIELDS,
+  candy_bar: CANDY_BAR_FIELDS,
+  glacier: GLACIER_FIELDS,
 
   // Musique & Animation
   dj: DJ_FIELDS,
@@ -886,10 +1278,12 @@ export const SERVICE_FIELD_GROUPS: Record<string, ServiceFieldGroup[]> = {
   // Beauté & Style
   coiffure_maquillage: COIFFURE_MAQUILLAGE_FIELDS,
   robe_mariee: ROBE_MARIEE_FIELDS,
-  bijoutier: ROBE_MARIEE_FIELDS,
+  bijoutier: BIJOUTIER_FIELDS,
+  estheticienne: ESTHETICIENNE_FIELDS,
 
   // Décoration & Fleurs
   fleuriste: FLEURISTE_FIELDS,
+  decorateur_mariage: DECORATEUR_MARIAGE_FIELDS,
 
   // Lieux & Matériel
   salle: SALLE_FIELDS,
@@ -912,18 +1306,27 @@ export const SERVICE_FIELD_GROUPS: Record<string, ServiceFieldGroup[]> = {
   groupe_gnawa: MUSICIEN_TRADITIONNEL_FIELDS,
   danseuse_orientale: CHANTEUR_FIELDS,
   troupe_folklorique: CHANTEUR_FIELDS,
+  decorateur_maghrebin: DECORATEUR_MARIAGE_FIELDS,
+  calligraphe: FAIRE_PART_FIELDS,
 
   // Traditions Afrique
   griot: MUSICIEN_TRADITIONNEL_FIELDS,
   percussionnistes: MUSICIEN_TRADITIONNEL_FIELDS,
   danseurs_africains: CHANTEUR_FIELDS,
   traiteur_africain: TRAITEUR_FIELDS,
+  couturier_africain: COUTURIER_FIELDS,
+  styliste_wax: COUTURIER_FIELDS,
+  coiffure_africaine: COIFFURE_MAQUILLAGE_FIELDS,
+  decorateur_africain: DECORATEUR_MARIAGE_FIELDS,
 
   // Traditions Asie & Inde
   sangeet_dj: DJ_FIELDS,
   danseurs_bollywood: CHANTEUR_FIELDS,
   traiteur_indien: TRAITEUR_FIELDS,
   traiteur_asiatique: TRAITEUR_FIELDS,
+  styliste_sari: COUTURIER_FIELDS,
+  decorateur_indien: DECORATEUR_MARIAGE_FIELDS,
+  calligraphe_asiatique: FAIRE_PART_FIELDS,
 
   // Autres traditions
   groupe_zouk: CHANTEUR_FIELDS,
@@ -932,6 +1335,9 @@ export const SERVICE_FIELD_GROUPS: Record<string, ServiceFieldGroup[]> = {
   mariachi: MUSICIEN_TRADITIONNEL_FIELDS,
   danseurs_latino: CHANTEUR_FIELDS,
   traiteur_antillais: TRAITEUR_FIELDS,
+  styliste_antillais: COUTURIER_FIELDS,
+  couturier_traditionnel: COUTURIER_FIELDS,
+  musicien_folk: MUSICIEN_TRADITIONNEL_FIELDS,
 
   // Spectacle & Effets
   artificier: ARTIFICIER_FIELDS,
@@ -939,11 +1345,15 @@ export const SERVICE_FIELD_GROUPS: Record<string, ServiceFieldGroup[]> = {
   fumigenes: ARTIFICIER_FIELDS,
   spectacle_feu: ARTIFICIER_FIELDS,
   laser_show: ARTIFICIER_FIELDS,
+  lacher_colombes: ARTIFICIER_FIELDS,
+  spectacle_acrobatique: CHANTEUR_FIELDS,
 
   // Services
   wedding_planner: WEDDING_PLANNER_FIELDS,
+  faire_part: FAIRE_PART_FIELDS,
   officiant: OFFICIANT_FIELDS,
   coach_ouverture_bal: COACH_BAL_FIELDS,
+  animateur_enfants: ANIMATEUR_ENFANTS_FIELDS,
 }
 
 // Helper: vérifier si un service_type a des champs spécifiques

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Bell, Inbox, Calendar, MessageSquare } from 'lucide-react'
+import { Bell, Inbox, Calendar, MessageSquare, Home, BarChart3, FileText, UserCircle, CalendarOff, Settings as SettingsIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -19,6 +19,27 @@ import {
 import { User, LogOut, ChevronDown, Settings } from 'lucide-react'
 import Link from 'next/link'
 
+/* ─────────────────────────────────────────────
+   Page title map
+   ───────────────────────────────────────────── */
+
+const PAGE_TITLES: Record<string, { label: string; icon: React.ElementType }> = {
+  '/prestataire/dashboard':      { label: 'Tableau de bord', icon: Home },
+  '/prestataire/demandes-recues': { label: 'Demandes reçues', icon: Inbox },
+  '/prestataire/agenda':         { label: 'Agenda', icon: Calendar },
+  '/prestataire/disponibilites': { label: 'Disponibilités', icon: CalendarOff },
+  '/prestataire/messagerie':     { label: 'Messagerie', icon: MessageSquare },
+  '/prestataire/devis-factures': { label: 'Devis & Factures', icon: FileText },
+  '/prestataire/analytics':      { label: 'Statistiques', icon: BarChart3 },
+  '/prestataire/profil-public':  { label: 'Profil public', icon: UserCircle },
+  '/prestataire/parametres':     { label: 'Paramètres', icon: SettingsIcon },
+}
+
+function getPageInfo(pathname: string) {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  const match = Object.entries(PAGE_TITLES).find(([key]) => pathname.startsWith(key + '/'))
+  return match ? match[1] : { label: 'NUPLY', icon: Home }
+}
 
 export function PrestataireHeader() {
   const { user } = useUser()
@@ -127,6 +148,7 @@ export function PrestataireHeader() {
   }
 
   const unreadCount = notifications.filter(n => n.type === 'message' || n.type === 'demande').length
+  const pageInfo = getPageInfo(pathname)
 
   const quickActions = pathname === '/prestataire/dashboard'
     ? [
@@ -143,10 +165,16 @@ export function PrestataireHeader() {
           {/* Left: page title + quick actions */}
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Status pill — visible on all screens */}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 border border-violet-100 text-[11px] font-semibold text-violet-600 flex-shrink-0">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-500 inline-block" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5F0F7] border border-[#E8D4EF] text-[11px] font-semibold text-[#6D3478] flex-shrink-0">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#823F91] inline-block" />
               Prestataire
             </span>
+
+            {/* Page title — tablet only (md → lg) */}
+            <div className="hidden md:flex lg:hidden items-center gap-1.5 pl-3 border-l border-gray-100 min-w-0">
+              <pageInfo.icon className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[13px] font-semibold text-gray-700 truncate">{pageInfo.label}</span>
+            </div>
 
             {/* Quick actions — desktop dashboard only */}
             {quickActions.length > 0 && (
@@ -185,10 +213,10 @@ export function PrestataireHeader() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden z-[201]">
-                <div className="px-3 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100/60">
+                <div className="px-3 py-2.5 bg-gradient-to-r from-[#F5F0F7] to-[#F5F0F7] border-b border-[#E8D4EF]/60">
                   <p className="text-[13px] font-semibold text-gray-900">Notifications</p>
                   {unreadCount > 0 && (
-                    <p className="text-[11px] text-violet-600 font-medium">{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</p>
+                    <p className="text-[11px] text-[#6D3478] font-medium">{unreadCount} non lue{unreadCount > 1 ? 's' : ''}</p>
                   )}
                 </div>
                 <div className="py-1 max-h-64 overflow-y-auto">
@@ -201,7 +229,7 @@ export function PrestataireHeader() {
                     notifications.slice(0, 5).map((notification) => {
                       const Icon = notification.type === 'demande' ? Inbox : notification.type === 'evenement' ? Calendar : MessageSquare
                       const colorClass = notification.type === 'demande'
-                        ? 'bg-violet-50 text-violet-600'
+                        ? 'bg-[#F5F0F7] text-[#6D3478]'
                         : notification.type === 'evenement'
                         ? 'bg-blue-50 text-blue-500'
                         : 'bg-emerald-50 text-emerald-600'
@@ -231,11 +259,11 @@ export function PrestataireHeader() {
               <DropdownMenuTrigger asChild>
                 <button
                   suppressHydrationWarning
-                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/30"
+                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30"
                 >
                   <Avatar className="h-7 w-7 rounded-lg ring-1 ring-gray-200 flex-shrink-0">
                     <AvatarImage src={profile?.avatar ? `${profile.avatar}${profile.avatar.includes('?') ? '&' : '?'}t=${Date.now()}` : undefined} alt={profile?.name} key={profile?.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-violet-600 to-purple-700 text-white text-[10px] font-bold rounded-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-[#9D5FA8] to-[#6D3478] text-white text-[10px] font-bold rounded-lg">
                       {profile?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'P'}
                     </AvatarFallback>
                   </Avatar>

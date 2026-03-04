@@ -28,7 +28,48 @@ import {
   FileText,
   Settings,
   Heart,
+  Home,
+  Calendar,
+  PartyPopper,
+  ClipboardList,
+  UserPlus,
+  Users,
+  Euro,
+  CreditCard,
+  Receipt,
+  BookHeart,
 } from 'lucide-react'
+
+/* ─────────────────────────────────────────────
+   Page title map
+   ───────────────────────────────────────────── */
+
+const PAGE_TITLES: Record<string, { label: string; icon: React.ElementType }> = {
+  '/couple/dashboard':      { label: 'Tableau de bord', icon: Home },
+  '/couple/timeline':       { label: 'Calendrier', icon: Calendar },
+  '/couple/evenements':     { label: 'Événements', icon: PartyPopper },
+  '/couple/jour-j':         { label: 'Programme Jour J', icon: ClipboardList },
+  '/couple/recherche':      { label: 'Rechercher', icon: Search },
+  '/couple/favoris':        { label: 'Favoris', icon: Heart },
+  '/couple/matching':       { label: 'Nuply Matching', icon: Sparkles },
+  '/couple/collaborateurs': { label: 'Collaborateurs', icon: UserPlus },
+  '/couple/invites':        { label: 'Invités', icon: Users },
+  '/couple/messagerie':     { label: 'Messages', icon: MessageSquare },
+  '/couple/demandes':       { label: 'Demandes & Devis', icon: FileText },
+  '/couple/budget':         { label: 'Budget', icon: Euro },
+  '/couple/paiements':      { label: 'Paiements', icon: CreditCard },
+  '/couple/factures':       { label: 'Factures', icon: Receipt },
+  '/couple/profil':         { label: 'Profil', icon: User },
+  '/couple/notifications':  { label: 'Notifications', icon: Bell },
+  '/couple/parametres':     { label: 'Paramètres', icon: Settings },
+}
+
+function getPageInfo(pathname: string) {
+  // Exact match first, then prefix match
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname]
+  const match = Object.entries(PAGE_TITLES).find(([key]) => pathname.startsWith(key + '/'))
+  return match ? match[1] : { label: 'NUPLY', icon: BookHeart }
+}
 
 
 export function CoupleHeader() {
@@ -74,6 +115,7 @@ export function CoupleHeader() {
   }
 
   const totalNotifs = counts.unreadMessages + counts.newRequests
+  const pageInfo = getPageInfo(pathname)
 
   const quickActions = pathname === '/couple/dashboard'
     ? [
@@ -94,6 +136,12 @@ export function CoupleHeader() {
               <Heart className="h-2.5 w-2.5 fill-pink-500 text-pink-500" />
               Couple
             </span>
+
+            {/* Page title — tablet only (md → lg) */}
+            <div className="hidden md:flex lg:hidden items-center gap-1.5 pl-3 border-l border-gray-100 min-w-0">
+              <pageInfo.icon className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[13px] font-semibold text-gray-700 truncate">{pageInfo.label}</span>
+            </div>
 
             {/* Quick actions — desktop dashboard only */}
             {quickActions.length > 0 && (
@@ -183,6 +231,14 @@ export function CoupleHeader() {
                     </div>
                   )}
                 </div>
+                <div className="border-t border-gray-100 px-3 py-2">
+                  <Link
+                    href="/couple/notifications"
+                    className="block text-center text-[12px] font-medium text-[#823F91] hover:text-[#6D3478] py-1 transition-colors"
+                  >
+                    Voir toutes les notifications
+                  </Link>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -195,7 +251,7 @@ export function CoupleHeader() {
                 >
                   <Avatar className="h-7 w-7 rounded-lg ring-1 ring-gray-200 flex-shrink-0">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white text-[10px] font-bold rounded-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-[#823F91] text-white text-[10px] font-bold rounded-lg">
                       {profile?.name?.split(' ').filter(w => w !== '&').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'C'}
                     </AvatarFallback>
                   </Avatar>

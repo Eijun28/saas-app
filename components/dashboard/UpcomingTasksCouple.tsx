@@ -106,22 +106,22 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col"
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
     >
       {/* Header - clickable on mobile to collapse */}
       <button
         onClick={() => setCollapsed(prev => !prev)}
-        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 lg:cursor-default"
+        className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 cursor-pointer"
       >
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Preparatifs</h2>
+            <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">Préparatifs</h2>
             <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">
-              {loading ? 'Chargement...' : `${completedCount}/${totalCount} etape${totalCount > 1 ? 's' : ''} completee${completedCount > 1 ? 's' : ''}`}
+              {loading ? 'Chargement...' : `${completedCount}/${totalCount} étape${totalCount > 1 ? 's' : ''} complétée${completedCount > 1 ? 's' : ''}`}
             </p>
           </div>
           <ChevronDown className={cn(
-            "h-5 w-5 text-gray-400 transition-transform duration-200 lg:hidden",
+            "h-5 w-5 text-gray-400 transition-transform duration-200",
             !collapsed && "rotate-180"
           )} />
         </div>
@@ -150,7 +150,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeInOut' }}
-            className="overflow-hidden flex flex-col flex-1"
+            className="overflow-hidden flex flex-col"
           >
             {/* Filtres */}
             <div className="px-4 pt-4 sm:px-5 sm:pt-5">
@@ -173,7 +173,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             </div>
 
             {/* Liste des taches */}
-            <div className="flex-1 p-4 sm:p-5 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[300px] sm:max-h-[360px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 text-[#823F91] animate-spin" />
@@ -185,8 +185,8 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
                       <div className="w-16 h-16 mx-auto mb-4 bg-gray-50 rounded-2xl flex items-center justify-center">
                         <CheckCircle2 className="h-8 w-8 text-gray-300" />
                       </div>
-                      <p className="text-sm font-medium text-gray-900 mb-1">Aucune tache trouvee</p>
-                      <p className="text-xs text-gray-500">Vos preparatifs apparaitront ici</p>
+                      <p className="text-sm font-medium text-gray-900 mb-1">Aucune tâche trouvée</p>
+                      <p className="text-xs text-gray-500">Vos préparatifs apparaîtront ici</p>
                     </div>
                   ) : (
                     filteredTasks.map((task, index) => {

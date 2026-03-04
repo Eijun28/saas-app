@@ -21,7 +21,7 @@ export default function PrestataireParametresLoading() {
               <div className="h-10 bg-gray-50 rounded-xl" />
             </div>
           ))}
-          <div className="h-10 w-32 bg-purple-100 rounded-xl" />
+          <div className="h-10 w-32 bg-[#E8D4EF] rounded-xl" />
         </div>
       </div>
     </div>

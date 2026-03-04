@@ -42,6 +42,7 @@ interface GuestTableProps {
   onAdded: (guest: Guest) => void
   onUpdated: (guest: Guest) => void
   onDeleted: (id: string) => void
+  tableCount?: number
 }
 
 const RSVP_OPTIONS: RsvpStatus[] = ['confirmed', 'maybe', 'declined', 'pending']
@@ -87,7 +88,7 @@ function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
   }
 
   return (
-    <div className="px-4 py-3 bg-purple-50/40 border-b border-[#823F91]/10">
+    <div className="px-4 py-3 bg-[#F5F0F7]/40 border-b border-[#823F91]/10">
       {/* Label */}
       <div className="flex items-center gap-1.5 mb-2.5">
         <UserPlus className="h-3.5 w-3.5 text-[#823F91]/60" />
@@ -177,7 +178,7 @@ function InlineAddRow({ onSaved }: { onSaved: (guest: Guest) => void }) {
 
 // ─── Table principale ─────────────────────────────────────────────────────────
 
-export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTableProps) {
+export function GuestTable({ guests, onAdded, onUpdated, onDeleted, tableCount }: GuestTableProps) {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
   const [deletingId, setDeletingId]     = useState<string | null>(null)
   const [updatingRsvp, setUpdatingRsvp] = useState<string | null>(null)
@@ -223,7 +224,7 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
         {/* Formulaire d'ajout en haut */}
         <InlineAddRow onSaved={onAdded} />
         <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-          <div className="h-16 w-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-4">
+          <div className="h-16 w-16 rounded-2xl bg-[#F5F0F7] flex items-center justify-center mb-4">
             <Users className="h-8 w-8 text-[#823F91]/50" />
           </div>
           <p className="text-gray-500 font-medium">Aucun invité pour le moment</p>
@@ -268,8 +269,8 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
               >
                 {/* Nom + +1 */}
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-[13px] font-bold text-[#823F91]">{initials}</span>
+                  <div className="h-9 w-9 rounded-xl bg-[#F5F0F7] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[13px] font-bold text-[#6D3478]">{initials}</span>
                   </div>
                   <div>
                     <p className="text-[14px] font-semibold text-gray-900">{fullName}</p>
@@ -279,7 +280,7 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
                       </p>
                     )}
                     {guest.table_number && (
-                      <p className="text-[11px] text-purple-500 font-medium">Table {guest.table_number}</p>
+                      <p className="text-[11px] text-[#823F91] font-medium">Table {guest.table_number}</p>
                     )}
                   </div>
                 </div>
@@ -357,7 +358,7 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
                         navigator.clipboard.writeText(url)
                         toast.success(`Lien RSVP copié pour ${guest.first_name}`)
                       }}
-                      className="text-[13px] gap-2 text-[#823F91] focus:text-[#823F91] focus:bg-purple-50"
+                      className="text-[13px] gap-2 text-[#823F91] focus:text-[#823F91] focus:bg-[#F5F0F7]"
                     >
                       <Link2 className="h-3.5 w-3.5" /> Copier le lien RSVP
                     </DropdownMenuItem>
@@ -399,6 +400,7 @@ export function GuestTable({ guests, onAdded, onUpdated, onDeleted }: GuestTable
           setEditingGuest(null)
         }}
         existing={editingGuest}
+        tableCount={tableCount}
       />
     </>
   )

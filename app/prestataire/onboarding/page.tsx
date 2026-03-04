@@ -3,22 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, Briefcase, Globe, MapPin, Euro, Sparkles } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, Briefcase, Globe, MapPin, Euro, Sparkles, Search, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select-radix'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
+import { SERVICE_CATEGORIES, getServiceTypeLabel, type ServiceCategory } from '@/lib/constants/service-types'
 import { DEPARTEMENTS, DEPARTEMENTS_BY_REGION } from '@/lib/constants/zones'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 
@@ -41,6 +34,10 @@ export default function OnboardingPage() {
   // Step 1: Service type + city
   const [serviceType, setServiceType] = useState('')
   const [ville, setVille] = useState('')
+  // Service type picker state
+  const [pickerStep, setPickerStep] = useState<'category' | 'service'>('category')
+  const [pickerCategory, setPickerCategory] = useState<ServiceCategory | null>(null)
+  const [pickerSearch, setPickerSearch] = useState('')
 
   // Step 3: Zones
   const [selectedZones, setSelectedZones] = useState<string[]>([])
@@ -254,7 +251,7 @@ export default function OnboardingPage() {
                     isCompleted
                       ? "bg-emerald-500 text-white"
                       : isActive
-                      ? "bg-[#823F91] text-white shadow-lg shadow-purple-500/25"
+                      ? "bg-[#823F91] text-white shadow-lg shadow-[#823F91]/25"
                       : "bg-gray-100 text-gray-400"
                   )}>
                     {isCompleted ? (
@@ -292,7 +289,7 @@ export default function OnboardingPage() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="bg-white shadow-xl shadow-purple-500/10 border-0 ring-1 ring-purple-100/50 overflow-hidden">
+            <Card className="bg-white shadow-xl shadow-[#823F91]/10 border-0 ring-1 ring-[#E8D4EF]/50 overflow-hidden">
               <div className="p-5 sm:p-8">
                 {/* Step 1: Service Type + City */}
                 {currentStep === 1 && (
@@ -307,25 +304,154 @@ export default function OnboardingPage() {
                         <Label className="text-sm font-medium text-gray-700 mb-2 block">
                           Type de prestation <span className="text-red-500">*</span>
                         </Label>
-                        <Select value={serviceType} onValueChange={setServiceType}>
-                          <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 focus:ring-[#823F91]">
-                            <SelectValue placeholder="Choisissez votre prestation" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-80">
-                            {SERVICE_CATEGORIES.map(category => (
-                              <div key={category.id}>
-                                <div className="px-2 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                                  {category.label}
-                                </div>
-                                {category.services.map(service => (
-                                  <SelectItem key={service.value} value={service.value}>
-                                    {service.label}
-                                  </SelectItem>
-                                ))}
+
+                        {/* Selected state */}
+                        {serviceType ? (
+                          <div className="flex items-center justify-between p-3 bg-[#F5F0F7] border border-[#823F91]/20 rounded-xl">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-8 h-8 rounded-lg bg-[#823F91]/15 flex items-center justify-center flex-shrink-0">
+                                <Check className="h-4 w-4 text-[#823F91]" />
                               </div>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              <span className="text-sm font-semibold text-[#823F91] truncate">
+                                {getServiceTypeLabel(serviceType)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setServiceType('')
+                                setPickerStep('category')
+                                setPickerCategory(null)
+                                setPickerSearch('')
+                              }}
+                              className="ml-2 flex items-center gap-1 text-xs text-gray-500 hover:text-[#823F91] flex-shrink-0 transition-colors"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              Modifier
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="border border-gray-200 rounded-xl overflow-hidden">
+                            {/* Search bar */}
+                            <div className="relative border-b border-gray-100">
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                              <input
+                                type="text"
+                                value={pickerSearch}
+                                onChange={(e) => {
+                                  setPickerSearch(e.target.value)
+                                  if (e.target.value) setPickerStep('service')
+                                  else { setPickerStep('category'); setPickerCategory(null) }
+                                }}
+                                placeholder="Rechercher un métier..."
+                                className="w-full pl-9 pr-9 py-3 text-sm bg-white outline-none placeholder-gray-400 min-w-0"
+                              />
+                              {pickerSearch && (
+                                <button
+                                  type="button"
+                                  onClick={() => { setPickerSearch(''); setPickerStep('category'); setPickerCategory(null) }}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Category grid */}
+                            {pickerStep === 'category' && !pickerSearch && (
+                              <div className="grid grid-cols-2 gap-px bg-gray-100 max-h-72 overflow-y-auto">
+                                {SERVICE_CATEGORIES.map(cat => {
+                                  const CatIcon = cat.icon
+                                  return (
+                                    <button
+                                      key={cat.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setPickerCategory(cat)
+                                        setPickerStep('service')
+                                      }}
+                                      className="flex items-center gap-2.5 p-3 bg-white hover:bg-[#F5F0F7] transition-colors text-left group"
+                                    >
+                                      <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-[#823F91]/10 flex items-center justify-center flex-shrink-0 transition-colors">
+                                        <CatIcon className="h-4 w-4 text-gray-500 group-hover:text-[#823F91] transition-colors" />
+                                      </div>
+                                      <span className="text-xs font-medium text-gray-700 group-hover:text-[#823F91] leading-tight transition-colors">
+                                        {cat.label}
+                                      </span>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
+
+                            {/* Service list for selected category or search results */}
+                            {(pickerStep === 'service' || pickerSearch) && (
+                              <div className="bg-white">
+                                {/* Back button when browsing by category */}
+                                {pickerCategory && !pickerSearch && (
+                                  <button
+                                    type="button"
+                                    onClick={() => { setPickerStep('category'); setPickerCategory(null) }}
+                                    className="flex items-center gap-1.5 w-full px-3 py-2.5 text-xs font-semibold text-[#823F91] border-b border-gray-100 hover:bg-[#F5F0F7] transition-colors"
+                                  >
+                                    <ChevronLeft className="h-3.5 w-3.5" />
+                                    {pickerCategory.label}
+                                  </button>
+                                )}
+
+                                <div className="max-h-64 overflow-y-auto">
+                                  {pickerSearch ? (
+                                    // Search results across all categories
+                                    (() => {
+                                      const q = pickerSearch.toLowerCase()
+                                      const results = SERVICE_CATEGORIES.flatMap(cat =>
+                                        cat.services
+                                          .filter(s => s.label.toLowerCase().includes(q) || cat.label.toLowerCase().includes(q))
+                                          .map(s => ({ ...s, categoryLabel: cat.label }))
+                                      )
+                                      return results.length === 0 ? (
+                                        <p className="text-sm text-gray-400 text-center py-6">Aucun résultat</p>
+                                      ) : (
+                                        results.map(s => (
+                                          <button
+                                            key={s.value}
+                                            type="button"
+                                            onClick={() => {
+                                              setServiceType(s.value)
+                                              setPickerSearch('')
+                                              setPickerStep('category')
+                                              setPickerCategory(null)
+                                            }}
+                                            className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-gray-700 hover:bg-[#F5F0F7] hover:text-[#823F91] transition-colors text-left border-b border-gray-50 last:border-0"
+                                          >
+                                            <span className="flex-1">{s.label}</span>
+                                            <span className="text-xs text-gray-400 flex-shrink-0">{s.categoryLabel}</span>
+                                          </button>
+                                        ))
+                                      )
+                                    })()
+                                  ) : (
+                                    // Services for selected category
+                                    pickerCategory?.services.map(s => (
+                                      <button
+                                        key={s.value}
+                                        type="button"
+                                        onClick={() => {
+                                          setServiceType(s.value)
+                                          setPickerStep('category')
+                                          setPickerCategory(null)
+                                        }}
+                                        className="flex items-center w-full px-3 py-2.5 text-sm text-gray-700 hover:bg-[#F5F0F7] hover:text-[#823F91] transition-colors text-left border-b border-gray-50 last:border-0"
+                                      >
+                                        {s.label}
+                                      </button>
+                                    ))
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -385,7 +511,7 @@ export default function OnboardingPage() {
                                 allSelected
                                   ? "bg-[#823F91] text-white"
                                   : someSelected
-                                  ? "bg-purple-50 text-[#823F91]"
+                                  ? "bg-[#F5F0F7] text-[#823F91]"
                                   : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                               )}
                             >
@@ -473,8 +599,8 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100">
-                      <p className="text-sm text-purple-800">
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-[#F5F0F7] to-pink-50 border border-[#E8D4EF]">
+                      <p className="text-sm text-[#5C2B66]">
                         <span className="font-semibold">Presque terminé !</span> Après cette étape, vous aurez accès à votre tableau de bord pour compléter votre portfolio, vos réseaux sociaux et plus encore.
                       </p>
                     </div>
@@ -499,7 +625,7 @@ export default function OnboardingPage() {
                   <Button
                     onClick={saveStepAndAdvance}
                     disabled={isSaving || !isStepValid()}
-                    className="bg-[#823F91] hover:bg-[#6D3478] text-white px-6 h-11 rounded-xl shadow-md shadow-purple-500/20"
+                    className="bg-[#823F91] hover:bg-[#6D3478] text-white px-6 h-11 rounded-xl shadow-md shadow-[#823F91]/20"
                   >
                     {isSaving ? (
                       'Enregistrement...'

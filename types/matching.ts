@@ -50,6 +50,16 @@ export interface ScoreBreakdown {
   // Specialty match (bonus pour besoins specifiques)
   specialty_match?: number; // 0 a +15 points bonus
 
+  // Event types coverage (bonus pour couverture des événements prévus)
+  event_types_match?: number; // 0 a +8 points bonus
+
+  // Langues et régimes alimentaires (bonus)
+  language_match?: number; // 0 a +8 points bonus
+  dietary_match?: number; // -15 a +10 points
+
+  // Fiabilité prestataire (bonus)
+  response_rate_bonus?: number; // -2 a +3 points
+
   // Equite (pour eviter de toujours montrer les memes)
   fairness_multiplier?: number; // 0.85 a 1.15
   ctr_bonus?: number; // -3 a +5 points
@@ -60,7 +70,7 @@ export interface ScoreBreakdown {
   ai_reasoning?: string;
 
   // Total
-  total_algo: number; // /90 base + tags bonus
+  total_algo: number; // /90 base + bonus
   final_score: number; // /100
 }
 

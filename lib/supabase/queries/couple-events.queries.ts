@@ -45,16 +45,30 @@ export async function getCoupleEvent(eventId: string): Promise<TimelineEvent | n
  */
 export async function createCoupleEvent(
   coupleId: string,
-  eventData: { title: string; description?: string | null; event_date: string }
+  eventData: {
+    title: string
+    description?: string | null
+    event_date: string
+    status?: string
+    start_time?: string | null
+    end_time?: string | null
+    location?: string | null
+    category?: string | null
+  }
 ): Promise<TimelineEvent | null> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('timeline_events')
     .insert({
-      couple_id: coupleId,
-      title: eventData.title,
+      couple_id:  coupleId,
+      title:      eventData.title,
       description: eventData.description || null,
-      event_date: eventData.event_date,
+      event_date:  eventData.event_date,
+      status:      eventData.status || 'planning',
+      start_time:  eventData.start_time || null,
+      end_time:    eventData.end_time || null,
+      location:    eventData.location || null,
+      category:    eventData.category || null,
     })
     .select()
     .single()
@@ -72,7 +86,16 @@ export async function createCoupleEvent(
  */
 export async function updateCoupleEvent(
   eventId: string,
-  updates: { title?: string; description?: string | null; event_date?: string }
+  updates: {
+    title?: string
+    description?: string | null
+    event_date?: string
+    status?: string
+    start_time?: string | null
+    end_time?: string | null
+    location?: string | null
+    category?: string | null
+  }
 ): Promise<TimelineEvent | null> {
   const supabase = createClient()
   const { data, error } = await supabase

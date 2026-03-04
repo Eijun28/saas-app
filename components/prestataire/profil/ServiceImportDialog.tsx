@@ -177,7 +177,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setMode('pdf')}
-                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#823F91] hover:bg-purple-50/50 transition-all text-left"
+                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#823F91] hover:bg-[#F5F0F7]/50 transition-all text-left"
               >
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -199,7 +199,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setMode('ia')}
-                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#823F91] hover:bg-purple-50/50 transition-all text-left"
+                className="p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#823F91] hover:bg-[#F5F0F7]/50 transition-all text-left"
               >
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center flex-shrink-0">
@@ -225,7 +225,7 @@ export function ServiceImportDialog({ isOpen, onClose, onImportServices }: Servi
               <div
                 className={cn(
                   "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all",
-                  "hover:border-[#823F91] hover:bg-purple-50/50",
+                  "hover:border-[#823F91] hover:bg-[#F5F0F7]/50",
                   isProcessing && "opacity-50 cursor-not-allowed"
                 )}
                 onClick={() => !isProcessing && fileInputRef.current?.click()}

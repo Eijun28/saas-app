@@ -78,7 +78,7 @@ function DialogContent({
           "bg-background fixed grid w-full max-w-[88vw] sm:max-w-[calc(100vw-4rem)] gap-4 rounded-xl p-3 sm:p-4 md:p-6",
           "border-0 shadow-[0_8px_24px_rgba(130,63,145,0.15),0_0_0_1px_rgba(130,63,145,0.1)]",
           "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "max-h-[92vh] overflow-y-auto",
+          "max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
           sizeClasses[size],
           className
         )}

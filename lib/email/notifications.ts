@@ -8,50 +8,92 @@ const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@nuply.fr'
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
-/**
- * Envoie un email au prestataire lorsqu'il reçoit une nouvelle demande
- */
+// Récupère l'email d'un utilisateur via auth.users (source de vérité)
+async function getUserEmail(adminClient: ReturnType<typeof createAdminClient>, userId: string): Promise<string | null> {
+  try {
+    const { data } = await adminClient.auth.admin.getUserById(userId)
+    return data?.user?.email ?? null
+  } catch {
+    return null
+  }
+}
+
+// Récupère le prénom d'un utilisateur depuis profiles
+async function getUserFirstName(adminClient: ReturnType<typeof createAdminClient>, userId: string): Promise<string> {
+  const { data } = await adminClient.from('profiles').select('prenom').eq('id', userId).single()
+  return data?.prenom ?? ''
+}
+
+// Récupère le nom affiché d'un couple (partenaire 1 & 2)
+async function getCoupleName(adminClient: ReturnType<typeof createAdminClient>, coupleUserId: string): Promise<string> {
+  const { data } = await adminClient
+    .from('couples')
+    .select('partner_1_name, partner_2_name')
+    .eq('user_id', coupleUserId)
+    .single()
+  if (!data) return 'un couple'
+  return data.partner_2_name
+    ? `${data.partner_1_name} et ${data.partner_2_name}`
+    : data.partner_1_name ?? 'un couple'
+}
+
+// Récupère le nom affiché d'un prestataire (nom_entreprise ou prénom+nom)
+async function getProviderName(adminClient: ReturnType<typeof createAdminClient>, providerId: string): Promise<string> {
+  const { data } = await adminClient
+    .from('prestataire_profiles')
+    .select('nom_entreprise')
+    .eq('user_id', providerId)
+    .single()
+  if (data?.nom_entreprise) return data.nom_entreprise
+  const { data: profile } = await adminClient
+    .from('profiles')
+    .select('prenom, nom')
+    .eq('id', providerId)
+    .single()
+  return `${profile?.prenom ?? ''} ${profile?.nom ?? ''}`.trim() || 'le prestataire'
+}
+
+async function logEmail(
+  adminClient: ReturnType<typeof createAdminClient>,
+  userId: string,
+  emailType: string,
+  metadata?: Record<string, unknown>
+) {
+  await adminClient.from('email_logs').insert({
+    user_id: userId,
+    email_type: emailType,
+    sent_at: new Date().toISOString(),
+    metadata: metadata ?? {},
+  })
+}
+
+// ============================================================================
+// NOUVELLE DEMANDE → prestataire
+// ============================================================================
+
 export async function sendNewRequestEmail(
   providerId: string,
   coupleId: string,
   requestId: string,
   requestMessage?: string
 ) {
-  if (!resendApiKey) {
-    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
-    return { success: false, error: 'RESEND_API_KEY non configurée' }
-  }
+  if (!resendApiKey) return { success: false, error: 'RESEND_API_KEY non configurée' }
 
   try {
     const adminClient = createAdminClient()
 
-    // Récupérer les informations du prestataire
-    const { data: provider } = await adminClient
-      .from('profiles')
-      .select('id, prenom, nom, email')
-      .eq('id', providerId)
-      .single()
+    const [email, prenom, coupleName] = await Promise.all([
+      getUserEmail(adminClient, providerId),
+      getUserFirstName(adminClient, providerId),
+      getCoupleName(adminClient, coupleId),
+    ])
 
-    if (!provider || !provider.email) {
-      logger.warn('Prestataire non trouvé ou email manquant', { providerId })
-      return { success: false, error: 'Prestataire non trouvé' }
+    if (!email) {
+      logger.warn('sendNewRequestEmail: email prestataire introuvable', { providerId })
+      return { success: false, error: 'Email prestataire introuvable' }
     }
 
-    // Récupérer les informations du couple
-    const { data: couple } = await adminClient
-      .from('couples')
-      .select('partner_1_name, partner_2_name')
-      .eq('user_id', coupleId)
-      .single()
-
-    const coupleName = couple
-      ? `${couple.partner_1_name}${couple.partner_2_name ? ` et ${couple.partner_2_name}` : ''}`
-      : 'un couple'
-
-    const resend = new Resend(resendApiKey)
-    const subject = `🎉 Nouvelle demande reçue de ${coupleName}`
-
-    const messageContent = requestMessage
+    const messageBlock = requestMessage
       ? generateContentBlock(
           `<p style="margin: 0 0 10px 0; font-weight: 600; color: #823F91;">Message :</p>
            ${generateMessagePreview(requestMessage)}`,
@@ -60,94 +102,74 @@ export async function sendNewRequestEmail(
       : ''
 
     const html = generateEmailTemplate({
-      title: 'Nouvelle demande ! 🎉',
-      greeting: `Bonjour ${provider.prenom || ''}`,
+      title: 'Nouvelle demande !',
+      greeting: `Bonjour ${prenom}`,
       content: `
         <p style="font-size: 16px; margin-bottom: 20px;">
           Vous avez reçu une nouvelle demande de <strong>${coupleName}</strong> !
         </p>
-        ${messageContent}
+        ${messageBlock}
         <p style="font-size: 16px; margin-bottom: 20px;">
           Répondez rapidement pour augmenter vos chances d'être sélectionné !
         </p>
       `,
       buttonText: 'Voir la demande',
       buttonUrl: `${siteUrl}/prestataire/demandes-recues`,
-      footer: 'Répondez rapidement pour augmenter vos chances d\'être sélectionné !<br><br>L\'équipe Nuply 💜',
+      footer: "Répondez rapidement pour augmenter vos chances d'être sélectionné !<br><br>L'équipe Nuply",
     })
 
+    const resend = new Resend(resendApiKey)
     await resend.emails.send({
-      from: fromEmail,
-      to: provider.email,
-      subject,
+      from: `NUPLY <${fromEmail}>`,
+      to: email,
+      subject: `Nouvelle demande reçue de ${coupleName}`,
       html,
     })
 
-    // Log l'email envoyé
-    await adminClient.from('email_logs').insert({
-      user_id: providerId,
-      email_type: 'new_request',
-      metadata: { requestId, coupleId }
-    })
+    await logEmail(adminClient, providerId, 'new_request', { requestId, coupleId })
 
-    logger.info('✅ Email nouvelle demande envoyé au prestataire', { providerId, requestId })
+    logger.info('Email nouvelle demande envoyé', { providerId, requestId })
     return { success: true }
-  } catch (error: unknown) {
-    logger.error('Erreur envoi email nouvelle demande:', error)
+  } catch (error) {
+    logger.error('Erreur sendNewRequestEmail:', error)
     return { success: false, error: getErrorMessage(error) }
   }
 }
 
-/**
- * Envoie un email au couple lorsque sa demande est acceptée
- */
+// ============================================================================
+// DEMANDE ACCEPTÉE → couple
+// ============================================================================
+
 export async function sendRequestAcceptedEmail(
   coupleId: string,
   providerId: string,
   requestId: string
 ) {
-  if (!resendApiKey) {
-    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
-    return { success: false, error: 'RESEND_API_KEY non configurée' }
-  }
+  if (!resendApiKey) return { success: false, error: 'RESEND_API_KEY non configurée' }
 
   try {
     const adminClient = createAdminClient()
 
-    // Récupérer les informations du couple
-    const { data: couple } = await adminClient
-      .from('couples')
-      .select('email, partner_1_name, partner_2_name')
-      .eq('user_id', coupleId)
-      .single()
+    const [email, coupleName, providerName] = await Promise.all([
+      getUserEmail(adminClient, coupleId),
+      getCoupleName(adminClient, coupleId),
+      getProviderName(adminClient, providerId),
+    ])
 
-    if (!couple || !couple.email) {
-      logger.warn('Couple non trouvé ou email manquant', { coupleId })
-      return { success: false, error: 'Couple non trouvé' }
+    if (!email) {
+      logger.warn('sendRequestAcceptedEmail: email couple introuvable', { coupleId })
+      return { success: false, error: 'Email couple introuvable' }
     }
 
-    // Récupérer les informations du prestataire
-    const { data: provider } = await adminClient
-      .from('profiles')
-      .select('nom_entreprise, prenom, nom')
-      .eq('id', providerId)
-      .single()
-
-    const providerName = provider?.nom_entreprise || `${provider?.prenom || ''} ${provider?.nom || ''}`.trim() || 'le prestataire'
-    const coupleName = `${couple.partner_1_name}${couple.partner_2_name ? ` et ${couple.partner_2_name}` : ''}`
-
-    const resend = new Resend(resendApiKey)
-    const subject = `✅ ${providerName} a accepté votre demande !`
-
     const html = generateEmailTemplate({
-      title: 'Demande acceptée ! ✅',
+      title: 'Demande acceptée !',
       greeting: `Bonjour ${coupleName}`,
       content: `
         <p style="font-size: 16px; margin-bottom: 20px;">
           <strong>${providerName}</strong> a accepté votre demande.
         </p>
         ${generateContentBlock(
-          `<p style="margin: 0; color: #065f46; font-weight: 600;">🎉 Excellente nouvelle !</p>
+          `<p style="margin: 0; color: #065f46; font-weight: 600;">Excellente nouvelle !</p>
            <p style="margin: 10px 0 0 0; color: #047857;">
              Vous pouvez maintenant contacter ${providerName} via la messagerie pour discuter des détails de votre projet.
            </p>`,
@@ -156,64 +178,51 @@ export async function sendRequestAcceptedEmail(
       `,
       buttonText: 'Ouvrir la messagerie',
       buttonUrl: `${siteUrl}/couple/messagerie`,
-      footer: 'L\'équipe Nuply 💜',
+      footer: "L'équipe Nuply",
     })
 
+    const resend = new Resend(resendApiKey)
     await resend.emails.send({
-      from: fromEmail,
-      to: couple.email,
-      subject,
+      from: `NUPLY <${fromEmail}>`,
+      to: email,
+      subject: `${providerName} a accepté votre demande !`,
       html,
     })
 
-    logger.info('✅ Email demande acceptée envoyé au couple', { coupleId, requestId })
+    await logEmail(adminClient, coupleId, 'request_accepted', { requestId, providerId })
+
+    logger.info('Email demande acceptée envoyé', { coupleId, requestId })
     return { success: true }
-  } catch (error: unknown) {
-    logger.error('Erreur envoi email demande acceptée:', error)
+  } catch (error) {
+    logger.error('Erreur sendRequestAcceptedEmail:', error)
     return { success: false, error: getErrorMessage(error) }
   }
 }
 
-/**
- * Envoie un email au couple lorsque sa demande est refusée
- */
+// ============================================================================
+// DEMANDE REFUSÉE → couple
+// ============================================================================
+
 export async function sendRequestRejectedEmail(
   coupleId: string,
   providerId: string,
   requestId: string
 ) {
-  if (!resendApiKey) {
-    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
-    return { success: false, error: 'RESEND_API_KEY non configurée' }
-  }
+  if (!resendApiKey) return { success: false, error: 'RESEND_API_KEY non configurée' }
 
   try {
     const adminClient = createAdminClient()
 
-    // Récupérer les informations du couple
-    const { data: couple } = await adminClient
-      .from('couples')
-      .select('email, partner_1_name, partner_2_name')
-      .eq('user_id', coupleId)
-      .single()
+    const [email, coupleName, providerName] = await Promise.all([
+      getUserEmail(adminClient, coupleId),
+      getCoupleName(adminClient, coupleId),
+      getProviderName(adminClient, providerId),
+    ])
 
-    if (!couple || !couple.email) {
-      logger.warn('Couple non trouvé ou email manquant', { coupleId })
-      return { success: false, error: 'Couple non trouvé' }
+    if (!email) {
+      logger.warn('sendRequestRejectedEmail: email couple introuvable', { coupleId })
+      return { success: false, error: 'Email couple introuvable' }
     }
-
-    // Récupérer les informations du prestataire
-    const { data: provider } = await adminClient
-      .from('profiles')
-      .select('nom_entreprise, prenom, nom')
-      .eq('id', providerId)
-      .single()
-
-    const providerName = provider?.nom_entreprise || `${provider?.prenom || ''} ${provider?.nom || ''}`.trim() || 'le prestataire'
-    const coupleName = `${couple.partner_1_name}${couple.partner_2_name ? ` et ${couple.partner_2_name}` : ''}`
-
-    const resend = new Resend(resendApiKey)
-    const subject = `❌ ${providerName} a décliné votre demande`
 
     const html = generateEmailTemplate({
       title: 'Demande déclinée',
@@ -231,28 +240,31 @@ export async function sendRequestRejectedEmail(
       `,
       buttonText: 'Voir mes demandes',
       buttonUrl: `${siteUrl}/couple/demandes`,
-      footer: 'L\'équipe Nuply 💜',
+      footer: "L'équipe Nuply",
     })
 
+    const resend = new Resend(resendApiKey)
     await resend.emails.send({
-      from: fromEmail,
-      to: couple.email,
-      subject,
+      from: `NUPLY <${fromEmail}>`,
+      to: email,
+      subject: `${providerName} a décliné votre demande`,
       html,
     })
 
-    logger.info('✅ Email demande refusée envoyé au couple', { coupleId, requestId })
+    await logEmail(adminClient, coupleId, 'request_rejected', { requestId, providerId })
+
+    logger.info('Email demande refusée envoyé', { coupleId, requestId })
     return { success: true }
-  } catch (error: unknown) {
-    logger.error('Erreur envoi email demande refusée:', error)
+  } catch (error) {
+    logger.error('Erreur sendRequestRejectedEmail:', error)
     return { success: false, error: getErrorMessage(error) }
   }
 }
 
-/**
- * Envoie un email au destinataire lorsqu'un nouveau message est reçu (si non lu après 5min)
- * Note: Cette fonction doit être appelée via un système de vérification périodique ou un webhook
- */
+// ============================================================================
+// NOUVEAU MESSAGE → destinataire (couple ou prestataire)
+// ============================================================================
+
 export async function sendNewMessageEmail(
   recipientId: string,
   senderId: string,
@@ -260,145 +272,88 @@ export async function sendNewMessageEmail(
   messagePreview: string,
   isRecipientCouple: boolean
 ) {
-  if (!resendApiKey) {
-    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
-    return { success: false, error: 'RESEND_API_KEY non configurée' }
-  }
+  if (!resendApiKey) return { success: false, error: 'RESEND_API_KEY non configurée' }
 
   try {
     const adminClient = createAdminClient()
 
-    // Récupérer les informations du destinataire
-    let recipient: { email: string; [key: string]: any } | null = null
-    
-    if (isRecipientCouple) {
-      const { data: coupleRecipient } = await adminClient
-        .from('couples')
-        .select('email, partner_1_name, partner_2_name')
-        .eq('user_id', recipientId)
-        .single()
-      recipient = coupleRecipient
-    } else {
-      const { data: profileRecipient } = await adminClient
-        .from('profiles')
-        .select('email, prenom, nom')
-        .eq('id', recipientId)
-        .single()
-      recipient = profileRecipient
-    }
+    const [recipientEmail, senderName] = await Promise.all([
+      getUserEmail(adminClient, recipientId),
+      isRecipientCouple
+        ? getProviderName(adminClient, senderId)
+        : getCoupleName(adminClient, senderId),
+    ])
 
-    if (!recipient || !recipient.email) {
-      logger.warn('Destinataire non trouvé ou email manquant', { recipientId })
-      return { success: false, error: 'Destinataire non trouvé' }
-    }
-
-    // Récupérer les informations de l'expéditeur
-    let senderName: string
-    
-    if (isRecipientCouple) {
-      // L'expéditeur est un prestataire
-      const { data: sender } = await adminClient
-        .from('profiles')
-        .select('nom_entreprise, prenom, nom')
-        .eq('id', senderId)
-        .single()
-      
-      senderName = sender?.nom_entreprise || `${sender?.prenom || ''} ${sender?.nom || ''}`.trim() || 'le prestataire'
-    } else {
-      // L'expéditeur est un couple
-      const { data: sender } = await adminClient
-        .from('couples')
-        .select('partner_1_name, partner_2_name')
-        .eq('user_id', senderId)
-        .single()
-      
-      senderName = sender ? `${sender.partner_1_name}${sender.partner_2_name ? ` et ${sender.partner_2_name}` : ''}` : 'un couple'
+    if (!recipientEmail) {
+      logger.warn('sendNewMessageEmail: email destinataire introuvable', { recipientId })
+      return { success: false, error: 'Email destinataire introuvable' }
     }
 
     const recipientName = isRecipientCouple
-      ? `${(recipient as any).partner_1_name || ''}${(recipient as any).partner_2_name ? ` et ${(recipient as any).partner_2_name}` : ''}`
-      : ((recipient as any).prenom || '')
-
-    const resend = new Resend(resendApiKey)
-    const subject = `💬 Nouveau message de ${senderName}`
+      ? await getCoupleName(adminClient, recipientId)
+      : await getUserFirstName(adminClient, recipientId)
 
     const messageUrl = isRecipientCouple
       ? `${siteUrl}/couple/messagerie/${conversationId}`
       : `${siteUrl}/prestataire/messagerie/${conversationId}`
 
     const html = generateEmailTemplate({
-      title: 'Nouveau message 💬',
+      title: 'Nouveau message',
       greeting: `Bonjour ${recipientName}`,
       content: `
         <p style="font-size: 16px; margin-bottom: 20px;">
           Vous avez reçu un nouveau message de <strong>${senderName}</strong>.
         </p>
-        ${generateContentBlock(
-          generateMessagePreview(messagePreview),
-          '#823F91'
-        )}
+        ${generateContentBlock(generateMessagePreview(messagePreview), '#823F91')}
       `,
       buttonText: 'Répondre',
       buttonUrl: messageUrl,
-      footer: 'L\'équipe Nuply 💜',
+      footer: "L'équipe Nuply",
     })
 
+    const resend = new Resend(resendApiKey)
     await resend.emails.send({
-      from: fromEmail,
-      to: recipient.email,
-      subject,
+      from: `NUPLY <${fromEmail}>`,
+      to: recipientEmail,
+      subject: `Nouveau message de ${senderName}`,
       html,
     })
 
-    logger.info('✅ Email nouveau message envoyé', { recipientId, conversationId })
+    await logEmail(adminClient, recipientId, 'new_message', { conversationId, senderId })
+
+    logger.info('Email nouveau message envoyé', { recipientId, conversationId })
     return { success: true }
-  } catch (error: unknown) {
-    logger.error('Erreur envoi email nouveau message:', error)
+  } catch (error) {
+    logger.error('Erreur sendNewMessageEmail:', error)
     return { success: false, error: getErrorMessage(error) }
   }
 }
 
-/**
- * Envoie un email au couple lorsqu'un nouveau devis est reçu
- */
+// ============================================================================
+// NOUVEAU DEVIS → couple
+// ============================================================================
+
 export async function sendNewDevisEmail(
   coupleId: string,
   providerId: string,
   devisId: string,
   amount?: number
 ) {
-  if (!resendApiKey) {
-    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
-    return { success: false, error: 'RESEND_API_KEY non configurée' }
-  }
+  if (!resendApiKey) return { success: false, error: 'RESEND_API_KEY non configurée' }
 
   try {
     const adminClient = createAdminClient()
 
-    // Récupérer les informations du couple
-    const { data: couple } = await adminClient
-      .from('couples')
-      .select('email, partner_1_name, partner_2_name')
-      .eq('user_id', coupleId)
-      .single()
+    const [email, coupleName, providerName] = await Promise.all([
+      getUserEmail(adminClient, coupleId),
+      getCoupleName(adminClient, coupleId),
+      getProviderName(adminClient, providerId),
+    ])
 
-    if (!couple || !couple.email) {
-      logger.warn('Couple non trouvé ou email manquant', { coupleId })
-      return { success: false, error: 'Couple non trouvé' }
+    if (!email) {
+      logger.warn('sendNewDevisEmail: email couple introuvable', { coupleId })
+      return { success: false, error: 'Email couple introuvable' }
     }
-
-    // Récupérer les informations du prestataire
-    const { data: provider } = await adminClient
-      .from('profiles')
-      .select('nom_entreprise, prenom, nom')
-      .eq('id', providerId)
-      .single()
-
-    const providerName = provider?.nom_entreprise || `${provider?.prenom || ''} ${provider?.nom || ''}`.trim() || 'le prestataire'
-    const coupleName = `${couple.partner_1_name}${couple.partner_2_name ? ` et ${couple.partner_2_name}` : ''}`
-
-    const resend = new Resend(resendApiKey)
-    const subject = `💰 Nouveau devis reçu de ${providerName}`
 
     const amountContent = amount
       ? `<p style="margin: 10px 0 0 0; color: #047857; font-size: 18px; font-weight: 600;">
@@ -407,14 +362,14 @@ export async function sendNewDevisEmail(
       : ''
 
     const html = generateEmailTemplate({
-      title: 'Nouveau devis reçu 💰',
+      title: 'Nouveau devis reçu',
       greeting: `Bonjour ${coupleName}`,
       content: `
         <p style="font-size: 16px; margin-bottom: 20px;">
           Vous avez reçu un nouveau devis de <strong>${providerName}</strong>.
         </p>
         ${generateContentBlock(
-          `<p style="margin: 0; color: #065f46; font-weight: 600;">📋 Nouveau devis disponible</p>
+          `<p style="margin: 0; color: #065f46; font-weight: 600;">Nouveau devis disponible</p>
            ${amountContent}
            <p style="margin: 10px 0 0 0; color: #047857;">
              Consultez les détails et répondez au prestataire pour finaliser votre projet.
@@ -424,20 +379,102 @@ export async function sendNewDevisEmail(
       `,
       buttonText: 'Voir le devis',
       buttonUrl: `${siteUrl}/couple/demandes`,
-      footer: 'L\'équipe Nuply 💜',
+      footer: "L'équipe Nuply",
+    })
+
+    const resend = new Resend(resendApiKey)
+    await resend.emails.send({
+      from: `NUPLY <${fromEmail}>`,
+      to: email,
+      subject: `Nouveau devis reçu de ${providerName}`,
+      html,
+    })
+
+    await logEmail(adminClient, coupleId, 'new_devis', { devisId, providerId, amount })
+
+    logger.info('Email nouveau devis envoyé', { coupleId, devisId })
+    return { success: true }
+  } catch (error) {
+    logger.error('Erreur sendNewDevisEmail:', error)
+    return { success: false, error: getErrorMessage(error) }
+  }
+}
+
+/**
+ * Envoie un email au couple lorsque le prestataire répond à son avis
+ */
+export async function sendReviewResponseEmail(
+  coupleId: string,
+  providerId: string,
+  reviewId: string,
+  providerResponse: string
+) {
+  if (!resendApiKey) {
+    logger.warn('RESEND_API_KEY non configurée - email non envoyé')
+    return { success: false, error: 'RESEND_API_KEY non configurée' }
+  }
+
+  try {
+    const adminClient = createAdminClient()
+
+    // Récupérer l'email du couple via profiles
+    const { data: coupleProfile } = await adminClient
+      .from('profiles')
+      .select('id, prenom, nom, email')
+      .eq('id', coupleId)
+      .single()
+
+    if (!coupleProfile || !coupleProfile.email) {
+      logger.warn('Couple non trouvé ou email manquant', { coupleId })
+      return { success: false, error: 'Couple non trouvé' }
+    }
+
+    // Récupérer le nom du prestataire
+    const { data: provider } = await adminClient
+      .from('profiles')
+      .select('prenom, nom')
+      .eq('id', providerId)
+      .single()
+
+    const providerName = provider
+      ? `${provider.prenom || ''} ${provider.nom || ''}`.trim() || 'Le prestataire'
+      : 'Le prestataire'
+
+    const coupleName = coupleProfile.prenom || 'Bonjour'
+
+    const resend = new Resend(resendApiKey)
+    const subject = `💬 ${providerName} a répondu à votre avis`
+
+    const html = generateEmailTemplate({
+      title: 'Réponse à votre avis',
+      greeting: `Bonjour ${coupleName}`,
+      content: `
+        <p style="font-size: 16px; margin-bottom: 20px;">
+          <strong>${providerName}</strong> a répondu à l'avis que vous avez laissé.
+        </p>
+        ${generateContentBlock(
+          `<p style="margin: 0; color: #6D3478; font-weight: 600;">Leur réponse :</p>
+           ${generateMessagePreview(providerResponse)}`,
+          '#823F91'
+        )}
+      `,
+      buttonText: 'Voir le profil',
+      buttonUrl: `${siteUrl}/couple/recherche`,
+      footer: "Merci d'utiliser Nuply !<br><br>L'équipe Nuply 💜",
+      hideUnsubscribe: true,
     })
 
     await resend.emails.send({
       from: fromEmail,
-      to: couple.email,
+      to: coupleProfile.email,
       subject,
       html,
     })
 
-    logger.info('✅ Email nouveau devis envoyé au couple', { coupleId, devisId })
+    logger.info('✅ Email réponse avis envoyé au couple', { coupleId, reviewId })
     return { success: true }
   } catch (error: unknown) {
-    logger.error('Erreur envoi email nouveau devis:', error)
+    logger.error('Erreur envoi email réponse avis:', error)
     return { success: false, error: getErrorMessage(error) }
   }
 }

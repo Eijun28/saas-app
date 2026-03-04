@@ -552,11 +552,12 @@ export default function BudgetPage() {
                                 {new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                               </p>
                             </div>
-                            <div className="flex items-center gap-3 flex-shrink-0 ml-3">
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                               <span className="text-sm font-bold text-gray-900">
                                 {item.amount.toLocaleString('fr-FR')} €
                               </span>
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {/* Always visible on touch, hover-only on desktop */}
+                              <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity">
                                 <Button
                                   variant="ghost"
                                   size="sm"
