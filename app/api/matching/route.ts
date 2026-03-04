@@ -140,6 +140,143 @@ function normalizeServiceType(serviceType: string | null | undefined): string {
   return normalized;
 }
 
+function generateFallbackExplanation(
+  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
+  provider: { average_rating: number; annees_experience: number }
+): string {
+  const reasons = [];
+
+  if (breakdown.cultural_match > 20) {
+    reasons.push(`Match culturel excellent (${breakdown.cultural_match}/30)`);
+  } else if (breakdown.cultural_match > 0) {
+    reasons.push(`Match culturel partiel (${breakdown.cultural_match}/30)`);
+  }
+
+  if (breakdown.budget_match >= 18) {
+    reasons.push('Budget parfaitement aligné');
+  } else if (breakdown.budget_match >= 12) {
+    reasons.push('Budget compatible');
+  }
+
+  if (breakdown.reputation > 15) {
+    reasons.push(`Excellente réputation (${provider.average_rating}/5)`);
+  } else if (breakdown.reputation > 10) {
+    reasons.push(`Bonne réputation (${provider.average_rating}/5)`);
+  }
+
+  if (breakdown.experience > 7) {
+    reasons.push(`${provider.annees_experience} ans d'expérience`);
+  }
+
+  if (breakdown.location_match === 10) {
+    reasons.push('Intervient dans votre zone');
+  } else if (breakdown.location_match === 6) {
+    reasons.push('Intervient dans votre région');
+  }
+
+  if (breakdown.tags_match !== undefined && breakdown.tags_match >= 8) {
+    reasons.push('Style parfaitement adapté');
+  } else if (breakdown.tags_match !== undefined && breakdown.tags_match >= 5) {
+    reasons.push('Style compatible');
+  }
+
+  if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 12) {
+    reasons.push('Toutes vos spécialités couvertes');
+  } else if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 8) {
+    reasons.push('Spécialités compatibles');
+  }
+
+  if (breakdown.capacity_match !== undefined && breakdown.capacity_match === 10) {
+    reasons.push('Capacité idéale pour vos invités');
+  }
+
+  return reasons.join(' • ') || 'Prestataire qualifié pour votre mariage';
+}
+
+/**
+ * Génère une explication de match avec GPT-4o-mini pour les top 3 résultats.
+ * Une seule requête pour les 3 prestataires (efficacité).
+ * Fallback rule-based si GPT indisponible ou en erreur.
+ */
+async function generateGPTExplanations(
+  providers: Array<{
+    breakdown: ExtendedScoreBreakdown;
+    provider: Record<string, unknown>;
+    score: number;
+  }>,
+  criteria: SearchCriteria
+): Promise<string[]> {
+  // Fallback toujours disponible
+  const fallbacks = providers.map(({ breakdown, provider }) =>
+    generateFallbackExplanation(breakdown, {
+      average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
+      annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
+    })
+  );
+
+  if (!process.env.OPENAI_API_KEY) return fallbacks;
+
+  try {
+    const providersContext = providers.map(({ provider, breakdown, score }, i) => {
+      const rating = typeof provider.average_rating === 'number' ? provider.average_rating : 0;
+      const reviews = typeof provider.review_count === 'number' ? provider.review_count : 0;
+      const exp = typeof provider.annees_experience === 'number' ? provider.annees_experience : 0;
+      const name = typeof provider.nom_entreprise === 'string' ? provider.nom_entreprise : `Prestataire ${i + 1}`;
+      const city = typeof provider.ville_principale === 'string' ? provider.ville_principale : '';
+      return [
+        `Prestataire ${i + 1} : ${name}${city ? ` (${city})` : ''}`,
+        `- Score global : ${score}/100`,
+        `- Match culturel : ${breakdown.cultural_match}/30`,
+        `- Budget : ${breakdown.budget_match}/20`,
+        `- Réputation : ${rating}/5 (${reviews} avis)`,
+        `- Expérience : ${exp} an${exp > 1 ? 's' : ''}`,
+        `- Localisation : ${breakdown.location_match}/10`,
+        breakdown.event_types_match ? `- Couverture événements : ${breakdown.event_types_match}/8` : '',
+        breakdown.dietary_match ? `- Alimentaire : ${breakdown.dietary_match > 0 ? '✓ couvert' : '✗ non couvert'}` : '',
+        breakdown.language_match ? `- Langues : ${breakdown.language_match > 0 ? '✓ couvertes' : ''}` : '',
+      ].filter(Boolean).join('\n');
+    }).join('\n\n');
+
+    const criteriaLines = [
+      `Service : ${criteria.service_type}`,
+      criteria.cultures?.length ? `Cultures : ${criteria.cultures.join(', ')} (importance : ${criteria.cultural_importance})` : '',
+      (criteria.budget_min || criteria.budget_max) ? `Budget : ${criteria.budget_min ?? ''}€ – ${criteria.budget_max ?? ''}€` : '',
+      criteria.wedding_city ? `Lieu : ${criteria.wedding_city}` : '',
+      criteria.event_types?.length ? `Événements : ${criteria.event_types.join(', ')}` : '',
+      criteria.dietary_requirements?.length ? `Alimentation requise : ${criteria.dietary_requirements.join(', ')}` : '',
+      criteria.vision_description ? `Vision du couple : ${criteria.vision_description}` : '',
+    ].filter(Boolean).join('\n');
+
+    const response = await getOpenAI().chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `Tu es un conseiller mariage expert et chaleureux. Pour chaque prestataire, génère une explication de match personnalisée (2 phrases max, en français) qui explique CONCRÈTEMENT pourquoi ce prestataire correspond à ce couple. Sois précis et humain, mentionne des éléments spécifiques (culture, budget, événements). Réponds uniquement en JSON : {"explanations": ["explication1", "explication2", "explication3"]}`,
+        },
+        {
+          role: 'user',
+          content: `Critères du couple :\n${criteriaLines}\n\n${providersContext}`,
+        },
+      ],
+      temperature: 0.65,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+    });
+
+    const parsed = JSON.parse(response.choices[0].message.content ?? '{}');
+    if (Array.isArray(parsed.explanations) && parsed.explanations.length === providers.length) {
+      return parsed.explanations.map((e: unknown) =>
+        typeof e === 'string' && e.trim() ? e.trim() : fallbacks[0]
+      );
+    }
+  } catch (err) {
+    logger.warn('⚠️ GPT explanation failed, fallback rule-based:', err instanceof Error ? err.message : err);
+  }
+
+  return fallbacks;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -738,139 +875,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Génère une explication de match avec GPT-4o-mini pour les top 3 résultats.
- * Une seule requête pour les 3 prestataires (efficacité).
- * Fallback rule-based si GPT indisponible ou en erreur.
- */
-async function generateGPTExplanations(
-  providers: Array<{
-    breakdown: ExtendedScoreBreakdown;
-    provider: Record<string, unknown>;
-    score: number;
-  }>,
-  criteria: SearchCriteria
-): Promise<string[]> {
-  // Fallback toujours disponible
-  const fallbacks = providers.map(({ breakdown, provider }) =>
-    generateFallbackExplanation(breakdown, {
-      average_rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
-      annees_experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
-    })
-  );
-
-  if (!process.env.OPENAI_API_KEY) return fallbacks;
-
-  try {
-    const providersContext = providers.map(({ provider, breakdown, score }, i) => {
-      const rating = typeof provider.average_rating === 'number' ? provider.average_rating : 0;
-      const reviews = typeof provider.review_count === 'number' ? provider.review_count : 0;
-      const exp = typeof provider.annees_experience === 'number' ? provider.annees_experience : 0;
-      const name = typeof provider.nom_entreprise === 'string' ? provider.nom_entreprise : `Prestataire ${i + 1}`;
-      const city = typeof provider.ville_principale === 'string' ? provider.ville_principale : '';
-      return [
-        `Prestataire ${i + 1} : ${name}${city ? ` (${city})` : ''}`,
-        `- Score global : ${score}/100`,
-        `- Match culturel : ${breakdown.cultural_match}/30`,
-        `- Budget : ${breakdown.budget_match}/20`,
-        `- Réputation : ${rating}/5 (${reviews} avis)`,
-        `- Expérience : ${exp} an${exp > 1 ? 's' : ''}`,
-        `- Localisation : ${breakdown.location_match}/10`,
-        breakdown.event_types_match ? `- Couverture événements : ${breakdown.event_types_match}/8` : '',
-        breakdown.dietary_match ? `- Alimentaire : ${breakdown.dietary_match > 0 ? '✓ couvert' : '✗ non couvert'}` : '',
-        breakdown.language_match ? `- Langues : ${breakdown.language_match > 0 ? '✓ couvertes' : ''}` : '',
-      ].filter(Boolean).join('\n');
-    }).join('\n\n');
-
-    const criteriaLines = [
-      `Service : ${criteria.service_type}`,
-      criteria.cultures?.length ? `Cultures : ${criteria.cultures.join(', ')} (importance : ${criteria.cultural_importance})` : '',
-      (criteria.budget_min || criteria.budget_max) ? `Budget : ${criteria.budget_min ?? ''}€ – ${criteria.budget_max ?? ''}€` : '',
-      criteria.wedding_city ? `Lieu : ${criteria.wedding_city}` : '',
-      criteria.event_types?.length ? `Événements : ${criteria.event_types.join(', ')}` : '',
-      criteria.dietary_requirements?.length ? `Alimentation requise : ${criteria.dietary_requirements.join(', ')}` : '',
-      criteria.vision_description ? `Vision du couple : ${criteria.vision_description}` : '',
-    ].filter(Boolean).join('\n');
-
-    const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `Tu es un conseiller mariage expert et chaleureux. Pour chaque prestataire, génère une explication de match personnalisée (2 phrases max, en français) qui explique CONCRÈTEMENT pourquoi ce prestataire correspond à ce couple. Sois précis et humain, mentionne des éléments spécifiques (culture, budget, événements). Réponds uniquement en JSON : {"explanations": ["explication1", "explication2", "explication3"]}`,
-        },
-        {
-          role: 'user',
-          content: `Critères du couple :\n${criteriaLines}\n\n${providersContext}`,
-        },
-      ],
-      temperature: 0.65,
-      max_tokens: 500,
-      response_format: { type: 'json_object' },
-    });
-
-    const parsed = JSON.parse(response.choices[0].message.content ?? '{}');
-    if (Array.isArray(parsed.explanations) && parsed.explanations.length === providers.length) {
-      return parsed.explanations.map((e: unknown) =>
-        typeof e === 'string' && e.trim() ? e.trim() : fallbacks[0]
-      );
-    }
-  } catch (err) {
-    logger.warn('⚠️ GPT explanation failed, fallback rule-based:', err instanceof Error ? err.message : err);
-  }
-
-  return fallbacks;
-}
-
-function generateFallbackExplanation(
-  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
-  provider: { average_rating: number; annees_experience: number }
-): string {
-  const reasons = [];
-
-  if (breakdown.cultural_match > 20) {
-    reasons.push(`Match culturel excellent (${breakdown.cultural_match}/30)`);
-  } else if (breakdown.cultural_match > 0) {
-    reasons.push(`Match culturel partiel (${breakdown.cultural_match}/30)`);
-  }
-
-  if (breakdown.budget_match >= 18) {
-    reasons.push('Budget parfaitement aligné');
-  } else if (breakdown.budget_match >= 12) {
-    reasons.push('Budget compatible');
-  }
-
-  if (breakdown.reputation > 15) {
-    reasons.push(`Excellente réputation (${provider.average_rating}/5)`);
-  } else if (breakdown.reputation > 10) {
-    reasons.push(`Bonne réputation (${provider.average_rating}/5)`);
-  }
-
-  if (breakdown.experience > 7) {
-    reasons.push(`${provider.annees_experience} ans d'expérience`);
-  }
-
-  if (breakdown.location_match === 10) {
-    reasons.push('Intervient dans votre zone');
-  } else if (breakdown.location_match === 6) {
-    reasons.push('Intervient dans votre région');
-  }
-
-  if (breakdown.tags_match !== undefined && breakdown.tags_match >= 8) {
-    reasons.push('Style parfaitement adapté');
-  } else if (breakdown.tags_match !== undefined && breakdown.tags_match >= 5) {
-    reasons.push('Style compatible');
-  }
-
-  if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 12) {
-    reasons.push('Toutes vos spécialités couvertes');
-  } else if (breakdown.specialty_match !== undefined && breakdown.specialty_match >= 8) {
-    reasons.push('Spécialités compatibles');
-  }
-
-  if (breakdown.capacity_match !== undefined && breakdown.capacity_match === 10) {
-    reasons.push('Capacité idéale pour vos invités');
-  }
-
-  return reasons.join(' • ') || 'Prestataire qualifié pour votre mariage';
-}
