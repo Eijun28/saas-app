@@ -1,17 +1,17 @@
 import Lenis from 'lenis'
 
+const isTouchDevice = () =>
+  typeof window !== 'undefined' &&
+  (navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches)
+
 export const initSmoothScroll = () => {
-  // Check if user prefers reduced motion
-  if (typeof window !== 'undefined') {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) {
-      // Return a dummy object if reduced motion is preferred
-      return {
-        destroy: () => {},
-        raf: () => {},
-      } as unknown as Lenis
-    }
-  }
+  if (typeof window === 'undefined') return null
+
+  // Scroll natif plus fluide sur mobile/tablette — Lenis crée du lag sur touch
+  if (isTouchDevice()) return null
+
+  // Respecter la préférence système "réduire les animations"
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return null
 
   const lenis = new Lenis({
     duration: 1.2,
@@ -24,12 +24,24 @@ export const initSmoothScroll = () => {
     infinite: false,
   })
 
+  let rafId: number
+
   function raf(time: number) {
     lenis.raf(time)
-    requestAnimationFrame(raf)
+    rafId = requestAnimationFrame(raf)
   }
 
-  requestAnimationFrame(raf)
+  rafId = requestAnimationFrame(raf)
+
+  // Exposer le cancel pour le cleanup
+  ;(lenis as Lenis & { _rafId?: number })._rafId = rafId
 
   return lenis
+}
+
+export const destroySmoothScroll = (lenis: Lenis | null) => {
+  if (!lenis) return
+  const id = (lenis as Lenis & { _rafId?: number })._rafId
+  if (id) cancelAnimationFrame(id)
+  lenis.destroy()
 }

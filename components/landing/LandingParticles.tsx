@@ -4,11 +4,17 @@ import { useEffect, useState } from 'react'
 import { Sparkles } from '@/components/ui/sparkles'
 
 export function LandingParticles() {
-  const [particleCount, setParticleCount] = useState(15)
+  const [particleCount, setParticleCount] = useState<number | null>(null)
 
   useEffect(() => {
-    setParticleCount(window.innerWidth < 768 ? 15 : 30)
+    // Désactiver sur mobile/tablette : animation canvas continue trop coûteuse en CPU
+    const isTouchDevice = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches
+    if (isTouchDevice) return
+
+    setParticleCount(window.innerWidth < 1024 ? 12 : 25)
   }, [])
+
+  if (particleCount === null) return null
 
   return (
     <div
