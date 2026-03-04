@@ -816,7 +816,7 @@ async function generateGPTExplanations(
 }
 
 function generateFallbackExplanation(
-  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number },
+  breakdown: { cultural_match: number; budget_match: number; reputation: number; experience: number; location_match: number; tags_match?: number; specialty_match?: number; capacity_match?: number },
   provider: { average_rating: number; annees_experience: number }
 ): string {
   const reasons = [];
