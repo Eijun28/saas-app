@@ -64,20 +64,23 @@ export default async function ArticlePage({ params }: Props) {
     notFound()
   }
 
+  // Non-null assertion: notFound() throws so article is guaranteed defined here
+  const safeArticle = article!
+
   const allArticles = getAllArticles()
   const relatedArticles = allArticles
-    .filter(a => a.slug !== article.slug)
+    .filter(a => a.slug !== safeArticle.slug)
     .slice(0, 2)
 
   const schema = generateArticleSchema({
-    headline: article.title,
-    description: article.description,
-    datePublished: article.publishedAt,
-    dateModified: article.updatedAt || article.publishedAt,
-    author: article.author,
+    headline: safeArticle.title,
+    description: safeArticle.description,
+    datePublished: safeArticle.publishedAt,
+    dateModified: safeArticle.updatedAt || safeArticle.publishedAt,
+    author: safeArticle.author,
   })
 
-  const { processedHtml, headings } = processContent(article.content)
+  const { processedHtml, headings } = processContent(safeArticle.content)
   const { lead, body } = extractLead(processedHtml)
 
   return (
@@ -100,7 +103,7 @@ export default async function ArticlePage({ params }: Props) {
           <header className="mb-10">
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-5">
-              {article.tags.map(tag => (
+              {safeArticle.tags.map(tag => (
                 <span
                   key={tag}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#823F91]/10 text-[#823F91]"
@@ -112,12 +115,12 @@ export default async function ArticlePage({ params }: Props) {
 
             {/* Title */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2C1810] leading-tight mb-4">
-              {article.title}
+              {safeArticle.title}
             </h1>
 
             {/* Description / sous-titre */}
             <p className="text-base sm:text-lg text-[#4A3A2E] mb-6 leading-relaxed">
-              {article.description}
+              {safeArticle.description}
             </p>
 
             {/* Meta */}
@@ -127,11 +130,11 @@ export default async function ArticlePage({ params }: Props) {
             >
               <span className="flex items-center gap-1.5 font-medium text-[#4A3A2E]">
                 <User className="h-3.5 w-3.5" />
-                {article.author}
+                {safeArticle.author}
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
-                {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
+                {new Date(safeArticle.publishedAt).toLocaleDateString('fr-FR', {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -139,7 +142,7 @@ export default async function ArticlePage({ params }: Props) {
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
-                {article.readingTime}
+                {safeArticle.readingTime}
               </span>
             </div>
           </header>

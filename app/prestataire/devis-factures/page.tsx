@@ -178,7 +178,10 @@ export default function DevisFacturesPage() {
           .select('id, partner_1_name, partner_2_name')
           .in('id', coupleIds)
 
-        const couplesMap = new Map((couplesData || []).map(c => [c.id, c]))
+        type CoupleRow = { id: string; partner_1_name: string | null; partner_2_name: string | null }
+        const couplesMap = new Map<string, CoupleRow>(
+          ((couplesData || []) as CoupleRow[]).map(c => [c.id, c])
+        )
 
         const devisWithNames: Devis[] = devisData.map(d => ({
           ...d,

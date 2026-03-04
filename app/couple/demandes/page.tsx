@@ -76,6 +76,21 @@ type FavoriRow = {
   type_prestation?: string | null
 }
 
+type PrestataireProfileResult = {
+  user_id: string
+  nom_entreprise: string | null
+  type_prestation: string | null
+}
+
+type ProfileFetchResult = {
+  id: string
+  avatar_url: string | null
+  prenom: string | null
+  nom: string | null
+  nom_entreprise?: string | null
+  service_type?: string | null
+}
+
 const STATUS_CONFIG: Record<RequestStatus, { label: string; icon: any; className: string; bgClass: string }> = {
   pending: {
     label: 'En attente',
@@ -194,8 +209,12 @@ export default function DemandesPage() {
       .in('id', prestataireIds)
 
     // Créer des Maps pour accès rapide
-    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
-    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+    const prestataireMap = new Map<string, PrestataireProfileResult>(
+      (prestataireProfiles as PrestataireProfileResult[] ?? []).map(p => [p.user_id, p])
+    )
+    const profileMap = new Map<string, ProfileFetchResult>(
+      (profiles as ProfileFetchResult[] ?? []).map(p => [p.id, p])
+    )
 
     // Transformer les données avec les informations des prestataires
     const transformedData = demandesData.map(demande => {
@@ -301,8 +320,12 @@ export default function DemandesPage() {
       .in('id', prestataireIds)
 
     // Créer des Maps pour accès rapide
-    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
-    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+    const prestataireMap = new Map<string, PrestataireProfileResult>(
+      (prestataireProfiles as PrestataireProfileResult[] ?? []).map(p => [p.user_id, p])
+    )
+    const profileMap = new Map<string, ProfileFetchResult>(
+      (profiles as ProfileFetchResult[] ?? []).map(p => [p.id, p])
+    )
 
     // Transformer les données avec les informations des prestataires
     const transformedData = devisData.map(devis => {
@@ -394,8 +417,12 @@ export default function DemandesPage() {
       .in('id', prestataireIds)
 
     // Créer des Maps pour accès rapide
-    const prestataireMap = new Map(prestataireProfiles?.map(p => [p.user_id, p]) || [])
-    const profileMap = new Map(profiles?.map(p => [p.id, p]) || [])
+    const prestataireMap = new Map<string, PrestataireProfileResult>(
+      (prestataireProfiles as PrestataireProfileResult[] ?? []).map(p => [p.user_id, p])
+    )
+    const profileMap = new Map<string, ProfileFetchResult>(
+      (profiles as ProfileFetchResult[] ?? []).map(p => [p.id, p])
+    )
 
     // Transformer les données avec les informations des prestataires
     const transformedData = favorisData.map(favori => {

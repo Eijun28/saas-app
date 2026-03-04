@@ -109,8 +109,11 @@ export default function FavorisPage() {
           .in('profile_id', providerIds),
       ])
 
+      type FavRatingResult = { profile_id: string; rating: number | null; total_reviews: number | null }
       const profileMap = new Map((profilesResult.data || []).map((p: any) => [p.id, p]))
-      const ratingMap = new Map((ratingsResult.data || []).map((r: any) => [r.profile_id, r]))
+      const ratingMap = new Map<string, FavRatingResult>(
+        (ratingsResult.data as FavRatingResult[] ?? []).map(r => [r.profile_id, r])
+      )
       const culturesByProvider = new Map<string, string[]>()
       for (const c of (culturesResult.data || []) as any[]) {
         const existing = culturesByProvider.get(c.profile_id) || []
