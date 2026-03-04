@@ -2,10 +2,15 @@ import dynamic from 'next/dynamic'
 import Hero from '@/components/landing/Hero'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
-import { LandingParticles } from '@/components/landing/LandingParticles'
 import { ArrowRight } from 'lucide-react'
 
-// Lazy load below-the-fold components to improve initial load time
+// Particules : lazy + ssr:false (canvas WebGL, inutile côté serveur)
+const LandingParticles = dynamic(
+  () => import('@/components/landing/LandingParticles').then(mod => ({ default: mod.LandingParticles })),
+  { ssr: false }
+)
+
+// Lazy load composants sous la fold pour accélérer le First Contentful Paint
 const HowItWorks = dynamic(() => import('@/components/landing/HowItWorks').then(mod => ({ default: mod.HowItWorks })), {
   loading: () => <div className="min-h-[400px]" />,
 })

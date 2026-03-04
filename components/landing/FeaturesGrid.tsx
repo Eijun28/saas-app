@@ -10,7 +10,7 @@ import Image from "next/image";
 // Skeleton Nuply Matching - Rotation conversation toutes les 10s
 const SkeletonMatching = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: false, amount: 0.3 });
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
   
   const conversationSets = [
     [
@@ -98,7 +98,7 @@ const SkeletonMatching = () => {
 // Skeleton Messagerie - Rotation threads toutes les 10s
 const SkeletonMessaging = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: false, amount: 0.3 });
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
   
   const messageThreads = [
     [
@@ -316,7 +316,7 @@ const SkeletonPayments = () => {
 // Skeleton Timeline - Rotation événements toutes les 10s
 const SkeletonTimeline = () => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: false, amount: 0.3 });
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
   
   const timelineSets = [
     [
