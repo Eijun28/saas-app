@@ -157,13 +157,19 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
-    
+    const coupleId = await getCoupleId()
+    if (!coupleId) {
+      console.warn('loadDemandes: coupleId non trouvé pour user.id:', user.id)
+      setDemandes([])
+      return
+    }
+
     // Récupérer toutes les demandes en une seule requête
-    // Note: requests.couple_id référence couples.user_id directement
+    // requests.couple_id references couples.id
     const { data: demandesData, error: demandesError } = await supabase
       .from('requests')
       .select('id, couple_id, provider_id, status, initial_message, created_at, cancelled_at, responded_at')
-      .eq('couple_id', user.id)
+      .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (demandesError) {
@@ -481,13 +487,15 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
+    const coupleId = await getCoupleId()
+    if (!coupleId) return
 
     // RLS + trigger garantissent la sécurité (pending only)
     const { error } = await supabase
       .from('requests')
       .update({ status: 'cancelled' })
       .eq('id', requestId)
-      .eq('couple_id', user.id)
+      .eq('couple_id', coupleId)
       .eq('status', 'pending')
 
     if (error) {
@@ -504,12 +512,14 @@ export default function DemandesPage() {
     if (!user?.id) return
 
     const supabase = createClient()
+    const coupleId = await getCoupleId()
+    if (!coupleId) return
 
     // Vérifier s'il existe déjà une demande en cours pour ce prestataire
     const { data: existingRequest } = await supabase
       .from('requests')
       .select('id, status')
-      .eq('couple_id', user.id)
+      .eq('couple_id', coupleId)
       .eq('provider_id', request.provider_id)
       .eq('status', 'pending')
       .maybeSingle()
@@ -523,7 +533,7 @@ export default function DemandesPage() {
     const { error } = await supabase
       .from('requests')
       .insert({
-        couple_id: user.id,
+        couple_id: coupleId,
         provider_id: request.provider_id,
         initial_message: request.initial_message,
         status: 'pending',

@@ -35,6 +35,7 @@ interface Event {
 export default function TimelinePage() {
   const { user } = useUser()
   const [loading, setLoading] = useState(true)
+  const [coupleId, setCoupleId] = useState<string | null>(null)
   const [dateMarriage, setDateMarriage] = useState<string | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -48,14 +49,20 @@ export default function TimelinePage() {
   useEffect(() => {
     if (user) {
       loadTimeline()
-      loadEvents()
     }
   }, [user])
+
+  // Load events once we have the coupleId
+  useEffect(() => {
+    if (coupleId) {
+      loadEvents()
+    }
+  }, [coupleId])
 
   // Recharger les événements quand la page devient visible
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && user) {
+      if (!document.hidden && user && coupleId) {
         loadEvents()
       }
     }
@@ -64,24 +71,27 @@ export default function TimelinePage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [user])
+  }, [user, coupleId])
 
   const loadTimeline = async () => {
     if (!user) return
-    
+
     setLoading(true)
     const supabase = createClient()
-    
+
     try {
       // Charger depuis la table couples (nouvelle structure)
       const { data, error } = await supabase
         .from('couples')
-        .select('wedding_date')
+        .select('id, wedding_date')
         .eq('user_id', user.id)
         .single()
 
-      if (!error && data?.wedding_date) {
-        setDateMarriage(data.wedding_date)
+      if (!error && data) {
+        setCoupleId(data.id)
+        if (data.wedding_date) {
+          setDateMarriage(data.wedding_date)
+        }
       }
     } catch (err) {
       console.error('Erreur chargement date mariage:', err)
@@ -91,15 +101,15 @@ export default function TimelinePage() {
   }
 
   const loadEvents = async () => {
-    if (!user) return
-    
+    if (!user || !coupleId) return
+
     const supabase = createClient()
-    
+
     try {
       const { data, error } = await supabase
         .from('timeline_events')
         .select('*')
-        .eq('couple_id', user.id)
+        .eq('couple_id', coupleId)
         .order('event_date', { ascending: true })
 
       if (error) {
@@ -154,7 +164,7 @@ export default function TimelinePage() {
       const { data, error } = await supabase
         .from('timeline_events')
         .insert({
-          couple_id: user.id,
+          couple_id: coupleId!,
           title: eventForm.title,
           description: eventForm.description || null,
           event_date: eventForm.event_date.toISOString().split('T')[0],
@@ -181,13 +191,13 @@ export default function TimelinePage() {
   }
 
   const handleCalendarEventCreate = async (eventData: Omit<CalendarEvent, 'id'>) => {
-    if (!user) return
+    if (!user || !coupleId) return
 
     const supabase = createClient()
     const { error } = await supabase
       .from('timeline_events')
       .insert({
-        couple_id: user.id,
+        couple_id: coupleId,
         title: eventData.title,
         description: eventData.description || null,
         event_date: eventData.date,
@@ -392,17 +402,19 @@ export default function TimelinePage() {
           events={calendarEvents}
           onEventCreate={handleCalendarEventCreate}
           onEventUpdate={async (event) => {
+            if (!coupleId) return
             const supabase = createClient()
             await supabase
-              .from('events')
+              .from('timeline_events')
               .update({ title: event.title, event_date: event.date, description: event.description ?? null })
               .eq('id', event.id)
-              .eq('user_id', user?.id)
+              .eq('couple_id', coupleId)
             loadEvents()
           }}
           onEventDelete={async (eventId) => {
+            if (!coupleId) return
             const supabase = createClient()
-            await supabase.from('events').delete().eq('id', eventId).eq('user_id', user?.id)
+            await supabase.from('timeline_events').delete().eq('id', eventId).eq('couple_id', coupleId)
             loadEvents()
           }}
           showTime={true}

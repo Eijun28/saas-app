@@ -90,12 +90,20 @@ export default function BudgetPage() {
     customCategory: '',
   })
 
+  const [coupleId, setCoupleId] = useState<string | null>(null)
+
   useEffect(() => {
     if (user) {
       loadBudget()
-      loadBudgetItems()
     }
   }, [user])
+
+  // Load budget items once we have the coupleId
+  useEffect(() => {
+    if (coupleId) {
+      loadBudgetItems()
+    }
+  }, [coupleId])
 
   const loadBudget = async () => {
     if (!user) return
@@ -105,11 +113,12 @@ export default function BudgetPage() {
 
     const { data } = await supabase
       .from('couples')
-      .select('budget_min, budget_max, budget_total')
+      .select('id, budget_min, budget_max, budget_total')
       .eq('user_id', user.id)
       .single()
 
     if (data) {
+      setCoupleId(data.id)
       setBudgetData({
         budget_min: data.budget_min,
         budget_max: data.budget_max,
@@ -121,14 +130,14 @@ export default function BudgetPage() {
   }
 
   const loadBudgetItems = async () => {
-    if (!user) return
+    if (!user || !coupleId) return
 
     const supabase = createClient()
 
     const { data, error } = await supabase
       .from('budget_items')
       .select('*')
-      .eq('couple_id', user.id)
+      .eq('couple_id', coupleId)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -182,7 +191,7 @@ export default function BudgetPage() {
       const { error } = await supabase
         .from('budget_items')
         .insert({
-          couple_id: user.id,
+          couple_id: coupleId,
           title: formData.title,
           category: categoryToSave,
           amount: amount,

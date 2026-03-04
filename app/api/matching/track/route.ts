@@ -16,6 +16,16 @@ interface TrackingRequest {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check — prevent data poisoning from unauthenticated callers
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Non autorisé' },
+        { status: 401 }
+      );
+    }
+
     const body: TrackingRequest = await request.json();
     const { provider_id, service_type, event_type, couple_id } = body;
 
