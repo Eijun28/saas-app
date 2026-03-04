@@ -223,8 +223,8 @@ export function ProfessionalInfoEditor({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-white border border-gray-200 shadow-lg" align="start" side="bottom" sideOffset={4} avoidCollisions={false}>
-            <Command filter={(value, search) => {
+          <PopoverContent className="w-[--radix-popover-trigger-width] min-w-0 p-0 bg-white border border-gray-200 shadow-lg overflow-hidden" align="start" side="bottom" sideOffset={4} avoidCollisions={false}>
+            <Command className="overflow-hidden" filter={(value, search) => {
               const service = SERVICE_TYPES.find(s => s.value === value)
               if (!service) return 0
               const label = service.label.toLowerCase()
@@ -234,7 +234,7 @@ export function ProfessionalInfoEditor({
               if (label.includes(s) || categoryLabel.includes(s) || value.includes(s)) return 1
               return 0
             }}>
-              <CommandInput placeholder="Rechercher un métier..." />
+              <CommandInput placeholder="Rechercher un métier..." className="min-w-0" />
               <CommandList>
                 <CommandEmpty>Aucun métier trouvé.</CommandEmpty>
                 {SERVICE_CATEGORIES.map((category) => (

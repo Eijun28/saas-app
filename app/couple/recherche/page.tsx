@@ -59,6 +59,7 @@ interface Provider {
   tags: ProviderTag[]
   completionPercentage?: number
   hasSiret?: boolean
+  languages?: string[]
   avgRating?: number
   reviewCount?: number
 }
@@ -1230,6 +1231,7 @@ export default function RecherchePage() {
             isCoupleView={true}
             coupleId={user.id}
             hasSiret={selectedProvider.hasSiret}
+            languages={selectedProvider.languages || []}
           />
         )}
       </div>

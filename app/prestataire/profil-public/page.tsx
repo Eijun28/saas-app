@@ -335,6 +335,7 @@ export default function ProfilPublicPage() {
             cultures={cultures}
             zones={zones}
             portfolio={portfolio}
+            languages={profile?.languages || []}
             hasSiret={!!profile?.siret}
             serviceDetails={serviceDetails}
             serviceTypeValue={profile?.service_type}
