@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MapPin, Pencil, Trash2, Loader2, CalendarDays, CalendarCheck, TrendingUp } from 'lucide-react'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { LoadingSpinner } from '@/components/prestataire/shared/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -324,7 +324,20 @@ export default function AgendaPage() {
     time: event.heure_debut,
     endTime: event.heure_fin || undefined,
     description: event.notes || undefined,
+    location: event.lieu || undefined,
   }))
+
+  // Stats pour le header
+  const today = new Date()
+  const todayKey = formatDateKey(today)
+  const todayEvents = calendarEvents.filter(e => e.date === todayKey)
+  const thisWeekEnd = new Date(today)
+  thisWeekEnd.setDate(today.getDate() + 7)
+  const thisWeekKey = formatDateKey(thisWeekEnd)
+  const weekEvents = calendarEvents.filter(e => e.date >= todayKey && e.date <= thisWeekKey)
+  const thisMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  const thisMonthKey = formatDateKey(thisMonthEnd)
+  const monthEvents = calendarEvents.filter(e => e.date >= todayKey && e.date <= thisMonthKey)
 
   const handleEditEvent = (event: Evenement) => {
     setSelectedEvent(event)
@@ -442,21 +455,62 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="h-[calc(100dvh-80px)] flex flex-col">
-      <div className="flex items-start justify-between flex-shrink-0">
-        <PageTitle
-          title="Agenda"
-          description="Gérez votre disponibilité et vos événements"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsGoogleCalendarOpen(true)}
-          className="gap-2 text-xs border-gray-200 flex-shrink-0 mt-1"
-        >
-          <CalendarIcon className="h-3.5 w-3.5" />
-          Google Calendar
-        </Button>
+    <div className="h-[calc(100dvh-80px)] flex flex-col gap-4">
+      {/* Header avec stats */}
+      <div className="flex-shrink-0 space-y-4">
+        <div className="flex items-start justify-between">
+          <PageTitle
+            title="Agenda"
+            description="Gérez votre disponibilité et vos événements"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsGoogleCalendarOpen(true)}
+            className="gap-2 text-xs border-gray-200 flex-shrink-0 mt-1"
+          >
+            <CalendarIcon className="h-3.5 w-3.5" />
+            Google Calendar
+          </Button>
+        </div>
+
+        {/* Stats cards */}
+        {!loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="grid grid-cols-3 gap-3"
+          >
+            <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#823F91]/10">
+                <CalendarCheck className="h-4.5 w-4.5 text-[#823F91]" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-900">{todayEvents.length}</p>
+                <p className="text-xs text-gray-500">Aujourd'hui</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#9D5FA8]/10">
+                <CalendarDays className="h-4.5 w-4.5 text-[#9D5FA8]" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-900">{weekEvents.length}</p>
+                <p className="text-xs text-gray-500">Cette semaine</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#B87FC0]/10">
+                <TrendingUp className="h-4.5 w-4.5 text-[#B87FC0]" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-900">{monthEvents.length}</p>
+                <p className="text-xs text-gray-500">Ce mois</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Dialog Google Calendar Sync */}
@@ -480,7 +534,7 @@ export default function AgendaPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="flex-1 overflow-hidden rounded-lg border border-[#823F91]/20 bg-white shadow-lg"
+        className="flex-1 min-h-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
       >
         <CalendarDashboard
           events={calendarEvents}
@@ -491,7 +545,6 @@ export default function AgendaPage() {
           loading={loading}
           defaultView="week"
           eventColor={(event) => {
-            // Couleurs selon le status pour prestataire
             if (event.status === 'confirmed') return 'bg-[#823F91]'
             if (event.status === 'pending') return 'bg-[#9D5FA8]'
             return 'bg-[#B87FC0]'

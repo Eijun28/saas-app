@@ -377,11 +377,11 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* En-têtes jours de la semaine */}
-        <div className="grid grid-cols-7 border-b border-gray-100 bg-white">
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center py-3 sm:py-3.5 md:py-4 text-xs sm:text-sm md:text-base font-semibold text-gray-600"
+              className="text-center py-2.5 sm:py-3 text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider"
             >
               {day}
             </div>
@@ -392,26 +392,23 @@ export function CalendarDashboard({
         <div className="flex-1 grid grid-cols-7 auto-rows-fr gap-0 overflow-hidden bg-white">
           {days.map((day, index) => {
             const isCurrentMonth = isSameMonth(day, currentDate)
-            const isToday = isSameDay(day, new Date())
-            const isPastDay = isPast(startOfDay(day)) && !isToday
+            const isTodayDay = isSameDay(day, new Date())
+            const isPastDay = isPast(startOfDay(day)) && !isTodayDay
             const dayEvents = events.filter((event) =>
               isSameDay(new Date(event.date), day)
             )
             const hasEvents = dayEvents.length > 0
 
             return (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.008 }}
                 className={cn(
-                  'border-r border-b border-gray-100 p-2 sm:p-2.5 md:p-3',
+                  'border-r border-b border-gray-100 p-1.5 sm:p-2',
                   'hover:bg-[#F5F0F7]/30 active:bg-[#F5F0F7]/60 transition-all duration-150 cursor-pointer touch-manipulation',
-                  'flex flex-col items-center sm:items-start justify-start min-h-[60px] sm:min-h-[90px] md:min-h-[100px]',
-                  !isCurrentMonth && 'bg-gray-50/30',
+                  'flex flex-col items-center sm:items-start justify-start min-h-[56px] sm:min-h-[80px] md:min-h-[96px]',
+                  !isCurrentMonth && 'bg-gray-50/40',
                   isCurrentMonth && 'bg-white',
-                  isPastDay && 'opacity-50'
+                  isPastDay && 'opacity-40'
                 )}
                 onClick={() => {
                   const normalizedDay = normalizeDate(day)
@@ -421,14 +418,14 @@ export function CalendarDashboard({
                 }}
               >
                 {/* Numéro du jour */}
-                <div className="flex items-center justify-center mb-2 sm:mb-1.5 flex-shrink-0">
+                <div className="flex items-center justify-center mb-1 flex-shrink-0">
                   <span
                     className={cn(
-                      'w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm sm:text-base md:text-lg font-semibold transition-all',
-                      isToday &&
-                        'bg-[#823F91] text-white shadow-md scale-105',
-                      !isToday && isCurrentMonth && !isPastDay && 'text-gray-900',
-                      !isCurrentMonth && 'text-gray-400',
+                      'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all',
+                      isTodayDay &&
+                        'bg-[#823F91] text-white shadow-md',
+                      !isTodayDay && isCurrentMonth && !isPastDay && 'text-gray-900 hover:bg-gray-100',
+                      !isCurrentMonth && 'text-gray-300',
                       isPastDay && isCurrentMonth && 'text-gray-400'
                     )}
                   >
@@ -438,9 +435,9 @@ export function CalendarDashboard({
 
                 {/* Événements : points sur mobile, pills avec titre sur desktop */}
                 {hasEvents && (
-                  <div className="w-full mt-1">
+                  <div className="w-full mt-0.5">
                     {/* Mobile : points */}
-                    <div className="flex gap-1 justify-center sm:hidden">
+                    <div className="flex gap-0.5 justify-center sm:hidden">
                       {dayEvents.slice(0, 3).map((_, idx) => (
                         <div key={idx} className="w-1.5 h-1.5 rounded-full bg-[#823F91]" />
                       ))}
@@ -449,27 +446,27 @@ export function CalendarDashboard({
                       )}
                     </div>
                     {/* Desktop : pill avec titre */}
-                    <div className="hidden sm:flex flex-col gap-0.5 w-full">
+                    <div className="hidden sm:flex flex-col gap-px w-full">
                       {dayEvents.slice(0, 2).map((ev, idx) => (
                         <div
                           key={idx}
-                          className="w-full text-left px-1.5 py-0.5 bg-[#823F91]/10 hover:bg-[#823F91]/20 text-[#6D3478] text-[10px] md:text-xs font-medium rounded truncate transition-colors"
-                          title={ev.title}
+                          className="w-full text-left px-1.5 py-0.5 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white text-[9px] md:text-[10px] font-medium rounded truncate hover:shadow-sm transition-shadow"
+                          title={`${ev.time ? ev.time + ' - ' : ''}${ev.title}`}
                           onClick={(e) => { e.stopPropagation(); handleEventClick(ev) }}
                         >
-                          {ev.time && <span className="opacity-70 mr-1">{ev.time.slice(0, 5)}</span>}
+                          {ev.time && <span className="opacity-80 mr-0.5">{ev.time.slice(0, 5)}</span>}
                           {ev.title}
                         </div>
                       ))}
                       {dayEvents.length > 2 && (
-                        <div className="text-[10px] text-gray-400 pl-1">
+                        <div className="text-[9px] text-[#823F91] font-medium pl-1.5">
                           +{dayEvents.length - 2} autre{dayEvents.length - 2 > 1 ? 's' : ''}
                         </div>
                       )}
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             )
           })}
         </div>
@@ -552,21 +549,24 @@ export function CalendarDashboard({
 
             {/* En-têtes des jours — sticky en haut */}
             <div
-              className="grid sticky top-0 bg-white z-20 border-b border-gray-200 shadow-sm"
+              className="grid sticky top-0 bg-white/95 backdrop-blur-sm z-20 border-b border-gray-200"
               style={{ gridTemplateColumns: GRID_COLS }}
             >
               {/* Coin heure */}
-              <div className="border-r border-gray-100 bg-gray-50/60" />
+              <div className="border-r border-gray-100" />
 
               {weekDays.map((day, index) => {
-                const isToday = isSameDay(day, new Date())
-                const isPastDay = isPast(startOfDay(day)) && !isToday
+                const isCurrentDay = isSameDay(day, new Date())
+                const isPastDay = isPast(startOfDay(day)) && !isCurrentDay
+                const dayEventsCount = events.filter((event) =>
+                  isSameDay(new Date(event.date), day)
+                ).length
                 return (
                   <div
                     key={index}
                     className={cn(
-                      'text-center py-3.5 sm:py-4 transition-all cursor-pointer touch-manipulation hover:bg-[#F5F0F7]/40 border-r border-gray-100 last:border-r-0',
-                      isToday && 'bg-[#F5F0F7]/60',
+                      'text-center py-2.5 sm:py-3 transition-all cursor-pointer touch-manipulation hover:bg-[#F5F0F7]/40 border-r border-gray-100 last:border-r-0',
+                      isCurrentDay && 'bg-[#F5F0F7]/50',
                       isPastDay && 'opacity-50'
                     )}
                     onClick={() => {
@@ -575,18 +575,18 @@ export function CalendarDashboard({
                       setViewMode('day')
                     }}
                   >
-                    {/* Nom du jour — abrégé mobile, complet desktop */}
+                    {/* Nom du jour */}
                     <div className={cn(
-                      'text-xs font-medium uppercase tracking-wide',
-                      isToday ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-500'
+                      'text-[10px] sm:text-xs font-medium uppercase tracking-wider',
+                      isCurrentDay ? 'text-[#823F91]' : isPastDay ? 'text-gray-400' : 'text-gray-500'
                     )}>
                       <span className="sm:hidden">{format(day, 'EEE', { locale: fr })}</span>
-                      <span className="hidden sm:inline">{format(day, 'EEEE', { locale: fr })}</span>
+                      <span className="hidden sm:inline">{format(day, 'EEE', { locale: fr })}</span>
                     </div>
                     {/* Numéro du jour */}
                     <div className={cn(
-                      'mt-1 mx-auto w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-base sm:text-lg font-bold transition-all',
-                      isToday
+                      'mt-1 mx-auto w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm sm:text-base font-bold transition-all',
+                      isCurrentDay
                         ? 'bg-[#823F91] text-white shadow-md'
                         : isPastDay
                           ? 'text-gray-400'
@@ -594,6 +594,14 @@ export function CalendarDashboard({
                     )}>
                       {format(day, 'd')}
                     </div>
+                    {/* Event count indicator */}
+                    {dayEventsCount > 0 && (
+                      <div className="mt-1 flex justify-center gap-0.5">
+                        {Array.from({ length: Math.min(dayEventsCount, 3) }).map((_, i) => (
+                          <div key={i} className="w-1 h-1 rounded-full bg-[#823F91]" />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -603,14 +611,14 @@ export function CalendarDashboard({
             <div className="grid relative" style={{ gridTemplateColumns: GRID_COLS }}>
 
               {/* Colonne des heures */}
-              <div className="border-r border-gray-100 bg-white sticky left-0 z-10">
+              <div className="border-r border-gray-100 bg-gray-50/30 sticky left-0 z-10">
                 {hours.map((hour) => (
                   <div
                     key={hour}
                     style={{ height: `${HOUR_HEIGHT}px` }}
-                    className="border-b border-gray-100 flex items-start justify-end pr-2 pt-1"
+                    className="border-b border-gray-100 flex items-start justify-end pr-1.5 pt-0.5"
                   >
-                    <span className="text-xs font-medium text-gray-400">{`${hour}h`}</span>
+                    <span className="text-[10px] sm:text-xs font-medium text-gray-400">{`${hour}h`}</span>
                   </div>
                 ))}
               </div>
@@ -664,7 +672,7 @@ export function CalendarDashboard({
                       if (event.top < 0 || event.top > HOUR_HEIGHT * 13) return null
                       const colWidth = 100 / event.totalCols
                       const leftPct = event.col * colWidth
-                      const GAP = 2 // px entre colonnes
+                      const GAP = 2
 
                       return (
                         <motion.div
@@ -673,22 +681,24 @@ export function CalendarDashboard({
                           style={{
                             top: `${event.top}px`,
                             height: `${event.height}px`,
-                            left: `calc(${leftPct}% + ${event.col > 0 ? GAP : 4}px)`,
-                            right: `calc(${100 - leftPct - colWidth}% + ${event.col < event.totalCols - 1 ? GAP : 4}px)`,
+                            left: `calc(${leftPct}% + ${event.col > 0 ? GAP : 3}px)`,
+                            right: `calc(${100 - leftPct - colWidth}% + ${event.col < event.totalCols - 1 ? GAP : 3}px)`,
                             position: 'absolute',
                           }}
-                          className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1.5 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden touch-manipulation z-10"
-                          title={event.title}
+                          className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-1 sm:p-1.5 rounded-md sm:rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden touch-manipulation z-10 border border-white/20"
+                          title={`${event.title}${event.time ? ` (${event.time}${event.endTime ? ` – ${event.endTime}` : ''})` : ''}`}
                           onClick={(e) => {
                             e.stopPropagation()
                             handleEventClick(event)
                           }}
                         >
                           <div className="text-[10px] sm:text-xs font-bold truncate leading-tight">{event.title}</div>
-                          <div className="text-[9px] sm:text-[10px] opacity-80 mt-0.5 leading-tight">
-                            {event.time || '09:00'}
-                            {event.endTime && ` – ${event.endTime}`}
-                          </div>
+                          {event.height > 35 && (
+                            <div className="text-[9px] sm:text-[10px] opacity-80 mt-0.5 leading-tight">
+                              {event.time || '09:00'}
+                              {event.endTime && ` – ${event.endTime}`}
+                            </div>
+                          )}
                         </motion.div>
                       )
                     })}
@@ -720,11 +730,18 @@ export function CalendarDashboard({
   // Render Day View
   const renderDayView = () => {
     const hours = Array.from({ length: 13 }, (_, i) => i + 8) // 8h à 20h
+    const HOUR_HEIGHT = 72
     // Utiliser selectedDate si défini, sinon currentDate
     const displayDate = selectedDate || currentDate
     const dayEvents = events.filter((event) =>
       isSameDay(new Date(event.date), displayDate)
     )
+    const isDayToday = isSameDay(displayDate, new Date())
+
+    // Current time indicator
+    const nowHour = currentTime.getHours()
+    const nowMinute = currentTime.getMinutes()
+    const nowTop = (nowHour - 8) * HOUR_HEIGHT + (nowMinute / 60) * HOUR_HEIGHT
 
     return (
       <motion.div
@@ -732,27 +749,46 @@ export function CalendarDashboard({
         animate={{ opacity: 1 }}
         className="flex flex-col h-full overflow-hidden"
       >
-        {/* Grille des heures - SCROLLABLE - Sans en-tête */}
+        {/* En-tête du jour */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 py-3 border-b border-gray-100 bg-white">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 capitalize">
+              {format(displayDate, 'EEEE d MMMM', { locale: fr })}
+            </h3>
+            {isDayToday && (
+              <span className="text-xs font-medium text-[#823F91]">Aujourd'hui</span>
+            )}
+          </div>
+          {dayEvents.length > 0 && (
+            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+              {dayEvents.length} événement{dayEvents.length > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
+
+        {/* Grille des heures - SCROLLABLE */}
         <div ref={dayScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-gray-100">
-          <div className="grid min-h-full" style={{ gridTemplateColumns: '65px 1fr' }}>
+          <div className="grid min-h-full" style={{ gridTemplateColumns: '56px 1fr' }}>
             {/* Colonne des heures */}
-            <div className="border-r border-gray-100 bg-gray-50/50 sticky left-0 z-10">
+            <div className="border-r border-gray-100 bg-gray-50/30 sticky left-0 z-10">
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] border-b border-gray-100 flex items-start justify-end pr-2.5 pt-2"
+                  style={{ height: `${HOUR_HEIGHT}px` }}
+                  className="border-b border-gray-100 flex items-start justify-end pr-2 pt-1"
                 >
-                  <span className="text-xs font-semibold text-gray-600">{`${hour}:00`}</span>
+                  <span className="text-xs font-medium text-gray-400">{`${hour}h`}</span>
                 </div>
               ))}
             </div>
 
             {/* Colonne du jour */}
-            <div className="relative bg-gradient-to-b from-white to-[#F5F0F7]/10">
+            <div className="relative">
               {hours.map((hour) => (
                 <div
                   key={hour}
-                  className="h-[72px] border-b border-gray-100 hover:bg-[#F5F0F7]/50 active:bg-[#F5F0F7] transition-colors cursor-pointer touch-manipulation relative group"
+                  style={{ height: `${HOUR_HEIGHT}px` }}
+                  className="border-b border-gray-100 hover:bg-[#F5F0F7]/40 active:bg-[#F5F0F7] transition-colors cursor-pointer touch-manipulation relative group"
                   onClick={() => {
                     const dateToUse = normalizeDate(displayDate)
                     setSelectedDate(dateToUse)
@@ -762,56 +798,57 @@ export function CalendarDashboard({
                   }}
                 >
                   {/* Indicateur visuel d'ajout au hover */}
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-30 text-[#823F91] text-xs font-medium transition-opacity pointer-events-none select-none">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-30 text-[#823F91] text-xs font-medium transition-opacity pointer-events-none select-none">
                     + ajouter
                   </span>
                 </div>
               ))}
 
-              {/* Événements positionnés */}
-              {dayEvents.map((event, idx) => {
-                // Utiliser event.time si disponible, sinon utiliser une heure par défaut (9h)
-                let eventHour = 9
-                let eventMinute = 0
-                
-                if (event.time) {
-                  const [hours, minutes] = event.time.split(':').map(Number)
-                  eventHour = hours || 9
-                  eventMinute = minutes || 0
-                } else {
-                  // Si pas d'heure, essayer d'extraire de la date
-                  const eventDate = new Date(event.date)
-                  if (!isNaN(eventDate.getTime())) {
-                    eventHour = eventDate.getHours() || 9
-                    eventMinute = eventDate.getMinutes() || 0
-                  }
-                }
-                
-                // Ne pas afficher si l'heure est en dehors de la plage visible (8h-20h)
-                if (eventHour < 8 || eventHour > 20) return null
-                
-                // Calcul responsive : 72px (h-18) mobile, 80px (h-20) sm, 96px (h-24) md
-                const top = (eventHour - 8) * 72 + (eventMinute / 60) * 72
-                const height = 65
+              {/* Current time indicator */}
+              {isDayToday && nowHour >= 8 && nowHour <= 20 && (
+                <div
+                  className="absolute left-0 right-0 z-30 pointer-events-none"
+                  style={{ top: `${nowTop}px` }}
+                >
+                  <div className="relative flex items-center">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm -ml-1.5 flex-shrink-0" />
+                    <div className="flex-1 h-[2px] bg-red-500 opacity-70" />
+                  </div>
+                </div>
+              )}
+
+              {/* Événements positionnés avec gestion du chevauchement */}
+              {layoutEvents(dayEvents, HOUR_HEIGHT).map((event, idx) => {
+                if (event.top < 0 || event.top > HOUR_HEIGHT * 13) return null
+                const colWidth = 100 / event.totalCols
+                const leftPct = event.col * colWidth
+                const GAP = 3
 
                 return (
                   <motion.div
                     key={event.id || idx}
-                    whileHover={{ scale: 1.01, zIndex: 10 }}
-                    style={{ top: `${top}px`, height: `${height}px` }}
-                    className="absolute left-2 right-2 sm:left-2.5 sm:right-2.5 md:left-3 md:right-3 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-2 sm:p-2.5 md:p-3 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer overflow-hidden"
+                    whileHover={{ scale: 1.01, zIndex: 20 }}
+                    style={{
+                      top: `${event.top}px`,
+                      height: `${event.height}px`,
+                      left: `calc(${leftPct}% + ${event.col > 0 ? GAP : 6}px)`,
+                      right: `calc(${100 - leftPct - colWidth}% + ${event.col < event.totalCols - 1 ? GAP : 6}px)`,
+                      position: 'absolute',
+                    }}
+                    className="bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white p-2.5 sm:p-3 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer overflow-hidden z-10"
                     title={event.title}
                     onClick={(e) => {
                       e.stopPropagation()
                       handleEventClick(event)
                     }}
                   >
-                    <div className="text-xs sm:text-sm md:text-base font-bold truncate">{event.title}</div>
-                    <div className="text-[10px] sm:text-xs opacity-90 mt-1">
-                      {event.time || `${String(eventHour).padStart(2, '0')}:${String(eventMinute).padStart(2, '0')}`}
+                    <div className="text-xs sm:text-sm font-bold truncate">{event.title}</div>
+                    <div className="text-[10px] sm:text-xs opacity-90 mt-0.5">
+                      {event.time || '09:00'}
+                      {event.endTime && ` – ${event.endTime}`}
                     </div>
-                    {event.description && (
-                      <div className="text-[10px] sm:text-xs opacity-80 mt-1.5 line-clamp-2">
+                    {event.height > 60 && event.description && (
+                      <div className="text-[10px] sm:text-xs opacity-80 mt-1 line-clamp-2">
                         {event.description}
                       </div>
                     )}
@@ -855,7 +892,7 @@ export function CalendarDashboard({
     }
 
     return (
-      <div className="max-w-4xl mx-auto p-4 xs:p-5 sm:p-6 md:p-7 space-y-4 xs:space-y-5 sm:space-y-6 overflow-y-auto">
+      <div className="max-w-4xl mx-auto p-4 xs:p-5 sm:p-6 md:p-7 space-y-5 sm:space-y-6 overflow-y-auto">
         {dates.map((dateStr) => {
           const date = new Date(dateStr)
           const eventsForDate = groupedEvents[dateStr]
@@ -864,54 +901,64 @@ export function CalendarDashboard({
 
           return (
             <div key={dateStr}>
+              {/* Date header */}
               <div className={cn(
-                "flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2.5 xs:py-3 mb-2 xs:mb-3 rounded-lg sticky top-0 bg-white border-b border-gray-100 z-10",
-                isTodayDate && "bg-[#F5F0F7]/50",
+                "flex items-center gap-3 mb-3 sticky top-0 bg-white/95 backdrop-blur-sm z-10 py-2",
                 isPastDate && "opacity-50"
               )}>
                 <div className={cn(
-                  "text-sm xs:text-base font-semibold",
-                  isPastDate ? "text-gray-400" : "text-gray-900"
+                  "flex-shrink-0 w-12 h-12 rounded-xl flex flex-col items-center justify-center shadow-sm",
+                  isTodayDate
+                    ? "bg-gradient-to-br from-[#823F91] to-[#9D5FA8] text-white"
+                    : "bg-gray-100 text-gray-700"
                 )}>
-                  {date.toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
+                  <span className="text-lg font-bold leading-none">{format(date, 'd')}</span>
+                  <span className="text-[10px] uppercase leading-none mt-0.5">
+                    {format(date, 'MMM', { locale: fr })}
+                  </span>
                 </div>
-                <div className={cn(
-                  "text-xs xs:text-sm",
-                  isPastDate ? "text-gray-400" : "text-gray-500"
-                )}>
-                  {eventsForDate.length} événement{eventsForDate.length > 1 ? 's' : ''}
+                <div className="flex-1">
+                  <div className={cn(
+                    "text-sm font-semibold capitalize",
+                    isPastDate ? "text-gray-400" : "text-gray-900"
+                  )}>
+                    {format(date, 'EEEE d MMMM', { locale: fr })}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {eventsForDate.length} événement{eventsForDate.length > 1 ? 's' : ''}
+                  </div>
                 </div>
                 {isTodayDate && (
-                  <span className="xs:ml-auto text-xs font-medium text-[#823F91] bg-[#823F91]/10 px-2 py-1 rounded">
+                  <span className="text-xs font-medium text-[#823F91] bg-[#823F91]/10 px-2.5 py-1 rounded-full">
                     Aujourd'hui
                   </span>
                 )}
               </div>
-            
+
+              {/* Events timeline */}
               <div className={cn(
-                "space-y-2 ml-2 xs:ml-4",
+                "space-y-2 ml-6 border-l-2 border-gray-100 pl-4",
                 isPastDate && "opacity-60"
               )}>
                 {eventsForDate.map((event) => (
                   <div
                     key={event.id}
-                    className="flex flex-col xs:flex-row items-start xs:items-start gap-2 xs:gap-3 p-3.5 sm:p-4 rounded-lg border border-gray-200 hover:border-[#823F91]/30 hover:bg-gray-50/50 active:bg-[#F5F0F7]/50 cursor-pointer transition-all touch-manipulation min-h-[56px]"
+                    className="relative flex flex-col xs:flex-row items-start gap-2 xs:gap-3 p-3.5 sm:p-4 rounded-xl border border-gray-200 hover:border-[#823F91]/30 hover:shadow-sm active:bg-[#F5F0F7]/50 cursor-pointer transition-all touch-manipulation bg-white"
                     onClick={() => handleEventClick(event)}
                   >
+                    {/* Timeline dot */}
+                    <div className="absolute -left-[calc(1rem+5px)] w-2.5 h-2.5 rounded-full bg-[#823F91] border-2 border-white shadow-sm top-4" />
+
                     {event.time && (
-                      <div className="flex-shrink-0 w-full xs:w-16 text-xs xs:text-sm font-medium text-gray-600">
+                      <div className="flex-shrink-0 text-xs font-semibold text-[#823F91] bg-[#823F91]/8 px-2 py-1 rounded-md">
                         {event.time}
+                        {event.endTime && ` – ${event.endTime}`}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm xs:text-base font-medium text-gray-900">{event.title}</h4>
+                      <h4 className="text-sm font-semibold text-gray-900">{event.title}</h4>
                       {event.description && (
-                        <p className="text-xs xs:text-sm text-gray-600 mt-1 line-clamp-2">{event.description}</p>
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{event.description}</p>
                       )}
                     </div>
                   </div>
@@ -934,7 +981,7 @@ export function CalendarDashboard({
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col gap-3 sm:gap-0 px-4 sm:px-5 md:px-6 py-3.5 sm:py-4 md:py-5 bg-white border-b border-gray-100">
+        <div className="flex-shrink-0 flex flex-col gap-2.5 sm:gap-0 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 bg-white border-b border-gray-200">
           {/* Mobile: Navigation compacte */}
           <div className="flex items-center justify-between sm:hidden gap-1">
             {showSidebar && (
@@ -1114,9 +1161,9 @@ export function CalendarDashboard({
             >
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#823F91] mx-auto mb-4"></div>
-                    <p className="text-gray-500">Chargement...</p>
+                  <div className="text-center space-y-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-t-[#823F91] mx-auto"></div>
+                    <p className="text-sm text-gray-400">Chargement des événements...</p>
                   </div>
                 </div>
               ) : (
