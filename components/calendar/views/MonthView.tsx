@@ -87,7 +87,7 @@ export function MonthView({
             const isSelected = selectedDate && isSameDay(props.day.date, selectedDate)
 
             return (
-              <div className="relative w-full h-full min-h-[120px] lg:min-h-[140px] xl:min-h-[160px] p-1 flex flex-col">
+              <div className="relative w-full h-full min-h-[130px] lg:min-h-[150px] xl:min-h-[170px] p-1.5 flex flex-col">
                 <CalendarDayButton
                   {...props}
                   className={cn(
@@ -99,7 +99,7 @@ export function MonthView({
                   )}
                 />
                 {/* Liste des événements avec scroll */}
-                <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+                <div className="flex-1 overflow-y-auto space-y-1.5 min-h-0">
                   {dayEvents.map((event) => {
                     const colorHex = getEventColorHex(event)
                     return (
@@ -113,8 +113,8 @@ export function MonthView({
                           onEventClick?.(event)
                         }}
                         className={cn(
-                          "text-xs px-2 py-1 rounded cursor-pointer transition-all",
-                          "hover:shadow-md hover:opacity-90"
+                          "text-xs px-2.5 py-1.5 rounded-md cursor-pointer transition-all",
+                          "hover:shadow-lg hover:brightness-110"
                         )}
                         style={{ backgroundColor: colorHex, color: 'white' }}
                         title={`${event.time ? `${event.time} - ` : ''}${event.title}`}
@@ -122,10 +122,10 @@ export function MonthView({
                         {showTime && event.time && (
                           <div className="flex items-center gap-1 mb-0.5">
                             <Clock className="w-3 h-3" />
-                            <span className="font-medium">{event.time}</span>
+                            <span className="font-semibold">{event.time}</span>
                           </div>
                         )}
-                        <div className="font-medium truncate">{event.title}</div>
+                        <div className="font-semibold truncate">{event.title}</div>
                       </motion.div>
                     )
                   })}

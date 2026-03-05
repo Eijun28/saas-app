@@ -455,7 +455,7 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="h-[calc(100dvh-80px)] flex flex-col gap-4">
+    <div className="h-[calc(100dvh-80px)] flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
       {/* Header avec stats */}
       <div className="flex-shrink-0 space-y-4">
         <div className="flex items-start justify-between">
