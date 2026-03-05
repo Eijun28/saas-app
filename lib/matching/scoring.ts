@@ -241,17 +241,28 @@ export function calculateBudgetScore(
 
 /**
  * Calcule le score de réputation (/20 points)
+ * Si averageRecentRating est fourni et different de averageRating,
+ * on pondere : 60% recent + 40% global (temporal decay).
  */
 export function calculateReputationScore(
   averageRating: number | undefined,
-  reviewCount: number | undefined
+  reviewCount: number | undefined,
+  averageRecentRating?: number
 ): number {
   if (!averageRating) {
     return 5; // Score minimal si pas d'avis
   }
 
+  // Determine effective rating, applying temporal decay if recent rating available
+  let effectiveRating: number;
+  if (averageRecentRating !== undefined && averageRecentRating !== averageRating) {
+    effectiveRating = averageRecentRating * 0.6 + averageRating * 0.4;
+  } else {
+    effectiveRating = averageRating;
+  }
+
   // Score basé sur la note moyenne (sur 5) converti en /16
-  const ratingScore = (averageRating / 5) * 16;
+  const ratingScore = (effectiveRating / 5) * 16;
 
   // Bonus selon nombre d'avis (max 4 points)
   let reviewBonus = 0;
@@ -600,10 +611,12 @@ export function calculateDietaryScore(
  * Interface etendue du provider pour le scoring avec equite
  */
 export interface ProviderWithFairness {
+  provider_id?: string;
   cultures?: string[];
   budget_min?: number;
   budget_max?: number;
   average_rating?: number;
+  average_recent_rating?: number;
   review_count?: number;
   annees_experience?: number;
   zones?: string[];
@@ -631,6 +644,8 @@ export interface ExtendedScoreBreakdown extends ScoreBreakdown {
   language_match?: number;
   dietary_match?: number;
   response_rate_bonus?: number;
+  history_bonus?: number;
+  recent_rating_weight?: number;
 }
 
 /**
@@ -648,12 +663,53 @@ export function calculateResponseRateBonus(responseRate?: number | null): number
 }
 
 /**
+ * Historique des interactions d'un couple avec les prestataires
+ */
+export interface CoupleHistory {
+  favorited_provider_ids: string[];
+  accepted_demande_provider_ids: string[];
+  rejected_demande_provider_ids: string[];
+}
+
+/**
+ * Calcule un bonus/malus base sur l'historique du couple avec un prestataire.
+ * - Favori → +5
+ * - Demande acceptee → +3
+ * - Demande rejetee → -3
+ * Range: -3 a +8 points
+ */
+export function calculateHistoryScore(
+  providerId: string,
+  coupleHistory?: CoupleHistory
+): number {
+  if (!coupleHistory) return 0;
+
+  let score = 0;
+
+  if (coupleHistory.favorited_provider_ids.includes(providerId)) {
+    score += 5;
+  }
+
+  if (coupleHistory.accepted_demande_provider_ids.includes(providerId)) {
+    score += 3;
+  }
+
+  if (coupleHistory.rejected_demande_provider_ids.includes(providerId)) {
+    score -= 3;
+  }
+
+  // Clamp to [-3, +8]
+  return Math.max(-3, Math.min(8, score));
+}
+
+/**
  * Calcule le score global avec support de l'equite
  * Compatible avec l'ancienne API tout en supportant les nouvelles fonctionnalites
  */
 export function calculateTotalScore(
   criteria: SearchCriteria | ExtendedSearchCriteria,
-  provider: ProviderWithFairness
+  provider: ProviderWithFairness,
+  coupleHistory?: CoupleHistory
 ): { score: number; breakdown: ExtendedScoreBreakdown } {
   const culturalScore = calculateCulturalScore(
     criteria.cultures || [],
@@ -671,7 +727,8 @@ export function calculateTotalScore(
 
   const reputationScore = calculateReputationScore(
     provider.average_rating,
-    provider.review_count
+    provider.review_count,
+    provider.average_recent_rating
   );
 
   const experienceScore = calculateExperienceScore(
@@ -730,6 +787,12 @@ export function calculateTotalScore(
   // Calculate response rate bonus (+3 / 0 / -2)
   const responseRateBonus = calculateResponseRateBonus(provider.response_rate);
 
+  // Calculate history bonus (-3 to +8)
+  const historyBonus = calculateHistoryScore(
+    provider.provider_id || '',
+    coupleHistory
+  );
+
   // Score algorithmique total avant equite
   const totalAlgo =
     culturalScore +
@@ -744,7 +807,8 @@ export function calculateTotalScore(
     capacityScore +
     languageScore +
     dietaryScore +
-    responseRateBonus;
+    responseRateBonus +
+    historyBonus;
 
   // Score avant application de l'equite (cap a 100)
   const scoreBeforeFairness = Math.min(100, Math.max(0, totalAlgo));
@@ -772,6 +836,9 @@ export function calculateTotalScore(
     language_match: languageScore !== 0 ? languageScore : undefined,
     dietary_match: dietaryScore !== 0 ? dietaryScore : undefined,
     response_rate_bonus: responseRateBonus !== 0 ? responseRateBonus : undefined,
+    history_bonus: historyBonus !== 0 ? historyBonus : undefined,
+    recent_rating_weight: provider.average_recent_rating !== undefined && provider.average_recent_rating !== provider.average_rating
+      ? 0.6 : undefined,
     fairness_multiplier: fairnessMultiplier,
     ctr_bonus: ctrBonus,
     score_before_fairness: scoreBeforeFairness,

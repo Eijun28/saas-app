@@ -17,9 +17,11 @@ import {
   calculateFairnessMultiplier,
   calculateCTRBonus,
   calculateCapacityScore,
+  calculateHistoryScore,
   calculateTotalScore,
   FAIRNESS_CONFIG,
 } from '../../matching/scoring';
+import type { CoupleHistory } from '../../matching/scoring';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // calculateCulturalScore
@@ -417,7 +419,7 @@ describe(`calculateTotalScore — scénarios réels`, () => {
   const baseCriteria = {
     service_type: 'photographe',
     cultures: ['marocaine'],
-    cultural_importance: 'essential',
+    cultural_importance: 'essential' as const,
     budget_min: 2000,
     budget_max: 3500,
     wedding_department: '75',
@@ -560,5 +562,115 @@ describe(`calculateTotalScore — scénarios réels`, () => {
     expect(breakdown).toHaveProperty('location_match');
     expect(breakdown).toHaveProperty('tags_match');
     expect(breakdown).toHaveProperty('final_score');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// calculateReputationScore — temporal decay (4.3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('calculateReputationScore — temporal decay', () => {
+  it('uses only averageRating when no recentRating provided', () => {
+    const score = calculateReputationScore(4.5, 30);
+    // (4.5/5)*16 = 14.4 + bonus 3 (30 reviews >= 20) = 17.4 → 17
+    expect(score).toBeGreaterThanOrEqual(17);
+    expect(score).toBeLessThanOrEqual(18);
+  });
+
+  it('blends 60% recent + 40% overall when recentRating differs', () => {
+    // overall=4.0, recent=5.0 → effective = 5*0.6 + 4*0.4 = 4.6
+    const withRecent = calculateReputationScore(4.0, 10, 5.0);
+    const withoutRecent = calculateReputationScore(4.0, 10);
+    expect(withRecent).toBeGreaterThan(withoutRecent);
+  });
+
+  it('does not change score when recentRating equals averageRating', () => {
+    const a = calculateReputationScore(4.0, 10, 4.0);
+    const b = calculateReputationScore(4.0, 10);
+    expect(a).toBe(b);
+  });
+
+  it('penalizes when recent reviews are worse than overall', () => {
+    // overall=4.5, recent=3.0 → effective = 3*0.6 + 4.5*0.4 = 3.6
+    const withBadRecent = calculateReputationScore(4.5, 10, 3.0);
+    const withoutRecent = calculateReputationScore(4.5, 10);
+    expect(withBadRecent).toBeLessThan(withoutRecent);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// calculateHistoryScore (4.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('calculateHistoryScore', () => {
+  const providerId = 'provider-123';
+
+  it('returns 0 when no history provided', () => {
+    expect(calculateHistoryScore(providerId)).toBe(0);
+    expect(calculateHistoryScore(providerId, undefined)).toBe(0);
+  });
+
+  it('returns +5 for favorited provider', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [providerId],
+      accepted_demande_provider_ids: [],
+      rejected_demande_provider_ids: [],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(5);
+  });
+
+  it('returns +3 for accepted demande provider', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [],
+      accepted_demande_provider_ids: [providerId],
+      rejected_demande_provider_ids: [],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(3);
+  });
+
+  it('returns -3 for rejected demande provider', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [],
+      accepted_demande_provider_ids: [],
+      rejected_demande_provider_ids: [providerId],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(-3);
+  });
+
+  it('returns +8 for favorited + accepted (max)', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [providerId],
+      accepted_demande_provider_ids: [providerId],
+      rejected_demande_provider_ids: [],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(8);
+  });
+
+  it('returns +2 for favorited + rejected (5 - 3 = 2)', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [providerId],
+      accepted_demande_provider_ids: [],
+      rejected_demande_provider_ids: [providerId],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(2);
+  });
+
+  it('clamps to -3 minimum', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: [],
+      accepted_demande_provider_ids: [],
+      rejected_demande_provider_ids: [providerId],
+    };
+    // -3 is already the min, but verify clamping
+    expect(calculateHistoryScore(providerId, history)).toBeGreaterThanOrEqual(-3);
+  });
+
+  it('returns 0 for unknown provider', () => {
+    const history: CoupleHistory = {
+      favorited_provider_ids: ['other-id'],
+      accepted_demande_provider_ids: ['other-id'],
+      rejected_demande_provider_ids: [],
+    };
+    expect(calculateHistoryScore(providerId, history)).toBe(0);
   });
 });

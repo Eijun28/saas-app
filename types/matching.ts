@@ -60,6 +60,12 @@ export interface ScoreBreakdown {
   // Fiabilité prestataire (bonus)
   response_rate_bonus?: number; // -2 a +3 points
 
+  // Historique couple (bonus/malus basé sur interactions passées)
+  history_bonus?: number; // -3 a +8 points
+
+  // Pondération temporelle des avis (0.6 si avis récents utilisés)
+  recent_rating_weight?: number;
+
   // Equite (pour eviter de toujours montrer les memes)
   fairness_multiplier?: number; // 0.85 a 1.15
   ctr_bonus?: number; // -3 a +5 points
