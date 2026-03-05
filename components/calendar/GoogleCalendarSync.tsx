@@ -19,7 +19,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { RefreshCw, CheckCircle2, AlertCircle, ExternalLink, Unlink, Calendar } from 'lucide-react'
@@ -83,50 +82,40 @@ export function GoogleCalendarSync({
 
   useEffect(() => { loadStatus() }, [loadStatus])
 
-  // ── Connexion ─────────────────────────────────────────────────────────────
-  const handleConnect = async () => {
+  // ── Connexion (redirige vers OAuth Google) ───────────────────────────────
+  const handleConnect = () => {
     setIsConnecting(true)
-    try {
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-
-      const providerToken        = session?.provider_token
-      const providerRefreshToken = session?.provider_refresh_token
-
-      if (!providerToken) {
-        toast.error(
-          'Vous devez être connecté avec Google pour utiliser cette fonctionnalité. Déconnectez-vous et reconnectez-vous avec Google.',
-          { duration: 6000 },
-        )
-        setIsConnecting(false)
-        return
-      }
-
-      const res = await fetch('/api/google-calendar/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider_token:         providerToken,
-          provider_refresh_token: providerRefreshToken,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        toast.error(data.error ?? 'Erreur lors de la connexion')
-        return
-      }
-
-      toast.success('Google Calendar connecté avec succès !')
-      await loadStatus()
-    } catch (err) {
-      toast.error('Erreur lors de la connexion à Google Calendar')
-      console.error(err)
-    } finally {
-      setIsConnecting(false)
-    }
+    // Redirige vers le flow OAuth dédié Google Calendar
+    window.location.href = '/api/google-calendar/auth'
   }
+
+  // Détecter le retour du callback OAuth (query param)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('gcal_connected') === 'true') {
+      toast.success('Google Calendar connecté avec succès !')
+      loadStatus()
+      // Nettoyer l'URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete('gcal_connected')
+      window.history.replaceState({}, '', url.toString())
+    }
+    const gcalError = params.get('gcal_error')
+    if (gcalError) {
+      const messages: Record<string, string> = {
+        denied: 'Vous avez refusé l\'accès à Google Calendar.',
+        missing_code: 'Code d\'autorisation manquant. Réessayez.',
+        auth: 'Erreur d\'authentification. Reconnectez-vous.',
+        config: 'Google Calendar n\'est pas configuré sur le serveur.',
+        token_exchange: 'Erreur lors de l\'échange de token. Réessayez.',
+        save: 'Erreur lors de la sauvegarde. Réessayez.',
+      }
+      toast.error(messages[gcalError] ?? 'Erreur lors de la connexion à Google Calendar.')
+      const url = new URL(window.location.href)
+      url.searchParams.delete('gcal_error')
+      window.history.replaceState({}, '', url.toString())
+    }
+  }, [])
 
   // ── Synchronisation ───────────────────────────────────────────────────────
   const handleSync = async (direction: 'push' | 'pull' | 'both' = 'both') => {
@@ -210,10 +199,11 @@ export function GoogleCalendarSync({
       <Button
         variant="outline"
         size="sm"
-        disabled
-        className={cn('gap-2 text-xs opacity-50 pointer-events-none select-none', className)}
+        onClick={() => handleSync('both')}
+        disabled={isSyncing}
+        className={cn('gap-2 text-xs', className)}
       >
-        <RefreshCw className="w-3.5 h-3.5" />
+        <RefreshCw className={cn('w-3.5 h-3.5', isSyncing && 'animate-spin')} />
         Sync Google
       </Button>
     )
@@ -221,7 +211,7 @@ export function GoogleCalendarSync({
 
   // ── Mode carte complète ───────────────────────────────────────────────────
   return (
-    <div className={cn('rounded-xl border border-gray-200 bg-white p-4 sm:p-5 opacity-50 pointer-events-none select-none', className)}>
+    <div className={cn('rounded-xl border border-gray-200 bg-white p-4 sm:p-5', className)}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 shadow-sm flex items-center justify-center flex-shrink-0">
@@ -235,9 +225,11 @@ export function GoogleCalendarSync({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-gray-900">Google Calendar</h3>
-            <span className="inline-flex items-center text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-              Bientôt disponible
-            </span>
+            {status?.connected && (
+              <span className="inline-flex items-center text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                Connecté
+              </span>
+            )}
           </div>
           {status?.connected && status.last_sync && (
             <p className="text-xs text-gray-500 mt-0.5">
