@@ -24,12 +24,13 @@ export async function GET() {
       )
     }
 
-    // Construire l'URL de base pour le callback
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    // Construire l'URL de base pour le callback (retirer le trailing slash)
+    const rawBase = process.env.NEXT_PUBLIC_APP_URL
       || process.env.NEXT_PUBLIC_SITE_URL
       || (process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : 'http://localhost:3000')
+    const baseUrl = rawBase.replace(/\/+$/, '')
 
     const redirectUri = `${baseUrl}/api/google-calendar/callback`
 
