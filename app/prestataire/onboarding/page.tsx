@@ -313,7 +313,7 @@ export default function OnboardingPage() {
                 {index < STEPS.length - 1 && (
                   <div className={cn(
                     "h-0.5 flex-1 mx-2 transition-all duration-300",
-                    currentStep > step.id ? "bg-emerald-500" : "bg-gray-200"
+                    currentStep > stepNumber ? "bg-emerald-500" : "bg-gray-200"
                   )} />
                 )}
               </div>
