@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 const activitySchema = z.object({
   type: z.enum(['note_added', 'tag_added', 'tag_removed', 'status_changed', 'message_sent', 'devis_sent', 'call_logged', 'follow_up_set', 'custom']),
   description: z.string().min(1).max(500),
-  metadata: z.record(z.unknown()).optional().default({}),
+  metadata: z.record(z.string(), z.unknown()).optional().default({}),
 })
 
 async function verifyOwnership(supabase: Awaited<ReturnType<typeof createClient>>, requestId: string, userId: string) {
