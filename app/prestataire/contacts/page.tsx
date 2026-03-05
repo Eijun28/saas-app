@@ -2,61 +2,39 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
-  Search, Users, CheckCircle2, XCircle, HelpCircle,
-  LayoutGrid, List, RefreshCw, ChevronLeft,
+  Search, Users, Plus, Upload, RefreshCw, LayoutGrid, List,
+  ChevronLeft, Download, ArrowDownToLine,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
 import { CRMTableView } from '@/components/prestataire/crm/CRMTableView'
 import { CRMKanbanView } from '@/components/prestataire/crm/CRMKanbanView'
 import { CRMDetailPanel } from '@/components/prestataire/crm/CRMDetailPanel'
-import type { CRMContact, CRMView, RequestStatus, SortField, SortDirection } from '@/components/prestataire/crm/CRMTypes'
-import type { RequestTag } from '@/components/prestataire/demandes/RequestTags'
+import { AddContactDialog } from '@/components/prestataire/crm/AddContactDialog'
+import { CSVImportDialog } from '@/components/prestataire/crm/CSVImportDialog'
+import { CRM_STATUSES, STATUS_CONFIG } from '@/components/prestataire/crm/CRMTypes'
+import type { CRMContact, CRMView, CRMStatus } from '@/components/prestataire/crm/CRMTypes'
+import type { SortField, SortDirection } from '@/components/prestataire/crm/CRMTableView'
 import { useUser } from '@/hooks/use-user'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
-// ─── Raw Supabase types ──────────────────────────────────────────────────────
-
-interface RawRequest {
-  id: string
-  couple_id: string
-  status: string
-  initial_message: string | null
-  created_at: string
-  responded_at: string | null
-}
-interface RawCouple {
-  user_id: string
-  partner_1_name: string | null
-  partner_2_name: string | null
-  wedding_date: string | null
-  wedding_location: string | null
-  budget_min: number | null
-  budget_max: number | null
-}
-interface RawConversation { id: string; request_id: string }
-interface RawTag { id: string; request_id: string; tag: string; color: string }
-interface RawMessage { conversation_id: string; created_at: string }
-interface RawNote { request_id: string }
-
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, dotColor }: { label: string; value: number; dotColor: string }) {
+function KpiCard({ label, value, color, bg, onClick, active }: { label: string; value: number; color: string; bg: string; onClick?: () => void; active?: boolean }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 bg-white border border-gray-100 rounded-xl">
-      <span className={cn('h-2.5 w-2.5 rounded-full flex-shrink-0', dotColor)} />
-      <div className="min-w-0">
-        <p className="text-lg font-bold text-gray-900 leading-none">{value}</p>
-        <p className="text-[11px] text-gray-400 mt-0.5">{label}</p>
-      </div>
-    </div>
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-2.5 px-3 py-2 border rounded-xl text-left transition-all',
+        active ? 'border-gray-300 bg-gray-50' : 'border-gray-100 bg-white hover:border-gray-200'
+      )}
+    >
+      <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold', color, bg)}>{value}</span>
+      <span className="text-[11px] text-gray-500 font-medium">{label}</span>
+    </button>
   )
 }
 
@@ -64,128 +42,108 @@ function KpiCard({ label, value, dotColor }: { label: string; value: number; dot
 
 export default function ContactsCRMPage() {
   const { user } = useUser()
-  const supabase = createClient()
 
   const [contacts, setContacts] = useState<CRMContact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>('all')
+  const [statusFilter, setStatusFilter] = useState<CRMStatus | 'all'>('all')
   const [view, setView] = useState<CRMView>('table')
-  const [sort, setSort] = useState<{ field: SortField; direction: SortDirection }>({ field: 'createdAt', direction: 'desc' })
+  const [sort, setSort] = useState<{ field: SortField; direction: SortDirection }>({ field: 'created_at', direction: 'desc' })
   const [selectedContact, setSelectedContact] = useState<CRMContact | null>(null)
   const [showDetailMobile, setShowDetailMobile] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   // ─── Load data ──────────────────────────────────────────────────────────────
 
   const fetchContacts = useCallback(async () => {
-    if (!user) return
     setIsLoading(true)
-
     try {
-      const { data: requests, error: reqError } = await supabase
-        .from('requests')
-        .select('id, couple_id, status, initial_message, created_at, responded_at')
-        .eq('provider_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (reqError) { toast.error('Erreur chargement des contacts'); return }
-      if (!requests?.length) { setContacts([]); setIsLoading(false); return }
-
-      const typedRequests = requests as RawRequest[]
-      const requestIds = typedRequests.map(r => r.id)
-      const coupleUserIds = [...new Set(typedRequests.map(r => r.couple_id))]
-
-      // Batch fetch in parallel
-      const [couplesRes, conversationsRes, tagsRes, notesCountRes] = await Promise.all([
-        supabase
-          .from('couples')
-          .select('user_id, partner_1_name, partner_2_name, wedding_date, wedding_location, budget_min, budget_max')
-          .in('user_id', coupleUserIds),
-        supabase
-          .from('conversations')
-          .select('id, request_id')
-          .in('request_id', requestIds),
-        supabase
-          .from('request_tags')
-          .select('id, request_id, tag, color')
-          .eq('provider_id', user.id)
-          .in('request_id', requestIds),
-        supabase
-          .from('request_notes')
-          .select('request_id')
-          .in('request_id', requestIds),
-      ])
-
-      const couples = (couplesRes.data ?? []) as RawCouple[]
-      const conversations = (conversationsRes.data ?? []) as RawConversation[]
-      const tags = (tagsRes.data ?? []) as RawTag[]
-      const notes = (notesCountRes.data ?? []) as RawNote[]
-
-      // Fetch last messages for conversations
-      const convIds = conversations.map(c => c.id)
-      let lastMsgs: RawMessage[] = []
-      if (convIds.length > 0) {
-        const { data: msgsData } = await supabase
-          .from('messages')
-          .select('conversation_id, created_at')
-          .in('conversation_id', convIds)
-          .order('created_at', { ascending: false })
-          .limit(convIds.length * 3)
-        lastMsgs = (msgsData ?? []) as RawMessage[]
+      const res = await fetch('/api/prestataire/crm-contacts')
+      const json = await res.json()
+      if (res.ok) {
+        setContacts(json.contacts ?? [])
+      } else {
+        toast.error('Erreur chargement des contacts')
       }
-
-      // Build lookup maps
-      const couplesMap = new Map(couples.map(c => [c.user_id, c]))
-      const convByRequest = new Map(conversations.map(c => [c.request_id, c]))
-
-      const tagsMap = new Map<string, { id: string; tag: string; color: string }[]>()
-      for (const t of tags) {
-        if (!tagsMap.has(t.request_id)) tagsMap.set(t.request_id, [])
-        tagsMap.get(t.request_id)!.push({ id: t.id, tag: t.tag, color: t.color })
-      }
-
-      const notesCountMap = new Map<string, number>()
-      for (const n of notes) {
-        notesCountMap.set(n.request_id, (notesCountMap.get(n.request_id) ?? 0) + 1)
-      }
-
-      const lastMsgMap = new Map<string, string>()
-      for (const m of lastMsgs) {
-        if (!lastMsgMap.has(m.conversation_id)) lastMsgMap.set(m.conversation_id, m.created_at)
-      }
-
-      const result: CRMContact[] = typedRequests.map(req => {
-        const couple = couplesMap.get(req.couple_id)
-        const n1 = couple?.partner_1_name?.trim() ?? ''
-        const n2 = couple?.partner_2_name?.trim() ?? ''
-        const conv = convByRequest.get(req.id)
-
-        return {
-          requestId: req.id,
-          coupleId: req.couple_id,
-          coupleName: n1 && n2 ? `${n1} & ${n2}` : n1 || n2 || 'Couple',
-          weddingDate: couple?.wedding_date ?? null,
-          weddingLocation: couple?.wedding_location ?? null,
-          budgetMin: couple?.budget_min ?? 0,
-          budgetMax: couple?.budget_max ?? 0,
-          status: req.status as RequestStatus,
-          createdAt: req.created_at,
-          respondedAt: req.responded_at,
-          initialMessage: req.initial_message ?? '',
-          conversationId: conv?.id ?? null,
-          tags: tagsMap.get(req.id) ?? [],
-          lastMessageAt: conv ? (lastMsgMap.get(conv.id) ?? null) : null,
-          notesCount: notesCountMap.get(req.id) ?? 0,
-        }
-      })
-
-      setContacts(result)
+    } catch {
+      toast.error('Erreur reseau')
     } finally {
       setIsLoading(false)
     }
-  }, [user])
+  }, [])
 
-  useEffect(() => { fetchContacts() }, [fetchContacts])
+  useEffect(() => { if (user) fetchContacts() }, [user, fetchContacts])
+
+  // ─── Sync Nuply requests ───────────────────────────────────────────────────
+
+  const handleSyncRequests = async () => {
+    setSyncing(true)
+    try {
+      const res = await fetch('/api/prestataire/crm-contacts/sync-requests', { method: 'POST' })
+      const json = await res.json()
+      if (res.ok) {
+        if (json.imported > 0) {
+          toast.success(`${json.imported} demande(s) Nuply importee(s)`)
+          fetchContacts()
+        } else {
+          toast.info('Tous vos contacts Nuply sont deja synchronises')
+        }
+      } else {
+        toast.error(json.error || 'Erreur sync')
+      }
+    } catch {
+      toast.error('Erreur reseau')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  // ─── CRUD handlers ─────────────────────────────────────────────────────────
+
+  const handleContactAdded = (contact: CRMContact) => {
+    setContacts(prev => [contact, ...prev])
+  }
+
+  const handleUpdate = useCallback(async (id: string, field: string, value: unknown) => {
+    // Optimistic update
+    setContacts(prev => prev.map(c => c.id === id ? { ...c, [field]: value, updated_at: new Date().toISOString() } : c))
+    setSelectedContact(prev => prev && prev.id === id ? { ...prev, [field]: value, updated_at: new Date().toISOString() } : prev)
+
+    try {
+      const res = await fetch('/api/prestataire/crm-contacts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, [field]: value }),
+      })
+      if (!res.ok) {
+        toast.error('Erreur sauvegarde')
+        fetchContacts()
+      }
+    } catch {
+      toast.error('Erreur reseau')
+      fetchContacts()
+    }
+  }, [fetchContacts])
+
+  const handleDelete = useCallback(async (id: string) => {
+    setContacts(prev => prev.filter(c => c.id !== id))
+    setSelectedContact(prev => prev?.id === id ? null : prev)
+
+    try {
+      const res = await fetch(`/api/prestataire/crm-contacts?id=${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast.success('Contact supprime')
+      } else {
+        toast.error('Erreur suppression')
+        fetchContacts()
+      }
+    } catch {
+      toast.error('Erreur reseau')
+      fetchContacts()
+    }
+  }, [fetchContacts])
 
   // ─── Filtering & Sorting ────────────────────────────────────────────────────
 
@@ -199,35 +157,38 @@ export default function ContactsCRMPage() {
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase()
       result = result.filter(c =>
-        c.coupleName.toLowerCase().includes(q) ||
-        c.initialMessage.toLowerCase().includes(q) ||
-        c.weddingLocation?.toLowerCase().includes(q) ||
-        c.tags.some(t => t.tag.toLowerCase().includes(q))
+        c.first_name.toLowerCase().includes(q) ||
+        c.last_name.toLowerCase().includes(q) ||
+        (c.email && c.email.toLowerCase().includes(q)) ||
+        (c.phone && c.phone.includes(q)) ||
+        (c.wedding_location && c.wedding_location.toLowerCase().includes(q)) ||
+        (c.notes && c.notes.toLowerCase().includes(q)) ||
+        c.tags.some(t => t.toLowerCase().includes(q))
       )
     }
 
-    // Sort
     result = [...result].sort((a, b) => {
       const dir = sort.direction === 'asc' ? 1 : -1
       switch (sort.field) {
-        case 'coupleName':
-          return dir * a.coupleName.localeCompare(b.coupleName)
-        case 'createdAt':
-          return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-        case 'weddingDate': {
-          const da = a.weddingDate ? new Date(a.weddingDate).getTime() : 0
-          const db = b.weddingDate ? new Date(b.weddingDate).getTime() : 0
-          return dir * (da - db)
+        case 'name': {
+          const na = `${a.first_name} ${a.last_name}`.toLowerCase()
+          const nb = `${b.first_name} ${b.last_name}`.toLowerCase()
+          return dir * na.localeCompare(nb)
         }
         case 'status':
           return dir * a.status.localeCompare(b.status)
-        case 'lastMessageAt': {
-          const la = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0
-          const lb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0
-          return dir * (la - lb)
+        case 'wedding_date': {
+          const da = a.wedding_date ? new Date(a.wedding_date).getTime() : 0
+          const db = b.wedding_date ? new Date(b.wedding_date).getTime() : 0
+          return dir * (da - db)
         }
+        case 'budget':
+          return dir * ((a.budget ?? 0) - (b.budget ?? 0))
+        case 'source':
+          return dir * a.source.localeCompare(b.source)
+        case 'created_at':
         default:
-          return 0
+          return dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
       }
     })
 
@@ -236,13 +197,13 @@ export default function ContactsCRMPage() {
 
   // ─── KPIs ──────────────────────────────────────────────────────────────────
 
-  const kpis = useMemo(() => ({
-    total: contacts.length,
-    pending: contacts.filter(c => c.status === 'pending').length,
-    accepted: contacts.filter(c => c.status === 'accepted').length,
-    completed: contacts.filter(c => c.status === 'completed').length,
-    rejected: contacts.filter(c => c.status === 'rejected' || c.status === 'cancelled').length,
-  }), [contacts])
+  const kpis = useMemo(() => {
+    const counts: Record<string, number> = { all: contacts.length }
+    for (const s of CRM_STATUSES) {
+      counts[s] = contacts.filter(c => c.status === s).length
+    }
+    return counts
+  }, [contacts])
 
   // ─── Sort handler ─────────────────────────────────────────────────────────
 
@@ -260,13 +221,25 @@ export default function ContactsCRMPage() {
     setShowDetailMobile(true)
   }
 
-  const handleTagsChange = useCallback((requestId: string, newTags: RequestTag[]) => {
-    setContacts(prev =>
-      prev.map(c =>
-        c.requestId === requestId ? { ...c, tags: newTags } : c
-      )
-    )
-  }, [])
+  // ─── Export CSV ───────────────────────────────────────────────────────────
+
+  const handleExportCSV = () => {
+    const headers = ['prenom', 'nom', 'email', 'telephone', 'date_mariage', 'lieu', 'budget', 'statut', 'source', 'tags', 'notes']
+    const rows = contacts.map(c => [
+      c.first_name, c.last_name, c.email || '', c.phone || '',
+      c.wedding_date || '', c.wedding_location || '', c.budget ? String(c.budget) : '',
+      c.status, c.source, c.tags.join('|'), (c.notes || '').replace(/\n/g, ' '),
+    ])
+    const csv = [headers.join(';'), ...rows.map(r => r.map(v => `"${v}"`).join(';'))].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `crm-contacts-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Export CSV telecharge')
+  }
 
   // ─── Loading state ────────────────────────────────────────────────────────
 
@@ -275,7 +248,7 @@ export default function ContactsCRMPage() {
       <div className="w-full space-y-4 animate-pulse">
         <div className="h-16 bg-gray-100 rounded-2xl" />
         <div className="flex gap-3">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-16 flex-1 bg-white rounded-xl border" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-10 flex-1 bg-white rounded-xl border" />)}
         </div>
         <div className="h-10 bg-white rounded-xl border" />
         <div className="space-y-1">
@@ -291,7 +264,7 @@ export default function ContactsCRMPage() {
     <div className="w-full max-w-[1400px] mx-auto space-y-4">
       <PageTitle
         title="Contacts CRM"
-        description={`${contacts.length} contact${contacts.length > 1 ? 's' : ''} au total`}
+        description={`${contacts.length} contact${contacts.length !== 1 ? 's' : ''}`}
         actions={
           <Button
             variant="ghost"
@@ -306,21 +279,50 @@ export default function ContactsCRMPage() {
         }
       />
 
+      {/* Action bar */}
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => setShowAddDialog(true)} size="sm" className="h-8 gap-1.5 text-xs bg-[#823F91] hover:bg-[#6D3478]">
+          <Plus className="h-3.5 w-3.5" /> Ajouter un contact
+        </Button>
+        <Button onClick={() => setShowImportDialog(true)} variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+          <Upload className="h-3.5 w-3.5" /> Importer CSV
+        </Button>
+        <Button onClick={handleSyncRequests} variant="outline" size="sm" disabled={syncing} className="h-8 gap-1.5 text-xs">
+          <ArrowDownToLine className={cn('h-3.5 w-3.5', syncing && 'animate-bounce')} /> Sync Nuply
+        </Button>
+        {contacts.length > 0 && (
+          <Button onClick={handleExportCSV} variant="ghost" size="sm" className="h-8 gap-1.5 text-xs text-gray-500 ml-auto">
+            <Download className="h-3.5 w-3.5" /> Exporter
+          </Button>
+        )}
+      </div>
+
       {contacts.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="Aucun contact pour l'instant"
-          description="Quand des couples vous enverront une demande, ils apparaitront ici dans votre CRM."
+          title="Votre CRM est vide"
+          description="Ajoutez des contacts manuellement, importez un CSV, ou synchronisez vos demandes Nuply."
+          action={{ label: 'Ajouter un contact', onClick: () => setShowAddDialog(true) }}
         />
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            <KpiCard label="Total" value={kpis.total} dotColor="bg-gray-400" />
-            <KpiCard label="En attente" value={kpis.pending} dotColor="bg-amber-400" />
-            <KpiCard label="Acceptes" value={kpis.accepted} dotColor="bg-emerald-400" />
-            <KpiCard label="Termines" value={kpis.completed} dotColor="bg-blue-400" />
-            <KpiCard label="Refuses" value={kpis.rejected} dotColor="bg-red-400" />
+          <div className="flex flex-wrap gap-2">
+            <KpiCard
+              label="Total" value={kpis.all} color="text-gray-700" bg="bg-gray-100"
+              onClick={() => setStatusFilter('all')} active={statusFilter === 'all'}
+            />
+            {CRM_STATUSES.map(s => (
+              <KpiCard
+                key={s}
+                label={STATUS_CONFIG[s].label}
+                value={kpis[s] as number}
+                color={STATUS_CONFIG[s].color}
+                bg={STATUS_CONFIG[s].bg}
+                onClick={() => setStatusFilter(statusFilter === s ? 'all' : s)}
+                active={statusFilter === s}
+              />
+            ))}
           </div>
 
           {/* Toolbar */}
@@ -329,90 +331,71 @@ export default function ContactsCRMPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder="Rechercher par nom, message, lieu, tag..."
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                placeholder="Rechercher par nom, email, lieu, tag..."
                 className="pl-9 h-9 bg-white border-gray-200 rounded-lg text-sm"
               />
             </div>
-            <div className="flex gap-2">
-              <Select
-                value={statusFilter}
-                onValueChange={v => setStatusFilter(v as RequestStatus | 'all')}
-              >
-                <SelectTrigger className="w-full sm:w-36 h-9 text-sm rounded-lg">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="pending">En attente</SelectItem>
-                  <SelectItem value="accepted">Acceptes</SelectItem>
-                  <SelectItem value="completed">Termines</SelectItem>
-                  <SelectItem value="rejected">Refuses</SelectItem>
-                  <SelectItem value="cancelled">Annules</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* View toggle */}
-              <div className="flex items-center p-0.5 bg-gray-100 rounded-lg">
-                {([
-                  { mode: 'table' as const, icon: List, label: 'Table' },
-                  { mode: 'kanban' as const, icon: LayoutGrid, label: 'Kanban' },
-                ] as const).map(({ mode, icon: Icon, label }) => (
-                  <button
-                    key={mode}
-                    onClick={() => setView(mode)}
-                    className={cn(
-                      'p-1.5 rounded-md transition-all',
-                      view === mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600'
-                    )}
-                    title={label}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-center p-0.5 bg-gray-100 rounded-lg">
+              {([
+                { mode: 'table' as const, icon: List, label: 'Table' },
+                { mode: 'kanban' as const, icon: LayoutGrid, label: 'Pipeline' },
+              ] as const).map(({ mode, icon: Icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setView(mode)}
+                  className={cn(
+                    'p-1.5 rounded-md transition-all',
+                    view === mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600'
+                  )}
+                  title={label}
+                >
+                  <Icon className="h-4 w-4" />
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Main content area: Table/Kanban + Detail Panel */}
+          {/* Main content */}
           <div className="flex gap-4">
-            {/* Left: Table or Kanban */}
             <div className={cn(
               'flex-1 min-w-0',
-              // On mobile, hide the list when detail is showing
               showDetailMobile && selectedContact ? 'hidden lg:block' : ''
             )}>
               {view === 'table' ? (
                 <CRMTableView
                   contacts={filtered}
-                  selectedId={selectedContact?.requestId ?? null}
+                  selectedId={selectedContact?.id ?? null}
                   onSelect={handleSelect}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
                   sort={sort}
                   onSort={handleSort}
                 />
               ) : (
                 <CRMKanbanView
                   contacts={filtered}
-                  selectedId={selectedContact?.requestId ?? null}
+                  selectedId={selectedContact?.id ?? null}
                   onSelect={handleSelect}
+                  onUpdate={handleUpdate}
                 />
               )}
             </div>
 
-            {/* Right: Detail panel - responsive */}
-            {/* Desktop: fixed side panel */}
+            {/* Desktop detail panel */}
             <div className={cn(
-              'hidden lg:block w-[380px] flex-shrink-0 border border-gray-200 rounded-xl overflow-hidden bg-white',
+              'hidden lg:block w-[380px] flex-shrink-0 border border-gray-200 rounded-xl overflow-hidden bg-white max-h-[calc(100vh-220px)] sticky top-4',
               !selectedContact && 'flex items-center justify-center'
             )}>
               <CRMDetailPanel
                 contact={selectedContact}
                 onClose={() => setSelectedContact(null)}
-                onTagsChange={handleTagsChange}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
               />
             </div>
 
-            {/* Mobile: full-screen overlay */}
+            {/* Mobile detail overlay */}
             {showDetailMobile && selectedContact && (
               <div className="lg:hidden fixed inset-0 z-50 bg-white flex flex-col">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
@@ -428,7 +411,8 @@ export default function ContactsCRMPage() {
                   <CRMDetailPanel
                     contact={selectedContact}
                     onClose={() => setShowDetailMobile(false)}
-                    onTagsChange={handleTagsChange}
+                    onUpdate={handleUpdate}
+                    onDelete={handleDelete}
                   />
                 </div>
               </div>
@@ -436,6 +420,18 @@ export default function ContactsCRMPage() {
           </div>
         </>
       )}
+
+      {/* Dialogs */}
+      <AddContactDialog
+        open={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onAdded={handleContactAdded}
+      />
+      <CSVImportDialog
+        open={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onImported={fetchContacts}
+      />
     </div>
   )
 }

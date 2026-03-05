@@ -1,26 +1,29 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  X, Calendar, MapPin, MessageCircle, ExternalLink,
-  StickyNote, Clock, Tag, Activity, Heart, DollarSign,
-  Phone, Mail,
+  X, Heart, MapPin, Mail, Phone, Calendar, DollarSign, Users2,
+  MessageCircle, ExternalLink, Tag, StickyNote, Pencil, Save, Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { RequestNotes } from '../demandes/RequestNotes'
-import { RequestTags } from '../demandes/RequestTags'
-import type { RequestTag } from '../demandes/RequestTags'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import { CRMStatusBadge } from './CRMStatusBadge'
-import { CRMActivityFeed } from './CRMActivityFeed'
-import type { CRMContact } from './CRMTypes'
+import { CRM_STATUSES, STATUS_CONFIG, SOURCE_LABELS } from './CRMTypes'
+import type { CRMContact, CRMStatus } from './CRMTypes'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface CRMDetailPanelProps {
   contact: CRMContact | null
   onClose: () => void
-  onTagsChange: (requestId: string, tags: RequestTag[]) => void
+  onUpdate: (id: string, field: string, value: unknown) => void
+  onDelete: (id: string) => void
 }
 
 function formatDate(d: string | null) {
@@ -28,37 +31,50 @@ function formatDate(d: string | null) {
   return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-function formatBudget(min: number, max: number) {
-  if (!min && !max) return '-'
-  const fmt = (n: number) => n.toLocaleString('fr-FR')
-  if (min && max) return `${fmt(min)} - ${fmt(max)} EUR`
-  if (min) return `A partir de ${fmt(min)} EUR`
-  return `Jusqu'a ${fmt(max)} EUR`
-}
-
-export function CRMDetailPanel({ contact, onClose, onTagsChange }: CRMDetailPanelProps) {
-  const [tags, setTags] = useState<RequestTag[]>([])
+export function CRMDetailPanel({ contact, onClose, onUpdate, onDelete }: CRMDetailPanelProps) {
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesDraft, setNotesDraft] = useState('')
+  const [editingTags, setEditingTags] = useState(false)
+  const [tagsDraft, setTagsDraft] = useState('')
 
   useEffect(() => {
     if (contact) {
-      setTags(contact.tags)
+      setNotesDraft(contact.notes || '')
+      setTagsDraft(contact.tags.join(', '))
+      setEditingNotes(false)
+      setEditingTags(false)
     }
-  }, [contact])
-
-  const handleTagsChange = useCallback((newTags: RequestTag[]) => {
-    setTags(newTags)
-    if (contact) {
-      onTagsChange(contact.requestId, newTags)
-    }
-  }, [contact, onTagsChange])
+  }, [contact?.id])
 
   if (!contact) {
     return (
       <div className="hidden lg:flex flex-col items-center justify-center h-full text-gray-300 p-8">
-        <Activity className="h-10 w-10 mb-3" />
-        <p className="text-sm text-center">Selectionnez un contact pour voir ses details</p>
+        <Users2 className="h-10 w-10 mb-3" />
+        <p className="text-sm text-center">Selectionnez un contact</p>
       </div>
     )
+  }
+
+  const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(' ') || 'Sans nom'
+
+  const handleSaveNotes = () => {
+    onUpdate(contact.id, 'notes', notesDraft)
+    setEditingNotes(false)
+    toast.success('Notes enregistrees')
+  }
+
+  const handleSaveTags = () => {
+    const newTags = tagsDraft.split(',').map(t => t.trim()).filter(Boolean)
+    onUpdate(contact.id, 'tags', newTags)
+    setEditingTags(false)
+    toast.success('Tags enregistres')
+  }
+
+  const handleDelete = () => {
+    if (confirm('Supprimer ce contact ?')) {
+      onDelete(contact.id)
+      onClose()
+    }
   }
 
   return (
@@ -67,8 +83,11 @@ export function CRMDetailPanel({ contact, onClose, onTagsChange }: CRMDetailPane
       <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-gray-900 truncate">{contact.coupleName}</h2>
-            <CRMStatusBadge status={contact.status} className="mt-1" />
+            <h2 className="text-base font-bold text-gray-900 truncate">{fullName}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <CRMStatusBadge status={contact.status} />
+              <span className="text-[10px] text-gray-400">{SOURCE_LABELS[contact.source]}</span>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -78,98 +97,177 @@ export function CRMDetailPanel({ contact, onClose, onTagsChange }: CRMDetailPane
           </button>
         </div>
 
-        {/* Quick info */}
-        <div className="grid grid-cols-1 gap-2 text-xs text-gray-500">
-          {contact.weddingDate && (
-            <div className="flex items-center gap-2">
+        {/* Pipeline status */}
+        <div className="mb-3">
+          <Label className="text-[11px] text-gray-400 mb-1.5 block">Pipeline</Label>
+          <Select
+            value={contact.status}
+            onValueChange={(v: string) => onUpdate(contact.id, 'status', v)}
+          >
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CRM_STATUSES.map(s => (
+                <SelectItem key={s} value={s}>{STATUS_CONFIG[s].label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Properties */}
+        <div className="space-y-2 text-xs">
+          {contact.email && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <Mail className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              <a href={`mailto:${contact.email}`} className="hover:text-[#823F91] truncate">{contact.email}</a>
+            </div>
+          )}
+          {contact.phone && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <Phone className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              <a href={`tel:${contact.phone}`} className="hover:text-[#823F91]">{contact.phone}</a>
+            </div>
+          )}
+          {contact.wedding_date && (
+            <div className="flex items-center gap-2 text-gray-500">
               <Heart className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span>Mariage le {formatDate(contact.weddingDate)}</span>
+              <span>Mariage le {formatDate(contact.wedding_date)}</span>
             </div>
           )}
-          {contact.weddingLocation && (
-            <div className="flex items-center gap-2">
+          {contact.wedding_location && (
+            <div className="flex items-center gap-2 text-gray-500">
               <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span>{contact.weddingLocation}</span>
+              <span>{contact.wedding_location}</span>
             </div>
           )}
-          {(contact.budgetMin > 0 || contact.budgetMax > 0) && (
-            <div className="flex items-center gap-2">
+          {contact.budget && (
+            <div className="flex items-center gap-2 text-gray-500">
               <DollarSign className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span>{formatBudget(contact.budgetMin, contact.budgetMax)}</span>
+              <span>{contact.budget.toLocaleString('fr-FR')} EUR</span>
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-            <span>Contact le {formatDate(contact.createdAt)}</span>
+          <div className="flex items-center gap-2 text-gray-400">
+            <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
+            <span>Cree le {formatDate(contact.created_at)}</span>
           </div>
         </div>
+      </div>
 
-        {/* Initial message */}
-        {contact.initialMessage && (
-          <p className="text-[13px] text-gray-600 leading-relaxed mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100 line-clamp-4">
-            {contact.initialMessage}
-          </p>
-        )}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Tags section */}
+        <div className="px-5 py-3 border-b border-gray-50">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+              <Tag className="h-3 w-3" /> Tags
+            </p>
+            <button
+              onClick={() => setEditingTags(!editingTags)}
+              className="text-[11px] text-gray-400 hover:text-[#823F91] transition-colors"
+            >
+              {editingTags ? 'Annuler' : 'Modifier'}
+            </button>
+          </div>
 
-        {/* Quick actions */}
-        <div className="flex gap-2 mt-3">
-          {contact.conversationId && (
-            <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-8 rounded-lg">
-              <Link href={`/prestataire/messagerie/${contact.conversationId}`}>
-                <MessageCircle className="h-3.5 w-3.5" />
-                Message
+          {editingTags ? (
+            <div className="space-y-2">
+              <Input
+                value={tagsDraft}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTagsDraft(e.target.value)}
+                placeholder="VIP, champetre, urgent"
+                className="h-8 text-sm"
+              />
+              <Button onClick={handleSaveTags} size="sm" className="h-7 text-xs bg-[#823F91] hover:bg-[#6D3478]">
+                <Save className="h-3 w-3 mr-1" /> Enregistrer
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1.5 min-h-[24px]">
+              {contact.tags.length > 0 ? contact.tags.map(tag => (
+                <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[11px] font-medium">
+                  {tag}
+                </span>
+              )) : (
+                <span className="text-[11px] text-gray-300 italic">Aucun tag</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Notes section */}
+        <div className="px-5 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+              <StickyNote className="h-3 w-3" /> Notes
+            </p>
+            <button
+              onClick={() => {
+                if (editingNotes) {
+                  handleSaveNotes()
+                } else {
+                  setEditingNotes(true)
+                }
+              }}
+              className="text-[11px] text-gray-400 hover:text-[#823F91] transition-colors"
+            >
+              {editingNotes ? 'Enregistrer' : 'Modifier'}
+            </button>
+          </div>
+
+          {editingNotes ? (
+            <div className="space-y-2">
+              <Textarea
+                value={notesDraft}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotesDraft(e.target.value)}
+                placeholder="Notes sur ce contact..."
+                rows={5}
+                className="text-sm resize-none"
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleSaveNotes} size="sm" className="h-7 text-xs bg-[#823F91] hover:bg-[#6D3478]">
+                  <Save className="h-3 w-3 mr-1" /> Enregistrer
+                </Button>
+                <Button onClick={() => { setEditingNotes(false); setNotesDraft(contact.notes || '') }} variant="ghost" size="sm" className="h-7 text-xs">
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="min-h-[40px]">
+              {contact.notes ? (
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{contact.notes}</p>
+              ) : (
+                <p className="text-sm text-gray-300 italic">Aucune note</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Nuply link */}
+        {contact.request_id && (
+          <div className="px-5 py-3 border-t border-gray-50">
+            <Button asChild variant="outline" size="sm" className="w-full gap-2 text-xs h-8">
+              <Link href="/prestataire/demandes-recues">
+                <ExternalLink className="h-3.5 w-3.5" />
+                Voir la demande Nuply
               </Link>
             </Button>
-          )}
-          <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs h-8 rounded-lg">
-            <Link href="/prestataire/demandes-recues">
-              <ExternalLink className="h-3.5 w-3.5" />
-              Demande
-            </Link>
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Tags */}
-      <div className="px-5 py-3 border-b border-gray-50 flex-shrink-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1">
-          <Tag className="h-3 w-3" /> Labels
-        </p>
-        <RequestTags
-          requestId={contact.requestId}
-          tags={tags}
-          onChange={handleTagsChange}
-        />
-      </div>
-
-      {/* Tabs: Notes / Activity */}
-      <div className="flex-1 overflow-y-auto px-5 py-3">
-        <Tabs defaultValue="notes">
-          <TabsList className="h-8 p-0.5 bg-gray-100 rounded-lg w-full grid grid-cols-2 mb-4">
-            <TabsTrigger
-              value="notes"
-              className="rounded-md text-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5"
-            >
-              <StickyNote className="h-3.5 w-3.5" />
-              Notes
-            </TabsTrigger>
-            <TabsTrigger
-              value="activity"
-              className="rounded-md text-[12px] data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5"
-            >
-              <Clock className="h-3.5 w-3.5" />
-              Activite
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="notes">
-            <RequestNotes requestId={contact.requestId} />
-          </TabsContent>
-
-          <TabsContent value="activity">
-            <CRMActivityFeed requestId={contact.requestId} />
-          </TabsContent>
-        </Tabs>
+      {/* Footer actions */}
+      <div className="px-5 py-3 border-t border-gray-100 flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleDelete}
+          className="w-full text-xs text-red-500 hover:text-red-700 hover:bg-red-50 h-8"
+        >
+          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+          Supprimer ce contact
+        </Button>
       </div>
     </div>
   )
