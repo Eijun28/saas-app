@@ -128,13 +128,8 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
       setSelectedSubcategory('');
       setSelectedCategory('');
     } else if (selectedCategory) {
-      const category = CULTURE_CATEGORIES.find(cat => cat.id === selectedCategory);
-      if (category && (!category.subcategories || category.subcategories.length === 0)) {
-        addCulture(selectedCategory, selectedExpertise);
-        setSelectedCategory('');
-      } else {
-        toast.info('Veuillez sélectionner une sous-catégorie');
-      }
+      addCulture(selectedCategory, selectedExpertise);
+      setSelectedCategory('');
     }
   }
 
@@ -242,11 +237,11 @@ export function CultureSelector({ userId, onSave, compact = false }: CultureSele
             </SelectContent>
           </Select>
 
-          {/* Sélection de la sous-catégorie */}
-          {selectedCategory && (
+          {/* Sélection de la sous-catégorie (optionnel — préciser un pays) */}
+          {selectedCategory && getSubcategories(selectedCategory).length > 0 && (
             <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sous-catégorie" />
+                <SelectValue placeholder="Préciser un pays (optionnel)" />
               </SelectTrigger>
               <SelectContent>
                 {getSubcategories(selectedCategory).map(subcategory => (
