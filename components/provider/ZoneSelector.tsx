@@ -147,7 +147,7 @@ export function ZoneSelector({ userId, onSave }: ZoneSelectorProps) {
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white" align="start">
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white" align="start" side="bottom" avoidCollisions={false}>
             <Command className="bg-white">
               <CommandInput placeholder="Rechercher un département..." className="text-[#4A1259]" />
               <CommandEmpty className="text-[#4A1259]">Aucun département trouvé</CommandEmpty>
