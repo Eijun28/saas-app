@@ -94,7 +94,7 @@ export async function GET(request: Request) {
       supabase
         .from('conversations')
         .select('id, created_at')
-        .eq('prestataire_id', user.id)
+        .eq('provider_id', user.id)
         .order('created_at', { ascending: false }),
 
       // Devis for current period
@@ -122,7 +122,7 @@ export async function GET(request: Request) {
       supabase
         .from('reviews')
         .select('id, rating, created_at')
-        .eq('prestataire_id', user.id)
+        .eq('provider_id', user.id)
         .order('created_at', { ascending: false }),
 
       // All requests (for response rate — not period-filtered)
