@@ -176,7 +176,7 @@ Pour chaque témoin: nom, prénom, date et lieu naissance, profession, adresse.`
     const truncatedPrompt = prompt.slice(0, maxPromptLength)
 
     const completion = await getOpenAI().chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',

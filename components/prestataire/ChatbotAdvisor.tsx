@@ -1,26 +1,24 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Bot, Loader2 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { useIsMobile } from '@/hooks/use-mobile'
-
-interface Message {
-  role: 'bot' | 'user'
-  content: string
-}
+import { useChat } from '@ai-sdk/react'
 
 export function ChatbotAdvisor() {
   const { user } = useUser()
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasGreeted, setHasGreeted] = useState(false)
+  const hasGreeted = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const { messages, input, setInput, handleSubmit, isLoading, append, status } = useChat({
+    api: '/api/chatbot-advisor',
+    body: { user_id: user?.id },
+  })
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -32,11 +30,11 @@ export function ChatbotAdvisor() {
 
   // Send greeting when chatbot opens for the first time
   useEffect(() => {
-    if (isOpen && !hasGreeted && user?.id) {
-      setHasGreeted(true)
-      sendMessage('Bonjour', true)
+    if (isOpen && !hasGreeted.current && user?.id) {
+      hasGreeted.current = true
+      append({ role: 'user', content: 'Bonjour' })
     }
-  }, [isOpen, hasGreeted, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen, user?.id, append])
 
   // Focus input when chat opens
   useEffect(() => {
@@ -45,65 +43,13 @@ export function ChatbotAdvisor() {
     }
   }, [isOpen])
 
-  async function sendMessage(content: string, isGreeting = false) {
-    if (!user?.id) return
+  // Filter out the initial greeting from display
+  const displayMessages = messages.filter((msg, i) => {
+    if (i === 0 && msg.role === 'user' && msg.content === 'Bonjour') return false
+    return true
+  })
 
-    const userMessage: Message = { role: 'user', content }
-
-    // For greeting, we send the message but don't show it in the UI
-    const newMessages = isGreeting ? [] : [...messages, userMessage]
-    if (!isGreeting) {
-      setMessages(newMessages)
-    }
-    setInput('')
-    setIsLoading(true)
-
-    try {
-      const messagesToSend = isGreeting
-        ? [{ role: 'user', content }]
-        : [...messages, userMessage].map((m) => ({ role: m.role, content: m.content }))
-
-      const res = await fetch('/api/chatbot-advisor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: messagesToSend,
-          user_id: user.id,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (res.ok && data.message) {
-        const botMessage: Message = { role: 'bot', content: data.message }
-        setMessages((prev) => [...prev, ...(isGreeting ? [] : []), botMessage])
-        if (isGreeting) {
-          setMessages([botMessage])
-        }
-      } else {
-        const errorMsg: Message = {
-          role: 'bot',
-          content: data.message || 'Désolé, une erreur est survenue. Réessaie dans quelques instants.',
-        }
-        setMessages((prev) => (isGreeting ? [errorMsg] : [...prev, errorMsg]))
-      }
-    } catch {
-      const errorMsg: Message = {
-        role: 'bot',
-        content: 'Erreur de connexion. Vérifie ta connexion internet et réessaie.',
-      }
-      setMessages((prev) => (isGreeting ? [errorMsg] : [...prev, errorMsg]))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const trimmed = input.trim()
-    if (!trimmed || isLoading) return
-    sendMessage(trimmed)
-  }
+  const isStreaming = status === 'streaming'
 
   return (
     <>
@@ -161,7 +107,9 @@ export function ChatbotAdvisor() {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm">Conseiller IA</h3>
-                  <p className="text-white/70 text-xs">Optimise ton profil</p>
+                  <p className="text-white/70 text-xs">
+                    {isStreaming ? 'En train de répondre...' : 'Optimise ton profil'}
+                  </p>
                 </div>
               </div>
               <button
@@ -175,9 +123,9 @@ export function ChatbotAdvisor() {
 
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1b3d9 transparent' }}>
-              {messages.map((msg, i) => (
+              {displayMessages.map((msg) => (
                 <div
-                  key={i}
+                  key={msg.id}
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -192,7 +140,7 @@ export function ChatbotAdvisor() {
                 </div>
               ))}
 
-              {isLoading && (
+              {isLoading && displayMessages.length === 0 && (
                 <div className="flex justify-start">
                   <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-md">
                     <div className="flex items-center gap-1.5">

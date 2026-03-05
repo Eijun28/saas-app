@@ -320,6 +320,22 @@ export async function POST(request: NextRequest) {
     const normalizedServiceType = normalizeServiceType(search_criteria.service_type);
     logger.debug('🔄 Service type normalisé:', normalizedServiceType);
 
+    // Valider que le service type normalisé est reconnu
+    const validServiceTypes = [
+      'photographe', 'videaste', 'traiteur', 'patissier', 'dj', 'animation',
+      'coiffure_maquillage', 'robe_mariee', 'bijoutier', 'fleuriste',
+      'salle', 'location_materiel', 'location_vehicules',
+      'neggafa', 'zaffa', 'henna_artiste', 'calligraphe', 'musicien_traditionnel',
+      'danseuse_orientale', 'couturier_traditionnel', 'decorateur_maghrebin',
+      'organisateur_ceremonie', 'wedding_planner', 'faire_part', 'officiant', 'autre'
+    ];
+    if (!validServiceTypes.includes(normalizedServiceType)) {
+      return NextResponse.json(
+        { error: `Type de service non reconnu: "${search_criteria.service_type}"`, valid_types: validServiceTypes },
+        { status: 400 }
+      );
+    }
+
     // ÉTAPE 1 : FILTRES DURS avec jointures optimisées
     // Utilisation de jointures Supabase pour éviter les requêtes N+1
     // Cap à 200 candidats pour éviter de charger tout le catalogue en mémoire.
