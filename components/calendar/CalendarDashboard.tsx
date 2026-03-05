@@ -377,11 +377,11 @@ export function CalendarDashboard({
         className="flex flex-col h-full overflow-hidden"
       >
         {/* En-têtes jours de la semaine */}
-        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/50">
+        <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/80">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center py-2.5 sm:py-3 text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider"
+              className="text-center py-3 sm:py-3.5 text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider"
             >
               {day}
             </div>
@@ -405,7 +405,7 @@ export function CalendarDashboard({
                 className={cn(
                   'border-r border-b border-gray-100 p-1.5 sm:p-2',
                   'hover:bg-[#F5F0F7]/30 active:bg-[#F5F0F7]/60 transition-all duration-150 cursor-pointer touch-manipulation',
-                  'flex flex-col items-center sm:items-start justify-start min-h-[56px] sm:min-h-[80px] md:min-h-[96px]',
+                  'flex flex-col items-center sm:items-start justify-start min-h-[64px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[130px]',
                   !isCurrentMonth && 'bg-gray-50/40',
                   isCurrentMonth && 'bg-white',
                   isPastDay && 'opacity-40'
@@ -418,10 +418,10 @@ export function CalendarDashboard({
                 }}
               >
                 {/* Numéro du jour */}
-                <div className="flex items-center justify-center mb-1 flex-shrink-0">
+                <div className="flex items-center justify-center mb-1.5 flex-shrink-0">
                   <span
                     className={cn(
-                      'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all',
+                      'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold transition-all',
                       isTodayDay &&
                         'bg-[#823F91] text-white shadow-md',
                       !isTodayDay && isCurrentMonth && !isPastDay && 'text-gray-900 hover:bg-gray-100',
@@ -446,21 +446,21 @@ export function CalendarDashboard({
                       )}
                     </div>
                     {/* Desktop : pill avec titre */}
-                    <div className="hidden sm:flex flex-col gap-px w-full">
-                      {dayEvents.slice(0, 2).map((ev, idx) => (
+                    <div className="hidden sm:flex flex-col gap-1 w-full">
+                      {dayEvents.slice(0, 3).map((ev, idx) => (
                         <div
                           key={idx}
-                          className="w-full text-left px-1.5 py-0.5 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white text-[9px] md:text-[10px] font-medium rounded truncate hover:shadow-sm transition-shadow"
+                          className="w-full text-left px-2 py-1 bg-gradient-to-r from-[#823F91] to-[#9D5FA8] text-white text-[10px] md:text-xs font-medium rounded-md truncate hover:shadow-md hover:brightness-110 transition-all"
                           title={`${ev.time ? ev.time + ' - ' : ''}${ev.title}`}
                           onClick={(e) => { e.stopPropagation(); handleEventClick(ev) }}
                         >
-                          {ev.time && <span className="opacity-80 mr-0.5">{ev.time.slice(0, 5)}</span>}
+                          {ev.time && <span className="opacity-80 mr-1">{ev.time.slice(0, 5)}</span>}
                           {ev.title}
                         </div>
                       ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-[9px] text-[#823F91] font-medium pl-1.5">
-                          +{dayEvents.length - 2} autre{dayEvents.length - 2 > 1 ? 's' : ''}
+                      {dayEvents.length > 3 && (
+                        <div className="text-[10px] text-[#823F91] font-semibold pl-2">
+                          +{dayEvents.length - 3} autre{dayEvents.length - 3 > 1 ? 's' : ''}
                         </div>
                       )}
                     </div>
