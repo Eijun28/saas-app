@@ -599,7 +599,7 @@ export default function OnboardingPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-[#F5F0F7] to-pink-50 border border-[#E8D4EF]">
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-[#F5F0F7] to-[#F5F0F7] border border-[#E8D4EF]">
                       <p className="text-sm text-[#5C2B66]">
                         <span className="font-semibold">Presque terminé !</span> Après cette étape, vous aurez accès à votre tableau de bord pour compléter votre portfolio, vos réseaux sociaux et plus encore.
                       </p>

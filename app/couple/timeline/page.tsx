@@ -362,8 +362,8 @@ export default function TimelinePage() {
         >
           {daysUntilWedding !== null && daysUntilWedding > 0 ? (
             <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
-              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-pink-50 flex-shrink-0">
-                <Heart className="h-4 w-4 text-pink-500" />
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#F5F0F7] flex-shrink-0">
+                <Heart className="h-4 w-4 text-[#823F91]" />
               </div>
               <div className="min-w-0">
                 <p className="text-lg sm:text-xl font-bold text-gray-900">J-{daysUntilWedding}</p>

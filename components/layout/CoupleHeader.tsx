@@ -132,8 +132,8 @@ export function CoupleHeader() {
           {/* Left: page title + quick actions */}
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Status pill — visible on all screens */}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 border border-pink-100 text-[11px] font-semibold text-pink-600 flex-shrink-0">
-              <Heart className="h-2.5 w-2.5 fill-pink-500 text-pink-500" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F5F0F7] border border-[#E8D4EF] text-[11px] font-semibold text-[#6D3478] flex-shrink-0">
+              <Heart className="h-2.5 w-2.5 fill-[#823F91] text-[#823F91]" />
               Couple
             </span>
 
@@ -180,10 +180,10 @@ export function CoupleHeader() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden z-[201]">
-                <div className="px-3 py-2.5 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-100/60">
+                <div className="px-3 py-2.5 bg-gradient-to-r from-[#F5F0F7] to-[#F5F0F7] border-b border-[#E8D4EF]/60">
                   <p className="text-[13px] font-semibold text-gray-900">Notifications</p>
                   {totalNotifs > 0 && (
-                    <p className="text-[11px] text-pink-600 font-medium">{totalNotifs} non lue{totalNotifs > 1 ? 's' : ''}</p>
+                    <p className="text-[11px] text-[#6D3478] font-medium">{totalNotifs} non lue{totalNotifs > 1 ? 's' : ''}</p>
                   )}
                 </div>
                 <div className="py-1 max-h-64 overflow-y-auto">
@@ -215,8 +215,8 @@ export function CoupleHeader() {
                           onClick={() => router.push('/couple/demandes')}
                           className="w-full flex items-start gap-2.5 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
                         >
-                          <div className="h-7 w-7 rounded-lg bg-pink-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <FileText className="h-3.5 w-3.5 text-pink-500" />
+                          <div className="h-7 w-7 rounded-lg bg-[#F5F0F7] flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <FileText className="h-3.5 w-3.5 text-[#823F91]" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[12.5px] font-semibold text-gray-900">
@@ -247,11 +247,11 @@ export function CoupleHeader() {
               <DropdownMenuTrigger asChild>
                 <button
                   suppressHydrationWarning
-                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/30"
+                  className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded-xl cursor-pointer hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#823F91]/30"
                 >
                   <Avatar className="h-7 w-7 rounded-lg ring-1 ring-gray-200 flex-shrink-0">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-pink-500 via-rose-500 to-[#823F91] text-white text-[10px] font-bold rounded-lg">
+                    <AvatarFallback className="bg-gradient-to-br from-[#9D5FA8] via-[#823F91] to-[#6D3478] text-white text-[10px] font-bold rounded-lg">
                       {profile?.name?.split(' ').filter(w => w !== '&').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || 'C'}
                     </AvatarFallback>
                   </Avatar>

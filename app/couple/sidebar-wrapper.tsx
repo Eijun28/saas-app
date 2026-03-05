@@ -213,7 +213,7 @@ function SidebarUserFooter() {
                   "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:!p-0",
                 )}
               >
-                <div className="p-[2px] rounded-lg bg-gradient-to-br from-pink-400 via-[#9D5FA8] to-[#823F91] flex-shrink-0">
+                <div className="p-[2px] rounded-lg bg-gradient-to-br from-[#D4ADE0] via-[#9D5FA8] to-[#823F91] flex-shrink-0">
                   <Avatar className="h-7 w-7 rounded-md">
                     <AvatarImage src={profile?.avatar} alt={profile?.name} />
                     <AvatarFallback className="bg-[#5C2B66] text-white text-xs font-bold rounded-md">
@@ -392,7 +392,7 @@ export function CoupleSidebarWrapper() {
                             isActive ? "font-semibold" : "font-medium"
                           )}>{item.label}</span>
                           {badgeCount > 0 && (
-                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(236,72,153,0.5)] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
+                            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-white text-[#823F91] text-[10px] font-bold flex items-center justify-center shadow-[0_0_8px_rgba(255,255,255,0.4)] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1">
                               {badgeCount > 99 ? '99+' : badgeCount}
                             </span>
                           )}
