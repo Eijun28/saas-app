@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       messages,
       temperature: 0.6,
-      maxTokens: 300,
+      maxOutputTokens: 300,
     });
 
     return result.toDataStreamResponse();
