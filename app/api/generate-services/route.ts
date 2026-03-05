@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeAIInput } from '@/lib/security'
 
 let openaiClient: OpenAI | null = null
 
@@ -40,12 +41,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const prompt = `Tu es un expert en services de mariage. Génère une liste de 4 à 6 services réalistes et bien définis pour un prestataire de type "${type_activite}".
+    // Sanitize all user inputs before sending to LLM
+    const safeType = sanitizeAIInput(String(type_activite), 100)
+    const safeSpecialites = sanitizeAIInput(String(specialites || ''), 500)
+    const safeTarifs = sanitizeAIInput(String(tarifs_habituels || ''), 200)
+    const safeAutres = sanitizeAIInput(String(autres_info || ''), 500)
+
+    const prompt = `Tu es un expert en services de mariage. Génère une liste de 4 à 6 services réalistes et bien définis pour un prestataire de type "${safeType}".
 
 Informations supplémentaires :
-- Spécialités : ${specialites || 'Non précisé'}
-- Fourchette de tarifs : ${tarifs_habituels || 'Non précisé'}
-- Autres informations : ${autres_info || 'Non précisé'}
+- Spécialités : ${safeSpecialites || 'Non précisé'}
+- Fourchette de tarifs : ${safeTarifs || 'Non précisé'}
+- Autres informations : ${safeAutres || 'Non précisé'}
 
 Retourne UNIQUEMENT un JSON valide de cette forme (sans markdown) :
 {

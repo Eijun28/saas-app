@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
 import { calculateMarketAverage } from '@/lib/matching/market-averages';
-
-let openaiClient: OpenAI | null = null;
-
-function getOpenAI(): OpenAI {
-  if (!openaiClient) {
-    openaiClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openaiClient;
-}
+import { sanitizeChatMessages } from '@/lib/security';
 
 /**
  * Fetches provider profile data (excluding legal info) for the AI advisor
@@ -116,7 +106,6 @@ function buildSystemPrompt(
   const p = providerData.profile;
   const serviceLabel = p?.service_type ? getServiceTypeLabel(p.service_type) : 'Non renseigné';
 
-  // Build profile summary for the AI
   const profileSummary = `
 PROFIL DU PRESTATAIRE :
 - Nom entreprise : ${p?.nom_entreprise || 'Non renseigné'}
@@ -142,7 +131,6 @@ DONNEES COMPLEMENTAIRES :
 - Tags/Specialites : ${providerData.tags.length > 0 ? providerData.tags.join(', ') : 'AUCUN'}
 `;
 
-  // RAG block 1: Performance stats
   const statsContext = stats.total > 0
     ? `
 STATISTIQUES DE PERFORMANCE (données réelles) :
@@ -158,7 +146,6 @@ STATISTIQUES DE PERFORMANCE :
 - Aucune demande reçue pour l'instant (profil récent ou en attente d'activation matching)
 `;
 
-  // RAG block 2: Market benchmarks
   const marketContext = marketAvg
     ? `
 DONNÉES MARCHÉ NUPLY (${getServiceTypeLabel(p?.service_type || '')} — ${marketAvg.provider_count} prestataires actifs) :
@@ -177,7 +164,6 @@ DONNÉES MARCHÉ NUPLY (${getServiceTypeLabel(p?.service_type || '')} — ${mark
 `
     : '';
 
-  // Calculate what's missing for matching
   const missingForMatching: string[] = [];
   if (!p?.service_type) missingForMatching.push('type de service');
   if (providerData.cultures.length === 0) missingForMatching.push('cultures/traditions maîtrisées');
@@ -273,7 +259,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages, user_id } = body;
+    const { messages: rawMessages, user_id } = body;
 
     // Vérifier l'authentification et l'identité de l'appelant
     const supabaseAuth = await createClient();
@@ -294,7 +280,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!Array.isArray(messages) || messages.length === 0) {
+    // Validation et sanitization des messages (protection prompt injection)
+    const messages = sanitizeChatMessages(rawMessages);
+    if (!messages) {
       return NextResponse.json(
         { error: 'Messages invalides' },
         { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
@@ -321,62 +309,16 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = buildSystemPrompt(providerData, stats, marketAvg);
 
-    // Convert messages to OpenAI format
-    const openaiMessages: ChatCompletionMessageParam[] = messages
-      .filter((msg: { role: string; content: string }) => msg && msg.content && typeof msg.content === 'string')
-      .map((msg: { role: string; content: string }) => ({
-        role: (msg.role === 'bot' ? 'assistant' : 'user') as 'user' | 'assistant',
-        content: String(msg.content).trim(),
-      }))
-      .filter((msg: ChatCompletionMessageParam) => {
-        const content = typeof msg.content === 'string' ? msg.content : '';
-        return content.length > 0;
-      });
+    // Stream the response using Vercel AI SDK
+    const result = streamText({
+      model: openai('gpt-4o'),
+      system: systemPrompt,
+      messages,
+      temperature: 0.6,
+      maxTokens: 300,
+    });
 
-    if (openaiMessages.length === 0) {
-      return NextResponse.json(
-        { error: 'Aucun message valide' },
-        { status: 400, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
-      );
-    }
-
-    let response;
-    try {
-      response = await getOpenAI().chat.completions.create({
-        model: 'gpt-4-turbo-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...openaiMessages,
-        ],
-        temperature: 0.6,
-        max_tokens: 300,
-      });
-    } catch (openaiError) {
-      logger.error('Erreur OpenAI API (advisor):', openaiError);
-      return NextResponse.json(
-        { error: 'Service IA temporairement indisponible', message: 'Désolé, réessaie dans quelques instants.' },
-        { status: 503, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
-      );
-    }
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      return NextResponse.json(
-        { error: 'Réponse vide', message: 'Je n\'ai pas pu générer de réponse. Reformule ta question ?' },
-        { status: 500, headers: { 'Content-Type': 'application/json; charset=utf-8' } }
-      );
-    }
-
-    return NextResponse.json(
-      { message: content.normalize('NFC') },
-      {
-        status: 200,
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      }
-    );
+    return result.toDataStreamResponse();
   } catch (error) {
     logger.error('Chatbot advisor API error:', error);
     return NextResponse.json(

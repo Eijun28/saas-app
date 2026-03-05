@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 import { createClient } from '@/lib/supabase/server'
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit'
 import { handleApiError } from '@/lib/api-error-handler'
 import { logger } from '@/lib/logger'
 import { buildWeddingAdvisorSystemPrompt } from '@/lib/chatbot/wedding-advisor-prompt'
 import type { CulturalPreferences } from '@/types/couples.types'
+import { sanitizeChatMessages } from '@/lib/security'
 
 let openaiClient: OpenAI | null = null
 
@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Format de requête invalide' }, { status: 400 })
     }
 
-    const { messages } = body
-
-    if (!Array.isArray(messages) || messages.length === 0) {
+    // Validation et sanitization des messages (protection prompt injection)
+    const messages = sanitizeChatMessages(body.messages)
+    if (!messages) {
       return NextResponse.json({ error: 'Messages invalides' }, { status: 400 })
     }
 
@@ -126,23 +126,13 @@ export async function POST(request: NextRequest) {
       demandes_count: rawDemandes.length,
     })
 
-    // Convertir les messages au format OpenAI
+    // Messages déjà sanitisés et au format OpenAI par sanitizeChatMessages
     const openaiMessages: ChatCompletionMessageParam[] = messages
-      .filter(msg => msg?.content && typeof msg.content === 'string')
-      .map(msg => ({
-        role: (msg.role === 'bot' ? 'assistant' : 'user') as 'user' | 'assistant',
-        content: String(msg.content).trim(),
-      }))
-      .filter(msg => (msg.content as string).length > 0)
-
-    if (openaiMessages.length === 0) {
-      return NextResponse.json({ error: 'Aucun message valide' }, { status: 400 })
-    }
 
     let response
     try {
       response = await getOpenAI().chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o',
         messages: [{ role: 'system', content: systemPrompt }, ...openaiMessages],
         temperature: 0.5,
         max_tokens: 400,

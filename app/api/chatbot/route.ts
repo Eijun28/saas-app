@@ -7,6 +7,7 @@ import { getServiceSpecificPrompt, shouldAskQuestion, getMinRequiredCriteria } f
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 import { logger } from '@/lib/logger';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
+import { sanitizeChatMessages, sanitizeAIInput } from '@/lib/security';
 
 // Lazy initialization to avoid build-time errors
 let openaiClient: OpenAI | null = null;
@@ -169,13 +170,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { messages, service_type, couple_profile, assistant_context } = body;
+    const { messages: rawMessages, service_type, couple_profile, assistant_context } = body;
 
-    // Validation des messages
-    if (!Array.isArray(messages) || messages.length === 0) {
+    // Validation et sanitization des messages (protection prompt injection)
+    const messages = sanitizeChatMessages(rawMessages);
+    if (!messages) {
       return NextResponse.json(
         { error: 'Messages invalides' },
-        { 
+        {
           status: 400,
           headers: {
             'Content-Type': 'application/json; charset=utf-8',
@@ -183,6 +185,11 @@ export async function POST(request: NextRequest) {
         }
       );
     }
+
+    // Sanitize service_type si fourni
+    const sanitizedServiceType = service_type
+      ? sanitizeAIInput(String(service_type), 100)
+      : undefined;
 
     // Construire le contexte du couple enrichi si disponible
     const coupleContext = couple_profile ? `
@@ -206,22 +213,22 @@ RÈGLES IMPORTANTES :
 - Référence ces infos naturellement dans tes réponses sans les répéter mot pour mot
 ` : '';
 
-    const isBudgetPlanner = assistant_context === 'budget_planner' || service_type === 'budget_planner';
+    const isBudgetPlanner = assistant_context === 'budget_planner' || sanitizedServiceType === 'budget_planner';
 
     // Générer le prompt spécialisé selon le service
-    const serviceSpecificPrompt = service_type && !isBudgetPlanner
-      ? getServiceSpecificPrompt(service_type, couple_profile)
+    const serviceSpecificPrompt = sanitizedServiceType && !isBudgetPlanner
+      ? getServiceSpecificPrompt(sanitizedServiceType, couple_profile)
       : '';
 
     // Critères minimum obligatoires pour ce service
-    const minRequiredCriteria = service_type && !isBudgetPlanner
-      ? getMinRequiredCriteria(service_type)
+    const minRequiredCriteria = sanitizedServiceType && !isBudgetPlanner
+      ? getMinRequiredCriteria(sanitizedServiceType)
       : [];
     
     // Calculer les moyennes de marché pour guider le couple
     let marketAverageInfo = '';
-    if (service_type && !isBudgetPlanner) {
-      const marketAvg = await calculateMarketAverage(service_type);
+    if (sanitizedServiceType && !isBudgetPlanner) {
+      const marketAvg = await calculateMarketAverage(sanitizedServiceType);
       if (marketAvg) {
         marketAverageInfo = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -660,43 +667,17 @@ Exemple mauvais ton :
 
 ✅ IMPÉRATIF : Utilise TOUJOURS les caractères accentués français corrects (é, è, ê, ë, à, â, ù, û, ç, î, ï, ô, ñ). Ne JAMAIS omettre les accents.`;
 
-    // Convertir les messages au format OpenAI avec validation
-    const openaiMessages: ChatCompletionMessageParam[] = messages
-      .filter((msg: any) => msg && msg.content && typeof msg.content === 'string')
-      .map((msg: any) => {
-        const role = msg.role === 'bot' ? 'assistant' : 'user';
-        const content = String(msg.content).trim();
-        return {
-          role: role as 'user' | 'assistant',
-          content: content,
-        };
-      })
-      .filter((msg: ChatCompletionMessageParam) => {
-        const content = typeof msg.content === 'string' ? msg.content : '';
-        return content.length > 0;
-      });
+    // Messages déjà sanitisés et au format OpenAI par sanitizeChatMessages
+    const openaiMessages: ChatCompletionMessageParam[] = messages;
 
-    if (openaiMessages.length === 0) {
-      return NextResponse.json(
-        { error: 'Aucun message valide à traiter' },
-        { 
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        }
-      );
-    }
-
-    // Compter le nombre de questions déjà posées (messages bot)
-    // Note: On ne force plus la validation après 5 questions, on laisse l'IA décider
-    const questionCount = messages.filter((m: any) => m.role === 'bot').length;
+    // Compter le nombre de questions déjà posées (messages assistant)
+    const questionCount = messages.filter((m) => m.role === 'assistant').length;
 
     // Appel à OpenAI avec gestion d'erreur améliorée
     let response;
     try {
       response = await getOpenAI().chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           ...openaiMessages,
