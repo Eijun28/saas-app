@@ -73,7 +73,7 @@ export default function CoupleOnboardingPage() {
       // Charger préférences et reprendre l'étape
       const { data: prefs } = await supabase
         .from('couple_preferences')
-        .select('onboarding_step, essential_services, cultural_preferences')
+        .select('onboarding_step, essential_services, cultural_preferences, profile_completed')
         .eq('couple_id', user.id)
         .maybeSingle()
 
