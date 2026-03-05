@@ -71,7 +71,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <meta name="theme-color" content="#823F91" />
+        <meta name="theme-color" content="#FFFFFF" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`${GeistSans.className} ${GeistSans.variable} antialiased bg-background`} suppressHydrationWarning>
