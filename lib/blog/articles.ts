@@ -408,6 +408,341 @@ export const articles: BlogArticle[] = [
 <p>Avec cette check-list, vous avez toutes les cl\u00e9s pour vivre votre jour J sans stress. L\u2019anticipation et la d\u00e9l\u00e9gation sont vos meilleurs alli\u00e9s. Et avec la <strong>timeline de NUPLY</strong>, vous pouvez organiser chaque \u00e9tape visuellement et vous assurer de ne rien laisser au hasard.</p>
 `,
   },
+  {
+    slug: 'mariage-chretien-guide-complet',
+    title: 'Mariage chrétien : guide complet pour organiser une cérémonie religieuse inoubliable',
+    description: 'Découvrez les étapes, traditions et conseils pratiques pour préparer votre mariage chrétien (catholique, protestant, orthodoxe). Trouvez les prestataires adaptés avec NUPLY.',
+    author: 'NUPLY',
+    publishedAt: '2026-03-05',
+    updatedAt: '2026-03-05',
+    tags: ['Mariage religieux', 'Chrétien', 'Traditions'],
+    readingTime: '9 min',
+    content: `
+<p>Le mariage chrétien est bien plus qu'une simple fête : c'est un sacrement, un engagement devant Dieu et devant la communauté. Que vous soyez catholique, protestant ou orthodoxe, la cérémonie religieuse est le cœur de votre union. Voici tout ce que vous devez savoir pour organiser un mariage chrétien qui reflète votre foi et votre amour.</p>
+
+<h2>1. Les fondements du mariage chrétien</h2>
+
+<p>Dans la tradition chrétienne, le mariage est considéré comme une alliance sacrée. Il repose sur trois piliers fondamentaux :</p>
+
+<ul>
+  <li><strong>L'indissolubilité :</strong> le mariage est un engagement pour la vie, « ce que Dieu a uni, que l'homme ne le sépare pas » (Matthieu 19:6)</li>
+  <li><strong>La fidélité :</strong> les époux se promettent un amour exclusif et sincère</li>
+  <li><strong>L'ouverture à la vie :</strong> le couple s'engage à accueillir les enfants comme un don de Dieu</li>
+</ul>
+
+<p>Selon les confessions, certaines nuances existent. Le mariage catholique est un sacrement administré par les époux eux-mêmes devant le prêtre. Chez les protestants, c'est une bénédiction divine du couple. Dans l'orthodoxie, c'est le couronnement des époux, symbole de leur union avec le Christ.</p>
+
+<h2>2. La préparation au mariage catholique</h2>
+
+<p>En France, la préparation au mariage catholique débute généralement <strong>10 à 12 mois avant la date</strong>. Voici les étapes incontournables :</p>
+
+<ul>
+  <li><strong>Contacter la paroisse :</strong> prenez rendez-vous avec le curé de votre paroisse dès que possible. Les créneaux à l'église sont limités, surtout en saison haute (mai-septembre)</li>
+  <li><strong>La préparation au mariage (CPM) :</strong> 4 à 6 séances avec d'autres couples et un couple accompagnateur. On y aborde la communication, la gestion des conflits, la foi et l'ouverture à la vie</li>
+  <li><strong>Constituer le dossier :</strong> certificats de baptême de moins de 6 mois, acte de mariage civil (le mariage civil doit précéder le mariage religieux en France), formulaire de publication des bans</li>
+  <li><strong>Choisir les lectures et les chants :</strong> vous sélectionnez généralement deux lectures bibliques, un psaume et un évangile avec l'aide du prêtre</li>
+  <li><strong>Répétition :</strong> une répétition à l'église est organisée quelques jours avant le mariage</li>
+</ul>
+
+<h2>3. Le déroulement de la cérémonie</h2>
+
+<p>La messe de mariage catholique dure environ 1 heure (45 minutes sans eucharistie). Voici les temps forts :</p>
+
+<ul>
+  <li><strong>L'entrée dans l'église :</strong> le cortège entre au son de l'orgue ou d'un chant. La mariée est traditionnellement accompagnée de son père</li>
+  <li><strong>La liturgie de la Parole :</strong> lectures bibliques choisies par les époux, psaume chanté, homélie du prêtre</li>
+  <li><strong>L'échange des consentements :</strong> le moment le plus solennel. Les époux se déclarent mutuellement « je te reçois comme époux/épouse et je me donne à toi »</li>
+  <li><strong>La bénédiction et l'échange des alliances :</strong> le prêtre bénit les alliances, symboles de l'alliance éternelle</li>
+  <li><strong>La prière universelle :</strong> intentions de prière lues par les proches</li>
+  <li><strong>La bénédiction nuptiale :</strong> prière solennelle sur le couple</li>
+  <li><strong>La signature des registres :</strong> les époux et les témoins signent le registre paroissial</li>
+  <li><strong>La sortie :</strong> traditionnellement sous une haie d'honneur, avec lancé de pétales ou de riz</li>
+</ul>
+
+<h2>4. Les spécificités du mariage protestant</h2>
+
+<p>Le mariage protestant, ou culte de bénédiction, présente quelques différences :</p>
+
+<ul>
+  <li><strong>Pas de sacrement :</strong> le mariage est une bénédiction, pas un sacrement. Le mariage civil suffit aux yeux de l'Église</li>
+  <li><strong>Plus de liberté :</strong> le couple a davantage de latitude dans le choix des textes, des chants et du déroulement</li>
+  <li><strong>Préparation plus courte :</strong> généralement 3 à 4 rencontres avec le pasteur</li>
+  <li><strong>Le temple :</strong> la cérémonie peut avoir lieu dans un temple, mais aussi en extérieur ou dans un lieu atypique</li>
+  <li><strong>Les témoignages :</strong> il est courant que des proches prennent la parole pendant la cérémonie pour témoigner</li>
+</ul>
+
+<h2>5. Le mariage orthodoxe : le couronnement</h2>
+
+<p>Le mariage orthodoxe est l'une des cérémonies les plus riches visuellement et symboliquement :</p>
+
+<ul>
+  <li><strong>Les fiançailles :</strong> échange des alliances au début de la cérémonie, bénies par le prêtre</li>
+  <li><strong>Le couronnement :</strong> des couronnes (stephana) sont posées sur la tête des époux, symbolisant leur union avec le Christ et leur royauté sur leur foyer</li>
+  <li><strong>La coupe de vin :</strong> les époux boivent dans la même coupe, rappelant les noces de Cana</li>
+  <li><strong>La marche d'Isaïe :</strong> le couple fait trois tours autour de l'autel, couronnés, symbolisant leur premier voyage ensemble</li>
+  <li><strong>Durée :</strong> la cérémonie dure environ 1h à 1h30</li>
+  <li><strong>Pas de mariage mixte sans autorisation :</strong> un mariage avec un non-orthodoxe nécessite une dispense de l'évêque</li>
+</ul>
+
+<h2>6. Choisir les bons prestataires pour un mariage chrétien</h2>
+
+<p>Un mariage religieux demande des prestataires qui comprennent les codes et le rythme de la cérémonie :</p>
+
+<ul>
+  <li><strong>Photographe :</strong> il doit connaître le déroulement de la messe pour capturer les moments clés sans être intrusif. Certaines paroisses imposent des restrictions (pas de flash, zones interdites)</li>
+  <li><strong>Fleuriste :</strong> la décoration de l'église (bout de bancs, autel, entrée) doit respecter les règles du lieu de culte</li>
+  <li><strong>Musiciens / organiste :</strong> un organiste ou un groupe de gospel peut sublimer la cérémonie. Vérifiez avec le curé ce qui est autorisé</li>
+  <li><strong>Traiteur :</strong> si vous enchaînez cérémonie et réception, le timing est crucial. Le traiteur doit s'adapter au planning</li>
+</ul>
+
+<p>Sur <strong>NUPLY</strong>, vous pouvez filtrer les prestataires par expérience culturelle et religieuse. Notre algorithme de <strong>Nuply Matching</strong> identifie automatiquement les professionnels habitués aux mariages chrétiens dans votre région, qu'il s'agisse de photographes respectueux du cadre liturgique, de fleuristes spécialisés dans la décoration d'église, ou de traiteurs maîtrisant le timing d'une cérémonie religieuse.</p>
+
+<h2>7. Budget et conseils pratiques</h2>
+
+<p>Quelques éléments budgétaires spécifiques au mariage chrétien :</p>
+
+<ul>
+  <li><strong>Offrande à la paroisse :</strong> entre 150 € et 500 € selon les paroisses (ce n'est pas un tarif fixe, mais une participation libre)</li>
+  <li><strong>Organiste :</strong> entre 200 € et 500 € selon la durée et le répertoire</li>
+  <li><strong>Décoration florale de l'église :</strong> entre 300 € et 1 500 € selon l'ampleur</li>
+  <li><strong>Livret de messe :</strong> entre 100 € et 300 € pour l'impression (ou gratuit en version numérique)</li>
+</ul>
+
+<p>Avec le <strong>module Budget de NUPLY</strong>, vous pouvez créer une catégorie dédiée « Cérémonie religieuse » pour suivre ces dépenses spécifiques et garder le contrôle sur votre budget global.</p>
+
+<h2>En résumé</h2>
+
+<p>Le mariage chrétien est un moment de grâce et de joie qui demande une préparation à la fois spirituelle et logistique. Quelle que soit votre confession, l'essentiel est de vivre ce jour comme un vrai engagement de foi et d'amour. Avec NUPLY, vous trouverez les prestataires qui respecteront la solennité de votre cérémonie tout en créant une fête à votre image.</p>
+`,
+  },
+  {
+    slug: 'mariage-musulman-guide-traditions-organisation',
+    title: 'Mariage musulman : traditions, étapes et organisation du nikah à la walima',
+    description: 'Tout savoir sur le mariage musulman : le nikah, la mahr, la walima, les traditions culturelles et comment NUPLY vous aide à trouver des prestataires halal et expérimentés.',
+    author: 'NUPLY',
+    publishedAt: '2026-03-05',
+    updatedAt: '2026-03-05',
+    tags: ['Mariage religieux', 'Musulman', 'Traditions'],
+    readingTime: '10 min',
+    content: `
+<p>Le mariage en islam (nikah) est un contrat sacré entre deux personnes, fondé sur l'amour, le respect mutuel et la volonté de construire une famille. C'est aussi une fête joyeuse qui rassemble les deux familles dans la célébration. Voici un guide complet pour organiser votre mariage musulman dans les meilleures conditions.</p>
+
+<h2>1. Les fondements du mariage en islam</h2>
+
+<p>Le mariage est fortement encouragé en islam. Le Prophète Muhammad (paix et bénédictions sur lui) a dit : « Le mariage fait partie de ma tradition. Celui qui ne suit pas ma tradition ne fait pas partie des miens » (Hadith rapporté par Ibn Majah). Le nikah repose sur plusieurs piliers :</p>
+
+<ul>
+  <li><strong>Le consentement mutuel :</strong> les deux époux doivent exprimer librement et clairement leur accord (ijab et qabul)</li>
+  <li><strong>Le wali (tuteur) :</strong> la mariée est représentée par un tuteur, généralement son père. C'est une condition de validité dans la majorité des écoles juridiques</li>
+  <li><strong>La mahr (dot) :</strong> le marié offre un cadeau à la mariée. Cela peut être une somme d'argent, un bijou, un voyage, ou tout bien convenu entre les deux parties. La mahr appartient exclusivement à la mariée</li>
+  <li><strong>Les témoins :</strong> au minimum deux témoins musulmans majeurs doivent être présents</li>
+  <li><strong>La publicité du mariage :</strong> le mariage ne doit pas être secret. C'est pourquoi la fête (walima) est vivement recommandée</li>
+</ul>
+
+<h2>2. Les étapes du mariage musulman</h2>
+
+<p>L'organisation d'un mariage musulman se déroule généralement en plusieurs temps :</p>
+
+<h3>La khotba (demande en mariage)</h3>
+<p>La famille du futur marié se rend chez la famille de la future mariée pour demander officiellement sa main. C'est un moment solennel et joyeux, souvent accompagné de pâtisseries et de thé. Les deux familles discutent des conditions du mariage (mahr, date, lieu).</p>
+
+<h3>La fatiha (lecture de la sourate d'ouverture)</h3>
+<p>Une fois l'accord donné, une lecture de la sourate Al-Fatiha scelle l'engagement. Ce moment, souvent intime, réunit les proches des deux familles et un imam ou un aîné respecté.</p>
+
+<h3>Le nikah (acte de mariage religieux)</h3>
+<p>Le nikah est la cérémonie religieuse proprement dite. Il peut avoir lieu à la mosquée, au domicile familial, ou dans la salle de réception. L'imam prononce un sermon (khutbat al-nikah), puis les époux échangent leurs consentements. Le contrat de mariage est signé en présence des témoins.</p>
+
+<h3>La walima (fête du mariage)</h3>
+<p>La walima est le banquet qui suit le nikah. C'est une sunna (tradition prophétique) fortement recommandée. Elle peut avoir lieu le jour même ou le lendemain. La walima est l'occasion de célébrer l'union devant la communauté, avec un repas généreux, de la musique et des danses.</p>
+
+<h2>3. Les traditions culturelles qui enrichissent le mariage</h2>
+
+<p>Au-delà du cadre religieux, chaque culture musulmane apporte ses propres traditions. Voici les plus répandues en France :</p>
+
+<ul>
+  <li><strong>Le henné :</strong> une soirée dédiée (souvent la veille du mariage) où la mariée se fait appliquer du henné sur les mains et les pieds. C'est un moment festif entre femmes, avec musique et danse</li>
+  <li><strong>Le hammam :</strong> la mariée se rend au hammam avec ses proches pour un rituel de purification et de beauté</li>
+  <li><strong>Les tenues multiples :</strong> dans les traditions maghrébines, la mariée peut changer de tenue 5 à 7 fois pendant la soirée, portant des caftans et des robes de différentes régions</li>
+  <li><strong>L'amariya (palanquin) :</strong> dans la tradition marocaine, la mariée est portée sur un palanquin à l'entrée de la salle</li>
+  <li><strong>Le youyou (zagharit) :</strong> les femmes poussent des cris de joie traditionnels pour célébrer les moments forts</li>
+  <li><strong>La negafa ou le neggaf :</strong> un(e) professionnel(le) qui accompagne la mariée tout au long de la soirée pour les changements de tenues et le maquillage</li>
+</ul>
+
+<h2>4. Le repas : halal et festif</h2>
+
+<p>Le repas de mariage musulman obéit aux règles alimentaires islamiques :</p>
+
+<ul>
+  <li><strong>Viande halal obligatoire :</strong> la viande servie doit être certifiée halal. Vérifiez les certificats du traiteur</li>
+  <li><strong>Pas d'alcool :</strong> selon la pratique des familles. Certains couples proposent des cocktails sans alcool élaborés, des jus frais et des mocktails créatifs</li>
+  <li><strong>Générosité du repas :</strong> la sunna encourage un repas copieux. Les buffets sont très populaires, avec des plats variés (couscous, tajines, méchoui, pastilla, etc.)</li>
+  <li><strong>La pièce montée :</strong> les choux à la crème, la pièce montée traditionnelle ou le wedding cake sont tous courants</li>
+  <li><strong>Les pâtisseries orientales :</strong> cornes de gazelle, baklavas, makrouts, briouates sont souvent servis en accompagnement ou en pièce d'honneur</li>
+</ul>
+
+<h2>5. La musique et l'ambiance</h2>
+
+<p>La fête de mariage musulman est réputée pour son énergie et sa convivialité :</p>
+
+<ul>
+  <li><strong>DJ spécialisé :</strong> un DJ qui maîtrise le répertoire oriental, raï, chaâbi, et aussi les tubes internationaux pour faire danser tout le monde</li>
+  <li><strong>Orchestre :</strong> certains couples optent pour un orchestre live (derbouka, violon, oud) pour une ambiance authentique</li>
+  <li><strong>Séparation hommes/femmes :</strong> selon les familles, la fête peut être mixte ou séparée. Prévoyez l'aménagement de la salle en conséquence</li>
+  <li><strong>Les zeffas :</strong> entrées spectaculaires des mariés avec percussions et chants</li>
+</ul>
+
+<h2>6. Organisation et budget</h2>
+
+<p>Les mariages musulmans sont souvent des événements de grande envergure. Voici les postes budgétaires spécifiques à anticiper :</p>
+
+<ul>
+  <li><strong>Nombre d'invités élevé :</strong> 200 à 500 invités ne sont pas rares. Le lieu et le traiteur représentent la part la plus importante du budget</li>
+  <li><strong>Traiteur halal :</strong> comptez entre 40 € et 100 € par personne selon le menu et le service</li>
+  <li><strong>Negafa / accompagnatrice :</strong> entre 500 € et 3 000 € selon les prestations et le nombre de tenues</li>
+  <li><strong>Soirée henné :</strong> entre 500 € et 2 000 € (lieu, animation, henneuse professionnelle)</li>
+  <li><strong>DJ / orchestre oriental :</strong> entre 800 € et 3 000 €</li>
+  <li><strong>Décoration orientale :</strong> entre 1 000 € et 5 000 € (drapés, centres de table, éclairages)</li>
+</ul>
+
+<p>La <strong>gestion de budget intégrée à NUPLY</strong> vous permet de créer des catégories personnalisées (henné, negafa, traiteur halal) et de suivre chaque dépense en temps réel. Vous gardez ainsi une vision claire de votre budget, même pour un mariage de grande envergure.</p>
+
+<h2>7. Trouver les bons prestataires avec NUPLY</h2>
+
+<p>Organiser un mariage musulman implique de trouver des prestataires qui comprennent vos exigences religieuses et culturelles. C'est précisément la force de NUPLY :</p>
+
+<ul>
+  <li><strong>Filtrage par culture :</strong> recherchez des prestataires expérimentés dans les mariages musulmans, maghrébins, turcs, sub-sahariens ou d'autres traditions</li>
+  <li><strong>Matching intelligent :</strong> notre algorithme prend en compte vos critères culturels, votre budget et votre localisation pour vous proposer les prestataires les plus adaptés</li>
+  <li><strong>Messagerie intégrée :</strong> échangez directement avec les traiteurs halal, les DJ orientaux, les negafas et tous vos prestataires depuis la plateforme</li>
+  <li><strong>Avis vérifiés :</strong> consultez les retours d'autres couples qui ont organisé un mariage similaire au vôtre</li>
+</ul>
+
+<h2>En résumé</h2>
+
+<p>Le mariage musulman est un événement riche en émotions, en traditions et en partage. Du nikah à la walima, chaque étape a sa beauté et sa signification. Avec une bonne organisation et les bons prestataires, votre mariage sera à la hauteur de vos rêves. NUPLY est là pour vous accompagner à chaque étape, en vous connectant avec des professionnels qui respectent et comprennent vos traditions.</p>
+`,
+  },
+  {
+    slug: 'mariage-juif-guide-ceremonies-traditions',
+    title: 'Mariage juif : de la houpa à la hora, guide des cérémonies et traditions',
+    description: 'Tout savoir sur le mariage juif : la houpa, la ketouba, les 7 bénédictions, le verre brisé et les traditions. Trouvez vos prestataires casher avec NUPLY.',
+    author: 'NUPLY',
+    publishedAt: '2026-03-05',
+    updatedAt: '2026-03-05',
+    tags: ['Mariage religieux', 'Juif', 'Traditions'],
+    readingTime: '9 min',
+    content: `
+<p>Le mariage juif est l'un des événements les plus joyeux et les plus symboliques de la vie juive. Riche en rituels millénaires, il célèbre l'union de deux âmes (« bashert ») sous le regard de Dieu et de la communauté. Que vous soyez pratiquant ou attaché aux traditions, voici un guide complet pour organiser un mariage juif mémorable.</p>
+
+<h2>1. Les fondements du mariage dans le judaïsme</h2>
+
+<p>Dans la tradition juive, le mariage (kiddoushin) est un acte sacré. Le terme hébreu signifie littéralement « sanctification », car le couple se consacre l'un à l'autre. Le mariage repose sur plusieurs principes :</p>
+
+<ul>
+  <li><strong>Le consentement mutuel :</strong> les deux époux doivent exprimer librement leur volonté de s'unir</li>
+  <li><strong>La ketouba (contrat de mariage) :</strong> un document écrit en araméen qui détaille les obligations du mari envers son épouse. C'est un acte juridique religieux qui protège les droits de la femme</li>
+  <li><strong>La présence de témoins :</strong> deux témoins juifs pratiquants sont requis pour valider le mariage</li>
+  <li><strong>Le rabbin :</strong> il dirige la cérémonie, prononce les bénédictions et veille au respect des lois religieuses (halakha)</li>
+</ul>
+
+<h2>2. Avant le mariage : les préparatifs traditionnels</h2>
+
+<p>Plusieurs traditions précèdent le jour du mariage :</p>
+
+<h3>Le Vort (fiançailles)</h3>
+<p>L'annonce officielle des fiançailles, souvent célébrée par un repas en famille. Les tenaim (conditions du mariage) peuvent être signés à cette occasion, accompagnés du bris symbolique d'une assiette.</p>
+
+<h3>Le Shabbat Hatan (Shabbat du marié)</h3>
+<p>Le shabbat précédant le mariage, le marié est appelé à la Torah à la synagogue. C'est un honneur appelé « aliyah ». La communauté lui chante des chants de joie et lui lance des bonbons.</p>
+
+<h3>Le Mikvé</h3>
+<p>La mariée se rend au mikvé (bain rituel) avant le mariage, un acte de purification spirituelle qui marque le début d'une nouvelle étape de sa vie.</p>
+
+<h3>Le jeûne</h3>
+<p>Le jour du mariage, les époux jeûnent traditionnellement jusqu'à la cérémonie, en signe de repentance et de renouveau spirituel (comme à Yom Kippour).</p>
+
+<h2>3. Le déroulement de la cérémonie</h2>
+
+<p>La cérémonie du mariage juif se compose de deux parties distinctes, aujourd'hui généralement combinées :</p>
+
+<h3>Le Kabbalat Panim (accueil des invités)</h3>
+<p>Avant la cérémonie, le marié et la mariée reçoivent séparément leurs invités. Le marié signe la ketouba en présence des témoins et du rabbin. La mariée, assise sur un trône, reçoit les bénédictions de ses proches.</p>
+
+<h3>Le Bedeken (voile de la mariée)</h3>
+<p>Le marié vient voiler la mariée, un geste qui rappelle l'histoire de Jacob et Rébecca. C'est un moment très émouvant, souvent accompagné de chants et de musique.</p>
+
+<h3>La Houpa (dais nuptial)</h3>
+<p>Le cœur de la cérémonie se déroule sous la houpa, un dais symbolisant le futur foyer du couple. La houpa est généralement soutenue par quatre personnes (famille ou amis proches). Elle peut être simple (un talith tendu) ou richement décorée de fleurs.</p>
+
+<ul>
+  <li><strong>L'entrée :</strong> le marié entre en premier, accompagné de ses parents. La mariée entre ensuite et fait sept tours (hakafot) autour du marié, symbolisant la construction de leur monde commun</li>
+  <li><strong>Les Kiddoushin (sanctification) :</strong> le rabbin prononce la bénédiction sur le vin. Les époux boivent dans la même coupe. Le marié passe l'alliance au doigt de la mariée en déclarant : « Tu m'es consacrée par cet anneau selon la loi de Moïse et d'Israël »</li>
+  <li><strong>Lecture de la Ketouba :</strong> le contrat de mariage est lu à voix haute devant l'assemblée</li>
+  <li><strong>Les Sheva Berakhot (sept bénédictions) :</strong> sept bénédictions sont récitées sur une coupe de vin, évoquant la création, la joie et l'espoir de la reconstruction de Jérusalem. C'est un honneur distribué à des proches</li>
+  <li><strong>Le verre brisé :</strong> le marié brise un verre sous son pied, en souvenir de la destruction du Temple de Jérusalem. L'assemblée s'exclame « Mazal Tov ! » et la fête peut commencer</li>
+</ul>
+
+<h3>Le Yihoud (intimité)</h3>
+<p>Juste après la cérémonie, les époux se retirent quelques minutes dans une pièce privée. C'est leur premier moment d'intimité en tant que couple marié, et aussi l'occasion de rompre le jeûne ensemble.</p>
+
+<h2>4. La fête : joie, danse et tradition</h2>
+
+<p>La réception d'un mariage juif est réputée pour son énergie débordante :</p>
+
+<ul>
+  <li><strong>La Hora :</strong> la danse traditionnelle en cercle où les mariés sont soulevés sur des chaises. C'est le moment le plus festif et photographié du mariage</li>
+  <li><strong>Le Mezinke :</strong> si la mariée ou le marié est le dernier enfant de la famille à se marier, les parents dansent au centre du cercle avec un balai, couronnés de fleurs</li>
+  <li><strong>Musique klezmer :</strong> des musiciens jouant du violon, de la clarinette et de l'accordéon pour une ambiance festive et traditionnelle</li>
+  <li><strong>Les Sheva Berakhot :</strong> pendant les sept jours suivant le mariage, des repas sont organisés en l'honneur des mariés, et les sept bénédictions sont récitées à nouveau</li>
+</ul>
+
+<h2>5. Le repas casher</h2>
+
+<p>Le repas de mariage juif respecte les lois de la cacherout :</p>
+
+<ul>
+  <li><strong>Séparation viande et lait :</strong> pas de mélange de produits laitiers et de viande dans le même repas. La plupart des mariages optent pour un menu viande</li>
+  <li><strong>Viande casher :</strong> la viande doit provenir d'animaux abattus selon les règles de la shehita et être certifiée par un Beth Din</li>
+  <li><strong>Supervision rabbinique (mashgiach) :</strong> un surveillant casher peut être présent en cuisine pour s'assurer du respect des règles</li>
+  <li><strong>Poisson et entrées :</strong> le saumon fumé, le gefilte fish, les salades variées sont des classiques des entrées de mariage juif</li>
+  <li><strong>La hallah :</strong> le repas commence traditionnellement par la bénédiction sur le pain (motzi) avec une grande hallah tressée</li>
+  <li><strong>Desserts :</strong> pièce montée casher, pâtisseries (rugelach, babka), fruits, sorbets (pour un repas viande)</li>
+</ul>
+
+<h2>6. Trouver les bons prestataires avec NUPLY</h2>
+
+<p>Organiser un mariage juif nécessite des prestataires qui comprennent et respectent les exigences religieuses. NUPLY simplifie cette recherche :</p>
+
+<ul>
+  <li><strong>Traiteurs casher :</strong> trouvez des traiteurs certifiés casher dans votre ville, avec des avis d'autres couples</li>
+  <li><strong>Musiciens klezmer et DJ :</strong> des professionnels qui connaissent le répertoire juif traditionnel et moderne</li>
+  <li><strong>Photographes :</strong> des photographes habitués au déroulement d'un mariage juif, qui savent capturer le bedeken, la houpa, la hora et chaque moment clé</li>
+  <li><strong>Fleuristes :</strong> des spécialistes de la décoration de houpa et des centres de table adaptés aux salles de réception casher</li>
+  <li><strong>Matching intelligent :</strong> l'algorithme NUPLY prend en compte vos traditions et votre budget pour vous proposer les prestataires les plus pertinents</li>
+</ul>
+
+<p>Avec la <strong>messagerie intégrée de NUPLY</strong>, vous pouvez échanger directement avec chaque prestataire, demander des devis personnalisés et coordonner tous les détails depuis une seule plateforme.</p>
+
+<h2>7. Budget et conseils pratiques</h2>
+
+<p>Voici les postes budgétaires spécifiques à un mariage juif :</p>
+
+<ul>
+  <li><strong>Traiteur casher :</strong> entre 80 € et 200 € par personne (plus élevé qu'un traiteur classique en raison de la certification)</li>
+  <li><strong>Rabbin et officiant :</strong> entre 300 € et 1 000 € selon la communauté</li>
+  <li><strong>Houpa :</strong> entre 200 € et 2 000 € selon la décoration florale</li>
+  <li><strong>Ketouba calligraphiée :</strong> entre 150 € et 1 500 € pour une ketouba artistique (certains couples en font une véritable œuvre d'art)</li>
+  <li><strong>Musiciens klezmer :</strong> entre 500 € et 2 500 € pour un ensemble</li>
+  <li><strong>Mashgiach (surveillant casher) :</strong> entre 200 € et 500 €</li>
+</ul>
+
+<p>Le <strong>module Budget de NUPLY</strong> vous permet de suivre tous ces postes spécifiques. Créez des catégories dédiées (houpa, ketouba, traiteur casher) et visualisez en temps réel où en est votre budget.</p>
+
+<h2>En résumé</h2>
+
+<p>Le mariage juif est une célébration profondément joyeuse, où chaque rituel porte une signification millénaire. De la signature de la ketouba au fracas du verre brisé, chaque instant est chargé d'émotion et de sens. Avec NUPLY, trouvez les prestataires qui respecteront vos traditions et feront de votre mariage un événement inoubliable. Mazal Tov !</p>
+`,
+  },
 ]
 
 export function getArticleBySlug(slug: string): BlogArticle | undefined {
