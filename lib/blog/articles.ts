@@ -413,8 +413,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage chrétien : guide complet pour organiser une cérémonie religieuse inoubliable',
     description: 'Découvrez les étapes, traditions et conseils pratiques pour préparer votre mariage chrétien (catholique, protestant, orthodoxe). Trouvez les prestataires adaptés avec NUPLY.',
     author: 'NUPLY',
-    publishedAt: '2025-11-18',
-    updatedAt: '2025-11-18',
+    publishedAt: '2026-01-22',
+    updatedAt: '2026-01-22',
     tags: ['Mariage religieux', 'Chrétien', 'Traditions'],
     readingTime: '9 min',
     content: `
@@ -520,8 +520,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage musulman : traditions, étapes et organisation du nikah à la walima',
     description: 'Tout savoir sur le mariage musulman : le nikah, la mahr, la walima, les traditions culturelles et comment NUPLY vous aide à trouver des prestataires halal et expérimentés.',
     author: 'NUPLY',
-    publishedAt: '2025-12-09',
-    updatedAt: '2025-12-09',
+    publishedAt: '2026-01-29',
+    updatedAt: '2026-01-29',
     tags: ['Mariage religieux', 'Musulman', 'Traditions'],
     readingTime: '10 min',
     content: `
@@ -627,8 +627,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage juif : de la houpa à la hora, guide des cérémonies et traditions',
     description: 'Tout savoir sur le mariage juif : la houpa, la ketouba, les 7 bénédictions, le verre brisé et les traditions. Trouvez vos prestataires casher avec NUPLY.',
     author: 'NUPLY',
-    publishedAt: '2026-01-20',
-    updatedAt: '2026-01-20',
+    publishedAt: '2026-02-06',
+    updatedAt: '2026-02-06',
     tags: ['Mariage religieux', 'Juif', 'Traditions'],
     readingTime: '9 min',
     content: `
