@@ -41,7 +41,7 @@ export default function SignUpPage() {
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      role: 'couple',
+      role: 'prestataire',
       prenom: '',
       nom: '',
       email: '',
