@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -60,34 +60,20 @@ export default function BypassConfirmationPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const roleBadge = (role: string) => {
-    switch (role) {
-      case 'couple':
-        return <Badge variant="outline" className="bg-pink-50 text-pink-700 border-pink-200">Couple</Badge>
-      case 'prestataire':
-        return <Badge variant="outline" className="bg-[#F5F0F7] text-[#6D3478] border-[#D4ADE0]">Prestataire</Badge>
-      default:
-        return <Badge variant="outline">{role}</Badge>
-    }
-  }
-
   return (
-    <div className="container max-w-2xl py-8 space-y-8">
+    <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0D0D0D]">Bypass confirmation email</h1>
-        <p className="text-[#6B7280] mt-1">
-          Generez un lien de connexion directe pour un utilisateur inscrit dont l&apos;email n&apos;est pas encore confirme.
+        <h1 className="text-2xl font-bold text-[#0B0E12]">Bypass confirmation email</h1>
+        <p className="text-sm text-[#6B7280] mt-1">
+          Générez un lien de connexion directe pour un utilisateur dont l&apos;email n&apos;est pas encore confirmé.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Generer un lien</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="border-gray-200 shadow-sm">
+        <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#374151] mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-[#374151] mb-1.5">
                 Email de l&apos;utilisateur
               </label>
               <Input
@@ -97,14 +83,15 @@ export default function BypassConfirmationPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="h-10"
               />
             </div>
             <Button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white"
+              className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white h-10"
             >
-              {loading ? 'Generation en cours...' : 'Generer le lien de bypass'}
+              {loading ? 'Génération en cours...' : 'Générer le lien de bypass'}
             </Button>
           </form>
 
@@ -117,47 +104,57 @@ export default function BypassConfirmationPage() {
       </Card>
 
       {bypassUrl && userInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg text-green-700">Lien genere avec succes</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Info utilisateur */}
-            <div className="p-3 rounded-lg bg-gray-50 border space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-sm">{userInfo.prenom} {userInfo.nom}</span>
-                {roleBadge(userInfo.role)}
-              </div>
-              <div className="text-xs text-[#6B7280]">
-                {userInfo.email} — inscrit le {new Date(userInfo.createdAt).toLocaleDateString('fr-FR')}
-              </div>
+        <Card className="border-green-200 shadow-sm bg-green-50/30">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-sm font-semibold text-green-700">Lien généré avec succès</span>
             </div>
 
-            {/* Lien */}
+            <div className="p-3 rounded-lg bg-white border border-gray-200 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-sm text-[#0B0E12]">
+                  {userInfo.prenom} {userInfo.nom}
+                </span>
+                <Badge
+                  variant="outline"
+                  className={
+                    userInfo.role === 'couple'
+                      ? 'bg-pink-50 text-pink-700 border-pink-200'
+                      : 'bg-[#F5F0F7] text-[#6D3478] border-[#D4ADE0]'
+                  }
+                >
+                  {userInfo.role === 'couple' ? 'Couple' : 'Prestataire'}
+                </Badge>
+              </div>
+              <p className="text-xs text-[#6B7280]">
+                {userInfo.email} — inscrit le {new Date(userInfo.createdAt).toLocaleDateString('fr-FR')}
+              </p>
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
-                Lien de bypass (a envoyer a l&apos;utilisateur)
+              <label className="block text-sm font-medium text-[#374151] mb-1.5">
+                Lien de bypass
               </label>
               <div className="flex gap-2">
                 <Input
                   readOnly
                   value={bypassUrl}
-                  className="font-mono text-xs"
+                  className="font-mono text-xs h-10 bg-white"
                 />
                 <Button
                   type="button"
                   onClick={handleCopy}
                   variant="outline"
-                  className="shrink-0"
+                  className="shrink-0 h-10"
                 >
-                  {copied ? 'Copie !' : 'Copier'}
+                  {copied ? 'Copié !' : 'Copier'}
                 </Button>
               </div>
             </div>
 
-            {/* Avertissement */}
-            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-              <strong>Attention :</strong> Ce lien est a usage unique. Quand l&apos;utilisateur cliquera dessus, son email sera automatiquement confirme et il sera connecte.
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+              <strong>Attention :</strong> Ce lien est à usage unique. Quand l&apos;utilisateur cliquera dessus, son email sera automatiquement confirmé et il sera connecté.
             </div>
           </CardContent>
         </Card>
