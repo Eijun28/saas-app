@@ -1,19 +1,21 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import type { RequestStatus } from './CRMTypes'
 import { STATUS_CONFIG } from './CRMTypes'
+import type { CRMStatus } from './CRMTypes'
 
 interface CRMStatusBadgeProps {
-  status: RequestStatus
+  status: CRMStatus
   className?: string
 }
 
 export function CRMStatusBadge({ status, className }: CRMStatusBadgeProps) {
   const config = STATUS_CONFIG[status]
   return (
-    <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium text-gray-700', className)}>
-      <span className={cn('h-2 w-2 rounded-full flex-shrink-0', config.dotColor)} />
+    <span className={cn(
+      'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium',
+      config.color, config.bg, className
+    )}>
       {config.label}
     </span>
   )
