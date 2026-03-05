@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import type { AmbassadorWithStats } from '@/types/ambassador'
 
@@ -11,9 +12,9 @@ interface Props {
 }
 
 function StatusBadge({ isAmb, active }: { isAmb: boolean; active: boolean }) {
-  if (!isAmb) return <Badge variant="outline" className="text-gray-500 border-gray-200">Prestataire</Badge>
-  if (!active) return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Désactivé</Badge>
-  return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Ambassadeur actif</Badge>
+  if (!isAmb) return <Badge variant="outline" className="text-gray-500 border-gray-200 bg-gray-50">Prestataire</Badge>
+  if (!active) return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Désactivé</Badge>
+  return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Actif</Badge>
 }
 
 export default function AmbassadeursClient({ ambassadeurs: initial }: Props) {
@@ -62,57 +63,57 @@ export default function AmbassadeursClient({ ambassadeurs: initial }: Props) {
   }
 
   return (
-    <div className="container max-w-5xl py-8 space-y-8">
+    <div className="max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#0D0D0D]">Programme Ambassadeur</h1>
-        <p className="text-[#6B7280] mt-1">
+        <h1 className="text-2xl font-bold text-[#0B0E12]">Programme Ambassadeur</h1>
+        <p className="text-sm text-[#6B7280] mt-1">
           Gérez les prestataires ambassadeurs et leurs gains
         </p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-sm text-[#6B7280]">Ambassadeurs actifs</p>
-            <p className="text-3xl font-bold text-[#0D0D0D] mt-1">{activeCount}</p>
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="pt-5 pb-4">
+            <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Ambassadeurs actifs</p>
+            <p className="text-2xl font-bold text-[#823F91] mt-1">{activeCount}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-sm text-[#6B7280]">Gains en attente</p>
-            <p className="text-3xl font-bold text-amber-600 mt-1">{totalPending.toFixed(2)} €</p>
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="pt-5 pb-4">
+            <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Gains en attente</p>
+            <p className="text-2xl font-bold text-amber-600 mt-1">{totalPending.toFixed(2)} €</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <p className="text-sm text-[#6B7280]">Total prestataires</p>
-            <p className="text-3xl font-bold text-[#0D0D0D] mt-1">{ambassadeurs.length}</p>
+        <Card className="border-gray-200 shadow-sm">
+          <CardContent className="pt-5 pb-4">
+            <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Total prestataires</p>
+            <p className="text-2xl font-bold text-[#0B0E12] mt-1">{ambassadeurs.length}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tableau */}
-      <Card>
+      {/* Table */}
+      <Card className="border-gray-200 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Prestataires</CardTitle>
-          <div className="flex gap-2">
+          <CardTitle className="text-base font-semibold">Prestataires</CardTitle>
+          <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
             <button
               onClick={() => setFilter('ambassadors')}
-              className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
                 filter === 'ambassadors'
-                  ? 'bg-[#823F91] text-white'
-                  : 'text-[#6B7280] hover:bg-gray-100'
+                  ? 'bg-white text-[#0B0E12] shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#374151]'
               }`}
             >
               Ambassadeurs ({activeCount})
             </button>
             <button
               onClick={() => setFilter('all')}
-              className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
                 filter === 'all'
-                  ? 'bg-[#823F91] text-white'
-                  : 'text-[#6B7280] hover:bg-gray-100'
+                  ? 'bg-white text-[#0B0E12] shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#374151]'
               }`}
             >
               Tous ({ambassadeurs.length})
@@ -126,75 +127,73 @@ export default function AmbassadeursClient({ ambassadeurs: initial }: Props) {
             </p>
           ) : (
             <div className="space-y-2">
-              {/* En-tête */}
-              <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-3 py-2 text-xs font-medium text-[#9CA3AF] uppercase tracking-wide">
+              {/* Header */}
+              <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-3 py-2 text-[10px] font-medium text-[#9CA3AF] uppercase tracking-wider">
                 <span>Prestataire</span>
                 <span>Code</span>
                 <span className="text-right">Filleuls</span>
                 <span className="text-right">Convertis</span>
-                <span className="text-right">Gains (€)</span>
-                <span></span>
+                <span className="text-right">Gains</span>
+                <span />
               </div>
 
               {displayed.map(amb => (
                 <div
                   key={amb.provider_id}
-                  className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-3 py-3 rounded-xl border bg-white hover:bg-gray-50/60 transition-colors"
+                  className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-4 items-center px-3 py-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50/60 transition-colors"
                 >
-                  {/* Identité */}
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm text-[#0D0D0D]">
+                      <span className="font-medium text-sm text-[#0B0E12]">
                         {amb.nom_entreprise || `${amb.prenom ?? ''} ${amb.nom ?? ''}`.trim() || amb.email}
                       </span>
                       <StatusBadge isAmb={amb.is_ambassador} active={amb.ambassador_active} />
                     </div>
                     <p className="text-xs text-[#9CA3AF]">{amb.email}</p>
                     {amb.ambassador_since && (
-                      <p className="text-xs text-[#9CA3AF]">
+                      <p className="text-[10px] text-[#9CA3AF]">
                         Depuis le {new Date(amb.ambassador_since).toLocaleDateString('fr-FR')}
                       </p>
                     )}
                   </div>
 
-                  {/* Code */}
                   <span className="font-mono text-xs text-[#823F91] bg-[#F5F0F7] px-2 py-1 rounded-md w-fit">
                     {amb.referral_code}
                   </span>
 
-                  {/* Stats */}
-                  <div className="text-sm font-semibold text-right text-[#0D0D0D]">
+                  <div className="text-sm font-semibold text-right text-[#0B0E12]">
                     {amb.total_referrals}
                     {amb.total_referrals >= 20 && (
-                      <span className="ml-1 text-xs text-amber-600" title="Milestone +2€ actif">★</span>
+                      <span className="ml-1 text-xs text-amber-500" title="Milestone +2€ actif">★</span>
                     )}
                   </div>
                   <div className="text-sm font-semibold text-right text-green-700">
                     {amb.total_converted}
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-[#0D0D0D]">{amb.total_earnings.toFixed(2)} €</p>
+                    <p className="text-sm font-semibold text-[#0B0E12]">{amb.total_earnings.toFixed(2)} €</p>
                     {amb.pending_earnings > 0 && (
-                      <p className="text-xs text-amber-600">{amb.pending_earnings.toFixed(2)} € en attente</p>
+                      <p className="text-[10px] text-amber-600">{amb.pending_earnings.toFixed(2)} € en attente</p>
                     )}
                   </div>
 
-                  {/* Action */}
-                  <button
+                  <Button
                     onClick={() => toggle(amb)}
                     disabled={loadingId === amb.provider_id}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 ${
+                    variant={amb.is_ambassador && amb.ambassador_active ? 'outline' : 'default'}
+                    size="sm"
+                    className={
                       amb.is_ambassador && amb.ambassador_active
-                        ? 'text-red-600 border border-red-200 hover:bg-red-50'
-                        : 'text-white bg-[#823F91] hover:bg-[#6D3478]'
-                    }`}
+                        ? 'text-red-600 border-red-200 hover:bg-red-50 h-8 text-xs'
+                        : 'bg-[#823F91] hover:bg-[#6D3478] text-white h-8 text-xs'
+                    }
                   >
                     {loadingId === amb.provider_id
                       ? '...'
                       : amb.is_ambassador && amb.ambassador_active
                       ? 'Désactiver'
                       : 'Activer'}
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -202,8 +201,8 @@ export default function AmbassadeursClient({ ambassadeurs: initial }: Props) {
         </CardContent>
       </Card>
 
-      {/* Légende */}
-      <div className="text-xs text-[#9CA3AF] space-y-1 px-1">
+      {/* Legend */}
+      <div className="text-[10px] text-[#9CA3AF] space-y-0.5 px-1">
         <p>★ = milestone atteint (≥ 20 filleuls) — +2 € par inscription supplémentaire</p>
         <p>Règles : +5 € par filleul inscrit · +10 € si abonnement payant · +2 € bonus dès le 20ème filleul</p>
       </div>
