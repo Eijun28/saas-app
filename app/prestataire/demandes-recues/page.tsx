@@ -34,7 +34,7 @@ interface RequestWithCouple {
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed'
   initial_message: string
   created_at: string
-  couple?: { partner_1_name?: string; partner_2_name?: string; wedding_date?: string } | null
+  couple?: { partner_1_name?: string; partner_2_name?: string; wedding_date?: string; budget_min?: number; budget_max?: number; city?: string } | null
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -69,15 +69,14 @@ export default function DemandesRecuesPage() {
       const n2 = req.couple?.partner_2_name?.trim() || ''
       const coupleNom = n1 && n2 ? `${n1} & ${n2}` : n1 || n2 || 'Couple'
 
-      const coupleData = couplesMap.get(req.couple_id)
       const d: Demande = {
         id: req.id,
         couple_id: req.couple_id,
         couple_nom: coupleNom,
         date_evenement: req.couple?.wedding_date || '',
-        budget_min: (coupleData as any)?.budget_min ?? 0,
-        budget_max: (coupleData as any)?.budget_max ?? 0,
-        lieu: (coupleData as any)?.city ?? '',
+        budget_min: req.couple?.budget_min ?? 0,
+        budget_max: req.couple?.budget_max ?? 0,
+        lieu: req.couple?.city ?? '',
         statut: req.status === 'pending' ? 'nouvelle'
           : req.status === 'accepted' ? 'en_cours'
           : req.status === 'completed' ? 'terminee'
@@ -131,7 +130,7 @@ export default function DemandesRecuesPage() {
         id: r.id, couple_id: r.couple_id, provider_id: r.provider_id,
         status: r.status, initial_message: r.initial_message || '',
         created_at: r.created_at,
-        couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined } : null,
+        couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined, budget_min: c.budget_min ?? undefined, budget_max: c.budget_max ?? undefined, city: c.city ?? undefined } : null,
       }
     })
 
