@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, Briefcase, Globe, MapPin, Euro, Sparkles, Search, X } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, Briefcase, Building2, Globe, MapPin, Euro, Sparkles, Search, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,12 +15,14 @@ import { SERVICE_CATEGORIES, getServiceTypeLabel, type ServiceCategory } from '@
 import { DEPARTEMENTS, DEPARTEMENTS_BY_REGION } from '@/lib/constants/zones'
 import { CultureSelector } from '@/components/provider/CultureSelector'
 
-const STEPS = [
-  { id: 1, label: 'Prestation', icon: Briefcase, description: 'Votre métier et ville' },
-  { id: 2, label: 'Cultures', icon: Globe, description: 'Cultures de mariage' },
-  { id: 3, label: 'Zones', icon: MapPin, description: 'Zones d\'intervention' },
-  { id: 4, label: 'Budget', icon: Euro, description: 'Vos tarifs' },
+const BASE_STEPS = [
+  { id: 'prestation', label: 'Prestation', icon: Briefcase, description: 'Votre métier et ville' },
+  { id: 'cultures', label: 'Cultures', icon: Globe, description: 'Cultures de mariage' },
+  { id: 'zones', label: 'Zones', icon: MapPin, description: 'Zones d\'intervention' },
+  { id: 'budget', label: 'Budget', icon: Euro, description: 'Vos tarifs' },
 ]
+
+const ENTREPRISE_STEP = { id: 'entreprise', label: 'Entreprise', icon: Building2, description: 'Nom de votre société' }
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -30,8 +32,12 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [needsCompanyName, setNeedsCompanyName] = useState(false)
 
-  // Step 1: Service type + city
+  // Step Entreprise (Google OAuth users)
+  const [nomEntreprise, setNomEntreprise] = useState('')
+
+  // Step Prestation: Service type + city
   const [serviceType, setServiceType] = useState('')
   const [ville, setVille] = useState('')
   // Service type picker state
@@ -58,7 +64,7 @@ export default function OnboardingPage() {
       // Charger les données existantes et l'étape en cours
       const { data: profile } = await supabase
         .from('profiles')
-        .select('service_type, ville_principale, budget_min, budget_max, onboarding_step')
+        .select('service_type, ville_principale, budget_min, budget_max, onboarding_step, nom_entreprise')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -67,13 +73,24 @@ export default function OnboardingPage() {
           router.push('/prestataire/dashboard')
           return
         }
+        // Detect if company name is missing (Google OAuth users)
+        const missingCompanyName = !profile.nom_entreprise || profile.nom_entreprise.trim() === ''
+        setNeedsCompanyName(missingCompanyName)
+
+        if (profile.nom_entreprise) setNomEntreprise(profile.nom_entreprise)
         if (profile.service_type) setServiceType(profile.service_type)
         if (profile.ville_principale) setVille(profile.ville_principale)
         if (profile.budget_min) setBudgetMin(String(profile.budget_min))
         if (profile.budget_max) setBudgetMax(String(profile.budget_max))
         // Reprendre là où on s'est arrêté
         if (profile.onboarding_step > 0 && profile.onboarding_step < 5) {
-          setCurrentStep(profile.onboarding_step)
+          // If company name is missing, start at step 1 (entreprise step)
+          // Otherwise use stored step (offset by 1 since there's no entreprise step)
+          if (missingCompanyName) {
+            setCurrentStep(1) // Start with entreprise step
+          } else {
+            setCurrentStep(profile.onboarding_step)
+          }
         }
       }
 
@@ -92,12 +109,36 @@ export default function OnboardingPage() {
     init()
   }, [])
 
+  // Build steps list dynamically based on whether company name is needed
+  const STEPS = needsCompanyName
+    ? [ENTREPRISE_STEP, ...BASE_STEPS]
+    : BASE_STEPS
+
+  // Get the current step ID
+  const currentStepId = STEPS[currentStep - 1]?.id
+
   async function saveStepAndAdvance() {
     if (!userId) return
     setIsSaving(true)
 
     try {
-      if (currentStep === 1) {
+      if (currentStepId === 'entreprise') {
+        if (!nomEntreprise.trim() || nomEntreprise.trim().length < 2) {
+          toast.error('Veuillez saisir le nom de votre société (2 caractères minimum)')
+          setIsSaving(false)
+          return
+        }
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            nom_entreprise: nomEntreprise.trim(),
+            onboarding_step: 1,
+          })
+          .eq('id', userId)
+        if (error) throw error
+      }
+
+      if (currentStepId === 'prestation') {
         if (!serviceType || !ville.trim()) {
           toast.error('Veuillez remplir tous les champs')
           setIsSaving(false)
@@ -114,7 +155,7 @@ export default function OnboardingPage() {
         if (error) throw error
       }
 
-      if (currentStep === 2) {
+      if (currentStepId === 'cultures') {
         // Les cultures sont déjà sauvées par le CultureSelector
         const { error } = await supabase
           .from('profiles')
@@ -123,7 +164,7 @@ export default function OnboardingPage() {
         if (error) throw error
       }
 
-      if (currentStep === 3) {
+      if (currentStepId === 'zones') {
         if (selectedZones.length === 0) {
           toast.error('Sélectionnez au moins une zone')
           setIsSaving(false)
@@ -142,7 +183,7 @@ export default function OnboardingPage() {
         if (error) throw error
       }
 
-      if (currentStep === 4) {
+      if (currentStepId === 'budget') {
         const min = budgetMin ? parseFloat(budgetMin) : null
         const max = budgetMax ? parseFloat(budgetMax) : null
 
@@ -172,7 +213,7 @@ export default function OnboardingPage() {
       }
 
       setCurrentStep(prev => prev + 1)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Save error:', error)
       toast.error('Erreur lors de la sauvegarde')
     } finally {
@@ -207,11 +248,12 @@ export default function OnboardingPage() {
   }
 
   const isStepValid = () => {
-    switch (currentStep) {
-      case 1: return !!serviceType && !!ville.trim()
-      case 2: return true // cultures are optional but encouraged
-      case 3: return selectedZones.length > 0
-      case 4: return true // budget is optional
+    switch (currentStepId) {
+      case 'entreprise': return nomEntreprise.trim().length >= 2
+      case 'prestation': return !!serviceType && !!ville.trim()
+      case 'cultures': return true // cultures are optional but encouraged
+      case 'zones': return selectedZones.length > 0
+      case 'budget': return true // budget is optional
       default: return false
     }
   }
@@ -240,8 +282,9 @@ export default function OnboardingPage() {
         <div className="flex items-center justify-between">
           {STEPS.map((step, index) => {
             const StepIcon = step.icon
-            const isActive = currentStep === step.id
-            const isCompleted = currentStep > step.id
+            const stepNumber = index + 1
+            const isActive = currentStep === stepNumber
+            const isCompleted = currentStep > stepNumber
 
             return (
               <div key={step.id} className="flex items-center flex-1 last:flex-none">
@@ -291,8 +334,34 @@ export default function OnboardingPage() {
           >
             <Card className="bg-white shadow-xl shadow-[#823F91]/10 border-0 ring-1 ring-[#E8D4EF]/50 overflow-hidden">
               <div className="p-5 sm:p-8">
-                {/* Step 1: Service Type + City */}
-                {currentStep === 1 && (
+                {/* Step Entreprise: Company name (Google OAuth users only) */}
+                {currentStepId === 'entreprise' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900 mb-1">Comment s'appelle votre société ?</h2>
+                      <p className="text-sm text-gray-500">Ce nom sera affiché sur votre profil public et visible par les couples.</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Nom de la société <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        value={nomEntreprise}
+                        onChange={(e) => setNomEntreprise(e.target.value)}
+                        placeholder="Ex: Studio Photo Lumière, Fleurs & Merveilles..."
+                        className="h-12 rounded-xl border-gray-200 focus-visible:ring-[#823F91]"
+                        autoFocus
+                      />
+                      {nomEntreprise.trim().length > 0 && nomEntreprise.trim().length < 2 && (
+                        <p className="text-xs text-red-500 mt-1">2 caractères minimum</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Step Prestation: Service Type + City */}
+                {currentStepId === 'prestation' && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900 mb-1">Quel est votre métier ?</h2>
@@ -456,7 +525,7 @@ export default function OnboardingPage() {
 
                       <div>
                         <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                          Ville principale d'exercice <span className="text-red-500">*</span>
+                          Ville principale d'intervention <span className="text-red-500">*</span>
                         </Label>
                         <Input
                           value={ville}
@@ -469,8 +538,8 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {/* Step 2: Cultures */}
-                {currentStep === 2 && userId && (
+                {/* Step Cultures */}
+                {currentStepId === 'cultures' && userId && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900 mb-1">Quelles cultures connaissez-vous ?</h2>
@@ -484,8 +553,8 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {/* Step 3: Zones */}
-                {currentStep === 3 && (
+                {/* Step Zones */}
+                {currentStepId === 'zones' && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900 mb-1">Où intervenez-vous ?</h2>
@@ -552,8 +621,8 @@ export default function OnboardingPage() {
                   </div>
                 )}
 
-                {/* Step 4: Budget */}
-                {currentStep === 4 && (
+                {/* Step Budget */}
+                {currentStepId === 'budget' && (
                   <div className="space-y-6">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900 mb-1">Quelle est votre fourchette de prix ?</h2>
@@ -629,7 +698,7 @@ export default function OnboardingPage() {
                   >
                     {isSaving ? (
                       'Enregistrement...'
-                    ) : currentStep === 4 ? (
+                    ) : currentStepId === 'budget' ? (
                       <>
                         Terminer
                         <Check className="ml-2 h-4 w-4" />

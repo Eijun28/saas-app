@@ -270,8 +270,8 @@ export function ProfessionalInfoEditor({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="ville">Ville principale</Label>
-        <p className="text-sm text-muted-foreground">Où êtes-vous basé(e) ?</p>
+        <Label htmlFor="ville">Ville principale d'intervention</Label>
+        <p className="text-sm text-muted-foreground">Dans quelle ville intervenez-vous principalement ? (utilisée pour le matching avec les couples)</p>
         <CityAutocompleteInput
           value={ville}
           onChange={(value) => {
