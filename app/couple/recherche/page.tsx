@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight, Bookmark, BookmarkCheck, Trash2, LayoutGrid, Map as MapIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,7 @@ import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { AvailabilityIndicator } from '@/components/provider-availability/AvailabilityIndicator'
 import { ProviderComparisonTray } from '@/components/recherche/ProviderComparisonTray'
+import { MapView } from '@/components/recherche/MapView'
 
 interface ProviderTag {
   id: string
@@ -133,6 +134,72 @@ export default function RecherchePage() {
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({}) // providerId → isAvailable
   // Comparaison — max 3 prestataires
   const [comparisonIds, setComparisonIds] = useState<Set<string>>(new Set())
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const PAGE_SIZE = 18
+
+  // Saved filter presets (localStorage)
+  interface FilterPreset {
+    id: string
+    name: string
+    category: string | null
+    culture: string | null
+    country: string | null
+    tags: string[]
+    minRating: number
+    budgetMax: number | null
+    sortBy: string
+  }
+  const SAVED_FILTERS_KEY = 'nuply-recherche-presets'
+  const [savedPresets, setSavedPresets] = useState<FilterPreset[]>([])
+  const [showSavePreset, setShowSavePreset] = useState(false)
+  const [presetName, setPresetName] = useState('')
+
+  // Load saved presets from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SAVED_FILTERS_KEY)
+      if (stored) setSavedPresets(JSON.parse(stored))
+    } catch { /* ignore */ }
+  }, [])
+
+  const saveCurrentFilters = useCallback(() => {
+    if (!presetName.trim()) return
+    const preset: FilterPreset = {
+      id: Date.now().toString(36),
+      name: presetName.trim(),
+      category: selectedCategory,
+      culture: selectedCulture,
+      country: selectedCountry,
+      tags: selectedTags,
+      minRating,
+      budgetMax,
+      sortBy,
+    }
+    const updated = [...savedPresets, preset]
+    setSavedPresets(updated)
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+    setPresetName('')
+    setShowSavePreset(false)
+  }, [presetName, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy, savedPresets])
+
+  const loadPreset = useCallback((preset: FilterPreset) => {
+    setSelectedCategory(preset.category)
+    setSelectedCulture(preset.culture)
+    setSelectedCountry(preset.country)
+    setSelectedTags(preset.tags)
+    setMinRating(preset.minRating)
+    setBudgetMax(preset.budgetMax)
+    setSortBy(preset.sortBy as typeof sortBy)
+  }, [])
+
+  const deletePreset = useCallback((id: string) => {
+    const updated = savedPresets.filter(p => p.id !== id)
+    setSavedPresets(updated)
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+  }, [savedPresets])
 
   // Load available tags, favorites and wedding date on mount
   useEffect(() => {
@@ -152,51 +219,31 @@ export default function RecherchePage() {
 
   useEffect(() => {
     if (user) {
-      searchProviders()
+      setPage(0)
+      setProviders([])
+      setHasMore(true)
+      searchProviders(0)
     }
   }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy])
 
-  // Fonction pour calculer le pourcentage de complétion du profil
-  const calculateProfileCompletion = async (
-    profileId: string,
-    profile: any,
-    culturesCount: number,
-    zonesCount: number,
-    portfolioCount: number
-  ): Promise<number> => {
-    const fields = [
-      profile.nom_entreprise ? 1 : 0,
-      profile.service_type ? 1 : 0,
-      profile.ville_principale ? 1 : 0,
-      profile.description_courte ? 1 : 0,
-      profile.avatar_url ? 1 : 0,
-      profile.budget_min || profile.budget_max ? 1 : 0,
-      culturesCount > 0 ? 1 : 0,
-      zonesCount > 0 ? 1 : 0,
-      portfolioCount > 0 ? 1 : 0,
-    ]
-    
-    const completedFields = fields.reduce((sum, val) => sum + val, 0)
-    return (completedFields / fields.length) * 100
-  }
-
-  const searchProviders = async () => {
+  const searchProviders = async (pageNum: number = 0) => {
     if (!user) return
 
-    setLoading(true)
+    const isFirstPage = pageNum === 0
+    if (isFirstPage) setLoading(true)
+    else setIsLoadingMore(true)
+
     const supabase = createClient()
 
     try {
-      // Vérifier d'abord que l'utilisateur est bien authentifié
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        console.warn('Pas de session utilisateur')
         setProviders([])
         setLoading(false)
         return
       }
 
-      // Construire la requête de base
+      // Build base query with DB-level filters
       let query = supabase
         .from('profiles')
         .select(`
@@ -214,187 +261,140 @@ export default function RecherchePage() {
         `)
         .eq('role', 'prestataire')
 
-      // Filtrer par catégorie si sélectionnée
       if (selectedCategory) {
         query = query.eq('service_type', selectedCategory)
       }
 
-      // Si recherche, filtrer par mots-clés
       if (searchQuery.trim()) {
         const searchTerm = searchQuery.trim().toLowerCase()
-        // Syntaxe correcte pour Supabase: colonne.operateur.valeur,colonne.operateur.valeur
-        // Les % doivent être dans la chaîne de la requête
         query = query.or(`nom_entreprise.ilike.%${searchTerm}%,ville_principale.ilike.%${searchTerm}%,service_type.ilike.%${searchTerm}%,description_courte.ilike.%${searchTerm}%`)
       }
 
-      const { data: profilesData, error } = await query.limit(50)
+      if (budgetMax !== null && budgetMax > 0) {
+        query = query.lte('budget_min', budgetMax)
+      }
+
+      // DB-level sorting
+      if (sortBy === 'budget_asc') {
+        query = query.order('budget_min', { ascending: true, nullsFirst: false })
+      } else if (sortBy === 'budget_desc') {
+        query = query.order('budget_min', { ascending: false, nullsFirst: false })
+      } else {
+        query = query.order('created_at', { ascending: false })
+      }
+
+      // Pagination
+      const from = pageNum * PAGE_SIZE
+      const to = from + PAGE_SIZE - 1
+      const { data: profilesData, error } = await query.range(from, to)
 
       if (error) {
-        // Améliorer le logging pour comprendre l'erreur
-        const errorInfo = {
-          // Ajouter toutes les propriétés disponibles d'abord
-          ...error,
-          // Puis ajouter les propriétés spécifiques si elles existent
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-        }
-        
-        console.error('Erreur recherche:', errorInfo)
-        
-        // Codes d'erreur à ignorer (cas normaux)
-        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301', '42501']
-        const ignorableMessages = ['does not exist', 'permission denied', 'no rows returned', 'column', 'permission']
-        
         const errorCode = error.code || ''
-        const errorMessage = error.message || ''
-        const errorString = JSON.stringify(error)
-        
-        const isIgnorableError = ignorableErrorCodes.includes(errorCode) || 
-          ignorableMessages.some(msg => errorMessage.toLowerCase().includes(msg.toLowerCase())) ||
-          ignorableMessages.some(msg => errorString.toLowerCase().includes(msg.toLowerCase()))
-        
-        if (isIgnorableError) {
-          // Erreur ignorable : probablement colonne manquante, permission RLS ou pas de données
-          console.warn('Erreur ignorable (probablement RLS ou colonne manquante):', errorInfo)
-          setProviders([])
-          setLoading(false)
+        const ignorableErrorCodes = ['42P01', 'PGRST116', 'PGRST301', '42501']
+        if (ignorableErrorCodes.includes(errorCode) || error.message?.toLowerCase().includes('permission')) {
+          console.warn('Erreur ignorable:', error)
+          if (isFirstPage) setProviders([])
           return
         }
-        
-        // Vraie erreur : logger et afficher
-        console.error('Erreur détaillée:', errorInfo)
-        setProviders([])
-        setLoading(false)
+        console.error('Erreur recherche:', error)
+        if (isFirstPage) setProviders([])
         return
       }
 
       if (!profilesData || profilesData.length === 0) {
-        setProviders([])
-        setLoading(false)
+        setHasMore(false)
+        if (isFirstPage) setProviders([])
         return
       }
 
+      setHasMore(profilesData.length === PAGE_SIZE)
 
-      // Pour chaque profil, récupérer les cultures, zones, tags et portfolio
-      const enrichedProviders = await Promise.all(
-        profilesData.map(async (profile) => {
-          // Récupérer les cultures
-          const { data: culturesData } = await supabase
-            .from('provider_cultures')
-            .select('culture_id')
-            .eq('profile_id', profile.id)
+      // Batch enrichment: 4 parallel queries instead of N*4
+      const providerIds = profilesData.map(p => p.id)
 
-          // Récupérer les zones
-          const { data: zonesData } = await supabase
-            .from('provider_zones')
-            .select('zone_id')
-            .eq('profile_id', profile.id)
+      const [culturesResult, zonesResult, tagsResult, ratingsResult] = await Promise.all([
+        supabase
+          .from('provider_cultures')
+          .select('profile_id, culture_id')
+          .in('profile_id', providerIds),
+        supabase
+          .from('provider_zones')
+          .select('profile_id, zone_id')
+          .in('profile_id', providerIds),
+        supabase
+          .from('provider_tags')
+          .select('profile_id, tag_id, tags(id, label, category)')
+          .in('profile_id', providerIds) as Promise<{ data: (TagJoinResult & { profile_id: string })[] | null; error: unknown }>,
+        supabase
+          .from('prestataire_public_profiles')
+          .select('profile_id, rating, total_reviews')
+          .in('profile_id', providerIds),
+      ])
 
-          // Récupérer les tags
-          const { data: tagsData } = await supabase
-            .from('provider_tags')
-            .select('tag_id, tags(id, label, category)')
-            .eq('profile_id', profile.id) as { data: TagJoinResult[] | null }
+      // Index results by profile_id for O(1) lookup
+      const culturesByProfile = new Map<string, Array<{ id: string; label: string }>>()
+      for (const c of culturesResult.data || []) {
+        const culture = CULTURES.find(cult => cult.id === c.culture_id)
+        if (culture) {
+          const arr = culturesByProfile.get(c.profile_id) || []
+          arr.push({ id: c.culture_id, label: culture.label })
+          culturesByProfile.set(c.profile_id, arr)
+        }
+      }
 
-          // Récupérer le portfolio pour compter les photos
-          const { data: portfolioData } = await supabase
-            .from('provider_portfolio')
-            .select('id')
-            .eq('profile_id', profile.id)
-            .limit(1)
+      const zonesByProfile = new Map<string, Array<{ id: string; label: string }>>()
+      for (const z of zonesResult.data || []) {
+        const zone = DEPARTEMENTS.find(dept => dept.id === z.zone_id)
+        if (zone) {
+          const arr = zonesByProfile.get(z.profile_id) || []
+          arr.push({ id: z.zone_id, label: zone.label })
+          zonesByProfile.set(z.profile_id, arr)
+        }
+      }
 
-          // Mapper les cultures
-          const cultures = (culturesData || [])
-            .map(c => {
-              const culture = CULTURES.find(cult => cult.id === c.culture_id)
-              return culture ? { id: c.culture_id, label: culture.label } : null
-            })
-            .filter(Boolean) as Array<{ id: string; label: string }>
+      const tagsByProfile = new Map<string, ProviderTag[]>()
+      for (const t of (tagsResult.data || []) as Array<TagJoinResult & { profile_id: string }>) {
+        if (t.tags) {
+          const arr = tagsByProfile.get(t.profile_id) || []
+          arr.push({ id: t.tags.id, label: t.tags.label, category: t.tags.category ?? undefined })
+          tagsByProfile.set(t.profile_id, arr)
+        }
+      }
 
-          // Mapper les zones
-          const zones = (zonesData || [])
-            .map(z => {
-              const zone = DEPARTEMENTS.find(dept => dept.id === z.zone_id)
-              return zone ? { id: z.zone_id, label: zone.label } : null
-            })
-            .filter(Boolean) as Array<{ id: string; label: string }>
-
-          // Mapper les tags
-          const tags: ProviderTag[] = (tagsData || [])
-            .filter((t): t is TagJoinResult & { tags: NonNullable<TagJoinResult['tags']> } => t.tags !== null)
-            .map(t => ({
-              id: t.tags.id,
-              label: t.tags.label,
-              category: t.tags.category ?? undefined
-            }))
-
-          // Calculer le pourcentage de complétion
-          const completionPercentage = await calculateProfileCompletion(
-            profile.id,
-            profile,
-            cultures.length,
-            zones.length,
-            portfolioData?.length || 0
-          )
-
-          // Vérifier si la recherche correspond aussi aux cultures ou zones
-          let matchesSearch = true
-          if (searchQuery.trim()) {
-            const searchLower = searchQuery.toLowerCase()
-            const cultureMatch = cultures.some(c => c.label.toLowerCase().includes(searchLower))
-            const zoneMatch = zones.some(z => z.label.toLowerCase().includes(searchLower))
-            matchesSearch = cultureMatch || zoneMatch || true // On garde tous les résultats de la requête principale
-          }
-
-          // Fetch rating data
-          const { data: ratingData } = await supabase
-            .from('prestataire_public_profiles')
-            .select('rating, total_reviews')
-            .eq('profile_id', profile.id)
-            .maybeSingle()
-
-          return {
-            ...profile,
-            cultures,
-            zones,
-            tags,
-            completionPercentage,
-            avgRating: ratingData ? Number(ratingData.rating) : 0,
-            reviewCount: ratingData ? ratingData.total_reviews : 0,
-          } as Provider & { completionPercentage: number }
-        })
-      )
-
-      // Filtrer par complétion minimale de 30% (réduit pour avoir plus de résultats)
-      let filteredProviders = enrichedProviders.filter(p => 
-        p.completionPercentage >= 30
-      )
-
-      // Filtrer par cultures/zones si recherche
-      if (searchQuery.trim()) {
-        filteredProviders = filteredProviders.filter(p => {
-          const searchLower = searchQuery.toLowerCase()
-          return (
-            p.nom_entreprise?.toLowerCase().includes(searchLower) ||
-            p.ville_principale?.toLowerCase().includes(searchLower) ||
-            p.service_type?.toLowerCase().includes(searchLower) ||
-            p.description_courte?.toLowerCase().includes(searchLower) ||
-            p.cultures.some(c => c.label.toLowerCase().includes(searchLower)) ||
-            p.zones.some(z => z.label.toLowerCase().includes(searchLower))
-          )
+      const ratingsByProfile = new Map<string, { avgRating: number; reviewCount: number }>()
+      for (const r of ratingsResult.data || []) {
+        ratingsByProfile.set(r.profile_id, {
+          avgRating: Number(r.rating) || 0,
+          reviewCount: r.total_reviews || 0,
         })
       }
 
-      // Filtrer par culture sélectionnée
+      // Enrich profiles using indexed data
+      const enrichedProviders: Provider[] = profilesData.map(profile => {
+        const cultures = culturesByProfile.get(profile.id) || []
+        const zones = zonesByProfile.get(profile.id) || []
+        const tags = tagsByProfile.get(profile.id) || []
+        const rating = ratingsByProfile.get(profile.id)
+
+        return {
+          ...profile,
+          cultures,
+          zones,
+          tags,
+          avgRating: rating?.avgRating || 0,
+          reviewCount: rating?.reviewCount || 0,
+        } as Provider
+      })
+
+      // Client-side filters that can't be done at DB level
+      let filteredProviders = enrichedProviders
+
       if (selectedCulture) {
-        filteredProviders = filteredProviders.filter(p => 
+        filteredProviders = filteredProviders.filter(p =>
           p.cultures.some(c => c.id === selectedCulture)
         )
       }
 
-      // Filtrer par pays sélectionné (via zones ou ville)
       if (selectedCountry) {
         filteredProviders = filteredProviders.filter(p =>
           p.ville_principale?.toLowerCase().includes(selectedCountry.toLowerCase()) ||
@@ -402,41 +402,33 @@ export default function RecherchePage() {
         )
       }
 
-      // Filtrer par tags sélectionnés (doit avoir TOUS les tags sélectionnés)
       if (selectedTags.length > 0) {
         filteredProviders = filteredProviders.filter(p =>
           selectedTags.every(tagId => p.tags.some(t => t.id === tagId))
         )
       }
 
-      // P3: Filtre par note minimum
       if (minRating > 0) {
         filteredProviders = filteredProviders.filter(p =>
           (p.avgRating || 0) >= minRating
         )
       }
 
-      // P3: Filtre par budget maximum
-      if (budgetMax !== null && budgetMax > 0) {
-        filteredProviders = filteredProviders.filter(p =>
-          p.budget_min !== null && p.budget_min !== undefined && p.budget_min <= budgetMax
-        )
-      }
-
-      // P3: Tri
+      // Sort by rating/reviews (not possible at DB level since it's a different table)
       if (sortBy === 'rating') {
         filteredProviders.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0))
       } else if (sortBy === 'reviews') {
         filteredProviders.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
-      } else if (sortBy === 'budget_asc') {
-        filteredProviders.sort((a, b) => (a.budget_min || 0) - (b.budget_min || 0))
-      } else if (sortBy === 'budget_desc') {
-        filteredProviders.sort((a, b) => (b.budget_min || 0) - (a.budget_min || 0))
       }
 
-      setProviders(filteredProviders)
+      if (isFirstPage) {
+        setProviders(filteredProviders)
+      } else {
+        setProviders(prev => [...prev, ...filteredProviders])
+      }
+      setPage(pageNum)
 
-      // Fetch availability for all providers if wedding date is set
+      // Fetch availability for loaded providers if wedding date is set
       if (weddingDate && filteredProviders.length > 0) {
         const availMap: Record<string, boolean> = {}
         await Promise.all(
@@ -456,13 +448,14 @@ export default function RecherchePage() {
             }
           })
         )
-        setAvailabilityMap(availMap)
+        setAvailabilityMap(prev => ({ ...prev, ...availMap }))
       }
     } catch (error) {
       console.error('Erreur recherche:', error)
-      setProviders([])
+      if (isFirstPage) setProviders([])
     } finally {
       setLoading(false)
+      setIsLoadingMore(false)
     }
   }
 
@@ -932,6 +925,68 @@ export default function RecherchePage() {
                   <X className="h-3 w-3 ml-2" />
                 </Badge>
               )}
+              {/* Save current filters */}
+              {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || minRating > 0 || budgetMax !== null) && (
+                showSavePreset ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={presetName}
+                      onChange={(e) => setPresetName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilters()}
+                      placeholder="Nom du filtre..."
+                      className="h-7 px-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#823F91] w-32"
+                      autoFocus
+                    />
+                    <button
+                      onClick={saveCurrentFilters}
+                      disabled={!presetName.trim()}
+                      className="h-7 px-2 text-xs font-medium text-white bg-[#823F91] hover:bg-[#6D3478] rounded-lg disabled:opacity-50"
+                    >
+                      OK
+                    </button>
+                    <button
+                      onClick={() => { setShowSavePreset(false); setPresetName('') }}
+                      className="h-7 px-1.5 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowSavePreset(true)}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#823F91] hover:bg-[#823F91]/10 rounded-lg transition-colors"
+                  >
+                    <Bookmark className="h-3 w-3" />
+                    Sauvegarder
+                  </button>
+                )
+              )}
+            </div>
+          )}
+
+          {/* Saved filter presets */}
+          {savedPresets.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] text-gray-400 font-medium mr-0.5">Filtres:</span>
+              {savedPresets.map(preset => (
+                <div key={preset.id} className="group flex items-center gap-0.5">
+                  <button
+                    onClick={() => loadPreset(preset)}
+                    className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[#823F91] bg-[#823F91]/8 hover:bg-[#823F91]/15 rounded-lg transition-colors"
+                  >
+                    <BookmarkCheck className="h-3 w-3" />
+                    {preset.name}
+                  </button>
+                  <button
+                    onClick={() => deletePreset(preset.id)}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-red-500 transition-all"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </motion.div>
@@ -996,20 +1051,38 @@ export default function RecherchePage() {
             </button>
           )}
 
-          {/* Tri */}
-          <div className="flex items-center gap-1.5 ml-auto">
-            <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="text-[11px] text-gray-600 bg-transparent border border-gray-200 rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#823F91]/30"
-            >
-              <option value="default">Par defaut</option>
-              <option value="rating">Meilleure note</option>
-              <option value="reviews">Plus d&apos;avis</option>
-              <option value="budget_asc">Budget croissant</option>
-              <option value="budget_desc">Budget decroissant</option>
-            </select>
+          {/* Tri + vue */}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="text-[11px] text-gray-600 bg-transparent border border-gray-200 rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#823F91]/30"
+              >
+                <option value="default">Par defaut</option>
+                <option value="rating">Meilleure note</option>
+                <option value="reviews">Plus d&apos;avis</option>
+                <option value="budget_asc">Budget croissant</option>
+                <option value="budget_desc">Budget decroissant</option>
+              </select>
+            </div>
+            <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-[#823F91] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                title="Vue grille"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`p-1.5 transition-colors ${viewMode === 'map' ? 'bg-[#823F91] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                title="Vue carte"
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -1056,6 +1129,15 @@ export default function RecherchePage() {
                   </p>
                 </div>
 
+                {viewMode === 'map' ? (
+                  <MapView
+                    providers={displayedProviders}
+                    onSelectProvider={(id) => {
+                      const provider = displayedProviders.find(p => p.id === id)
+                      if (provider) handleProviderClick(provider)
+                    }}
+                  />
+                ) : (
                 <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-20 md:pb-4' : ''}`}>
                   {displayedProviders.map((provider, index) => (
                 <motion.div
@@ -1179,6 +1261,28 @@ export default function RecherchePage() {
                 </motion.div>
               ))}
             </div>
+                )}
+
+                {/* Load more */}
+                {viewMode === 'grid' && hasMore && displayedProviders.length > 0 && (
+                  <div className="flex justify-center pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => searchProviders(page + 1)}
+                      disabled={isLoadingMore}
+                      className="px-8 rounded-xl border-[#823F91]/30 text-[#823F91] hover:bg-[#F5F0F7]"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-[#823F91] mr-2" />
+                          Chargement...
+                        </>
+                      ) : (
+                        'Voir plus de prestataires'
+                      )}
+                    </Button>
+                  </div>
+                )}
               </>
             )
           })()}

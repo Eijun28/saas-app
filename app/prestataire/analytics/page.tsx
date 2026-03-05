@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
         )}
 
         {/* KPI Grid */}
-        <KpiGrid kpis={data.kpis} deltas={data.deltas} />
+        <KpiGrid kpis={data.kpis} deltas={data.deltas} timeline={data.timeline} />
 
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">

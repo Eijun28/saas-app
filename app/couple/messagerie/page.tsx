@@ -3,13 +3,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Send, MessageSquare, Search, CheckCheck, ArrowLeft, Sparkles, SearchIcon } from 'lucide-react'
+import { Send, MessageSquare, Search, CheckCheck, ArrowLeft, Sparkles, SearchIcon, FileText, Download } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useRouter } from 'next/navigation'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { Button } from '@/components/ui/button'
+import { ChatInput } from '@/components/messaging/ChatInput'
+import { TypingIndicator } from '@/components/messaging/TypingIndicator'
+import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 
 export default function MessageriePage() {
   const router = useRouter()
@@ -20,12 +23,18 @@ export default function MessageriePage() {
   const [conversations, setConversations] = useState<any[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messages, setMessages] = useState<any[]>([])
-  const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [prestataireNames, setPrestataireNames] = useState<Record<string, string>>({})
   const [prestataireAvatars, setPrestataireAvatars] = useState<Record<string, string>>({})
   const [lastMessages, setLastMessages] = useState<Record<string, { content: string; time: string; sender_id: string }>>({})
+
+  // Typing indicator
+  const { typingUsers, onInputChange: onTyping, stopTyping } = useTypingIndicator({
+    conversationId: selectedConversation,
+    userId: user?.id ?? null,
+    userName: 'Vous',
+  })
 
   // Resolve couple_id from couples table (conversations.couple_id references couples.id, not auth user id)
   useEffect(() => {
@@ -242,23 +251,6 @@ export default function MessageriePage() {
           .update({ is_read: true })
           .in('id', messageIds)
       }
-    }
-  }
-
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return
-
-    const supabase = createClient()
-    const { error } = await supabase.from('messages').insert({
-      conversation_id: selectedConversation,
-      sender_id: user.id,
-      content: newMessage.trim(),
-    })
-
-    if (!error) {
-      setNewMessage('')
-      loadMessages(selectedConversation)
-      loadConversations()
     }
   }
 
@@ -498,8 +490,8 @@ export default function MessageriePage() {
                       <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
                         {prestataireNames[selectedConversation] || 'Messages'}
                       </h2>
-                      <p className="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
-                        Hors ligne
+                      <p className={`text-[10px] sm:text-xs truncate font-medium ${typingUsers.length > 0 ? 'text-[#823F91]' : 'text-gray-500'}`}>
+                        {typingUsers.length > 0 ? 'En train d\'ecrire...' : 'Hors ligne'}
                       </p>
                     </div>
                   </div>
@@ -544,7 +536,35 @@ export default function MessageriePage() {
                                   : 'bg-white border border-gray-200 text-gray-900 rounded-bl-sm'
                               }`}
                             >
+                              {/* Attachment preview */}
+                              {msg.metadata?.attachment && (() => {
+                                const att = msg.metadata.attachment as { name: string; url: string; size: number; type: string }
+                                const isImage = att.type?.startsWith('image/')
+                                return isImage ? (
+                                  <a href={att.url} target="_blank" rel="noopener noreferrer" className="block mb-1">
+                                    <img
+                                      src={att.url}
+                                      alt={att.name}
+                                      className="max-w-[240px] max-h-[180px] rounded-lg object-cover"
+                                    />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={att.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-1 ${
+                                      isFromMe ? 'bg-gray-700' : 'bg-gray-50'
+                                    }`}
+                                  >
+                                    <FileText className="h-4 w-4 flex-shrink-0" />
+                                    <span className="text-xs truncate max-w-[160px]">{att.name}</span>
+                                    <Download className="h-3 w-3 flex-shrink-0 opacity-60" />
+                                  </a>
+                                )
+                              })()}
                               {/* Contenu texte */}
+                              {(!msg.metadata?.attachment || !msg.content.startsWith('[')) && (
                               <p
                                 className={`text-sm sm:text-[15px] md:text-[16px] leading-relaxed whitespace-pre-wrap break-words select-text font-normal ${
                                   isFromMe ? 'text-white' : 'text-gray-900'
@@ -552,6 +572,7 @@ export default function MessageriePage() {
                               >
                                 {msg.content}
                               </p>
+                              )}
                             </div>
                           </div>
 
@@ -581,37 +602,22 @@ export default function MessageriePage() {
                 </div>
               </div>
 
-              {/* Input zone */}
-              <div className="bg-white border-t border-gray-100">
-                <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-                  <div className="flex items-end gap-2 bg-white rounded-full px-4 py-2.5 border border-gray-200 focus-within:border-gray-300 transition-all">
-                    <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          sendMessage()
-                        }
-                      }}
-                      placeholder="Message"
-                      className="flex-1 bg-transparent border-0 resize-none outline-none text-[15px] sm:text-[16px] text-gray-900 placeholder:text-gray-500 min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
-                      rows={1}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!newMessage.trim()}
-                      className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-200 ${
-                        newMessage.trim()
-                          ? 'bg-gray-800 text-white hover:bg-gray-700 active:scale-95'
-                          : 'bg-transparent text-gray-400 cursor-not-allowed'
-                      }`}
-                    >
-                      <Send className="h-4 w-4" strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </form>
-              </div>
+              {/* Typing indicator */}
+              <TypingIndicator typingUsers={typingUsers} />
+
+              {/* Input zone with attachment support */}
+              {user && selectedConversation && (
+                <ChatInput
+                  conversationId={selectedConversation}
+                  senderId={user.id}
+                  onMessageSent={() => {
+                    loadMessages(selectedConversation)
+                    loadConversations()
+                  }}
+                  onTyping={onTyping}
+                  onStopTyping={stopTyping}
+                />
+              )}
             </div>
           )}
         </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowUp, Sparkles, Search, Loader2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ArrowUp, Sparkles, Search, Loader2, ChevronDown, Trash2, RotateCcw, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useChatbot } from '@/hooks/useChatbot';
 import { getCurrentCoupleProfile } from '@/lib/supabase/queries/couples.queries';
-import { saveChatbotConversation, getChatbotConversations } from '@/lib/supabase/chatbot-conversations';
+import { saveChatbotConversation, getChatbotConversations, deleteChatbotConversation } from '@/lib/supabase/chatbot-conversations';
 import { ChatMessage, SearchCriteria, ChatbotConversation } from '@/types/chatbot';
 import { MatchingResult } from '@/types/matching';
 import { cn } from '@/lib/utils';
@@ -52,7 +52,11 @@ export default function MatchingPage() {
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [chatKey, setChatKey] = useState(0); // Key pour forcer le remontage du composant chat
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
-  
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactProviderId, setContactProviderId] = useState<string | null>(null);
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSendingContact, setIsSendingContact] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -338,35 +342,92 @@ export default function MatchingPage() {
       toast.error('Profil couple non trouvé');
       return;
     }
+    // Vérifier si une demande existe déjà avant d'ouvrir le dialog
+    const supabase = createClient();
+    const { data: existing } = await supabase
+      .from('requests')
+      .select('id, status')
+      .eq('couple_id', coupleId)
+      .eq('provider_id', providerId)
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.status === 'pending') {
+        toast.info('Vous avez déjà une demande en attente pour ce prestataire');
+      } else if (existing.status === 'accepted') {
+        toast.info('Demande déjà acceptée ! Retrouvez la conversation dans la messagerie.');
+        router.push('/couple/messagerie');
+      } else {
+        // Rejected/cancelled — allow re-sending
+        setContactProviderId(providerId);
+        setContactMessage('');
+        setContactDialogOpen(true);
+      }
+      return;
+    }
+
+    setContactProviderId(providerId);
+    setContactMessage('');
+    setContactDialogOpen(true);
+  };
+
+  const handleSendContactRequest = async () => {
+    if (!coupleId || !contactProviderId || !contactMessage.trim()) {
+      toast.error('Veuillez écrire un message');
+      return;
+    }
+    setIsSendingContact(true);
     try {
       const supabase = createClient();
-      // Vérifier si une demande existe déjà
-      const { data: existing } = await supabase
-        .from('requests')
-        .select('id')
-        .eq('couple_id', coupleId)
-        .eq('provider_id', providerId)
-        .maybeSingle();
-
-      if (existing) {
-        toast.info('Vous avez deja envoye une demande a ce prestataire');
-        return;
-      }
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('requests')
         .insert({
           couple_id: coupleId,
-          provider_id: providerId,
+          provider_id: contactProviderId,
+          initial_message: contactMessage.trim(),
           status: 'pending',
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
-      trackMatchingEvent(providerId, 'contact');
-      toast.success('Demande de contact envoyee !');
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('Une demande existe déjà pour ce prestataire');
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      // Envoyer notification
+      if (data?.id) {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_request',
+            providerId: contactProviderId,
+            coupleId,
+            requestId: data.id,
+            message: contactMessage.trim(),
+          }),
+        }).catch(console.error);
+      }
+
+      trackMatchingEvent(contactProviderId, 'contact');
+      toast.success('Demande envoyée avec succès !');
+      setContactDialogOpen(false);
+      setContactMessage('');
+      setContactProviderId(null);
+
+      setTimeout(() => {
+        router.push('/couple/demandes');
+      }, 500);
     } catch (error) {
       console.error('Erreur envoi demande:', error);
       toast.error('Erreur lors de l\'envoi de la demande');
+    } finally {
+      setIsSendingContact(false);
     }
   };
 
@@ -440,6 +501,20 @@ export default function MatchingPage() {
     }
   };
 
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      const result = await deleteChatbotConversation(conversationId);
+      if (result.success) {
+        setSavedConversations(prev => prev.filter(c => c.id !== conversationId));
+        toast.success('Recherche supprimée');
+      } else {
+        toast.error(result.error || 'Erreur lors de la suppression');
+      }
+    } catch {
+      toast.error('Erreur lors de la suppression');
+    }
+  };
+
   const handleOpenConversations = () => {
     loadSavedConversations();
   };
@@ -465,12 +540,13 @@ export default function MatchingPage() {
     <div className="min-h-screen bg-gradient-to-br from-white to-[#F5F0F7]">
       <AnimatePresence mode="wait">
         {vue === 'landing' && (
-          <LandingView 
-            key="landing" 
+          <LandingView
+            key="landing"
             onStart={startMatching}
             savedConversations={savedConversations}
             loadingConversations={loadingConversations}
             onSelectConversation={handleSelectConversation}
+            onDeleteConversation={handleDeleteConversation}
           />
         )}
         
@@ -557,6 +633,49 @@ export default function MatchingPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog de contact prestataire */}
+      <Dialog open={contactDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setContactDialogOpen(false);
+          setContactProviderId(null);
+          setContactMessage('');
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contacter ce prestataire</DialogTitle>
+            <DialogDescription>
+              Présentez-vous et décrivez votre projet pour que le prestataire puisse vous répondre au mieux.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <textarea
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              placeholder="Bonjour, nous organisons notre mariage et nous serions intéressés par vos services..."
+              className="w-full min-h-[120px] p-3 text-sm border border-gray-200 rounded-xl resize-none outline-none focus:ring-2 focus:ring-[#823F91]/20 focus:border-[#823F91]/30 placeholder-gray-400"
+              disabled={isSendingContact}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setContactDialogOpen(false)}
+              disabled={isSendingContact}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSendContactRequest}
+              disabled={isSendingContact || !contactMessage.trim()}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+            >
+              {isSendingContact ? 'Envoi...' : 'Envoyer la demande'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
@@ -570,9 +689,10 @@ interface LandingViewProps {
   savedConversations: ChatbotConversation[];
   loadingConversations: boolean;
   onSelectConversation: (conversation: ChatbotConversation) => void;
+  onDeleteConversation: (id: string) => void;
 }
 
-function LandingView({ onStart, savedConversations, loadingConversations, onSelectConversation }: LandingViewProps) {
+function LandingView({ onStart, savedConversations, loadingConversations, onSelectConversation, onDeleteConversation }: LandingViewProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -655,18 +775,23 @@ function LandingView({ onStart, savedConversations, loadingConversations, onSele
                 const criteria = conversation.extracted_criteria;
                 const budgetMin = criteria?.budget_min;
                 const budgetMax = criteria?.budget_max;
-                const budgetText = budgetMin || budgetMax 
-                  ? `Budget : ${budgetMin || 0}€ - ${budgetMax || '∞'}€`
-                  : 'Budget non spécifié';
-                
+                const budgetText = budgetMin || budgetMax
+                  ? `${budgetMin || 0}€ – ${budgetMax || '∞'}€`
+                  : null;
+                const location = criteria?.wedding_city || criteria?.wedding_department;
+                const cultures = criteria?.cultures?.length ? criteria.cultures : null;
+                const guestCount = criteria?.guest_count;
+
                 return (
                   <div
                     key={conversation.id}
-                    onClick={() => onSelectConversation(conversation)}
-                    className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-6 hover:border-[#823F91] hover:shadow-md transition-all cursor-pointer"
+                    className="group bg-white rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-6 hover:border-[#823F91] hover:shadow-md transition-all"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() => onSelectConversation(conversation)}
+                      >
                         <div className="flex items-center gap-3 mb-2">
                           <h4 className="text-base sm:text-lg font-semibold text-gray-900">
                             {conversation.service_type || 'Recherche'}
@@ -688,16 +813,68 @@ function LandingView({ onStart, savedConversations, loadingConversations, onSele
                                 : 'Abandonnée'}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-1">
-                          {budgetText}
-                        </p>
+
+                        {/* Criteria chips */}
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          {budgetText && (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-gray-50 text-gray-600">
+                              {budgetText}
+                            </span>
+                          )}
+                          {location && (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-gray-50 text-gray-600">
+                              <MapPin className="h-3 w-3" />
+                              {location}
+                            </span>
+                          )}
+                          {guestCount && (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-gray-50 text-gray-600">
+                              <Users className="h-3 w-3" />
+                              {guestCount} invités
+                            </span>
+                          )}
+                          {cultures && cultures.map(c => (
+                            <span key={c} className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-purple-50 text-[#823F91]">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+
                         <p className="text-xs text-gray-400">
                           {new Date(conversation.created_at).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'short',
-                            year: 'numeric'
+                            year: 'numeric',
                           })}
                         </p>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-[#823F91] hover:bg-[#823F91]/10 rounded-lg"
+                          title="Relancer cette recherche"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelectConversation(conversation);
+                          }}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                          title="Supprimer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteConversation(conversation.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   </div>

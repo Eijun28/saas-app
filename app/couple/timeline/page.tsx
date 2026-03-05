@@ -10,7 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2, CalendarCheck, CalendarDays, Heart } from 'lucide-react'
+import { Calendar as CalendarIcon, Plus, X, Edit2, Trash2, CalendarCheck, CalendarDays, Heart, PartyPopper } from 'lucide-react'
+import Link from 'next/link'
 import {
   Dialog,
   DialogContent,
@@ -299,8 +300,11 @@ export default function TimelinePage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-[#823F91] tracking-tight mb-0.5 sm:mb-1">
-              Calendrier de mariage
+              Calendrier de preparation
             </h1>
+            <p className="text-xs sm:text-sm text-gray-500 mb-1">
+              Planifiez vos rendez-vous, essayages et degustations avant le mariage
+            </p>
             {dateMarriage ? (
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
                 <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#823F91] flex-shrink-0" />
@@ -322,7 +326,7 @@ export default function TimelinePage() {
                     year: 'numeric',
                   })}
                 </span>
-                <span className="text-gray-300">•</span>
+                <span className="text-gray-300">&bull;</span>
                 <span className="font-semibold text-[#823F91]">
                   {daysUntilWedding !== null && (
                     daysUntilWedding > 0 ? `J-${daysUntilWedding}` :
@@ -334,12 +338,19 @@ export default function TimelinePage() {
             ) : (
               <p className="text-xs sm:text-sm text-gray-400">
                 <a href="/couple/profil" className="text-[#823F91] hover:text-[#6D3478] underline">
-                  Définir la date de mariage
+                  Definir la date de mariage
                 </a>{' '}
-                pour voir le compte à rebours
+                pour voir le compte a rebours
               </p>
             )}
           </div>
+          <Link
+            href="/couple/jour-j"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#823F91] bg-[#823F91]/8 hover:bg-[#823F91]/15 rounded-lg transition-colors flex-shrink-0"
+          >
+            <PartyPopper className="h-3.5 w-3.5" />
+            Programme du Jour J
+          </Link>
         </div>
 
         {/* Stats cards */}
