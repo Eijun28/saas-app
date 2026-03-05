@@ -94,7 +94,6 @@ export function ServiceDetailsEditor({
           .from('provider_service_details')
           .update({
             details,
-            service_type: serviceType,
           })
           .eq('profile_id', userId)
 
@@ -104,7 +103,6 @@ export function ServiceDetailsEditor({
           .from('provider_service_details')
           .insert({
             profile_id: userId,
-            service_type: serviceType,
             details,
           })
 

@@ -38,7 +38,7 @@ interface ReviewDialogProps {
   providerId: string
   providerName: string
   coupleId: string
-  requestId?: string
+  requestId?: string // kept for API compatibility but no longer stored in DB
   existingReview?: ExistingReview
   onSubmitted?: () => void
 }
@@ -106,7 +106,6 @@ export function ReviewDialog({
   providerId,
   providerName,
   coupleId,
-  requestId,
   existingReview,
   onSubmitted,
 }: ReviewDialogProps) {
@@ -187,7 +186,6 @@ export function ReviewDialog({
       const reviewData: Record<string, unknown> = {
         couple_id: coupleId,
         provider_id: providerId,
-        request_id: requestId || null,
         rating,
         comment: comment.trim() || null,
         photos: allPhotoUrls,
