@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import OpenAI from 'openai';
+import { LRUCache } from 'lru-cache';
+import crypto from 'crypto';
 import {
   calculateTotalScore,
   enrichProviderWithFairness,
@@ -12,6 +14,45 @@ import {
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
 import type { SearchCriteria } from '@/types/chatbot';
 import { logger } from '@/lib/logger';
+
+/**
+ * LRU cache for AI-generated matching explanations.
+ * Keyed by a deterministic hash of the search criteria + provider scores.
+ * TTL: 1 hour — explanations for identical criteria don't change frequently.
+ * Max 200 entries to bound memory in serverless environments.
+ */
+const explanationCache = new LRUCache<string, string[]>({
+  max: 200,
+  ttl: 1000 * 60 * 60, // 1 hour
+});
+
+/**
+ * Builds a deterministic cache key from search criteria and the top providers' scores/breakdowns.
+ * The key includes provider IDs and scores so different result sets for the same criteria
+ * (e.g. due to availability changes) produce different keys.
+ */
+function buildExplanationCacheKey(
+  criteria: SearchCriteria,
+  providers: Array<{ provider: Record<string, unknown>; score: number; breakdown: ExtendedScoreBreakdown }>
+): string {
+  const keyData = {
+    service_type: criteria.service_type,
+    cultures: criteria.cultures?.slice().sort(),
+    cultural_importance: criteria.cultural_importance,
+    budget_min: criteria.budget_min,
+    budget_max: criteria.budget_max,
+    wedding_city: criteria.wedding_city,
+    event_types: criteria.event_types?.slice().sort(),
+    dietary_requirements: criteria.dietary_requirements?.slice().sort(),
+    vision_description: criteria.vision_description,
+    providers: providers.map(p => ({
+      id: p.provider.id,
+      score: p.score,
+    })),
+  };
+  const hash = crypto.createHash('sha256').update(JSON.stringify(keyData)).digest('hex');
+  return `matching-explanation:${hash}`;
+}
 
 let openaiClient: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -825,14 +866,25 @@ export async function POST(request: NextRequest) {
 
     // ETAPE 4.5 : GENERER LES EXPLICATIONS GPT POUR LES TOP 3
     // (en parallèle, avec fallback rule-based si GPT indisponible)
+    // Cache: identical criteria + provider set => reuse previous explanations (1h TTL)
     try {
-      const gptExplanations = await generateGPTExplanations(
-        topMatches.map(m => ({ breakdown: m.breakdown, provider: m.provider, score: m.score })),
-        search_criteria
-      );
-      topMatches.forEach((match, i) => {
-        match.explanation = gptExplanations[i] ?? match.explanation;
-      });
+      const explanationInputs = topMatches.map(m => ({ breakdown: m.breakdown, provider: m.provider, score: m.score }));
+      const cacheKey = buildExplanationCacheKey(search_criteria, explanationInputs);
+      const cachedExplanations = explanationCache.get(cacheKey);
+
+      if (cachedExplanations) {
+        logger.debug('✅ Explanation cache HIT');
+        topMatches.forEach((match, i) => {
+          match.explanation = cachedExplanations[i] ?? match.explanation;
+        });
+      } else {
+        logger.debug('❌ Explanation cache MISS — calling GPT');
+        const gptExplanations = await generateGPTExplanations(explanationInputs, search_criteria);
+        topMatches.forEach((match, i) => {
+          match.explanation = gptExplanations[i] ?? match.explanation;
+        });
+        explanationCache.set(cacheKey, gptExplanations);
+      }
     } catch (explainErr) {
       logger.warn('⚠️ Explication GPT non bloquante ignorée:', explainErr);
     }

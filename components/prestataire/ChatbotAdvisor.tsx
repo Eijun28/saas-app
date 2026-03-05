@@ -1,24 +1,39 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, FormEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Bot, Loader2 } from 'lucide-react'
 import { useUser } from '@/hooks/use-user'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useChat } from '@ai-sdk/react'
+import { TextStreamChatTransport } from 'ai'
+import type { UIMessage } from 'ai'
+
+function getMessageText(msg: UIMessage): string {
+  return msg.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map((p) => p.text)
+    .join('')
+}
 
 export function ChatbotAdvisor() {
   const { user } = useUser()
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
+  const [input, setInput] = useState('')
   const hasGreeted = useRef(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { messages, input, setInput, handleSubmit, isLoading, append, status } = useChat({
-    api: '/api/chatbot-advisor',
-    body: { user_id: user?.id },
+  const { messages, sendMessage, status } = useChat({
+    transport: new TextStreamChatTransport({
+      api: '/api/chatbot-advisor',
+      body: { user_id: user?.id },
+    }),
   })
+
+  const isLoading = status === 'submitted' || status === 'streaming'
+  const isStreaming = status === 'streaming'
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -32,9 +47,9 @@ export function ChatbotAdvisor() {
   useEffect(() => {
     if (isOpen && !hasGreeted.current && user?.id) {
       hasGreeted.current = true
-      append({ role: 'user', content: 'Bonjour' })
+      sendMessage({ text: 'Bonjour' })
     }
-  }, [isOpen, user?.id, append])
+  }, [isOpen, user?.id, sendMessage])
 
   // Focus input when chat opens
   useEffect(() => {
@@ -45,11 +60,17 @@ export function ChatbotAdvisor() {
 
   // Filter out the initial greeting from display
   const displayMessages = messages.filter((msg, i) => {
-    if (i === 0 && msg.role === 'user' && msg.content === 'Bonjour') return false
+    if (i === 0 && msg.role === 'user' && getMessageText(msg) === 'Bonjour') return false
     return true
   })
 
-  const isStreaming = status === 'streaming'
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    const trimmed = input.trim()
+    if (!trimmed || isLoading) return
+    setInput('')
+    sendMessage({ text: trimmed })
+  }
 
   return (
     <>
@@ -135,7 +156,7 @@ export function ChatbotAdvisor() {
                         : 'bg-gray-100 text-gray-800 rounded-bl-md'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p className="whitespace-pre-wrap">{getMessageText(msg)}</p>
                   </div>
                 </div>
               ))}

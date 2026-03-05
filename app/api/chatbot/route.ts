@@ -9,6 +9,7 @@ import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching
 import { logger } from '@/lib/logger';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
 import { sanitizeChatMessages, sanitizeAIInput } from '@/lib/security';
+import { estimateMessagesTokens, checkTokenBudget } from '@/lib/token-utils';
 
 const ChatbotResponseSchema = z.object({
   message: z.string().describe('Réponse courte (2-3 phrases max)'),
@@ -577,6 +578,21 @@ Exemple mauvais ton :
 "Wouah, excellente question ! Alors concernant le budget..."
 
 ✅ IMPÉRATIF : Utilise TOUJOURS les caractères accentués français corrects (é, è, ê, ë, à, â, ù, û, ç, î, ï, ô, ñ). Ne JAMAIS omettre les accents.`;
+
+    // Token budget pre-check — prevent sending requests that exceed context limits
+    const estimatedInputTokens = estimateMessagesTokens(messages, systemPrompt);
+    const maxOutputTokens = 500;
+    const tokenCheck = checkTokenBudget(estimatedInputTokens, 'gpt-4o', maxOutputTokens);
+    if (!tokenCheck.ok) {
+      logger.warn(`Chatbot token budget exceeded: estimated=${tokenCheck.estimated}, limit=${tokenCheck.limit}`);
+      return NextResponse.json(
+        { error: 'Message trop long', message: 'Votre conversation est trop longue. Veuillez la réinitialiser.' },
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        }
+      );
+    }
 
     // Appel à l'IA via Vercel AI SDK avec extraction structurée (Zod schema)
     let parsedResponse: z.infer<typeof ChatbotResponseSchema>;
