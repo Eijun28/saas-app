@@ -32,12 +32,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/sign-in?gcal_error=auth', req.url))
     }
 
-    // Construire l'URL de callback (doit correspondre à celle utilisée dans /auth)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    // Construire l'URL de callback (retirer le trailing slash)
+    const rawBase = process.env.NEXT_PUBLIC_APP_URL
       || process.env.NEXT_PUBLIC_SITE_URL
       || (process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : 'http://localhost:3000')
+    const baseUrl = rawBase.replace(/\/+$/, '')
 
     const redirectUri = `${baseUrl}/api/google-calendar/callback`
 
