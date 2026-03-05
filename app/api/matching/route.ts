@@ -14,6 +14,13 @@ import {
 import { MatchingRequest, ProviderMatch } from '@/types/matching';
 import type { SearchCriteria } from '@/types/chatbot';
 import { logger } from '@/lib/logger';
+import { recordMatchingView } from '@/lib/matching/conversion-tracking';
+import {
+  getMatchingExplanationSystemPrompt,
+  buildMatchingExplanationUserMessage,
+  type ProviderExplanationContext,
+  type CriteriaContext,
+} from '@/lib/prompts/matching-explanation';
 
 /**
  * LRU cache for AI-generated matching explanations.
@@ -258,46 +265,43 @@ async function generateGPTExplanations(
   if (!process.env.OPENAI_API_KEY) return fallbacks;
 
   try {
-    const providersContext = providers.map(({ provider, breakdown, score }, i) => {
-      const rating = typeof provider.average_rating === 'number' ? provider.average_rating : 0;
-      const reviews = typeof provider.review_count === 'number' ? provider.review_count : 0;
-      const exp = typeof provider.annees_experience === 'number' ? provider.annees_experience : 0;
-      const name = typeof provider.nom_entreprise === 'string' ? provider.nom_entreprise : `Prestataire ${i + 1}`;
-      const city = typeof provider.ville_principale === 'string' ? provider.ville_principale : '';
-      return [
-        `Prestataire ${i + 1} : ${name}${city ? ` (${city})` : ''}`,
-        `- Score global : ${score}/100`,
-        `- Match culturel : ${breakdown.cultural_match}/30`,
-        `- Budget : ${breakdown.budget_match}/20`,
-        `- Réputation : ${rating}/5 (${reviews} avis)`,
-        `- Expérience : ${exp} an${exp > 1 ? 's' : ''}`,
-        `- Localisation : ${breakdown.location_match}/10`,
-        breakdown.event_types_match ? `- Couverture événements : ${breakdown.event_types_match}/8` : '',
-        breakdown.dietary_match ? `- Alimentaire : ${breakdown.dietary_match > 0 ? '✓ couvert' : '✗ non couvert'}` : '',
-        breakdown.language_match ? `- Langues : ${breakdown.language_match > 0 ? '✓ couvertes' : ''}` : '',
-      ].filter(Boolean).join('\n');
-    }).join('\n\n');
+    const providerContexts: ProviderExplanationContext[] = providers.map(({ provider, breakdown, score }, i) => ({
+      name: typeof provider.nom_entreprise === 'string' ? provider.nom_entreprise : `Prestataire ${i + 1}`,
+      city: typeof provider.ville_principale === 'string' ? provider.ville_principale : '',
+      score,
+      culturalMatch: breakdown.cultural_match,
+      budgetMatch: breakdown.budget_match,
+      rating: typeof provider.average_rating === 'number' ? provider.average_rating : 0,
+      reviewCount: typeof provider.review_count === 'number' ? provider.review_count : 0,
+      experience: typeof provider.annees_experience === 'number' ? provider.annees_experience : 0,
+      locationMatch: breakdown.location_match,
+      eventTypesMatch: breakdown.event_types_match,
+      dietaryMatch: breakdown.dietary_match,
+      languageMatch: breakdown.language_match,
+    }));
 
-    const criteriaLines = [
-      `Service : ${criteria.service_type}`,
-      criteria.cultures?.length ? `Cultures : ${criteria.cultures.join(', ')} (importance : ${criteria.cultural_importance})` : '',
-      (criteria.budget_min || criteria.budget_max) ? `Budget : ${criteria.budget_min ?? ''}€ – ${criteria.budget_max ?? ''}€` : '',
-      criteria.wedding_city ? `Lieu : ${criteria.wedding_city}` : '',
-      criteria.event_types?.length ? `Événements : ${criteria.event_types.join(', ')}` : '',
-      criteria.dietary_requirements?.length ? `Alimentation requise : ${criteria.dietary_requirements.join(', ')}` : '',
-      criteria.vision_description ? `Vision du couple : ${criteria.vision_description}` : '',
-    ].filter(Boolean).join('\n');
+    const criteriaCtx: CriteriaContext = {
+      serviceType: criteria.service_type,
+      cultures: criteria.cultures,
+      culturalImportance: criteria.cultural_importance,
+      budgetMin: criteria.budget_min,
+      budgetMax: criteria.budget_max,
+      weddingCity: criteria.wedding_city,
+      eventTypes: criteria.event_types,
+      dietaryRequirements: criteria.dietary_requirements,
+      visionDescription: criteria.vision_description,
+    };
+
+    const systemMsg = getMatchingExplanationSystemPrompt();
+    const userContent = buildMatchingExplanationUserMessage(providerContexts, criteriaCtx);
 
     const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content: `Tu es un conseiller mariage expert et chaleureux. Pour chaque prestataire, génère une explication de match personnalisée (2 phrases max, en français) qui explique CONCRÈTEMENT pourquoi ce prestataire correspond à ce couple. Sois précis et humain, mentionne des éléments spécifiques (culture, budget, événements). Réponds uniquement en JSON : {"explanations": ["explication1", "explication2", "explication3"]}`,
-        },
+        systemMsg,
         {
           role: 'user',
-          content: `Critères du couple :\n${criteriaLines}\n\n${providersContext}`,
+          content: userContent,
         },
       ],
       temperature: 0.65,
@@ -928,6 +932,22 @@ export async function POST(request: NextRequest) {
       // Ne pas bloquer le matching si l'enregistrement des impressions echoue
       logger.warn('⚠️ Erreur enregistrement impressions (non bloquant):', impressionError);
     }
+
+    // ETAPE 7 : ENREGISTRER LES VUES MATCHING POUR LE SUIVI DE CONVERSION
+    // Non-bloquant : fire-and-forget pour ne pas ralentir la reponse
+    recordMatchingView(
+      couple_id,
+      topMatches.map((match) => ({
+        provider_id: typeof match.provider_id === 'string'
+          ? match.provider_id
+          : String(match.provider_id),
+        score: match.score,
+        rank: match.rank,
+        service_type: normalizedServiceType,
+      }))
+    ).catch((err) => {
+      logger.warn('Failed to record matching views for conversion tracking:', err);
+    });
 
     logger.info(`🎯 Top 3 scores: ${topMatches.map(p => p.score).join(', ')}`);
     logger.info(`📊 Total resultats disponibles: ${sortedProviders.length}`);

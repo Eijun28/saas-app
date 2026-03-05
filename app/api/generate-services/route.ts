@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeAIInput } from '@/lib/security'
+import { buildServiceGeneratorPrompt } from '@/lib/prompts/service-generator'
 
 let openaiClient: OpenAI | null = null
 
@@ -47,31 +48,12 @@ export async function POST(request: NextRequest) {
     const safeTarifs = sanitizeAIInput(String(tarifs_habituels || ''), 200)
     const safeAutres = sanitizeAIInput(String(autres_info || ''), 500)
 
-    const prompt = `Tu es un expert en services de mariage. Génère une liste de 4 à 6 services réalistes et bien définis pour un prestataire de type "${safeType}".
-
-Informations supplémentaires :
-- Spécialités : ${safeSpecialites || 'Non précisé'}
-- Fourchette de tarifs : ${safeTarifs || 'Non précisé'}
-- Autres informations : ${safeAutres || 'Non précisé'}
-
-Retourne UNIQUEMENT un JSON valide de cette forme (sans markdown) :
-{
-  "services": [
-    {
-      "nom": "Nom du service",
-      "description": "Description détaillée du service en 1-2 phrases",
-      "prix": 1500
-    }
-  ]
-}
-
-Règles :
-- Les noms doivent être clairs et professionnels
-- Les descriptions doivent être précises et commerciales
-- Les prix doivent être réalistes pour le marché du mariage en France (en euros, nombre entier)
-- Entre 4 et 6 services maximum
-- Ne pas inclure de packages avec prix "à partir de"
-- Adapter les services aux spécialités mentionnées`
+    const prompt = buildServiceGeneratorPrompt({
+      typeActivite: safeType,
+      specialites: safeSpecialites,
+      tarifsHabituels: safeTarifs,
+      autresInfo: safeAutres,
+    })
 
     const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
