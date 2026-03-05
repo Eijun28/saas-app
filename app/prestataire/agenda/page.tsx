@@ -455,7 +455,7 @@ export default function AgendaPage() {
 
 
   return (
-    <div className="h-[calc(100dvh-80px)] flex flex-col gap-4 p-4 sm:p-6 lg:p-8">
+    <div className="flex flex-col gap-4 p-4 sm:p-6 lg:p-8 pb-8">
       {/* Header avec stats */}
       <div className="flex-shrink-0 space-y-4">
         <div className="flex items-start justify-between">
@@ -534,7 +534,7 @@ export default function AgendaPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="flex-1 min-h-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+        className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm h-[700px] lg:h-[780px]"
       >
         <CalendarDashboard
           events={calendarEvents}

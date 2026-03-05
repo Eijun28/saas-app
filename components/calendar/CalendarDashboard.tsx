@@ -384,7 +384,7 @@ export function CalendarDashboard({
         </div>
 
         {/* Grille des jours - DYNAMIQUE (5 ou 6 semaines selon le mois) */}
-        <div className="flex-1 grid grid-cols-7 auto-rows-fr gap-0 overflow-hidden bg-white">
+        <div className="flex-1 grid grid-cols-7 gap-0 overflow-y-auto bg-white" style={{ gridAutoRows: 'minmax(110px, 1fr)' }}>
           {days.map((day, index) => {
             const isCurrentMonth = isSameMonth(day, currentDate)
             const isTodayDay = isSameDay(day, new Date())
@@ -398,9 +398,9 @@ export function CalendarDashboard({
               <div
                 key={index}
                 className={cn(
-                  'border-r border-b border-gray-100 p-1.5 sm:p-2',
+                  'border-r border-b border-gray-100 p-1.5 sm:p-2.5',
                   'hover:bg-[#F5F0F7]/30 active:bg-[#F5F0F7]/60 transition-all duration-150 cursor-pointer touch-manipulation',
-                  'flex flex-col items-center sm:items-start justify-start min-h-[64px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[130px]',
+                  'flex flex-col items-center sm:items-start justify-start',
                   !isCurrentMonth && 'bg-gray-50/40',
                   isCurrentMonth && 'bg-white',
                   isPastDay && 'opacity-40'
