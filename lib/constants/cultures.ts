@@ -225,17 +225,7 @@ export const CULTURE_CATEGORIES: CultureCategory[] = [
 const culturesMap = new Map<string, { id: string; label: string }>()
 
 // Ajouter les catégories principales (pour compatibilité)
-const mainCategories = [
-  { id: 'maghrebin', label: 'Maghrébin' },
-  { id: 'indien', label: 'Indien' },
-  { id: 'pakistanais', label: 'Pakistanais' },
-  { id: 'antillais', label: 'Antillais' },
-  { id: 'africain', label: 'Africain' },
-  { id: 'asiatique', label: 'Asiatique' },
-  { id: 'europeen', label: 'Européen' },
-  { id: 'turc', label: 'Turc' },
-  { id: 'mixte', label: 'Mixte/Multiculturel' },
-]
+const mainCategories = CULTURE_CATEGORIES.map(cat => ({ id: cat.id, label: cat.label }))
 
 mainCategories.forEach(cat => {
   culturesMap.set(cat.id, cat)
