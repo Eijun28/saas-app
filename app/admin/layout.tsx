@@ -70,6 +70,12 @@ export default async function AdminLayout({
               >
                 Ambassadeurs
               </a>
+              <a
+                href="/admin/newsletter"
+                className="text-sm text-[#823F91] hover:text-[#6D3478] font-medium"
+              >
+                Newsletter
+              </a>
             </div>
           </div>
         </div>

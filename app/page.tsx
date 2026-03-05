@@ -25,6 +25,9 @@ const PrestatairesMarquee = dynamic(() => import('@/components/landing/Prestatai
 const FeaturesGrid = dynamic(() => import('@/components/landing/FeaturesGrid').then(mod => ({ default: mod.FeaturesGrid })), {
   loading: () => <div className="min-h-[400px]" />,
 })
+const NewsletterSection = dynamic(() => import('@/components/landing/NewsletterSection').then(mod => ({ default: mod.NewsletterSection })), {
+  loading: () => <div className="min-h-[200px]" />,
+})
 const CTA = dynamic(() => import('@/components/landing/CTA'), {
   loading: () => <div className="min-h-[200px]" />,
 })
@@ -44,6 +47,7 @@ export default function HomePage() {
           <MatchingQuizSection />
           <PrestatairesMarquee />
           <FeaturesGrid />
+          <NewsletterSection />
           <CTA
             title="Commencez votre mariage de rêve"
             buttons={[
