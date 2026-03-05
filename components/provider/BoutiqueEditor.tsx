@@ -161,7 +161,7 @@ export function BoutiqueEditor({ userId, initialData, onSave }: BoutiqueEditorPr
           <div>
             <Label className="text-base font-semibold text-gray-900">Boutique / Showroom</Label>
             <p className="text-sm text-gray-500">
-              Avez-vous un lieu physique ou recevoir vos clients ?
+              Avez-vous un lieu physique (boutique, studio, showroom) où recevoir vos clients ?
             </p>
           </div>
         </div>
