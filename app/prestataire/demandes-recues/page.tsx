@@ -122,7 +122,7 @@ export default function DemandesRecuesPage() {
 
     // Couples
     const coupleIds = Array.from(new Set<string>(requestsData.map((r: any) => r.couple_id as string)))
-    const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date', 'budget_min', 'budget_max', 'city'])
+    const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date', 'budget_min', 'budget_max', 'wedding_location'])
 
     const data: RequestWithCouple[] = requestsData.map((r: any) => {
       const c = couplesMap.get(r.couple_id)
@@ -130,7 +130,7 @@ export default function DemandesRecuesPage() {
         id: r.id, couple_id: r.couple_id, provider_id: r.provider_id,
         status: r.status, initial_message: r.initial_message || '',
         created_at: r.created_at,
-        couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined, budget_min: c.budget_min ?? undefined, budget_max: c.budget_max ?? undefined, city: c.city ?? undefined } : null,
+        couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined, budget_min: c.budget_min ?? undefined, budget_max: c.budget_max ?? undefined, city: c.wedding_location ?? undefined } : null,
       }
     })
 
