@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Plus, SlidersHorizontal, X, Download, Share2, CalendarDays } from 'lucide-react'
+import { Plus, SlidersHorizontal, X, Download, Share2, CalendarDays, FileText, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +17,12 @@ import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { ProgramTimeline } from '@/components/wedding-day-program/ProgramTimeline'
 import { ProgramForm } from '@/components/wedding-day-program/ProgramForm'
 import { ProgramShareDialog } from '@/components/wedding-day-program/ProgramShareDialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useUser } from '@/hooks/use-user'
 import type { ProgramItem, ProgramCategory } from '@/types/wedding-day-program'
 import {
@@ -78,9 +84,35 @@ export default function JourJPage() {
 
   const hasActiveFilter = filterCategory !== 'all'
 
-  // ─── Export texte basique ───────────────────────────────────────────────────
+  // ─── Export PDF ─────────────────────────────────────────────────────────────
 
-  function handleExport() {
+  const [exporting, setExporting] = useState(false)
+
+  async function handleExportPDF() {
+    if (items.length === 0) { toast.error('Aucun créneau à exporter'); return }
+    setExporting(true)
+    try {
+      const res = await fetch('/api/wedding-day-program/pdf')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Erreur lors de la génération du PDF')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'Programme-Jour-J.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('PDF téléchargé')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de l\'export')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  function handleExportText() {
     if (items.length === 0) { toast.error('Aucun créneau à exporter'); return }
     const lines = [
       'PROGRAMME DU JOUR J',
@@ -89,8 +121,8 @@ export default function JourJPage() {
       ...items.map(item => {
         const time = formatTime(item.start_time) + (item.end_time ? ` → ${formatTime(item.end_time)}` : '')
         const parts = [`${time}  ${item.title}`]
-        if (item.location)    parts.push(`  📍 ${item.location}`)
-        if (item.responsible) parts.push(`  👤 ${item.responsible}`)
+        if (item.location)    parts.push(`  Lieu: ${item.location}`)
+        if (item.responsible) parts.push(`  Responsable: ${item.responsible}`)
         if (item.description) parts.push(`  ${item.description}`)
         return parts.join('\n')
       }),
@@ -133,15 +165,29 @@ export default function JourJPage() {
           </Link>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleExport}
-            className="h-10 w-10 rounded-xl"
-            title="Exporter le programme"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-xl"
+                title="Exporter le programme"
+                disabled={exporting}
+              >
+                {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportPDF} className="gap-2">
+                <FileText className="h-4 w-4" />
+                Exporter en PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportText} className="gap-2">
+                <Download className="h-4 w-4" />
+                Exporter en texte
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant="outline"
             onClick={() => setShowShareDialog(true)}

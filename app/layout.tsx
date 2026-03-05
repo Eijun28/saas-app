@@ -11,6 +11,7 @@ import { seoConfig } from "@/lib/seo/config";
 import { siteConfig } from "@/config/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo/structured-data";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 // Les images OG/Twitter sont gérées par opengraph-image.tsx et twitter-image.tsx
 // (convention Next.js file-based metadata — pas besoin de les déclarer ici)
@@ -70,7 +71,8 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <meta name="theme-color" content="#FAF9F6" />
+        <meta name="theme-color" content="#823F91" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`${GeistSans.className} ${GeistSans.variable} antialiased bg-background`} suppressHydrationWarning>
         {/* Données structurées pour le SEO */}
@@ -90,6 +92,7 @@ export default function RootLayout({
         {/* Toaster pour les notifications */}
         <Toaster />
         <Analytics />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

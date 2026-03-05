@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight, Bookmark, BookmarkCheck, Trash2, LayoutGrid, Map as MapIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,7 @@ import { SERVICE_CATEGORIES } from '@/lib/constants/service-types'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { AvailabilityIndicator } from '@/components/provider-availability/AvailabilityIndicator'
 import { ProviderComparisonTray } from '@/components/recherche/ProviderComparisonTray'
+import { MapView } from '@/components/recherche/MapView'
 
 interface ProviderTag {
   id: string
@@ -133,6 +134,7 @@ export default function RecherchePage() {
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, boolean>>({}) // providerId → isAvailable
   // Comparaison — max 3 prestataires
   const [comparisonIds, setComparisonIds] = useState<Set<string>>(new Set())
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid')
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -1049,20 +1051,38 @@ export default function RecherchePage() {
             </button>
           )}
 
-          {/* Tri */}
-          <div className="flex items-center gap-1.5 ml-auto">
-            <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="text-[11px] text-gray-600 bg-transparent border border-gray-200 rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#823F91]/30"
-            >
-              <option value="default">Par defaut</option>
-              <option value="rating">Meilleure note</option>
-              <option value="reviews">Plus d&apos;avis</option>
-              <option value="budget_asc">Budget croissant</option>
-              <option value="budget_desc">Budget decroissant</option>
-            </select>
+          {/* Tri + vue */}
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="h-3.5 w-3.5 text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="text-[11px] text-gray-600 bg-transparent border border-gray-200 rounded-full px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#823F91]/30"
+              >
+                <option value="default">Par defaut</option>
+                <option value="rating">Meilleure note</option>
+                <option value="reviews">Plus d&apos;avis</option>
+                <option value="budget_asc">Budget croissant</option>
+                <option value="budget_desc">Budget decroissant</option>
+              </select>
+            </div>
+            <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-[#823F91] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                title="Vue grille"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`p-1.5 transition-colors ${viewMode === 'map' ? 'bg-[#823F91] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                title="Vue carte"
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -1109,6 +1129,15 @@ export default function RecherchePage() {
                   </p>
                 </div>
 
+                {viewMode === 'map' ? (
+                  <MapView
+                    providers={displayedProviders}
+                    onSelectProvider={(id) => {
+                      const provider = displayedProviders.find(p => p.id === id)
+                      if (provider) handleProviderClick(provider)
+                    }}
+                  />
+                ) : (
                 <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-20 md:pb-4' : ''}`}>
                   {displayedProviders.map((provider, index) => (
                 <motion.div
@@ -1232,9 +1261,10 @@ export default function RecherchePage() {
                 </motion.div>
               ))}
             </div>
+                )}
 
                 {/* Load more */}
-                {hasMore && displayedProviders.length > 0 && (
+                {viewMode === 'grid' && hasMore && displayedProviders.length > 0 && (
                   <div className="flex justify-center pt-4">
                     <Button
                       variant="outline"
