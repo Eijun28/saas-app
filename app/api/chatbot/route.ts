@@ -1,127 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import { generateObject } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
 import { chatbotLimiter, getClientIp } from '@/lib/rate-limit';
 import { handleApiError } from '@/lib/api-error-handler';
-import { getServiceSpecificPrompt, shouldAskQuestion, getMinRequiredCriteria } from '@/lib/chatbot/service-prompts';
+import { getServiceSpecificPrompt, getMinRequiredCriteria } from '@/lib/chatbot/service-prompts';
 import { calculateMarketAverage, formatBudgetGuideMessage } from '@/lib/matching/market-averages';
 import { logger } from '@/lib/logger';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
 import { sanitizeChatMessages, sanitizeAIInput } from '@/lib/security';
+import { estimateMessagesTokens, checkTokenBudget } from '@/lib/token-utils';
 
-// Lazy initialization to avoid build-time errors
-let openaiClient: OpenAI | null = null;
-
-function getOpenAI(): OpenAI {
-  if (!openaiClient) {
-    openaiClient = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openaiClient;
-}
-
-// Fonction utilitaire pour corriger l'encodage UTF-8 des caractères accentués
-function fixUtf8Encoding(text: string): string {
-  if (!text || typeof text !== 'string') return text;
-
-  try {
-    let fixed = text;
-
-    // Décoder les séquences d'échappement Unicode (\uXXXX)
-    fixed = fixed.replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
-      return String.fromCharCode(parseInt(code, 16));
-    });
-
-    // Réparation double-encodage UTF-8 : seulement si on détecte le pattern Ã + suite
-    // (Ã = 0xC3 en Latin-1, typique du double-encodage de é/à/ç/è/ê/etc.)
-    // On cible uniquement "Ã©", "Ã ", "Ã§", "Ã¨"... pour éviter de toucher au texte correct
-    if (/Ã[\x80-\xBF©«®±²³µ¶¹»¼½¾¿]/.test(fixed)) {
-      try {
-        const bytes = new Uint8Array([...fixed].map(c => c.charCodeAt(0)));
-        const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-        if (decoded && !decoded.includes('\uFFFD')) {
-          fixed = decoded;
-        }
-      } catch {
-        // Pas du double-encodage, continuer normalement
-      }
-    }
-
-    // Normaliser les caractères Unicode (NFC - Canonical Composition)
-    fixed = fixed.normalize('NFC');
-
-    // Si le texte contient des caractères de remplacement (�), appliquer les corrections
-    if (fixed.includes('\uFFFD') || fixed.includes('�')) {
-      // Remplacer les patterns courants de mots français mal encodés
-      const wordReplacements: Record<string, string> = {
-        // Verbes et formes courantes
-        'r\uFFFDsume': 'résume', 'r\uFFFDsum\uFFFD': 'résumé',
-        'pr\uFFFDciser': 'préciser', 'pr\uFFFDcis\uFFFDment': 'précisément',
-        'pr\uFFFDf\uFFFDr\uFFFD': 'préféré', 'pr\uFFFDf\uFFFDr\uFFFDe': 'préférée',
-        'pr\uFFFDf\uFFFDr\uFFFDes': 'préférées', 'pr\uFFFDf\uFFFDr\uFFFDs': 'préférés',
-        'pr\uFFFDf\uFFFDrence': 'préférence', 'pr\uFFFDf\uFFFDrences': 'préférences',
-        'd\uFFFDj\uFFFD': 'déjà', 'tr\uFFFDs': 'très',
-        'apr\uFFFDs': 'après', 'm\uFFFDme': 'même',
-        // Noms communs mariage
-        'c\uFFFDr\uFFFDmonie': 'cérémonie', 'c\uFFFDr\uFFFDmonies': 'cérémonies',
-        'allerg\uFFFDnes': 'allergènes', 'r\uFFFDgime': 'régime',
-        'v\uFFFDg\uFFFDtarien': 'végétarien', 'v\uFFFDg\uFFFDtarienne': 'végétarienne',
-        'sp\uFFFDcifique': 'spécifique', 'sp\uFFFDcifiques': 'spécifiques',
-        'sp\uFFFDcialit\uFFFD': 'spécialité', 'sp\uFFFDcialit\uFFFDs': 'spécialités',
-        'sp\uFFFDcialis\uFFFD': 'spécialisé',
-        // Cultures
-        'alg\uFFFDrien': 'algérien', 'alg\uFFFDrienne': 'algérienne',
-        'maghr\uFFFDbin': 'maghrébin', 'maghr\uFFFDbine': 'maghrébine',
-        's\uFFFDn\uFFFDgalais': 'sénégalais',
-        'europ\uFFFDen': 'européen', 'europ\uFFFDenne': 'européenne',
-        'm\uFFFDditerran\uFFFDen': 'méditerranéen',
-        // Adjectifs courants
-        '\uFFFDl\uFFFDgant': 'élégant', '\uFFFDl\uFFFDgante': 'élégante',
-        'cr\uFFFDatif': 'créatif', 'cr\uFFFDative': 'créative',
-        'g\uFFFDn\uFFFDral': 'général', 'g\uFFFDn\uFFFDrale': 'générale',
-        'd\uFFFDcoration': 'décoration', 'd\uFFFDcorateur': 'décorateur',
-        'r\uFFFDception': 'réception', 'r\uFFFDserver': 'réserver',
-        'r\uFFFDservation': 'réservation',
-        'compl\uFFFDter': 'compléter', 'compl\uFFFDtement': 'complètement',
-        'diff\uFFFDrent': 'différent', 'diff\uFFFDrente': 'différente',
-        'int\uFFFDress\uFFFD': 'intéressé', 'int\uFFFDressant': 'intéressant',
-        'n\uFFFDcessaire': 'nécessaire', 'qualit\uFFFD': 'qualité',
-        'quantit\uFFFD': 'quantité', 'beaut\uFFFD': 'beauté',
-        'march\uFFFD': 'marché', 'id\uFFFDe': 'idée', 'id\uFFFDes': 'idées',
-        'num\uFFFDro': 'numéro', 'priv\uFFFD': 'privé',
-        '\uFFFDv\uFFFDnement': 'événement', '\uFFFDv\uFFFDnements': 'événements',
-        'exp\uFFFDrience': 'expérience', 'exp\uFFFDriment\uFFFD': 'expérimenté',
-        'atmosph\uFFFDre': 'atmosphère', 'mani\uFFFDre': 'manière',
-        'premi\uFFFDre': 'première', 'derni\uFFFDre': 'dernière',
-        'enti\uFFFDre': 'entière', 'enti\uFFFDrement': 'entièrement',
-        'particuli\uFFFDre': 'particulière', 'particuli\uFFFDrement': 'particulièrement',
-        'l\uFFFDg\uFFFDret\uFFFD': 'légèreté',
-      };
-
-      for (const [wrong, correct] of Object.entries(wordReplacements)) {
-        const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        fixed = fixed.replace(regex, correct);
-      }
-
-      // Dernier recours : supprimer les caractères de remplacement isolés restants
-      // (plutôt que d'afficher des '�' dans l'interface)
-      if (fixed.includes('\uFFFD')) {
-        console.warn('Caractères de remplacement restants après correction:', {
-          original: text.substring(0, 200),
-          fixed: fixed.substring(0, 200),
-        });
-        // Remplacer les � isolés par rien (les supprimer proprement)
-        fixed = fixed.replace(/\uFFFD/g, '');
-      }
-    }
-
-    return fixed;
-  } catch (error) {
-    console.error('Erreur lors de la correction UTF-8:', error);
-    return text;
-  }
-}
+const ChatbotResponseSchema = z.object({
+  message: z.string().describe('Réponse courte (2-3 phrases max)'),
+  suggestions: z.array(z.string()).max(4).describe('2-4 suggestions de réponse rapide'),
+  extracted_data: z.object({
+    service_type: z.string().nullable().optional().describe('Type de prestataire recherché'),
+    cultures: z.array(z.string()).optional().describe('Cultures/traditions du couple'),
+    cultural_importance: z.enum(['essential', 'important', 'nice_to_have']).nullable().optional(),
+    budget_min: z.number().nullable().optional(),
+    budget_max: z.number().nullable().optional(),
+    wedding_style: z.string().nullable().optional(),
+    wedding_ambiance: z.string().nullable().optional(),
+    specific_requirements: z.array(z.string()).optional(),
+    tags: z.array(z.string()).optional(),
+    event_types: z.array(z.string()).optional(),
+    vision_description: z.string().optional().describe('Résumé personnalisé de toute la conversation'),
+    must_haves: z.array(z.string()).optional(),
+    must_not_haves: z.array(z.string()).optional(),
+    dietary_requirements: z.array(z.string()).nullable().optional(),
+    required_languages: z.array(z.string()).nullable().optional(),
+  }).optional(),
+  next_action: z.enum(['continue', 'validate']).describe('continue ou validate si critères suffisants'),
+  question_count: z.number().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -667,297 +579,122 @@ Exemple mauvais ton :
 
 ✅ IMPÉRATIF : Utilise TOUJOURS les caractères accentués français corrects (é, è, ê, ë, à, â, ù, û, ç, î, ï, ô, ñ). Ne JAMAIS omettre les accents.`;
 
-    // Messages déjà sanitisés et au format OpenAI par sanitizeChatMessages
-    const openaiMessages: ChatCompletionMessageParam[] = messages;
-
-    // Compter le nombre de questions déjà posées (messages assistant)
-    const questionCount = messages.filter((m) => m.role === 'assistant').length;
-
-    // Appel à OpenAI avec gestion d'erreur améliorée
-    let response;
-    try {
-      response = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...openaiMessages,
-        ],
-        temperature: 0.3,        // Très déterministe pour extraction fiable
-        max_tokens: 500,         // Suffisant pour JSON complet avec suggestions
-        response_format: { type: 'json_object' },
-      });
-    } catch (openaiError: any) {
-      logger.error('Erreur OpenAI API:', openaiError);
-      const errorMessage = openaiError?.message || 'Erreur lors de l\'appel à l\'API OpenAI';
+    // Token budget pre-check — prevent sending requests that exceed context limits
+    const estimatedInputTokens = estimateMessagesTokens(messages, systemPrompt);
+    const maxOutputTokens = 500;
+    const tokenCheck = checkTokenBudget(estimatedInputTokens, 'gpt-4o', maxOutputTokens);
+    if (!tokenCheck.ok) {
+      logger.warn(`Chatbot token budget exceeded: estimated=${tokenCheck.estimated}, limit=${tokenCheck.limit}`);
       return NextResponse.json(
-        { 
-          error: 'Erreur service IA', 
-          details: errorMessage,
+        { error: 'Message trop long', message: 'Votre conversation est trop longue. Veuillez la réinitialiser.' },
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        }
+      );
+    }
+
+    // Appel à l'IA via Vercel AI SDK avec extraction structurée (Zod schema)
+    let parsedResponse: z.infer<typeof ChatbotResponseSchema>;
+    try {
+      const { object } = await generateObject({
+        model: openai('gpt-4o'),
+        system: systemPrompt,
+        messages,
+        schema: ChatbotResponseSchema,
+        temperature: 0.3,
+        maxOutputTokens: 500,
+      });
+      parsedResponse = object;
+    } catch (aiError: unknown) {
+      logger.error('Erreur AI SDK chatbot:', aiError);
+      return NextResponse.json(
+        {
+          error: 'Erreur service IA',
           message: 'Désolé, le service IA est temporairement indisponible. Veuillez réessayer.',
         },
-        { 
+        {
           status: 503,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
         }
       );
     }
 
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      logger.error('Réponse OpenAI vide:', response);
-      return NextResponse.json(
-        { 
-          error: 'Réponse vide du service IA',
-          message: 'Désolé, je n\'ai pas pu générer de réponse. Pouvez-vous reformuler ?',
-        },
-        { 
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        }
-      );
-    }
-    
-    // Corriger l'encodage UTF-8 du contenu dès la réception
-    const fixedContent = fixUtf8Encoding(content);
+    // Normaliser le message
+    parsedResponse.message = (parsedResponse.message || 'Je n\'ai pas compris. Pouvez-vous reformuler ?').normalize('NFC');
 
-    // Parser la réponse JSON avec gestion d'erreur améliorée
-    let parsedResponse;
-    try {
-      // Nettoyer le contenu si nécessaire (enlever markdown code blocks, etc.)
-      // Utiliser le contenu corrigé
-      let cleanedContent = fixedContent.trim();
-      
-      // Si le contenu est entouré de markdown code blocks, les enlever
-      if (cleanedContent.startsWith('```json')) {
-        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (cleanedContent.startsWith('```')) {
-        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-      
-      // Normaliser les caractères Unicode avant le parsing
-      cleanedContent = cleanedContent.normalize('NFC');
-      
-      // Parser le JSON
-      parsedResponse = JSON.parse(cleanedContent);
-      
-      // S'assurer que tous les strings dans la réponse sont correctement décodés
-      if (parsedResponse.message && typeof parsedResponse.message === 'string') {
-        // Corriger l'encodage UTF-8 du message
-        parsedResponse.message = fixUtf8Encoding(parsedResponse.message);
-      }
-      
-      // Corriger aussi les autres champs de texte si présents
-      if (parsedResponse.extracted_data) {
-        if (parsedResponse.extracted_data.vision_description && typeof parsedResponse.extracted_data.vision_description === 'string') {
-          parsedResponse.extracted_data.vision_description = fixUtf8Encoding(parsedResponse.extracted_data.vision_description);
-        }
-        if (parsedResponse.extracted_data.wedding_ambiance && typeof parsedResponse.extracted_data.wedding_ambiance === 'string') {
-          parsedResponse.extracted_data.wedding_ambiance = fixUtf8Encoding(parsedResponse.extracted_data.wedding_ambiance);
-        }
-      }
-    } catch (parseError: any) {
-      logger.error('Erreur parsing réponse OpenAI:', {
-        error: parseError?.message || parseError,
-        contentLength: content?.length,
-        contentPreview: content?.substring(0, 200),
-        fullContent: content,
-      });
-      
-      // Essayer de récupérer au moins le message si c'est un JSON partiel
-      let fallbackMessage = 'Je n\'ai pas pu traiter votre demande. Pouvez-vous reformuler ?';
-      try {
-        // Essayer d'extraire un message même si le JSON est invalide
-        const messageMatch = fixedContent.match(/"message"\s*:\s*"([^"]+)"/);
-        if (messageMatch && messageMatch[1]) {
-          fallbackMessage = fixUtf8Encoding(messageMatch[1]);
-        }
-      } catch (e) {
-        // Ignorer
-      }
-      
-      return NextResponse.json(
-        { 
-          error: 'Format de réponse invalide',
-          details: parseError?.message || 'Erreur de parsing JSON',
-          message: fallbackMessage,
-        },
-        { 
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        }
-      );
-    }
+    // Normaliser les suggestions
+    parsedResponse.suggestions = (parsedResponse.suggestions || [])
+      .filter(s => s.trim().length > 0)
+      .map(s => s.normalize('NFC').trim())
+      .slice(0, 4);
 
-    // Validation de la structure de réponse
-    if (!parsedResponse || typeof parsedResponse !== 'object') {
-      logger.error('Réponse OpenAI invalide (pas un objet):', parsedResponse);
-      return NextResponse.json(
-        { 
-          error: 'Format de réponse invalide',
-          message: 'Je n\'ai pas pu traiter votre demande. Pouvez-vous reformuler ?',
-          extracted_data: {},
-          next_action: 'continue',
-        },
-        { 
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        }
-      );
-    }
-
-    // S'assurer que le message existe et est une chaîne
-    if (!parsedResponse.message || typeof parsedResponse.message !== 'string') {
-      logger.error('Réponse OpenAI invalide (pas de message):', parsedResponse);
-      parsedResponse.message = 'Je n\'ai pas compris. Pouvez-vous reformuler ?';
-    } else {
-      // Normaliser les caractères UTF-8 pour garantir l'affichage correct des accents
-      parsedResponse.message = parsedResponse.message.normalize('NFC');
-    }
-
-    // S'assurer que next_action existe
-    if (!parsedResponse.next_action || !['continue', 'validate'].includes(parsedResponse.next_action)) {
-      parsedResponse.next_action = 'continue';
-    }
-
-    // S'assurer que extracted_data existe
-    if (!parsedResponse.extracted_data || typeof parsedResponse.extracted_data !== 'object') {
+    // Initialiser extracted_data si absent
+    if (!parsedResponse.extracted_data) {
       parsedResponse.extracted_data = {};
     }
 
-    // S'assurer que tags est un tableau
-    if (!Array.isArray(parsedResponse.extracted_data.tags)) {
-      parsedResponse.extracted_data.tags = [];
-    }
-
-    // S'assurer que event_types est un tableau
-    if (!Array.isArray(parsedResponse.extracted_data.event_types)) {
-      parsedResponse.extracted_data.event_types = [];
-    }
-
-    // Normaliser dietary_requirements (null si tableau vide)
-    if (Array.isArray(parsedResponse.extracted_data.dietary_requirements) && parsedResponse.extracted_data.dietary_requirements.length === 0) {
-      parsedResponse.extracted_data.dietary_requirements = null;
-    }
-
-    // Normaliser required_languages (null si tableau vide)
-    if (Array.isArray(parsedResponse.extracted_data.required_languages) && parsedResponse.extracted_data.required_languages.length === 0) {
-      parsedResponse.extracted_data.required_languages = null;
-    }
-
-    // Valider et normaliser les suggestions
-    if (!Array.isArray(parsedResponse.suggestions)) {
-      parsedResponse.suggestions = [];
-    } else {
-      // Filtrer les suggestions vides, normaliser les accents, limiter à 4
-      parsedResponse.suggestions = parsedResponse.suggestions
-        .filter((s: any) => typeof s === 'string' && s.trim().length > 0)
-        .map((s: string) => s.normalize('NFC').trim())
-        .slice(0, 4);
-    }
-
     // PRÉ-REMPLIR avec les données du couple si disponibles
+    // Le frontend attend des champs additionnels dans extracted_data
+    const responseData: Record<string, unknown> = { ...parsedResponse };
+    const extractedData: Record<string, unknown> = { ...parsedResponse.extracted_data };
+    responseData.extracted_data = extractedData;
+
     if (couple_profile) {
-      // Cultures
-      if (couple_profile.cultures && couple_profile.cultures.length > 0) {
-        if (!parsedResponse.extracted_data.cultures || parsedResponse.extracted_data.cultures.length === 0) {
-          parsedResponse.extracted_data.cultures = couple_profile.cultures;
-        }
+      if (couple_profile.cultures?.length > 0 && (!extractedData.cultures || (extractedData.cultures as string[]).length === 0)) {
+        extractedData.cultures = couple_profile.cultures;
       }
-
-      // Date mariage
-      if (couple_profile.wedding_date && !parsedResponse.extracted_data.wedding_date) {
-        parsedResponse.extracted_data.wedding_date = couple_profile.wedding_date;
+      if (couple_profile.wedding_date && !extractedData.wedding_date) {
+        extractedData.wedding_date = couple_profile.wedding_date;
       }
-
-      // Localisation
-      if (couple_profile.wedding_city && !parsedResponse.extracted_data.wedding_city) {
-        parsedResponse.extracted_data.wedding_city = couple_profile.wedding_city;
+      if (couple_profile.wedding_city && !extractedData.wedding_city) {
+        extractedData.wedding_city = couple_profile.wedding_city;
       }
-      if (couple_profile.wedding_region && !parsedResponse.extracted_data.wedding_department) {
-        parsedResponse.extracted_data.wedding_department = couple_profile.wedding_region;
+      if (couple_profile.wedding_region && !extractedData.wedding_department) {
+        extractedData.wedding_department = couple_profile.wedding_region;
       }
-
-      // Nombre d'invités
-      if (couple_profile.guest_count && !parsedResponse.extracted_data.guest_count) {
-        parsedResponse.extracted_data.guest_count = couple_profile.guest_count;
+      if (couple_profile.guest_count && !extractedData.guest_count) {
+        extractedData.guest_count = couple_profile.guest_count;
       }
-
-      // Style et ambiance
-      if (couple_profile.wedding_style && !parsedResponse.extracted_data.wedding_style) {
-        parsedResponse.extracted_data.wedding_style = couple_profile.wedding_style;
+      if (couple_profile.wedding_style && !extractedData.wedding_style) {
+        extractedData.wedding_style = couple_profile.wedding_style;
       }
-      if (couple_profile.ambiance && !parsedResponse.extracted_data.wedding_ambiance) {
-        parsedResponse.extracted_data.wedding_ambiance = couple_profile.ambiance;
+      if (couple_profile.ambiance && !extractedData.wedding_ambiance) {
+        extractedData.wedding_ambiance = couple_profile.ambiance;
       }
-
-      // Budget (utiliser comme référence si pas de budget spécifique au service)
-      if (couple_profile.budget_min && !parsedResponse.extracted_data.budget_min) {
-        // Ne pas pré-remplir directement, mais l'IA peut s'en servir comme référence
-        parsedResponse.extracted_data.budget_reference = {
+      if (couple_profile.budget_min && !extractedData.budget_min) {
+        extractedData.budget_reference = {
           global_min: couple_profile.budget_min,
           global_max: couple_profile.budget_max,
         };
       }
-
-      // Marquer que les données viennent du profil
-      parsedResponse.extracted_data.auto_filled_from_profile = true;
+      extractedData.auto_filled_from_profile = true;
     }
 
-    // Si la réponse est trop longue, la tronquer (400 chars max pour les résumés de validation)
-    if (parsedResponse.message && parsedResponse.message.length > 400) {
-      logger.warn('Message IA trop long, troncature...');
-      parsedResponse.message = parsedResponse.message.substring(0, 397) + '...';
+    // Tronquer si trop long
+    if (responseData.message && (responseData.message as string).length > 400) {
+      responseData.message = (responseData.message as string).substring(0, 397) + '...';
     }
 
     // Détecter si l'utilisateur confirme le lancement de recherche
-    // Vérifier le dernier message utilisateur pour détecter une confirmation
-    const lastUserMsg = openaiMessages
-      .filter((msg: ChatCompletionMessageParam) => msg.role === 'user')
-      .pop();
-    const lastUserMessage = typeof lastUserMsg?.content === 'string' 
-      ? lastUserMsg.content.toLowerCase() 
-      : '';
-    
+    const lastUserMsg = messages.filter(msg => msg.role === 'user').pop();
+    const lastUserMessage = (lastUserMsg?.content ?? '').toLowerCase();
+
     const confirmationKeywords = ['oui', 'ok', 'd\'accord', 'daccord', 'vas-y', 'vasy', 'go', 'lancer', 'parfait', 'c\'est bon', 'cest bon', 'valider', 'confirmer', 'lancez', 'top', 'super', 'bonne idée', 'allons-y', 'on y va', 'c\'est parti'];
     const isConfirmation = confirmationKeywords.some(keyword => lastUserMessage.includes(keyword));
 
-    // Vérifier si le dernier message bot demandait confirmation
-    const lastBotMsg = openaiMessages
-      .filter((msg: ChatCompletionMessageParam) => msg.role === 'assistant')
-      .pop();
-    const lastBotMessage = typeof lastBotMsg?.content === 'string'
-      ? lastBotMsg.content.toLowerCase()
-      : '';
+    const lastBotMsg = messages.filter(msg => msg.role === 'assistant').pop();
+    const lastBotMessage = (lastBotMsg?.content ?? '').toLowerCase();
     const botAskedConfirmation = lastBotMessage.includes('je lance') || lastBotMessage.includes('lancer la recherche') || lastBotMessage.includes('recherche ?') || lastBotMessage.includes('je résume') || lastBotMessage.includes('on lance') || lastBotMessage.includes('confirmer ?');
-    
-    // Si l'utilisateur confirme ET que le bot demandait confirmation, forcer la validation
-    if (isConfirmation && botAskedConfirmation && parsedResponse.next_action !== 'validate') {
-      logger.info('Détection confirmation utilisateur, passage en validation');
-      parsedResponse.next_action = 'validate';
-      // Message court de confirmation
-      if (!parsedResponse.message || parsedResponse.message.length < 20) {
-        parsedResponse.message = 'Parfait ! Je lance la recherche maintenant.';
+
+    if (isConfirmation && botAskedConfirmation && responseData.next_action !== 'validate') {
+      responseData.next_action = 'validate';
+      if (!(responseData.message as string) || (responseData.message as string).length < 20) {
+        responseData.message = 'Parfait ! Je lance la recherche maintenant.';
       }
     }
 
-    // Suggestion de validation après 8 questions si l'IA continue encore
-    // (mais on ne force pas, on laisse l'IA décider si elle a assez d'infos)
-    if (questionCount >= 8 && parsedResponse.next_action === 'continue') {
-      // On suggère seulement, mais on ne force pas
-      logger.debug(`Conversation longue (${questionCount} questions), l'IA devrait considérer la validation`);
-    }
-
-    // Utiliser NextResponse.json() qui gère automatiquement UTF-8 correctement
-    // avec les headers appropriés
-    return NextResponse.json(parsedResponse, {
+    return NextResponse.json(responseData, {
       status: 200,
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',

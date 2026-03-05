@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getServiceTypeLabel } from '@/lib/constants/service-types';
 import { calculateMarketAverage } from '@/lib/matching/market-averages';
 import { sanitizeChatMessages } from '@/lib/security';
+import { estimateMessagesTokens, checkTokenBudget } from '@/lib/token-utils';
 
 /**
  * Fetches provider profile data (excluding legal info) for the AI advisor
@@ -309,16 +310,31 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = buildSystemPrompt(providerData, stats, marketAvg);
 
+    // Token budget pre-check — prevent sending requests that exceed context limits
+    const estimatedInputTokens = estimateMessagesTokens(messages, systemPrompt);
+    const maxOutputTokens = 300;
+    const tokenCheck = checkTokenBudget(estimatedInputTokens, 'gpt-4o', maxOutputTokens);
+    if (!tokenCheck.ok) {
+      logger.warn(`Chatbot-advisor token budget exceeded: estimated=${tokenCheck.estimated}, limit=${tokenCheck.limit}`);
+      return NextResponse.json(
+        { error: 'Message trop long', message: 'Votre conversation est trop longue. Veuillez la réinitialiser.' },
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        }
+      );
+    }
+
     // Stream the response using Vercel AI SDK
     const result = streamText({
       model: openai('gpt-4o'),
       system: systemPrompt,
       messages,
       temperature: 0.6,
-      maxTokens: 300,
+      maxOutputTokens: 300,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     logger.error('Chatbot advisor API error:', error);
     return NextResponse.json(

@@ -1159,8 +1159,7 @@ function ChatView({
                   {message.role === 'bot' && (
                     <div className="flex flex-col gap-2 max-w-[80%] sm:max-w-[75%]">
                       <div className="bg-gray-50 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm text-gray-900 text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words border border-gray-100">
-                        {/* Les accents sont corrigés côté API (fixUtf8Encoding) */}
-                        {message.content.replace(/\uFFFD/g, '')}
+                        {message.content}
                       </div>
                       {/* Quick reply chips — dernier message bot uniquement */}
                       {index === lastBotMsgIndex && !isLoading && message.suggestions && message.suggestions.length > 0 && (
