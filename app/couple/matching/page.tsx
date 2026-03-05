@@ -52,7 +52,11 @@ export default function MatchingPage() {
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [chatKey, setChatKey] = useState(0); // Key pour forcer le remontage du composant chat
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(new Set());
-  
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactProviderId, setContactProviderId] = useState<string | null>(null);
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSendingContact, setIsSendingContact] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -338,35 +342,92 @@ export default function MatchingPage() {
       toast.error('Profil couple non trouvé');
       return;
     }
+    // Vérifier si une demande existe déjà avant d'ouvrir le dialog
+    const supabase = createClient();
+    const { data: existing } = await supabase
+      .from('requests')
+      .select('id, status')
+      .eq('couple_id', coupleId)
+      .eq('provider_id', providerId)
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.status === 'pending') {
+        toast.info('Vous avez déjà une demande en attente pour ce prestataire');
+      } else if (existing.status === 'accepted') {
+        toast.info('Demande déjà acceptée ! Retrouvez la conversation dans la messagerie.');
+        router.push('/couple/messagerie');
+      } else {
+        // Rejected/cancelled — allow re-sending
+        setContactProviderId(providerId);
+        setContactMessage('');
+        setContactDialogOpen(true);
+      }
+      return;
+    }
+
+    setContactProviderId(providerId);
+    setContactMessage('');
+    setContactDialogOpen(true);
+  };
+
+  const handleSendContactRequest = async () => {
+    if (!coupleId || !contactProviderId || !contactMessage.trim()) {
+      toast.error('Veuillez écrire un message');
+      return;
+    }
+    setIsSendingContact(true);
     try {
       const supabase = createClient();
-      // Vérifier si une demande existe déjà
-      const { data: existing } = await supabase
-        .from('requests')
-        .select('id')
-        .eq('couple_id', coupleId)
-        .eq('provider_id', providerId)
-        .maybeSingle();
-
-      if (existing) {
-        toast.info('Vous avez deja envoye une demande a ce prestataire');
-        return;
-      }
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('requests')
         .insert({
           couple_id: coupleId,
-          provider_id: providerId,
+          provider_id: contactProviderId,
+          initial_message: contactMessage.trim(),
           status: 'pending',
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
-      trackMatchingEvent(providerId, 'contact');
-      toast.success('Demande de contact envoyee !');
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('Une demande existe déjà pour ce prestataire');
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      // Envoyer notification
+      if (data?.id) {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'new_request',
+            providerId: contactProviderId,
+            coupleId,
+            requestId: data.id,
+            message: contactMessage.trim(),
+          }),
+        }).catch(console.error);
+      }
+
+      trackMatchingEvent(contactProviderId, 'contact');
+      toast.success('Demande envoyée avec succès !');
+      setContactDialogOpen(false);
+      setContactMessage('');
+      setContactProviderId(null);
+
+      setTimeout(() => {
+        router.push('/couple/demandes');
+      }, 500);
     } catch (error) {
       console.error('Erreur envoi demande:', error);
       toast.error('Erreur lors de l\'envoi de la demande');
+    } finally {
+      setIsSendingContact(false);
     }
   };
 
@@ -552,6 +613,49 @@ export default function MatchingPage() {
             </Button>
             <Button variant="default" onClick={confirmGoBack}>
               Abandonner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de contact prestataire */}
+      <Dialog open={contactDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setContactDialogOpen(false);
+          setContactProviderId(null);
+          setContactMessage('');
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contacter ce prestataire</DialogTitle>
+            <DialogDescription>
+              Présentez-vous et décrivez votre projet pour que le prestataire puisse vous répondre au mieux.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <textarea
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              placeholder="Bonjour, nous organisons notre mariage et nous serions intéressés par vos services..."
+              className="w-full min-h-[120px] p-3 text-sm border border-gray-200 rounded-xl resize-none outline-none focus:ring-2 focus:ring-[#823F91]/20 focus:border-[#823F91]/30 placeholder-gray-400"
+              disabled={isSendingContact}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setContactDialogOpen(false)}
+              disabled={isSendingContact}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSendContactRequest}
+              disabled={isSendingContact || !contactMessage.trim()}
+              className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+            >
+              {isSendingContact ? 'Envoi...' : 'Envoyer la demande'}
             </Button>
           </DialogFooter>
         </DialogContent>
