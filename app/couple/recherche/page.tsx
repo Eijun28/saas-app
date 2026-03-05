@@ -324,7 +324,7 @@ export default function RecherchePage() {
         supabase
           .from('provider_tags')
           .select('profile_id, tag_id, tags(id, label, category)')
-          .in('profile_id', providerIds) as Promise<{ data: (TagJoinResult & { profile_id: string })[] | null; error: unknown }>,
+          .in('profile_id', providerIds) as unknown as Promise<{ data: (TagJoinResult & { profile_id: string })[] | null; error: unknown }>,
         supabase
           .from('prestataire_public_profiles')
           .select('profile_id, rating, total_reviews')
