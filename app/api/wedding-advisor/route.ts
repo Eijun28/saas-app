@@ -84,20 +84,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Charger le profil couple + préférences en parallèle avec les demandes
-    const [coupleResult, demandesResult] = await Promise.all([
+    const [coupleResult, requestsResult] = await Promise.all([
       supabase
         .from('couples')
         .select('*, preferences:couple_preferences(*)')
         .eq('user_id', user.id)
         .maybeSingle(),
       supabase
-        .from('demandes')
-        .select('service_type')
+        .from('requests')
+        .select('provider:profiles!provider_id(service_type)')
         .eq('couple_id', user.id),
     ])
 
     const couple = coupleResult.data
-    const rawDemandes = (demandesResult.data ?? []) as Array<{ service_type: string | null }>
+    const rawDemandes = (requestsResult.data ?? []).map((r: Record<string, unknown>) => {
+      const provider = r.provider as { service_type: string | null } | null
+      return { service_type: provider?.service_type ?? null }
+    })
 
     // Construire le contexte enrichi pour le prompt
     const culturalPrefs = couple?.preferences?.cultural_preferences as CulturalPreferences | null

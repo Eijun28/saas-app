@@ -63,23 +63,23 @@ async function getProviderStats(userId: string) {
   const supabase = await createClient();
 
   const [
-    { data: demandes },
+    { data: requests },
     { data: reviews },
   ] = await Promise.all([
     supabase
-      .from('demandes')
+      .from('requests')
       .select('status')
-      .eq('prestataire_id', userId),
+      .eq('provider_id', userId),
     supabase
       .from('reviews')
       .select('rating')
-      .eq('prestataire_id', userId),
+      .eq('provider_id', userId),
   ]);
 
-  const total = demandes?.length || 0;
-  const accepted = demandes?.filter((d) => d.status === 'accepted' || d.status === 'completed').length || 0;
-  const rejected = demandes?.filter((d) => d.status === 'rejected').length || 0;
-  const pending = demandes?.filter((d) => d.status === 'new' || d.status === 'in-progress').length || 0;
+  const total = requests?.length || 0;
+  const accepted = requests?.filter((d) => d.status === 'accepted' || d.status === 'completed').length || 0;
+  const rejected = requests?.filter((d) => d.status === 'rejected').length || 0;
+  const pending = requests?.filter((d) => d.status === 'new' || d.status === 'in-progress').length || 0;
   const conversionRate = total > 0 ? Math.round((accepted / total) * 100) : null;
 
   const ratings = reviews?.map((r) => r.rating).filter(Boolean) as number[] || [];
