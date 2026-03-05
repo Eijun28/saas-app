@@ -14,6 +14,8 @@ interface ChatInputProps {
   conversationId: string
   senderId: string
   onMessageSent?: () => void
+  onTyping?: () => void
+  onStopTyping?: () => void
 }
 
 // Emojis populaires pour le picker simple
@@ -32,6 +34,8 @@ export function ChatInput({
   conversationId,
   senderId,
   onMessageSent,
+  onTyping,
+  onStopTyping,
 }: ChatInputProps) {
   const [content, setContent] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -77,6 +81,7 @@ export function ChatInput({
         throw error
       }
 
+      onStopTyping?.()
       onMessageSent?.()
     } catch (error: any) {
       console.error('Erreur envoi message:', error)
@@ -238,7 +243,7 @@ export function ChatInput({
             <textarea
               ref={textareaRef}
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => { setContent(e.target.value); onTyping?.() }}
               onKeyDown={handleKeyDown}
               placeholder="Message"
               className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] md:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[20px] sm:min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"

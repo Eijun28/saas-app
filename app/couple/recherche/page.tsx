@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight } from 'lucide-react'
+import { Search, MapPin, Sparkles, Building2, X, ChevronDown, Filter, Tag, Star, ArrowUpDown, Heart, CalendarCheck, ArrowLeftRight, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -137,6 +137,67 @@ export default function RecherchePage() {
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const PAGE_SIZE = 18
+
+  // Saved filter presets (localStorage)
+  interface FilterPreset {
+    id: string
+    name: string
+    category: string | null
+    culture: string | null
+    country: string | null
+    tags: string[]
+    minRating: number
+    budgetMax: number | null
+    sortBy: string
+  }
+  const SAVED_FILTERS_KEY = 'nuply-recherche-presets'
+  const [savedPresets, setSavedPresets] = useState<FilterPreset[]>([])
+  const [showSavePreset, setShowSavePreset] = useState(false)
+  const [presetName, setPresetName] = useState('')
+
+  // Load saved presets from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SAVED_FILTERS_KEY)
+      if (stored) setSavedPresets(JSON.parse(stored))
+    } catch { /* ignore */ }
+  }, [])
+
+  const saveCurrentFilters = useCallback(() => {
+    if (!presetName.trim()) return
+    const preset: FilterPreset = {
+      id: Date.now().toString(36),
+      name: presetName.trim(),
+      category: selectedCategory,
+      culture: selectedCulture,
+      country: selectedCountry,
+      tags: selectedTags,
+      minRating,
+      budgetMax,
+      sortBy,
+    }
+    const updated = [...savedPresets, preset]
+    setSavedPresets(updated)
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+    setPresetName('')
+    setShowSavePreset(false)
+  }, [presetName, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy, savedPresets])
+
+  const loadPreset = useCallback((preset: FilterPreset) => {
+    setSelectedCategory(preset.category)
+    setSelectedCulture(preset.culture)
+    setSelectedCountry(preset.country)
+    setSelectedTags(preset.tags)
+    setMinRating(preset.minRating)
+    setBudgetMax(preset.budgetMax)
+    setSortBy(preset.sortBy as typeof sortBy)
+  }, [])
+
+  const deletePreset = useCallback((id: string) => {
+    const updated = savedPresets.filter(p => p.id !== id)
+    setSavedPresets(updated)
+    localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
+  }, [savedPresets])
 
   // Load available tags, favorites and wedding date on mount
   useEffect(() => {
@@ -862,6 +923,68 @@ export default function RecherchePage() {
                   <X className="h-3 w-3 ml-2" />
                 </Badge>
               )}
+              {/* Save current filters */}
+              {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || minRating > 0 || budgetMax !== null) && (
+                showSavePreset ? (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={presetName}
+                      onChange={(e) => setPresetName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && saveCurrentFilters()}
+                      placeholder="Nom du filtre..."
+                      className="h-7 px-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:border-[#823F91] w-32"
+                      autoFocus
+                    />
+                    <button
+                      onClick={saveCurrentFilters}
+                      disabled={!presetName.trim()}
+                      className="h-7 px-2 text-xs font-medium text-white bg-[#823F91] hover:bg-[#6D3478] rounded-lg disabled:opacity-50"
+                    >
+                      OK
+                    </button>
+                    <button
+                      onClick={() => { setShowSavePreset(false); setPresetName('') }}
+                      className="h-7 px-1.5 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowSavePreset(true)}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#823F91] hover:bg-[#823F91]/10 rounded-lg transition-colors"
+                  >
+                    <Bookmark className="h-3 w-3" />
+                    Sauvegarder
+                  </button>
+                )
+              )}
+            </div>
+          )}
+
+          {/* Saved filter presets */}
+          {savedPresets.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] text-gray-400 font-medium mr-0.5">Filtres:</span>
+              {savedPresets.map(preset => (
+                <div key={preset.id} className="group flex items-center gap-0.5">
+                  <button
+                    onClick={() => loadPreset(preset)}
+                    className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[#823F91] bg-[#823F91]/8 hover:bg-[#823F91]/15 rounded-lg transition-colors"
+                  >
+                    <BookmarkCheck className="h-3 w-3" />
+                    {preset.name}
+                  </button>
+                  <button
+                    onClick={() => deletePreset(preset.id)}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-gray-400 hover:text-red-500 transition-all"
+                    title="Supprimer"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </motion.div>

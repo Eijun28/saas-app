@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { Plus, SlidersHorizontal, X, Download, Share2 } from 'lucide-react'
+import { Plus, SlidersHorizontal, X, Download, Share2, CalendarDays } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -114,14 +115,23 @@ export default function JourJPage() {
 
       {/* En-tête */}
       <div className="flex items-start justify-between gap-4">
-        <PageTitle
-          title="Programme du Jour J"
-          description={
-            items.length === 0
-              ? 'Planifiez votre journée heure par heure'
-              : `${items.length} créneau${items.length > 1 ? 'x' : ''} · ${firstItem ? formatTime(firstItem.start_time) : ''} → ${lastItem ? formatTime(lastItem.end_time ?? lastItem.start_time) : ''}`
-          }
-        />
+        <div>
+          <PageTitle
+            title="Programme du Jour J"
+            description={
+              items.length === 0
+                ? 'Organisez le deroulement heure par heure de votre journee de mariage'
+                : `${items.length} creneau${items.length > 1 ? 'x' : ''} · ${firstItem ? formatTime(firstItem.start_time) : ''} → ${lastItem ? formatTime(lastItem.end_time ?? lastItem.start_time) : ''}`
+            }
+          />
+          <Link
+            href="/couple/timeline"
+            className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-xs font-medium text-[#823F91] bg-[#823F91]/8 hover:bg-[#823F91]/15 rounded-lg transition-colors"
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            Calendrier de preparation
+          </Link>
+        </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button
             variant="outline"

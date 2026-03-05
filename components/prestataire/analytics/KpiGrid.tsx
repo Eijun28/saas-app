@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
   Minus,
 } from 'lucide-react'
+import { ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
 
@@ -26,6 +27,15 @@ interface KpiCardData {
   deltaSuffix?: string
   color: string
   bgColor: string
+  sparklineKey?: string
+}
+
+interface TimelineEntry {
+  date: string
+  impressions: number
+  clicks: number
+  contacts: number
+  requests: number
 }
 
 interface KpiGridProps {
@@ -54,9 +64,44 @@ interface KpiGridProps {
     requests: number
     devis: number
   }
+  timeline?: TimelineEntry[]
 }
 
-export function KpiGrid({ kpis, deltas }: KpiGridProps) {
+function MiniSparkline({ data, dataKey, color }: { data: TimelineEntry[]; dataKey: string; color: string }) {
+  if (!data || data.length < 2) return null
+  return (
+    <div className="h-8 w-full mt-2">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={`spark-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.2} />
+              <stop offset="95%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey={dataKey}
+            stroke={color}
+            strokeWidth={1.5}
+            fill={`url(#spark-${dataKey})`}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
+export function KpiGrid({ kpis, deltas, timeline }: KpiGridProps) {
+  const SPARKLINE_COLORS: Record<string, string> = {
+    impressions: '#3B82F6',
+    clicks: '#6366F1',
+    contacts: '#10B981',
+    requests: '#F59E0B',
+  }
+
   const cards: KpiCardData[] = [
     {
       icon: Eye,
@@ -65,6 +110,7 @@ export function KpiGrid({ kpis, deltas }: KpiGridProps) {
       delta: deltas.impressions,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
+      sparklineKey: 'impressions',
     },
     {
       icon: MousePointerClick,
@@ -73,6 +119,7 @@ export function KpiGrid({ kpis, deltas }: KpiGridProps) {
       delta: deltas.clicks,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
+      sparklineKey: 'clicks',
     },
     {
       icon: TrendingUp,
@@ -91,6 +138,7 @@ export function KpiGrid({ kpis, deltas }: KpiGridProps) {
       delta: deltas.contacts,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
+      sparklineKey: 'contacts',
     },
     {
       icon: Heart,
@@ -106,6 +154,7 @@ export function KpiGrid({ kpis, deltas }: KpiGridProps) {
       delta: deltas.requests,
       color: 'text-amber-600',
       bgColor: 'bg-amber-50',
+      sparklineKey: 'requests',
     },
     {
       icon: FileText,
@@ -186,6 +235,14 @@ export function KpiGrid({ kpis, deltas }: KpiGridProps) {
                 </span>
                 <span className="text-[10px] text-gray-400">vs periode prec.</span>
               </div>
+            )}
+
+            {card.sparklineKey && timeline && timeline.length >= 2 && (
+              <MiniSparkline
+                data={timeline}
+                dataKey={card.sparklineKey}
+                color={SPARKLINE_COLORS[card.sparklineKey] || '#823F91'}
+              />
             )}
           </motion.div>
         )

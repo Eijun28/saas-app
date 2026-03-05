@@ -11,6 +11,8 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { Button } from '@/components/ui/button'
 import { ChatInput } from '@/components/messaging/ChatInput'
+import { TypingIndicator } from '@/components/messaging/TypingIndicator'
+import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 
 export default function MessageriePage() {
   const router = useRouter()
@@ -26,6 +28,13 @@ export default function MessageriePage() {
   const [prestataireNames, setPrestataireNames] = useState<Record<string, string>>({})
   const [prestataireAvatars, setPrestataireAvatars] = useState<Record<string, string>>({})
   const [lastMessages, setLastMessages] = useState<Record<string, { content: string; time: string; sender_id: string }>>({})
+
+  // Typing indicator
+  const { typingUsers, onInputChange: onTyping, stopTyping } = useTypingIndicator({
+    conversationId: selectedConversation,
+    userId: user?.id ?? null,
+    userName: 'Vous',
+  })
 
   // Resolve couple_id from couples table (conversations.couple_id references couples.id, not auth user id)
   useEffect(() => {
@@ -481,8 +490,8 @@ export default function MessageriePage() {
                       <h2 className="font-semibold text-gray-900 truncate text-sm sm:text-base md:text-[17px]">
                         {prestataireNames[selectedConversation] || 'Messages'}
                       </h2>
-                      <p className="text-[10px] sm:text-xs text-gray-500 truncate font-medium">
-                        Hors ligne
+                      <p className={`text-[10px] sm:text-xs truncate font-medium ${typingUsers.length > 0 ? 'text-[#823F91]' : 'text-gray-500'}`}>
+                        {typingUsers.length > 0 ? 'En train d\'ecrire...' : 'Hors ligne'}
                       </p>
                     </div>
                   </div>
@@ -593,6 +602,9 @@ export default function MessageriePage() {
                 </div>
               </div>
 
+              {/* Typing indicator */}
+              <TypingIndicator typingUsers={typingUsers} />
+
               {/* Input zone with attachment support */}
               {user && selectedConversation && (
                 <ChatInput
@@ -602,6 +614,8 @@ export default function MessageriePage() {
                     loadMessages(selectedConversation)
                     loadConversations()
                   }}
+                  onTyping={onTyping}
+                  onStopTyping={stopTyping}
                 />
               )}
             </div>
