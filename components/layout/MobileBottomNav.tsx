@@ -389,5 +389,5 @@ export function CoupleMobileNav() {
     },
   ]
 
-  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="pink" />
+  return <MobileBottomNav items={items} moreItems={moreItems} accentColor="violet" />
 }

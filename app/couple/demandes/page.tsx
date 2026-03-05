@@ -828,7 +828,7 @@ export default function DemandesPage() {
                                           <div
                                             key={d.id}
                                             className={cn(
-                                              'rounded-xl border p-3 flex items-center justify-between gap-3',
+                                              'rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3',
                                               isPending ? 'border-[#823F91]/20 bg-[#823F91]/[0.03]' : 'border-green-200 bg-green-50/40'
                                             )}
                                           >
@@ -881,7 +881,7 @@ export default function DemandesPage() {
 
                                 {/* Actions rapides pour accepted */}
                                 {r.status === 'accepted' && (
-                                  <div className="mt-4 flex items-center justify-end gap-2">
+                                  <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2">
                                     <Button
                                       variant="outline"
                                       size="sm"
