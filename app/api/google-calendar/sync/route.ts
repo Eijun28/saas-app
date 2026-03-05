@@ -245,8 +245,8 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const direction   = body.direction   as 'push' | 'pull' | 'both' ?? 'both'
-    const monthsAhead = body.months_ahead as number ?? 12
+    const direction   = (body.direction as 'push' | 'pull' | 'both') ?? 'both'
+    const monthsAhead = (body.months_ahead as number) ?? 12
 
     // ── Détecter le rôle et charger les tokens ────────────────────────────────
     let tokens: GoogleTokens | null = null
