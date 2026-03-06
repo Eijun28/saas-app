@@ -12,6 +12,9 @@ import {
   MapPin,
   Clock,
   Tag,
+  Search,
+  Users,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,7 +24,18 @@ import { toast } from 'sonner'
 import { EventForm } from '@/components/couple-events/EventForm'
 import { cn } from '@/lib/utils'
 import type { TimelineEvent, TimelineEventFormData, EventCategory, CoupleEventStatus } from '@/types/cultural-events.types'
-import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG } from '@/types/cultural-events.types'
+import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG, EVENT_CATEGORY_VISUAL } from '@/types/cultural-events.types'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+interface AssignedProvider {
+  id: string
+  provider_id: string
+  status: string
+  request_id: string | null
+  provider_name: string
+  provider_avatar: string | null
+  request_status: string | null
+}
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Non définie'
@@ -55,9 +69,14 @@ export default function EventDetailPage() {
   const [loading, setLoading]   = useState(true)
   const [event, setEvent]       = useState<TimelineEvent | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [assignedProviders, setAssignedProviders] = useState<AssignedProvider[]>([])
+  const [loadingProviders, setLoadingProviders] = useState(false)
 
   useEffect(() => {
-    if (user && eventId) loadEvent()
+    if (user && eventId) {
+      loadEvent()
+      loadProviders()
+    }
   }, [user, eventId])
 
   const loadEvent = async () => {
@@ -87,6 +106,69 @@ export default function EventDetailPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadProviders = async () => {
+    setLoadingProviders(true)
+    const supabase = createClient()
+    try {
+      const { data: eps } = await supabase
+        .from('event_providers')
+        .select('id, provider_id, status, request_id')
+        .eq('event_id', eventId) as { data: Array<{ id: string; provider_id: string; status: string; request_id: string | null }> | null }
+
+      if (!eps || eps.length === 0) {
+        setAssignedProviders([])
+        return
+      }
+
+      // Load provider profiles
+      const providerIds = eps.map((ep) => ep.provider_id)
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, prenom, nom, avatar_url')
+        .in('id', providerIds) as { data: Array<{ id: string; prenom: string | null; nom: string | null; avatar_url: string | null }> | null }
+
+      // Load request statuses
+      const requestIds = eps.map((ep) => ep.request_id).filter(Boolean) as string[]
+      const requestMap = new Map<string, string>()
+      if (requestIds.length > 0) {
+        const { data: requests } = await supabase
+          .from('requests')
+          .select('id, status')
+          .in('id', requestIds) as { data: Array<{ id: string; status: string }> | null }
+        requests?.forEach((r) => requestMap.set(r.id, r.status))
+      }
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || [])
+      setAssignedProviders(eps.map((ep) => {
+        const profile = profileMap.get(ep.provider_id)
+        return {
+          id: ep.id,
+          provider_id: ep.provider_id,
+          status: ep.status,
+          request_id: ep.request_id,
+          provider_name: profile ? `${profile.prenom || ''} ${profile.nom || ''}`.trim() || 'Prestataire' : 'Prestataire',
+          provider_avatar: profile?.avatar_url || null,
+          request_status: ep.request_id ? requestMap.get(ep.request_id) || null : null,
+        }
+      }))
+    } catch (err) {
+      console.error('Erreur chargement prestataires:', err)
+    } finally {
+      setLoadingProviders(false)
+    }
+  }
+
+  const handleFindProvider = () => {
+    if (!event) return
+    const params = new URLSearchParams()
+    if (event.category) params.set('event_type', event.category)
+    if (event.location) params.set('city', event.location)
+    if (event.event_date) params.set('date', event.event_date)
+    if (event.title) params.set('event_title', event.title)
+    params.set('event_id', event.id)
+    router.push(`/couple/matching?${params.toString()}`)
   }
 
   const handleFormSubmit = async (formData: TimelineEventFormData) => {
@@ -387,6 +469,97 @@ export default function EventDetailPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Section prestataires */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="mt-6"
+      >
+        <Card className="border-gray-200/80">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg bg-[#823F91]/10 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-[#823F91]" />
+                </div>
+                Prestataires
+              </CardTitle>
+              <Button
+                size="sm"
+                onClick={handleFindProvider}
+                className="bg-[#823F91] hover:bg-[#6D3478] text-white"
+              >
+                <Search className="h-3.5 w-3.5 mr-1.5" />
+                Trouver un prestataire
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingProviders ? (
+              <div className="flex items-center justify-center py-6">
+                <div className="h-6 w-6 rounded-full border-2 border-[#823F91] border-t-transparent animate-spin" />
+              </div>
+            ) : assignedProviders.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-500 mb-3">
+                  Aucun prestataire assigne a cet evenement
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleFindProvider}
+                  className="border-[#823F91]/30 text-[#823F91] hover:bg-[#823F91]/10"
+                >
+                  <Search className="h-3.5 w-3.5 mr-1.5" />
+                  Trouver un prestataire
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {assignedProviders.map((p: AssignedProvider) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#823F91]/20 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        {p.provider_avatar && <AvatarImage src={p.provider_avatar} alt={p.provider_name} />}
+                        <AvatarFallback className="bg-[#823F91]/10 text-[#823F91] text-xs font-semibold">
+                          {p.provider_name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{p.provider_name}</p>
+                        <span className={cn(
+                          'text-[10px] font-medium px-1.5 py-0.5 rounded-full',
+                          p.status === 'confirmed' && 'bg-green-50 text-green-700',
+                          p.status === 'pending' && 'bg-blue-50 text-blue-700',
+                          p.status === 'declined' && 'bg-red-50 text-red-700',
+                          p.status === 'completed' && 'bg-gray-100 text-gray-600',
+                        )}>
+                          {p.status === 'confirmed' ? 'Confirme' : p.status === 'pending' ? 'En attente' : p.status === 'declined' ? 'Decline' : 'Termine'}
+                        </span>
+                      </div>
+                    </div>
+                    {p.request_status === 'accepted' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.push('/couple/messagerie')}
+                        className="text-[#823F91] hover:text-[#6D3478]"
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Dialog formulaire d'édition */}
       <EventForm
