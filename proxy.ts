@@ -1,8 +1,41 @@
 import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
-import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
+import { getDashboardUrl } from '@/lib/auth/utils'
 import { createServerClient } from '@supabase/ssr'
-import { getEnvConfig } from '@/lib/config/env'
+import { getPublicEnvConfig } from '@/lib/config/env'
+
+type UserRole = 'couple' | 'prestataire' | null
+
+/**
+ * Crée un client Supabase compatible Edge Runtime (utilise request.cookies, pas next/headers)
+ */
+function createEdgeSupabaseClient(request: NextRequest) {
+  const config = getPublicEnvConfig()
+  return createServerClient(
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll() { /* read-only in proxy */ },
+      },
+    }
+  )
+}
+
+/**
+ * Vérifie le rôle utilisateur via les cookies de la request (compatible Edge Runtime)
+ */
+async function getUserRole(request: NextRequest, userId: string): Promise<UserRole> {
+  const supabase = createEdgeSupabaseClient(request)
+  const [{ data: couple }, { data: profile }] = await Promise.all([
+    supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+    supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+  ])
+  if (couple) return 'couple'
+  if (profile) return 'prestataire'
+  return null
+}
 
 export default async function proxy(request: NextRequest) {
   const result = await updateSession(request) as UpdateSessionResult
@@ -26,11 +59,9 @@ export default async function proxy(request: NextRequest) {
 
   // Connecté + route auth = redirect vers dashboard
   if (user && isAuthRoute) {
-    const roleCheck = await getUserRoleServer(user.id)
-    
-    if (roleCheck.role) {
-      const dashboardUrl = getDashboardUrl(roleCheck.role)
-      return NextResponse.redirect(new URL(dashboardUrl, request.url))
+    const role = await getUserRole(request, user.id)
+    if (role) {
+      return NextResponse.redirect(new URL(getDashboardUrl(role), request.url))
     }
   }
 
@@ -38,38 +69,25 @@ export default async function proxy(request: NextRequest) {
   if (user && isProtectedRoute) {
     const isTryingToAccessCouple = request.nextUrl.pathname.startsWith('/couple')
     const isTryingToAccessPrestataire = request.nextUrl.pathname.startsWith('/prestataire')
-    
-    const roleCheck = await getUserRoleServer(user.id)
-    
-    if (roleCheck.role === 'couple') {
-      // Couple essaie d'accéder à une route prestataire
+
+    const role = await getUserRole(request, user.id)
+
+    if (role === 'couple') {
       if (isTryingToAccessPrestataire) {
         return NextResponse.redirect(new URL('/couple/dashboard', request.url))
       }
-      // Sinon, c'est bon, le couple accède à ses routes
       return supabaseResponse
     }
-    
-    if (roleCheck.role === 'prestataire') {
-      // Prestataire essaie d'accéder à une route couple
+
+    if (role === 'prestataire') {
       if (isTryingToAccessCouple) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
       }
 
-      // Vérifier si l'onboarding guidé est terminé (sauf si déjà sur la page d'onboarding)
+      // Vérifier si l'onboarding guidé est terminé
       if (!request.nextUrl.pathname.startsWith('/prestataire/onboarding')) {
-        const config = getEnvConfig()
-        const supabaseCheck = createServerClient(
-          config.NEXT_PUBLIC_SUPABASE_URL,
-          config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          {
-            cookies: {
-              getAll() { return request.cookies.getAll() },
-              setAll() { /* read-only */ },
-            },
-          }
-        )
-        const { data: profile } = await supabaseCheck
+        const supabase = createEdgeSupabaseClient(request)
+        const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_step')
           .eq('id', user.id)
@@ -80,12 +98,11 @@ export default async function proxy(request: NextRequest) {
         }
       }
 
-      // Sinon, c'est bon, le prestataire accède à ses routes
       return supabaseResponse
     }
-    
+
     // Si aucun rôle trouvé, rediriger vers sign-in
-    if (!roleCheck.role) {
+    if (!role) {
       return NextResponse.redirect(new URL('/sign-in', request.url))
     }
   }
