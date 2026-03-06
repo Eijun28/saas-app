@@ -77,9 +77,12 @@ export default function ResetPasswordPage() {
 
   const password = watch('password', '')
 
+  const [particleCount, setParticleCount] = useState(200)
+
   // Reduce particle count on mobile for performance
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const particleCount = isMobile ? 50 : 200
+  useEffect(() => {
+    if (window.innerWidth < 768) setParticleCount(50)
+  }, [])
 
   useEffect(() => {
     const supabase = createBrowserClient(

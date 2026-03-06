@@ -16,7 +16,9 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, ArrowLeft, Mail } from 'lucide-react'
-import Particles from '@/components/Particles'
+import dynamic from 'next/dynamic'
+
+const Particles = dynamic(() => import('@/components/Particles'), { ssr: false })
 import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 type Step = 'initial' | 'email' | 'names' | 'company' | 'password'
