@@ -538,7 +538,7 @@ export function CalendarDashboard({
         {/* Conteneur scrollable horizontal + vertical */}
         <div
           ref={weekScrollRef}
-          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-gray-100"
+          className="flex-1 overflow-auto scrollbar-thin scrollbar-thumb-[#D4ADE0] scrollbar-track-gray-100 [-webkit-overflow-scrolling:touch]"
         >
           <div style={{ minWidth: GRID_MIN_WIDTH }}>
 

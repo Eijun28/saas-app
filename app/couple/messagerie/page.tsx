@@ -352,7 +352,7 @@ export default function MessageriePage() {
         <div className="flex-1 min-h-0 flex gap-4 overflow-hidden">
           {/* Left panel — conversation list */}
           {showList && (
-          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${isMobile ? 'w-full' : selectedConversation ? 'w-[300px] xl:w-[340px]' : 'w-full max-w-[400px] mx-auto'}`}>
+          <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0 transition-all duration-300 ${isMobile ? 'w-full' : selectedConversation ? 'w-[260px] lg:w-[300px] xl:w-[340px]' : 'w-full max-w-[400px] mx-auto'}`}>
             {/* En-tête avec recherche */}
             <div className="p-3 sm:p-4 border-b border-gray-100">
               <div className="relative">
@@ -362,7 +362,7 @@ export default function MessageriePage() {
                   placeholder="Rechercher un prestataire..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-3 h-9 sm:h-10 text-sm sm:text-base bg-white border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
+                  className="pl-9 pr-3 h-10 text-sm sm:text-base bg-white border-gray-200 focus:bg-white focus:border-gray-300 rounded-xl"
                 />
               </div>
             </div>
@@ -527,7 +527,7 @@ export default function MessageriePage() {
                           !isConsecutive ? 'mt-2' : 'mt-0.5'
                         }`}
                       >
-                        <div className={`flex flex-col ${isFromMe ? 'items-end' : 'items-start'} max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]`}>
+                        <div className={`flex flex-col ${isFromMe ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[80%] md:max-w-[70%]`}>
                           <div className="relative group">
                             <div
                               className={`relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 transition-all duration-200 ${

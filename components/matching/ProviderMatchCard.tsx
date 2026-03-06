@@ -65,7 +65,7 @@ export default function ProviderMatchCard({
   return (
     <div className="border rounded-xl shadow-lg hover:shadow-xl transition-all bg-white">
       {/* Header */}
-      <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6 border-b">
+      <div className="flex flex-wrap items-start gap-3 p-4 sm:gap-4 sm:p-6 border-b">
         {/* Badge rank */}
         <div
           className={cn(
@@ -95,7 +95,7 @@ export default function ProviderMatchCard({
         </div>
 
         {/* Infos principales */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1" style={{ minWidth: 0 }}>
           <h3 className="font-semibold text-base sm:text-xl text-gray-900 truncate">
             {provider.nom_entreprise}
           </h3>
@@ -141,11 +141,11 @@ export default function ProviderMatchCard({
           {/* Cercle score — réduit sur mobile */}
           <div
             className={cn(
-              'w-14 h-14 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
+              'w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
               getScoreColor(score)
             )}
           >
-            <span className="text-lg sm:text-2xl font-bold">{Math.round(score)}</span>
+            <span className="text-base sm:text-lg md:text-xl font-bold">{Math.round(score)}</span>
             <span className="text-[10px] sm:text-xs">/100</span>
           </div>
           {/* Étoiles selon score */}
@@ -169,7 +169,7 @@ export default function ProviderMatchCard({
       <div className="p-4 sm:p-6 space-y-4">
         {/* Description courte */}
         {(provider.description_courte || provider.bio) && (
-          <p className="text-gray-700 line-clamp-2">
+          <p className="text-gray-700 line-clamp-2 break-words">
             {provider.description_courte || provider.bio}
           </p>
         )}
