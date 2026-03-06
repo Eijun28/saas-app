@@ -39,25 +39,17 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
           className="flex justify-center items-center gap-4 mb-4 flex-col sm:flex-row"
         >
-          <Link href="/sign-up">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 text-white shadow-lg shadow-[#823F91]/25"
-              style={{
-                backgroundColor: '#823F91',
-                color: 'white'
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6D3478'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#823F91'
-              }}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link
+              href="/sign-up"
+              className="inline-block px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 text-white shadow-lg shadow-[#823F91]/25 bg-[#823F91] hover:bg-[#6D3478]"
             >
               Commencer mon aventure
-            </motion.button>
-          </Link>
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Texte sous bouton - beige clair */}
