@@ -6,7 +6,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendConfirmationEmail } from '@/lib/email/confirmation'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
-import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 import { revalidatePath } from 'next/cache'
 
@@ -609,31 +608,30 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
-    const roleCheck = await getUserRoleServer(data.user.id)
-    
-    revalidatePath('/', 'layout')
-    
-    if (roleCheck.role) {
-      // Pour les prestataires, vérifier si l'onboarding est terminé
-      if (roleCheck.role === 'prestataire') {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_step')
-          .eq('id', data.user.id)
-          .maybeSingle()
+    const userId = data.user.id
 
-        if (!profile || (profile.onboarding_step ?? 0) < 5) {
-          return { success: true, redirectTo: '/prestataire/onboarding' }
-        }
-      }
+    // Vérifier le rôle et l'onboarding en parallèle avec le même client Supabase
+    const [{ data: couple }, { data: profile }] = await Promise.all([
+      supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+    ])
 
-      const dashboardUrl = getDashboardUrl(roleCheck.role)
-      return { success: true, redirectTo: dashboardUrl }
+    // Revalider uniquement les chemins concernés (pas tout le layout)
+    revalidatePath('/couple/dashboard')
+    revalidatePath('/prestataire/dashboard')
+
+    if (couple) {
+      return { success: true, redirectTo: '/couple/dashboard' }
     }
 
-    // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
-    // (cas d'un compte auth créé mais profil non complété)
+    if (profile) {
+      if ((profile.onboarding_step ?? 0) < 5) {
+        return { success: true, redirectTo: '/prestataire/onboarding' }
+      }
+      return { success: true, redirectTo: '/prestataire/dashboard' }
+    }
+
+    // Compte auth créé mais profil non complété
     return { success: true, redirectTo: '/' }
   }
 
