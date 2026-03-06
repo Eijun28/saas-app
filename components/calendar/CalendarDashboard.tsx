@@ -976,35 +976,35 @@ export function CalendarDashboard({
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col gap-1.5 sm:gap-0 px-2 sm:px-5 md:px-6 py-2.5 sm:py-3.5 bg-white border-b border-gray-200">
+        <div className="flex-shrink-0 flex flex-col gap-2 sm:gap-0 px-3 sm:px-5 md:px-6 py-3 sm:py-3.5 bg-white border-b border-gray-200">
           {/* Mobile: Navigation compacte */}
           <div className="flex items-center justify-between gap-1 sm:hidden">
             {showSidebar && (
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation flex-shrink-0"
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation flex-shrink-0"
               >
-                {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+                {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             )}
             <button
               onClick={previousPeriod}
-              className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation flex-shrink-0"
+              className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation flex-shrink-0"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-[11px] font-bold text-[#823F91] flex-1 text-center truncate min-w-0">
+            <h2 className="text-xs font-bold text-[#823F91] flex-1 text-center truncate min-w-0 px-0.5">
               {getPeriodTitle()}
             </h2>
             <button
               onClick={nextPeriod}
-              className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation flex-shrink-0"
+              className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation flex-shrink-0"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </button>
             <button
               onClick={goToToday}
-              className="px-1.5 py-1 min-h-[32px] flex items-center rounded-lg text-[10px] font-bold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation flex-shrink-0"
+              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-[10px] font-bold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation flex-shrink-0"
             >
               Auj.
             </button>
@@ -1016,9 +1016,9 @@ export function CalendarDashboard({
                 setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
                 setIsDialogOpen(true)
               }}
-              className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center bg-[#823F91] text-white rounded-lg active:scale-95 touch-manipulation shadow-sm flex-shrink-0"
+              className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center bg-[#823F91] text-white rounded-lg active:scale-95 touch-manipulation shadow-sm flex-shrink-0"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
             </button>
           </div>
 
@@ -1037,7 +1037,7 @@ export function CalendarDashboard({
                   key={viewType}
                   onClick={() => setViewMode(viewType)}
                   className={cn(
-                    'flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all active:scale-95 touch-manipulation min-h-[30px]',
+                    'flex-1 py-2 rounded-md text-[11px] font-bold transition-all active:scale-95 touch-manipulation min-h-[34px]',
                     viewMode === viewType
                       ? 'bg-[#823F91] text-white shadow-sm'
                       : 'text-gray-600 hover:bg-white/60'
