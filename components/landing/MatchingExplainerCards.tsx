@@ -51,10 +51,21 @@ function FlipCard({ data, delay }: { data: CardData; delay: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay }}
-      className="perspective-[2000px]"
+      className="perspective-[2000px] cursor-pointer"
+      role="button"
+      tabIndex={0}
+      aria-label={`${data.title} — ${isFlipped ? 'Voir la description' : 'Voir les avantages'}`}
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
+      onFocus={() => setIsFlipped(true)}
+      onBlur={() => setIsFlipped(false)}
       onClick={handleFlip}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleFlip()
+        }
+      }}
     >
       <div
         className={cn(
