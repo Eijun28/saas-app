@@ -611,58 +611,30 @@ export async function signIn(email: string, password: string) {
     return { error: 'Échec de la connexion. Veuillez réessayer.' }
   }
 
-  // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
-  const roleCheck = await getUserRoleServer(data.user.id)
+  const userId = data.user.id
 
-  revalidatePath('/', 'layout')
+  // Vérifier le rôle et l'onboarding en parallèle
+  const [{ data: couple }, { data: profile }] = await Promise.all([
+    supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+    supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+  ])
 
-  if (roleCheck.role) {
-    // Pour les prestataires, vérifier si l'onboarding est terminé
-    if (roleCheck.role === 'prestataire') {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_step')
-        .eq('id', data.user.id)
-        .maybeSingle()
+  revalidatePath('/couple/dashboard')
+  revalidatePath('/prestataire/dashboard')
 
-      if (!profile || (profile.onboarding_step ?? 0) < 5) {
-        return { success: true, redirectTo: '/prestataire/onboarding' }
-      }
-    }
-
-    const dashboardUrl = getDashboardUrl(roleCheck.role)
-    return { success: true, redirectTo: dashboardUrl }
-  if (data.user) {
-    const userId = data.user.id
-
-    // Vérifier le rôle et l'onboarding en parallèle avec le même client Supabase
-    const [{ data: couple }, { data: profile }] = await Promise.all([
-      supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
-      supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
-    ])
-
-    // Revalider uniquement les chemins concernés (pas tout le layout)
-    revalidatePath('/couple/dashboard')
-    revalidatePath('/prestataire/dashboard')
-
-    if (couple) {
-      return { success: true, redirectTo: '/couple/dashboard' }
-    }
-
-    if (profile) {
-      if ((profile.onboarding_step ?? 0) < 5) {
-        return { success: true, redirectTo: '/prestataire/onboarding' }
-      }
-      return { success: true, redirectTo: '/prestataire/dashboard' }
-    }
-
-    // Compte auth créé mais profil non complété
-    return { success: true, redirectTo: '/' }
+  if (couple) {
+    return { success: true, redirectTo: '/couple/dashboard' }
   }
 
-  // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
-  // (cas d'un compte auth créé mais profil non complété)
-  return { success: true, redirectTo: '/' }
+  if (profile) {
+    if ((profile.onboarding_step ?? 0) < 5) {
+      return { success: true, redirectTo: '/prestataire/onboarding' }
+    }
+    return { success: true, redirectTo: '/prestataire/dashboard' }
+  }
+
+  // Compte auth créé mais profil non complété → choix de rôle
+  return { success: true, redirectTo: '/onboarding/role' }
 }
 
 export async function signOut() {
