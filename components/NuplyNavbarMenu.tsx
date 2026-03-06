@@ -44,14 +44,14 @@ export function NuplyNavbarMenu() {
             .from('couples')
             .select('id, partner_1_name, partner_2_name')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
             .then(({ data: couple, error: coupleError }) => {
               if (couple && !coupleError) {
                 // Extraire prenom et nom de partner_1_name
                 const partner1Name = couple.partner_1_name || '';
                 const nameParts = partner1Name.split(' ');
-                setProfile({ 
-                  ...couple, 
+                setProfile({
+                  ...couple,
                   role: 'couple',
                   prenom: nameParts[0] || '',
                   nom: nameParts.slice(1).join(' ') || ''
@@ -63,10 +63,9 @@ export function NuplyNavbarMenu() {
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
-                .single()
+                .maybeSingle()
                 .then(({ data, error: profileError }) => {
-                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
-                  if (profileError && profileError.code !== 'PGRST116') {
+                  if (profileError) {
                     console.error('Erreur lors de la récupération du profil:', profileError);
                   }
                   if (data) {
@@ -90,14 +89,14 @@ export function NuplyNavbarMenu() {
             .from('couples')
             .select('id, partner_1_name, partner_2_name')
             .eq('user_id', session.user.id)
-            .single()
+            .maybeSingle()
             .then(({ data: couple, error: coupleError }) => {
               if (couple && !coupleError) {
                 // Extraire prenom et nom de partner_1_name
                 const partner1Name = couple.partner_1_name || '';
                 const nameParts = partner1Name.split(' ');
-                setProfile({ 
-                  ...couple, 
+                setProfile({
+                  ...couple,
                   role: 'couple',
                   prenom: nameParts[0] || '',
                   nom: nameParts.slice(1).join(' ') || ''
@@ -109,10 +108,9 @@ export function NuplyNavbarMenu() {
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
-                .single()
+                .maybeSingle()
                 .then(({ data, error: profileError }) => {
-                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
-                  if (profileError && profileError.code !== 'PGRST116') {
+                  if (profileError) {
                     console.error('Erreur lors de la récupération du profil:', profileError);
                   }
                   if (data) {

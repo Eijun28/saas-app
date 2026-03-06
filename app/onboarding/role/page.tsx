@@ -35,9 +35,11 @@ export default function OnboardingRolePage() {
         throw new Error(body.error || 'Erreur lors de la création du profil')
       }
 
-      router.push(role === 'couple' ? '/couple/onboarding' : '/prestataire/onboarding')
-    } catch (e: any) {
-      setError(e.message || 'Une erreur est survenue, veuillez réessayer.')
+      const target = role === 'couple' ? '/couple/onboarding' : '/prestataire/onboarding'
+      window.location.href = target
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Une erreur est survenue, veuillez réessayer.'
+      setError(message)
       setIsLoading(null)
     }
   }
