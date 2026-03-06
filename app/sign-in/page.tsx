@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ShieldCheck } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -54,7 +54,6 @@ const cardVariants = {
 }
 
 export default function SignInPage() {
-  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,11 +106,12 @@ export default function SignInPage() {
         setError(translateAuthError(result.error))
         setIsLoading(false)
       } else if (result?.success) {
-        // Si on vient d'une invitation, rediriger vers la page d'invitation
+        // Utiliser window.location.href (full reload) pour que les cookies
+        // d'authentification soient correctement envoyés au serveur
         if (invitationToken) {
-          router.replace(`/invitation/${invitationToken}`)
+          window.location.href = `/invitation/${invitationToken}`
         } else if (result?.redirectTo) {
-          router.replace(result.redirectTo)
+          window.location.href = result.redirectTo
         } else {
           setIsLoading(false)
         }
