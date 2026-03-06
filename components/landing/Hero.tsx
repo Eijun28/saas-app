@@ -32,27 +32,13 @@ export default function Hero() {
           Le premier matching mariage qui comprend votre culture. Trouvez vos prestataires en 2 minutes.
         </motion.p>
 
-        {/* CTA - Deux boutons */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
           className="flex justify-center items-center gap-4 mb-4 flex-col sm:flex-row"
         >
-          <Link href="#trouver-un-prestataire">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 text-white font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
-              style={{
-                backgroundColor: 'hsl(var(--violet-500))',
-                boxShadow: '0 4px 12px hsl(var(--violet-500) / 0.25)',
-                color: 'rgba(255, 255, 255, 1)'
-              }}
-            >
-              Trouver mes prestataires
-            </motion.button>
-          </Link>
           <Link href="/prestataires">
             <motion.button
               whileHover={{ scale: 1.05 }}
