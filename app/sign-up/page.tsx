@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
@@ -22,14 +22,6 @@ import { OAuthButtons } from '@/components/auth/oauth-buttons'
 type Step = 'initial' | 'email' | 'names' | 'company' | 'password'
 
 export default function SignUpPage() {
-  return (
-    <Suspense>
-      <SignUpContent />
-    </Suspense>
-  )
-}
-
-function SignUpContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setFormError] = useState<string | null>(null)
@@ -65,18 +57,17 @@ function SignUpContent() {
     mode: 'onChange',
   })
 
-  const searchParams = useSearchParams()
-
   // Pré-sélectionner le rôle selon le query param ?type=vendor ou ?role=couple
   useEffect(() => {
-    const type = searchParams.get('type')
-    const role = searchParams.get('role')
+    const params = new URLSearchParams(window.location.search)
+    const type = params.get('type')
+    const role = params.get('role')
     if (type === 'vendor') {
       setValue('role', 'prestataire', { shouldValidate: false })
     } else if (role === 'couple') {
       setValue('role', 'couple', { shouldValidate: false })
     }
-  }, [searchParams, setValue])
+  }, [setValue])
 
   const selectedRole = watch('role')
   const password = watch('password')
