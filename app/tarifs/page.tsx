@@ -293,7 +293,7 @@ export default function PricingSection() {
                     priceNote={plan.priceNote}
                     billingPeriod={plan.billingPeriod}
                     cta={
-                      user && plan.cta.planType && plan.price > 0
+                      user && plan.cta.planType && plan.price > 0 && !plan.comingSoon
                         ? {
                             ...plan.cta,
                             href: undefined,
