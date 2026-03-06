@@ -7,6 +7,8 @@ import { Star, MapPin, BadgeCheck, ArrowLeft, Euro, Clock, Globe2, Heart } from 
 import { createClient } from '@/lib/supabase/server'
 import { getServiceTypeLabel, getServiceTypeIcon } from '@/lib/constants/service-types'
 import { getCultureById } from '@/lib/constants/cultures'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { siteConfig } from '@/config/site'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -159,8 +161,35 @@ export default async function ProviderPublicProfilePage({
   const description = publicProfile?.description ?? null
   const initials = `${(profile.prenom || '').charAt(0)}${(profile.nom || '').charAt(0)}`.toUpperCase() || 'P'
 
+  // JSON-LD LocalBusiness schema for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: profile.nom_entreprise || `${profile.prenom} ${profile.nom}`,
+    description: description || `${serviceLabel} pour mariages multiculturels`,
+    url: `${siteConfig.url}/prestataires/${slug}`,
+    ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+    ...(profile.ville_principale ? {
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: profile.ville_principale,
+        addressCountry: 'FR',
+      },
+    } : {}),
+    ...(totalReviews > 0 ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: rating.toFixed(1),
+        reviewCount: totalReviews,
+        bestRating: '5',
+        worstRating: '1',
+      },
+    } : {}),
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
+      <JsonLd data={jsonLd} />
       {/* Back link */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">

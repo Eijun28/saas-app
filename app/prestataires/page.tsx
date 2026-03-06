@@ -2,11 +2,28 @@ import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { PrestatairesPageClient } from '@/components/prestataires/PrestatairesPageClient'
 import type { ProviderData } from '@/components/prestataires/PrestatairesPageClient'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
   title: 'Prestataires mariage multiculturel | NUPLY',
   description:
-    'Trouvez les meilleurs prestataires pour votre mariage multiculturel. Photographes, traiteurs, DJ et plus de 80 types de services.',
+    'Trouvez les meilleurs prestataires pour votre mariage multiculturel. Photographes, traiteurs, DJ, neggafa, decorateurs et plus de 80 types de services dans toute la France.',
+  keywords: [
+    'prestataire mariage', 'mariage multiculturel', 'photographe mariage',
+    'traiteur mariage', 'DJ mariage', 'neggafa', 'decorateur mariage',
+    'mariage marocain', 'mariage algerien', 'mariage indien',
+    'mariage africain', 'mariage turc', 'mariage libanais',
+  ],
+  alternates: {
+    canonical: '/prestataires',
+  },
+  openGraph: {
+    title: 'Prestataires mariage multiculturel | NUPLY',
+    description: 'Trouvez les meilleurs prestataires pour votre mariage multiculturel. Plus de 80 types de services.',
+    url: `${siteConfig.url}/prestataires`,
+    type: 'website',
+  },
 }
 
 export default async function PrestatairesPage() {
@@ -74,8 +91,24 @@ export default async function PrestatairesPage() {
     totalCount = count ?? providerList.length
   }
 
+  // JSON-LD ItemList for SEO
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Prestataires mariage multiculturel',
+    description: 'Liste des prestataires de mariage multiculturel sur NUPLY',
+    numberOfItems: totalCount,
+    itemListElement: providerList.slice(0, 10).map((p, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${siteConfig.url}/prestataires/${p.id}`,
+      name: p.nom_entreprise || p.prenom || 'Prestataire',
+    })),
+  }
+
   return (
     <main className="min-h-screen bg-white">
+      <JsonLd data={jsonLd} />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#F5F0F7] via-white to-[#E8D4EF]/30 py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
