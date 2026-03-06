@@ -5,7 +5,7 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/components/ui/sheet'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Calendar, MapPin, StickyNote, Clock, Tag } from 'lucide-react'
+import { Calendar, MapPin, StickyNote, Clock, Tag, PartyPopper } from 'lucide-react'
 import { RequestNotes }    from './RequestNotes'
 import { RequestTimeline } from './RequestTimeline'
 import { RequestTags }     from './RequestTags'
@@ -40,6 +40,17 @@ export function RequestDetailSheet({
             {demande.couple_nom}
           </SheetTitle>
           <div className="flex flex-wrap gap-3 text-[12px] text-gray-500">
+            {demande.event_name && (
+              <span className="flex items-center gap-1 text-[#5C2B66] font-medium">
+                <PartyPopper className="h-3.5 w-3.5" />
+                {demande.event_name}
+                {demande.event_date && (
+                  <span className="text-gray-400 font-normal ml-1">
+                    ({formatDate(demande.event_date)})
+                  </span>
+                )}
+              </span>
+            )}
             {demande.date_evenement && (
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
