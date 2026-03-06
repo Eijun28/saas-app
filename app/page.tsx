@@ -5,6 +5,7 @@ import Hero from '@/components/landing/Hero'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
+import { SocialProofCounter } from '@/components/landing/SocialProofCounter'
 
 // Particules : lazy + ssr:false (canvas WebGL, inutile côté serveur)
 const LandingParticles = dynamic(
@@ -43,6 +44,7 @@ export default function HomePage() {
         <div>
           <Hero />
           <CulturesMarquee />
+          <SocialProofCounter />
           <HowItWorks />
           <MatchingQuizSection />
           <PrestatairesMarquee />

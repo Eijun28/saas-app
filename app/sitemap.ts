@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { siteConfig } from '@/config/site';
 import { createClient } from '@/lib/supabase/server';
 import { getAllArticles } from '@/lib/blog/articles';
+import { SEO_CITIES, SEO_CULTURES } from '@/lib/constants/seo-cities';
 
 /**
  * Sitemap dynamique pour le SEO
@@ -42,6 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/prestataires`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/sign-up`,
@@ -109,5 +116,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // En cas d'erreur DB, on continue sans les pages dynamiques
   }
 
-  return [...staticPages, ...blogPages, ...providerPages];
+  // Pages SEO ville + culture (long-tail keywords)
+  const seoCityCulturePages: MetadataRoute.Sitemap = SEO_CITIES.flatMap((ville) =>
+    SEO_CULTURES.map((culture) => ({
+      url: `${baseUrl}/prestataires/${ville}/${culture}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.5,
+    }))
+  )
+
+  return [...staticPages, ...blogPages, ...providerPages, ...seoCityCulturePages];
 }

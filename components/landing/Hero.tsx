@@ -29,17 +29,17 @@ export default function Hero() {
           className="text-base sm:text-lg md:text-xl lg:text-[25px] max-w-2xl mx-auto mb-10 leading-relaxed px-2"
           style={{ color: 'hsl(var(--beige-800))' }}
         >
-          Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.
+          Le premier matching mariage qui comprend votre culture. Trouvez vos prestataires en 2 minutes.
         </motion.p>
 
-        {/* CTA - Violet */}
+        {/* CTA - Deux boutons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-          className="flex justify-center items-center mb-4"
+          className="flex justify-center items-center gap-4 mb-4 flex-col sm:flex-row"
         >
-          <Link href="/sign-up">
+          <Link href="#trouver-un-prestataire">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -50,7 +50,21 @@ export default function Hero() {
                 color: 'rgba(255, 255, 255, 1)'
               }}
             >
-              Commencer gratuitement
+              Trouver mes prestataires
+            </motion.button>
+          </Link>
+          <Link href="/prestataires">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 border-2"
+              style={{
+                borderColor: 'hsl(var(--violet-500))',
+                color: 'hsl(var(--violet-500))',
+                backgroundColor: 'transparent'
+              }}
+            >
+              Voir les prestataires
             </motion.button>
           </Link>
         </motion.div>
@@ -63,7 +77,7 @@ export default function Hero() {
           className="text-sm text-center mt-4"
           style={{ color: 'hsl(var(--beige-700))' }}
         >
-          Rejoignez la révolution du mariage
+          Gratuit pour les couples
         </motion.p>
       </div>
     </section>
