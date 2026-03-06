@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { Eye, EyeOff } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -17,7 +17,6 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 export function SignInForm() {
-  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,13 +37,16 @@ export function SignInForm() {
       const result = await signIn(data.email, data.password)
       if (result?.error) {
         setError(translateAuthError(result.error))
+        setIsLoading(false)
       } else if (result?.success && result?.redirectTo) {
-        router.replace(result.redirectTo)
+        // Full page reload to ensure auth cookies are sent to the server
+        window.location.href = result.redirectTo
+      } else {
+        setIsLoading(false)
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
       setError(translateAuthError(message))
-    } finally {
       setIsLoading(false)
     }
   }
