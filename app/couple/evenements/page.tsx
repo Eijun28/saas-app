@@ -171,7 +171,6 @@ export default function EvenementsPage() {
   const planningEvents = events.filter(e => e.status === 'planning')
 
   return (
-    <div className="max-w-5xl mx-auto px-1 sm:px-0">
     <div className="max-w-4xl mx-auto px-3 sm:px-0">
       <PageTitle
         title="Mes événements"
