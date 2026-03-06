@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Mail, Lock, ShieldCheck } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -13,9 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-
-const Particles = dynamic(() => import('@/components/Particles'), { ssr: false })
+import Particles from '@/components/Particles'
 import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 // Animation variants pour une entrée élégante
@@ -56,17 +54,15 @@ const cardVariants = {
 }
 
 export default function SignInPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  const [particleCount, setParticleCount] = useState(200)
-
   // Reduce particle count on mobile for performance
-  useEffect(() => {
-    if (window.innerWidth < 768) setParticleCount(50)
-  }, [])
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   const {
     register,
@@ -108,21 +104,15 @@ export default function SignInPage() {
         setError(translateAuthError(result.error))
         setIsLoading(false)
       } else if (result?.success) {
-        // Utiliser window.location.href (full reload) pour que les cookies
-        // d'authentification soient correctement envoyés au serveur
+        // Si on vient d'une invitation, rediriger vers la page d'invitation
         if (invitationToken) {
-          window.location.href = `/invitation/${invitationToken}`
+          router.push(`/invitation/${invitationToken}`)
         } else if (result?.redirectTo) {
-          window.location.href = result.redirectTo
-        } else {
-          setIsLoading(false)
+          router.push(result.redirectTo)
         }
-      } else {
-        setIsLoading(false)
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      setError(translateAuthError(message))
+    } catch (err: any) {
+      setError(translateAuthError(err.message))
       setIsLoading(false)
     }
   }

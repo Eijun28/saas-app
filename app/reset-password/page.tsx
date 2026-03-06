@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -60,6 +60,7 @@ const itemVariants = {
 }
 
 export default function ResetPasswordPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -77,12 +78,9 @@ export default function ResetPasswordPage() {
 
   const password = watch('password', '')
 
-  const [particleCount, setParticleCount] = useState(200)
-
   // Reduce particle count on mobile for performance
-  useEffect(() => {
-    if (window.innerWidth < 768) setParticleCount(50)
-  }, [])
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   useEffect(() => {
     const supabase = createBrowserClient(
@@ -107,13 +105,13 @@ export default function ResetPasswordPage() {
       }
     })
 
-    // Timeout après 15 secondes : le lien est invalide ou expiré
+    // Timeout après 5 secondes : le lien est invalide ou expiré
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true
         setPageState('expired')
       }
-    }, 15000)
+    }, 5000)
 
     return () => {
       clearTimeout(timeout)
@@ -141,10 +139,10 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // Full page reload to ensure auth state is clean
-      window.location.href = '/sign-in?message=password_updated'
+      router.push('/sign-in?message=password_updated')
     } catch {
       setError('Une erreur est survenue. Veuillez réessayer.')
+    } finally {
       setIsLoading(false)
     }
   }

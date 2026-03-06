@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
@@ -16,24 +16,19 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, ArrowLeft, Mail } from 'lucide-react'
-import dynamic from 'next/dynamic'
-
-const Particles = dynamic(() => import('@/components/Particles'), { ssr: false })
+import Particles from '@/components/Particles'
 import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 type Step = 'initial' | 'email' | 'names' | 'company' | 'password'
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setFormError] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('initial')
+  const router = useRouter()
 
-  const [particleCount, setParticleCount] = useState(200)
-
-  useEffect(() => {
-    if (window.innerWidth < 768) setParticleCount(50)
-  }, [])
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   const {
     register,
@@ -57,18 +52,6 @@ export default function SignUpPage() {
     },
     mode: 'onChange',
   })
-
-  // Pré-sélectionner le rôle selon le query param ?type=vendor ou ?role=couple
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const type = params.get('type')
-    const role = params.get('role')
-    if (type === 'vendor') {
-      setValue('role', 'prestataire', { shouldValidate: false })
-    } else if (role === 'couple') {
-      setValue('role', 'couple', { shouldValidate: false })
-    }
-  }, [setValue])
 
   const selectedRole = watch('role')
   const password = watch('password')
@@ -151,12 +134,11 @@ export default function SignUpPage() {
       if ('error' in result && result.error) {
         setFormError(result.error)
       } else if ('success' in result && result.success) {
-        setIsSuccess(true)
         let redirectUrl = ('redirectTo' in result && result.redirectTo) ? result.redirectTo : '/auth/confirm'
         if ('emailWarning' in result && result.emailWarning) {
           redirectUrl += `?emailWarning=${encodeURIComponent(String(result.emailWarning))}`
         }
-        setTimeout(() => { window.location.href = redirectUrl }, 1500)
+        router.push(redirectUrl)
       } else {
         setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
@@ -178,7 +160,6 @@ export default function SignUpPage() {
       <button
         type="button"
         onClick={handleBack}
-        aria-label="Retour à l'étape précédente"
         className="text-neutral-400 hover:text-neutral-600 transition-colors p-1"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -257,8 +238,6 @@ export default function SignUpPage() {
                   type="button"
                   onClick={() => {
                     setValue('role', 'prestataire', { shouldValidate: false })
-                    clearErrors()
-                    setFormError(null)
                     if (step !== 'initial') setStep('initial')
                   }}
                   className={cn(
@@ -274,8 +253,6 @@ export default function SignUpPage() {
                   type="button"
                   onClick={() => {
                     setValue('role', 'couple', { shouldValidate: false })
-                    clearErrors()
-                    setFormError(null)
                     if (step !== 'initial') setStep('initial')
                   }}
                   className={cn(
@@ -354,8 +331,6 @@ export default function SignUpPage() {
                           placeholder="votre@email.com"
                           type="email"
                           autoFocus
-                          aria-describedby={errors.email ? 'email-error' : undefined}
-                          aria-invalid={!!errors.email}
                           {...register('email')}
                           disabled={isLoading}
                           className="h-11 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
@@ -367,7 +342,7 @@ export default function SignUpPage() {
                           }}
                         />
                         {errors.email && (
-                          <p id="email-error" role="alert" className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+                          <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
                         )}
                       </LabelInputContainer>
                       <button
@@ -401,14 +376,12 @@ export default function SignUpPage() {
                             id="prenom"
                             placeholder="Votre prénom"
                             autoFocus
-                            aria-describedby={errors.prenom ? 'prenom-error' : undefined}
-                            aria-invalid={!!errors.prenom}
                             {...register('prenom')}
                             disabled={isLoading}
                             className="h-11 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                           />
                           {errors.prenom && (
-                            <p id="prenom-error" role="alert" className="text-xs text-red-500 mt-1">{errors.prenom.message}</p>
+                            <p className="text-xs text-red-500 mt-1">{errors.prenom.message}</p>
                           )}
                         </LabelInputContainer>
                         <LabelInputContainer className="flex-1">
@@ -418,14 +391,12 @@ export default function SignUpPage() {
                           <Input
                             id="nom"
                             placeholder="Votre nom"
-                            aria-describedby={errors.nom ? 'nom-error' : undefined}
-                            aria-invalid={!!errors.nom}
                             {...register('nom')}
                             disabled={isLoading}
                             className="h-11 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                           />
                           {errors.nom && (
-                            <p id="nom-error" role="alert" className="text-xs text-red-500 mt-1">{errors.nom.message}</p>
+                            <p className="text-xs text-red-500 mt-1">{errors.nom.message}</p>
                           )}
                         </LabelInputContainer>
                       </div>
@@ -513,14 +484,12 @@ export default function SignUpPage() {
                           placeholder="Minimum 8 caractères"
                           type="password"
                           autoFocus
-                          aria-describedby={errors.password ? 'password-error' : undefined}
-                          aria-invalid={!!errors.password}
                           {...register('password')}
                           disabled={isLoading}
                           className="h-11 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                         />
                         {errors.password && (
-                          <p id="password-error" role="alert" className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                          <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
                         )}
                         {password && (
                           <div className="mt-2 flex gap-4">
@@ -544,14 +513,12 @@ export default function SignUpPage() {
                           id="confirmPassword"
                           placeholder="Répétez votre mot de passe"
                           type="password"
-                          aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-                          aria-invalid={!!errors.confirmPassword}
                           {...register('confirmPassword')}
                           disabled={isLoading}
                           className="h-11 rounded-xl border-neutral-200 focus-visible:ring-[#823F91] text-base"
                         />
                         {errors.confirmPassword && (
-                          <p id="confirm-password-error" role="alert" className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                          <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
                         )}
                       </LabelInputContainer>
 
@@ -563,26 +530,10 @@ export default function SignUpPage() {
 
                       <button
                         type="submit"
-                        disabled={isLoading || isSuccess}
-                        className={cn(
-                          "w-full h-12 rounded-xl font-semibold text-white shadow-lg transition-all duration-300 disabled:cursor-not-allowed",
-                          isSuccess
-                            ? "bg-green-500 shadow-green-500/25"
-                            : "bg-[#823F91] hover:bg-[#6D3478] shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 disabled:opacity-50"
-                        )}
+                        disabled={isLoading}
+                        className="w-full h-12 rounded-xl bg-[#823F91] hover:bg-[#6D3478] font-semibold text-white shadow-lg shadow-[#823F91]/25 hover:shadow-xl hover:shadow-[#823F91]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSuccess ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <motion.span
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                            >
-                              ✓
-                            </motion.span>
-                            Compte créé ! Redirection...
-                          </span>
-                        ) : isLoading ? (
+                        {isLoading ? (
                           <span className="flex items-center justify-center gap-2">
                             <motion.div
                               animate={{ rotate: 360 }}

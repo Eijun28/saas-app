@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, ArrowLeft, ShieldCheck } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -11,9 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-
-const Particles = dynamic(() => import('@/components/Particles'), { ssr: false })
+import Particles from '@/components/Particles'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Veuillez entrer une adresse email valide'),
@@ -62,12 +60,9 @@ export default function ForgotPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [particleCount, setParticleCount] = useState(200)
-
   // Reduce particle count on mobile for performance
-  useEffect(() => {
-    if (window.innerWidth < 768) setParticleCount(50)
-  }, [])
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   const {
     register,
@@ -92,7 +87,6 @@ export default function ForgotPasswordPage() {
       })
 
       if (error) {
-        console.warn('Erreur reset password:', error.message)
         setError('Une erreur est survenue. Veuillez réessayer.')
         setIsLoading(false)
         return

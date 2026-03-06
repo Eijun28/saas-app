@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { translateAuthError } from '@/lib/auth/error-translations'
-import { getDashboardUrl } from '@/lib/auth/utils'
+import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 import { logger } from '@/lib/logger'
 
 async function createCoupleProfile(adminClient: ReturnType<typeof createAdminClient>, userId: string, email: string, metadata: Record<string, any>) {
@@ -75,35 +75,27 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
     }
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (userError || !user) {
-      logger.error('Erreur récupération utilisateur après callback:', userError)
-      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodeURIComponent('Erreur lors de la connexion. Veuillez réessayer.')}`)
-    }
+    if (user) {
+      const roleCheck = await getUserRoleServer(user.id)
 
-    {
-      // Use admin client to check role — the server client created above
-      // may not have the session cookies available for RLS queries yet
-      // (cookies are set on the response, not readable from a new client)
-      const adminClient = createAdminClient()
+      if (roleCheck.role) {
+        // Profil existant → vérifier onboarding prestataire
+        if (roleCheck.role === 'prestataire') {
+          const supabaseCheck = await createClient()
+          const { data: profile } = await supabaseCheck
+            .from('profiles')
+            .select('onboarding_step')
+            .eq('id', user.id)
+            .maybeSingle()
 
-      const [{ data: couple }, { data: profile }] = await Promise.all([
-        adminClient.from('couples').select('id').eq('user_id', user.id).maybeSingle(),
-        adminClient.from('profiles').select('id, onboarding_step').eq('id', user.id).maybeSingle(),
-      ])
-
-      const existingRole = couple ? 'couple' : profile ? 'prestataire' : null
-
-      if (existingRole) {
-        // Profil existant
-        if (existingRole === 'prestataire') {
           if (!profile || (profile.onboarding_step ?? 0) < 5) {
             return NextResponse.redirect(`${requestUrl.origin}/prestataire/onboarding`)
           }
         }
 
-        const dashboardUrl = getDashboardUrl(existingRole)
+        const dashboardUrl = getDashboardUrl(roleCheck.role)
         return NextResponse.redirect(`${requestUrl.origin}${dashboardUrl}`)
       }
 
@@ -117,6 +109,8 @@ export async function GET(request: Request) {
 
       if (resolvedRole === 'couple' || resolvedRole === 'prestataire') {
         try {
+          const adminClient = createAdminClient()
+
           if (resolvedRole === 'couple') {
             const err = await createCoupleProfile(adminClient, user.id, user.email || '', user.user_metadata ?? {})
             if (!err) {
@@ -141,7 +135,7 @@ export async function GET(request: Request) {
       // → page de choix de rôle
       return NextResponse.redirect(`${requestUrl.origin}/onboarding/role`)
     }
-  }  // fin bloc user
+  }
 
   return NextResponse.redirect(`${requestUrl.origin}/`)
 }

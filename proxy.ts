@@ -1,7 +1,41 @@
 import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getDashboardUrl } from '@/lib/auth/utils'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@supabase/ssr'
+import { getPublicEnvConfig } from '@/lib/config/env'
+
+type UserRole = 'couple' | 'prestataire' | null
+
+/**
+ * Crée un client Supabase compatible Edge Runtime (utilise request.cookies, pas next/headers)
+ */
+function createEdgeSupabaseClient(request: NextRequest) {
+  const config = getPublicEnvConfig()
+  return createServerClient(
+    config.NEXT_PUBLIC_SUPABASE_URL,
+    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll() { /* read-only in proxy */ },
+      },
+    }
+  )
+}
+
+/**
+ * Vérifie le rôle utilisateur via les cookies de la request (compatible Edge Runtime)
+ */
+async function getUserRole(request: NextRequest, userId: string): Promise<UserRole> {
+  const supabase = createEdgeSupabaseClient(request)
+  const [{ data: couple }, { data: profile }] = await Promise.all([
+    supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+    supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+  ])
+  if (couple) return 'couple'
+  if (profile) return 'prestataire'
+  return null
+}
 
 export default async function proxy(request: NextRequest) {
   const result = await updateSession(request) as UpdateSessionResult
@@ -23,38 +57,20 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 
-  // Use admin client for role checks — getUserRoleServer creates a separate
-  // Supabase client via cookies() which may not have the session tokens
-  // available in the proxy context, causing RLS to block queries and
-  // returning role=null even for authenticated users → redirect loop
-  const adminClient = (user && (isAuthRoute || isProtectedRoute))
-    ? createAdminClient()
-    : null
-
   // Connecté + route auth = redirect vers dashboard
-  if (user && isAuthRoute && adminClient) {
-    const [{ data: couple }, { data: profile }] = await Promise.all([
-      adminClient.from('couples').select('id').eq('user_id', user.id).maybeSingle(),
-      adminClient.from('profiles').select('id').eq('id', user.id).maybeSingle(),
-    ])
-    const role = couple ? 'couple' : profile ? 'prestataire' : null
-
+  if (user && isAuthRoute) {
+    const role = await getUserRole(request, user.id)
     if (role) {
-      const dashboardUrl = getDashboardUrl(role)
-      return NextResponse.redirect(new URL(dashboardUrl, request.url))
+      return NextResponse.redirect(new URL(getDashboardUrl(role), request.url))
     }
   }
 
   // Protection : empêcher un prestataire d'accéder aux routes couple et vice versa
-  if (user && isProtectedRoute && adminClient) {
+  if (user && isProtectedRoute) {
     const isTryingToAccessCouple = request.nextUrl.pathname.startsWith('/couple')
     const isTryingToAccessPrestataire = request.nextUrl.pathname.startsWith('/prestataire')
 
-    const [{ data: couple }, { data: profile }] = await Promise.all([
-      adminClient.from('couples').select('id').eq('user_id', user.id).maybeSingle(),
-      adminClient.from('profiles').select('id, onboarding_step').eq('id', user.id).maybeSingle(),
-    ])
-    const role = couple ? 'couple' : profile ? 'prestataire' : null
+    const role = await getUserRole(request, user.id)
 
     if (role === 'couple') {
       if (isTryingToAccessPrestataire) {
@@ -68,8 +84,15 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL('/prestataire/dashboard', request.url))
       }
 
-      // Vérifier si l'onboarding guidé est terminé (sauf si déjà sur la page d'onboarding)
+      // Vérifier si l'onboarding guidé est terminé
       if (!request.nextUrl.pathname.startsWith('/prestataire/onboarding')) {
+        const supabase = createEdgeSupabaseClient(request)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_step')
+          .eq('id', user.id)
+          .maybeSingle()
+
         if (profile && (profile.onboarding_step ?? 0) < 5) {
           return NextResponse.redirect(new URL('/prestataire/onboarding', request.url))
         }
