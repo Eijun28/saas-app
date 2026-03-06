@@ -10,7 +10,7 @@ import { Menu as MenuIcon, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
-import { signOut } from "@/lib/auth/actions";
+
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export function NuplyNavbarMenu() {
@@ -134,10 +134,15 @@ export function NuplyNavbarMenu() {
   }, [mounted]);
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore sign out errors
+    }
     setUser(null);
     setProfile(null);
-    router.push('/');
+    window.location.href = '/';
   };
 
   // Ne pas afficher la navbar sur les pages dashboard (elles ont leur propre header)
@@ -362,25 +367,27 @@ function Navbar({
         }}>
           {user ? (
             <>
-              <Link
-                href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
-                style={{
-                  color: '#823F91',
-                  pointerEvents: 'auto',
-                  position: 'relative',
-                  zIndex: 100000,
-                  transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#a720f2'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#823F91'
-                }}
-              >
-                Mon espace
-              </Link>
+              {profile?.role && (
+                <Link
+                  href={profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                  className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
+                  style={{
+                    color: '#823F91',
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 100000,
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a720f2'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#823F91'
+                  }}
+                >
+                  Mon espace
+                </Link>
+              )}
               <button
                 onClick={handleSignOutClick}
                 className="text-base font-bold cursor-pointer transition-colors flex items-center h-8 gap-1"
@@ -566,23 +573,25 @@ function Navbar({
               <div className="pt-4 border-t border-gray-200">
                 {user ? (
                   <div className="space-y-2">
-                    <Link
-                      href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-3 py-2 text-base transition-colors"
-                      style={{
-                        color: '#823F91',
-                        transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#a720f2'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#823F91'
-                      }}
-                    >
-                      Mon espace
-                    </Link>
+                    {profile?.role && (
+                      <Link
+                        href={profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full text-left px-3 py-2 text-base transition-colors"
+                        style={{
+                          color: '#823F91',
+                          transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#a720f2'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#823F91'
+                        }}
+                      >
+                        Mon espace
+                      </Link>
+                    )}
                     <button
                       onClick={handleSignOutClick}
                       className="w-full text-left px-3 py-2 text-base flex items-center gap-2 transition-colors"
