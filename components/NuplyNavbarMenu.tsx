@@ -169,10 +169,10 @@ export function NuplyNavbarMenu() {
   }
 
   return (
-    <div className="relative w-full flex items-center justify-center" style={{ pointerEvents: 'none', zIndex: 99999 }}>
-      <Navbar 
-        className="top-2" 
-        active={active} 
+    <div className="relative w-full flex items-center justify-center" style={{ zIndex: 99999 }}>
+      <Navbar
+        className="top-2"
+        active={active}
         setActive={setActive}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}

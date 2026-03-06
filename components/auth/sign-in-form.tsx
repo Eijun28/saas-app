@@ -38,13 +38,13 @@ export function SignInForm() {
       const result = await signIn(data.email, data.password)
       if (result?.error) {
         setError(translateAuthError(result.error))
-        setIsLoading(false)
       } else if (result?.success && result?.redirectTo) {
-        // Rediriger côté client après connexion réussie
         router.push(result.redirectTo)
       }
-    } catch (err: any) {
-      setError(translateAuthError(err.message))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      setError(translateAuthError(message))
+    } finally {
       setIsLoading(false)
     }
   }

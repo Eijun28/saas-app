@@ -13,18 +13,22 @@ export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
 
   const handleOAuth = async (provider: 'google') => {
     setIsLoading(true)
-    const supabase = createClient()
-    const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    const redirectTo = role
-      ? `${base}/auth/callback?role=${role}`
-      : `${base}/auth/callback`
+    try {
+      const supabase = createClient()
+      const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+      const redirectTo = role
+        ? `${base}/auth/callback?role=${role}`
+        : `${base}/auth/callback`
 
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo,
-      },
-    })
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+        },
+      })
+    } catch {
+      setIsLoading(false)
+    }
   }
 
   return (

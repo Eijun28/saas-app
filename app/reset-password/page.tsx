@@ -105,13 +105,13 @@ export default function ResetPasswordPage() {
       }
     })
 
-    // Timeout après 5 secondes : le lien est invalide ou expiré
+    // Timeout après 15 secondes : le lien est invalide ou expiré
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true
         setPageState('expired')
       }
-    }, 5000)
+    }, 15000)
 
     return () => {
       clearTimeout(timeout)
