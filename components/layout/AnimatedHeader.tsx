@@ -155,8 +155,6 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     return null
   }
 
-  const isHomePage = pathname === '/'
-
   return (
     <motion.header
       role="banner"
@@ -268,7 +266,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-3">
-            {user && !isHomePage ? (
+            {user ? (
               <>
                 <Link
                   href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
@@ -279,7 +277,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       : 'text-white hover:text-white/80'
                   )}
                 >
-                  {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                  Mon espace
                 </Link>
                 <Button
                   onClick={handleSignOut}
@@ -397,14 +395,14 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
 
                   {/* Mobile CTA Buttons */}
                   <div className="pt-6 border-t border-gray-200 space-y-3">
-                    {user && !isHomePage ? (
+                    {user ? (
                       <>
                         <Link
                           href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
                         >
-                          {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                          Mon espace
                         </Link>
                         <Button
                           onClick={handleSignOut}

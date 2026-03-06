@@ -381,7 +381,7 @@ function Navbar({
                   e.currentTarget.style.color = '#823F91'
                 }}
               >
-                {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                Mon espace
               </Link>
               <button
                 onClick={handleSignOutClick}
@@ -583,7 +583,7 @@ function Navbar({
                         e.currentTarget.style.color = '#823F91'
                       }}
                     >
-                      {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                      Mon espace
                     </Link>
                     <button
                       onClick={handleSignOutClick}
