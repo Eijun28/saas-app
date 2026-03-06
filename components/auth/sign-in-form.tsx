@@ -40,6 +40,8 @@ export function SignInForm() {
         setError(translateAuthError(result.error))
       } else if (result?.success && result?.redirectTo) {
         router.push(result.redirectTo)
+        // Rediriger côté client après connexion réussie
+        router.replace(result.redirectTo)
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)

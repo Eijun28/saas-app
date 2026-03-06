@@ -109,9 +109,9 @@ export default function SignInPage() {
       } else if (result?.success) {
         // Si on vient d'une invitation, rediriger vers la page d'invitation
         if (invitationToken) {
-          router.push(`/invitation/${invitationToken}`)
+          router.replace(`/invitation/${invitationToken}`)
         } else if (result?.redirectTo) {
-          router.push(result.redirectTo)
+          router.replace(result.redirectTo)
         }
       }
     } catch (err: any) {

@@ -6,7 +6,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendConfirmationEmail } from '@/lib/email/confirmation'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
-import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 import { revalidatePath } from 'next/cache'
 
@@ -633,6 +632,32 @@ export async function signIn(email: string, password: string) {
 
     const dashboardUrl = getDashboardUrl(roleCheck.role)
     return { success: true, redirectTo: dashboardUrl }
+  if (data.user) {
+    const userId = data.user.id
+
+    // Vérifier le rôle et l'onboarding en parallèle avec le même client Supabase
+    const [{ data: couple }, { data: profile }] = await Promise.all([
+      supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+    ])
+
+    // Revalider uniquement les chemins concernés (pas tout le layout)
+    revalidatePath('/couple/dashboard')
+    revalidatePath('/prestataire/dashboard')
+
+    if (couple) {
+      return { success: true, redirectTo: '/couple/dashboard' }
+    }
+
+    if (profile) {
+      if ((profile.onboarding_step ?? 0) < 5) {
+        return { success: true, redirectTo: '/prestataire/onboarding' }
+      }
+      return { success: true, redirectTo: '/prestataire/dashboard' }
+    }
+
+    // Compte auth créé mais profil non complété
+    return { success: true, redirectTo: '/' }
   }
 
   // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
