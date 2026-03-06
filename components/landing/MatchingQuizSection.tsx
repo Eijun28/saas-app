@@ -329,11 +329,9 @@ const SkeletonMatchingFullWidth = () => {
                       {msg.button && (
                         <button
                           className="w-full bg-white text-gray-900 rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-gray-50 transition-colors active:scale-95 mt-2"
-                          onClick={() => {
-                            // Action à définir
-                          }}
+                          onClick={() => router.push('/sign-up')}
                         >
-                          Cliquer pour voir les messages envoyés
+                          S'inscrire pour tester le matching
                         </button>
                       )}
                     </div>
@@ -538,7 +536,7 @@ export default function MatchingQuizSection() {
                 type="button"
                 className="text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 shadow-lg hover:shadow-xl w-full sm:w-auto rounded-lg font-semibold text-white transition-all"
                 style={{
-                  backgroundColor: '#c081e3',
+                  backgroundColor: '#823F91',
                   color: 'white',
                 }}
               >
