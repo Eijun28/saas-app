@@ -52,7 +52,7 @@ export default function HomePage() {
             buttons={[
               {
                 href: '/sign-up',
-                text: 'Commencer',
+                text: "S'inscrire",
                 variant: 'default',
                 iconRight: <ArrowRight className="ml-2 h-5 w-5" />,
               },
