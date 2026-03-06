@@ -613,14 +613,14 @@ export async function signIn(email: string, password: string) {
 
   const userId = data.user.id
 
-  // Vérifier le rôle et l'onboarding en parallèle
-  const [{ data: couple }, { data: profile }] = await Promise.all([
-    supabase.from('couples').select('id').eq('user_id', userId).maybeSingle(),
-    supabase.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
-  ])
+  // Use admin client to check role — avoids RLS timing issues
+  // where the session cookies may not be fully propagated yet
+  const adminClient = createAdminClient()
 
-  revalidatePath('/couple/dashboard')
-  revalidatePath('/prestataire/dashboard')
+  const [{ data: couple }, { data: profile }] = await Promise.all([
+    adminClient.from('couples').select('id').eq('user_id', userId).maybeSingle(),
+    adminClient.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
+  ])
 
   if (couple) {
     return { success: true, redirectTo: '/couple/dashboard' }
