@@ -10,6 +10,8 @@ import { PrestatairesPageClient } from '@/components/prestataires/PrestatairesPa
 import type { ProviderData } from '@/components/prestataires/PrestatairesPageClient'
 import { SEO_CITIES, SEO_CULTURES } from '@/lib/constants/seo-cities'
 
+export const dynamic = 'force-dynamic'
+
 function capitalize(str: string): string {
   return str
     .split(' ')
@@ -25,13 +27,6 @@ function escapeLikePattern(str: string): string {
 /** Validate that ville and culture are from known SEO lists */
 function isValidParams(ville: string, culture: string): boolean {
   return SEO_CITIES.includes(ville) && SEO_CULTURES.includes(culture)
-}
-
-/** Pre-render all known city+culture combinations at build time */
-export function generateStaticParams() {
-  return SEO_CITIES.flatMap((ville) =>
-    SEO_CULTURES.map((culture) => ({ ville, culture }))
-  )
 }
 
 interface Props {
