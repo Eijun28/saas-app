@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 
@@ -11,6 +11,17 @@ interface OAuthButtonsProps {
 export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
   const [isLoading, setIsLoading] = useState(false)
 
+  // Reset loading state when user returns to the page (e.g. after cancelling OAuth)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setIsLoading(false)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
   const handleOAuth = async (provider: 'google') => {
     setIsLoading(true)
     try {
@@ -20,12 +31,16 @@ export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
         ? `${base}/auth/callback?role=${role}`
         : `${base}/auth/callback`
 
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo,
         },
       })
+
+      if (error) {
+        setIsLoading(false)
+      }
     } catch {
       setIsLoading(false)
     }

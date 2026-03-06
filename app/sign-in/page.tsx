@@ -112,10 +112,15 @@ export default function SignInPage() {
           router.replace(`/invitation/${invitationToken}`)
         } else if (result?.redirectTo) {
           router.replace(result.redirectTo)
+        } else {
+          setIsLoading(false)
         }
+      } else {
+        setIsLoading(false)
       }
-    } catch (err: any) {
-      setError(translateAuthError(err.message))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      setError(translateAuthError(message))
       setIsLoading(false)
     }
   }
