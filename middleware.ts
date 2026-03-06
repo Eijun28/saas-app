@@ -1,23 +1,33 @@
 import { updateSession, type UpdateSessionResult } from '@/lib/supabase/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
-import { getDashboardUrl } from '@/lib/auth/utils'
 import { createServerClient } from '@supabase/ssr'
-import { getPublicEnvConfig } from '@/lib/config/env'
 
 type UserRole = 'couple' | 'prestataire' | null
+
+function getDashboardUrl(role: UserRole): string {
+  switch (role) {
+    case 'couple':
+      return '/couple/dashboard'
+    case 'prestataire':
+      return '/prestataire/dashboard'
+    default:
+      return '/'
+  }
+}
 
 /**
  * Crée un client Supabase compatible Edge Runtime (utilise request.cookies, pas next/headers)
  */
 function createEdgeSupabaseClient(request: NextRequest) {
-  const config = getPublicEnvConfig()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   return createServerClient(
-    config.NEXT_PUBLIC_SUPABASE_URL,
-    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() { return request.cookies.getAll() },
-        setAll() { /* read-only in proxy */ },
+        setAll() { /* read-only in middleware */ },
       },
     }
   )
@@ -37,7 +47,7 @@ async function getUserRole(request: NextRequest, userId: string): Promise<UserRo
   return null
 }
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const result = await updateSession(request) as UpdateSessionResult
   const { supabaseResponse, user } = result
 

@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { RippleButton } from "@/components/ui/ripple-button";
 import { Menu as MenuIcon, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
@@ -413,40 +412,22 @@ function Navbar({
             </>
             ) : (
             <>
-              <Link href="/sign-in" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
-                <RippleButton
-                  className="text-sm h-8 px-4 border-0 font-medium"
-                  style={{ backgroundColor: '#823F91', color: 'white', pointerEvents: 'auto' }}
-                  rippleColor="#ffffff"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6D3478'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#823F91'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                >
-                  <span style={{ color: 'white' }}>Se connecter</span>
-                </RippleButton>
-              </Link>
-              <Link href="/sign-up" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
-                <RippleButton
-                  className="text-sm h-8 px-4 border-0 font-medium"
-                  style={{ backgroundColor: '#c081e3', color: 'white', pointerEvents: 'auto' }}
-                  rippleColor="#ffffff"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#a865d0'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#c081e3'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                >
-                  <span style={{ color: 'white' }}>S&apos;inscrire</span>
-                </RippleButton>
-              </Link>
+              <Button
+                asChild
+                size="sm"
+                className="text-sm h-8 px-4 border-0 font-medium bg-[#823F91] hover:bg-[#6D3478] text-white"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+              >
+                <Link href="/sign-in">Se connecter</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="text-sm h-8 px-4 border-0 font-medium bg-[#c081e3] hover:bg-[#a865d0] text-white"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+              >
+                <Link href="/sign-up">S&apos;inscrire</Link>
+              </Button>
             </>
           )}
         </div>
@@ -614,40 +595,22 @@ function Navbar({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-base font-medium border-0"
-                        style={{ backgroundColor: '#823F91', color: 'white' }}
-                        rippleColor="#ffffff"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#6D3478'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#823F91'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                      >
-                        <span style={{ color: 'white' }}>Se connecter</span>
-                      </RippleButton>
-                    </Link>
-                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-base font-medium border-0"
-                        style={{ backgroundColor: '#c081e3', color: 'white' }}
-                        rippleColor="#ffffff"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#a865d0'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#c081e3'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                      >
-                        <span style={{ color: 'white' }}>S&apos;inscrire</span>
-                      </RippleButton>
-                    </Link>
+                    <Button
+                      asChild
+                      className="w-full h-9 text-base font-medium border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                    >
+                      <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        Se connecter
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="w-full h-9 text-base font-medium border-0 bg-[#c081e3] hover:bg-[#a865d0] text-white"
+                    >
+                      <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                        S&apos;inscrire
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </div>
