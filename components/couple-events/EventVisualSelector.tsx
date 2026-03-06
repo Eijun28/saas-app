@@ -1,5 +1,6 @@
 'use client'
 
+import type { MouseEvent } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, MapPin, Clock, Search, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -153,7 +154,7 @@ export function EventVisualSelector({ events, onSelect, onFindProvider }: EventV
                 <div className="mt-4 pt-3 border-t border-gray-100/80 flex items-center justify-between">
                   {onFindProvider && (
                     <button
-                      onClick={(e) => {
+                      onClick={(e: MouseEvent) => {
                         e.stopPropagation()
                         onFindProvider(event)
                       }}

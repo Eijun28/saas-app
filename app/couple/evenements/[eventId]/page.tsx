@@ -27,6 +27,16 @@ import type { TimelineEvent, TimelineEventFormData, EventCategory, CoupleEventSt
 import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG, EVENT_CATEGORY_VISUAL } from '@/types/cultural-events.types'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
+interface AssignedProvider {
+  id: string
+  provider_id: string
+  status: string
+  request_id: string | null
+  provider_name: string
+  provider_avatar: string | null
+  request_status: string | null
+}
+
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Non définie'
   return new Date(dateStr).toLocaleDateString('fr-FR', {
@@ -59,15 +69,7 @@ export default function EventDetailPage() {
   const [loading, setLoading]   = useState(true)
   const [event, setEvent]       = useState<TimelineEvent | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [assignedProviders, setAssignedProviders] = useState<Array<{
-    id: string
-    provider_id: string
-    status: string
-    request_id: string | null
-    provider_name: string
-    provider_avatar: string | null
-    request_status: string | null
-  }>>([])
+  const [assignedProviders, setAssignedProviders] = useState<AssignedProvider[]>([])
   const [loadingProviders, setLoadingProviders] = useState(false)
 
   useEffect(() => {
@@ -516,7 +518,7 @@ export default function EventDetailPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {assignedProviders.map((p) => (
+                {assignedProviders.map((p: AssignedProvider) => (
                   <div
                     key={p.id}
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-[#823F91]/20 transition-colors"
