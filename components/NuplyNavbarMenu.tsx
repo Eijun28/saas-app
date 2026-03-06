@@ -179,7 +179,6 @@ export function NuplyNavbarMenu() {
         user={user}
         profile={profile}
         onSignOut={handleSignOut}
-        isHomePage={isHomePage}
       />
     </div>
   );
