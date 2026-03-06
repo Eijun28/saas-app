@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PageTitle } from '@/components/prestataire/shared/PageTitle'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
+import { getCouplesByUserIds, formatCoupleName } from '@/lib/supabase/queries/couples.queries'
 import { toast } from 'sonner'
 import {
   Form,
@@ -73,6 +74,7 @@ export default function AgendaPage() {
   const [selectedEvent, setSelectedEvent] = useState<Evenement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGoogleCalendarOpen, setIsGoogleCalendarOpen] = useState(false)
+  const [coupleEvents, setCoupleEvents] = useState<CalendarEvent[]>([])
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -101,7 +103,52 @@ export default function AgendaPage() {
   useEffect(() => {
     if (!user) return
     loadEvenements()
+    loadCoupleEvents()
   }, [user])
+
+  const loadCoupleEvents = async () => {
+    if (!user) return
+    try {
+      const supabase = createClient()
+      const { data: assignments } = await supabase
+        .from('event_providers')
+        .select('event_id, status')
+        .eq('provider_id', user.id)
+
+      if (!assignments || assignments.length === 0) { setCoupleEvents([]); return }
+
+      const eventIds = assignments.map((a: { event_id: string }) => a.event_id)
+      const today = new Date().toISOString().split('T')[0]
+      const { data: events } = await supabase
+        .from('timeline_events')
+        .select('id, title, event_date, start_time, end_time, location, category, couple_id')
+        .in('id', eventIds)
+        .gte('event_date', today)
+        .order('event_date', { ascending: true })
+
+      if (!events || events.length === 0) { setCoupleEvents([]); return }
+
+      const coupleIds = [...new Set(events.map((e: { couple_id: string }) => e.couple_id).filter(Boolean))]
+      const couplesMap = coupleIds.length > 0
+        ? await getCouplesByUserIds(coupleIds as string[], ['user_id', 'partner_1_name', 'partner_2_name'])
+        : new Map()
+
+      const statusMap = new Map(assignments.map((a: { event_id: string; status: string }) => [a.event_id, a.status]))
+
+      setCoupleEvents(events.map((e: { id: string; title: string; event_date: string; start_time: string | null; end_time: string | null; location: string | null; category: string | null; couple_id: string }) => ({
+        id: `couple-${e.id}`,
+        title: `${e.title} (${formatCoupleName(couplesMap.get(e.couple_id))})`,
+        date: e.event_date,
+        time: e.start_time || undefined,
+        endTime: e.end_time || undefined,
+        description: e.category ? `Evenement: ${e.category}` : undefined,
+        location: e.location || undefined,
+        status: statusMap.get(e.id) === 'confirmed' ? 'confirmed' : 'pending',
+      })))
+    } catch (error) {
+      console.error('Erreur chargement evenements couples:', error)
+    }
+  }
 
 
   // Fonction pour formater la date sans problème de fuseau horaire
@@ -317,7 +364,7 @@ export default function AgendaPage() {
   }
 
   // Convertir les événements au format attendu par le calendrier
-  const calendarEvents = evenements.map(event => ({
+  const ownEvents: CalendarEvent[] = evenements.map(event => ({
     id: event.id,
     title: event.titre,
     date: formatDateKey(event.date),
@@ -326,6 +373,7 @@ export default function AgendaPage() {
     description: event.notes || undefined,
     location: event.lieu || undefined,
   }))
+  const calendarEvents = [...ownEvents, ...coupleEvents]
 
   // Stats pour le header
   const today = new Date()
@@ -545,6 +593,10 @@ export default function AgendaPage() {
           loading={loading}
           defaultView="week"
           eventColor={(event) => {
+            // Couple events (from event_providers) use a distinct teal color
+            if (event.id.startsWith('couple-')) {
+              return event.status === 'confirmed' ? 'bg-teal-600' : 'bg-teal-400'
+            }
             if (event.status === 'confirmed') return 'bg-[#823F91]'
             if (event.status === 'pending') return 'bg-[#9D5FA8]'
             return 'bg-[#B87FC0]'
