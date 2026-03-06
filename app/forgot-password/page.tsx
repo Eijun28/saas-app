@@ -87,6 +87,7 @@ export default function ForgotPasswordPage() {
       })
 
       if (error) {
+        console.warn('Erreur reset password:', error.message)
         setError('Une erreur est survenue. Veuillez réessayer.')
         setIsLoading(false)
         return

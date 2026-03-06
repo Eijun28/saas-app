@@ -75,9 +75,14 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${requestUrl.origin}/reset-password`)
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (user) {
+    if (userError || !user) {
+      logger.error('Erreur récupération utilisateur après callback:', userError)
+      return NextResponse.redirect(`${requestUrl.origin}/sign-in?error=${encodeURIComponent('Erreur lors de la connexion. Veuillez réessayer.')}`)
+    }
+
+    {
       const roleCheck = await getUserRoleServer(user.id)
 
       if (roleCheck.role) {
@@ -135,7 +140,7 @@ export async function GET(request: Request) {
       // → page de choix de rôle
       return NextResponse.redirect(`${requestUrl.origin}/onboarding/role`)
     }
-  }
+  }  // fin bloc user
 
   return NextResponse.redirect(`${requestUrl.origin}/`)
 }

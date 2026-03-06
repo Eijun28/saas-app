@@ -607,6 +607,31 @@ export async function signIn(email: string, password: string) {
     return { error: translateAuthError(error.message) }
   }
 
+  if (!data.user) {
+    return { error: 'Échec de la connexion. Veuillez réessayer.' }
+  }
+
+  // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
+  const roleCheck = await getUserRoleServer(data.user.id)
+
+  revalidatePath('/', 'layout')
+
+  if (roleCheck.role) {
+    // Pour les prestataires, vérifier si l'onboarding est terminé
+    if (roleCheck.role === 'prestataire') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_step')
+        .eq('id', data.user.id)
+        .maybeSingle()
+
+      if (!profile || (profile.onboarding_step ?? 0) < 5) {
+        return { success: true, redirectTo: '/prestataire/onboarding' }
+      }
+    }
+
+    const dashboardUrl = getDashboardUrl(roleCheck.role)
+    return { success: true, redirectTo: dashboardUrl }
   if (data.user) {
     const userId = data.user.id
 
@@ -635,6 +660,8 @@ export async function signIn(email: string, password: string) {
     return { success: true, redirectTo: '/' }
   }
 
+  // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
+  // (cas d'un compte auth créé mais profil non complété)
   return { success: true, redirectTo: '/' }
 }
 
@@ -645,6 +672,7 @@ export async function signOut() {
 
   if (error) {
     logger.error('Erreur lors de la déconnexion', error)
+    return { error: 'Erreur lors de la déconnexion. Veuillez réessayer.' }
   }
 
   revalidatePath('/', 'layout')
