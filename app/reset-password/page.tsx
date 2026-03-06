@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { motion } from 'framer-motion'
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -60,7 +60,6 @@ const itemVariants = {
 }
 
 export default function ResetPasswordPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -139,10 +138,10 @@ export default function ResetPasswordPage() {
         return
       }
 
-      router.push('/sign-in?message=password_updated')
+      // Full page reload to ensure auth state is clean
+      window.location.href = '/sign-in?message=password_updated'
     } catch {
       setError('Une erreur est survenue. Veuillez réessayer.')
-    } finally {
       setIsLoading(false)
     }
   }

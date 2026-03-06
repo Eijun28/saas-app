@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
@@ -26,7 +26,6 @@ export default function SignUpPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setFormError] = useState<string | null>(null)
   const [step, setStep] = useState<Step>('initial')
-  const router = useRouter()
 
   const [particleCount, setParticleCount] = useState(200)
 
@@ -155,7 +154,7 @@ export default function SignUpPage() {
         if ('emailWarning' in result && result.emailWarning) {
           redirectUrl += `?emailWarning=${encodeURIComponent(String(result.emailWarning))}`
         }
-        setTimeout(() => router.push(redirectUrl), 1500)
+        setTimeout(() => { window.location.href = redirectUrl }, 1500)
       } else {
         setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
