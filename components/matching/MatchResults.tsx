@@ -257,7 +257,7 @@ export default function MatchResults({
               Modifier
             </button>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 max-w-full">
             {matchingResult.search_criteria.service_type && (
               <span className="px-2.5 py-1 text-xs rounded-full bg-[#E8D4EF] text-[#823F91] font-medium">
                 {matchingResult.search_criteria.service_type}

@@ -102,8 +102,8 @@ export function WeekView({
         })}
       </div>
 
-      {/* Grille horaire */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Grille horaire — intentionally scrolls horizontally on mobile to fit all 7 day columns */}
+      <div className="flex-1 overflow-auto [-webkit-overflow-scrolling:touch] scrollbar-hide">
         <div className="grid grid-cols-8 relative">
           {/* Colonne des heures */}
           <div className="border-r sticky left-0 bg-white z-10">

@@ -144,7 +144,7 @@ export default function PaiementsPage() {
 
       {/* Filtres */}
       {!loading && payments.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
           <Button
             variant="outline"
             size="sm"
@@ -163,7 +163,7 @@ export default function PaiementsPage() {
           {filtersOpen && (
             <>
               <Select value={filterStatus} onValueChange={v => setFilterStatus(v as PaymentStatus | 'all')}>
-                <SelectTrigger className="h-9 w-48 rounded-xl">
+                <SelectTrigger className="h-9 w-full sm:w-48 rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,7 +174,7 @@ export default function PaiementsPage() {
               </Select>
 
               <Select value={filterCategory} onValueChange={v => setFilterCategory(v as PaymentCategory | 'all')}>
-                <SelectTrigger className="h-9 w-48 rounded-xl">
+                <SelectTrigger className="h-9 w-full sm:w-48 rounded-xl">
                   <SelectValue placeholder="Toutes catégories" />
                 </SelectTrigger>
                 <SelectContent>

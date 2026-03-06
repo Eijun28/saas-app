@@ -51,7 +51,7 @@ export function RecentActivityCouple({ activities = [], limit = 5 }: RecentActiv
             {activities.length > limit && (
               <span
                 onClick={(e) => { e.stopPropagation(); router.push('/couple/activite') }}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#823F91] hover:bg-[#6D3478] rounded-full text-white text-xs font-medium transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-xs sm:text-sm px-3 py-1.5 bg-[#823F91] hover:bg-[#6D3478] rounded-full text-white font-medium transition-colors cursor-pointer"
               >
                 Voir tout
                 <ArrowRight className="h-3.5 w-3.5" />

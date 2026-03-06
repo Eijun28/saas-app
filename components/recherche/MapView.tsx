@@ -83,7 +83,7 @@ export function MapView({ providers, onSelectProvider }: MapViewProps) {
   }
 
   return (
-    <div className="relative h-[500px] sm:h-[600px] rounded-xl overflow-hidden border border-gray-200">
+    <div className="relative h-[300px] sm:h-[400px] lg:h-[500px] rounded-xl overflow-hidden border border-gray-200">
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

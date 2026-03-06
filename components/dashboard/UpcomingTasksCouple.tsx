@@ -173,7 +173,7 @@ export function UpcomingTasksCouple({ coupleId, weddingDate }: UpcomingTasksCoup
             </div>
 
             {/* Liste des taches */}
-            <div className="p-4 sm:p-5 overflow-y-auto max-h-[300px] sm:max-h-[360px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[250px] sm:max-h-[300px] md:max-h-[360px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 text-[#823F91] animate-spin" />

@@ -172,6 +172,7 @@ export default function EvenementsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-1 sm:px-0">
+    <div className="max-w-4xl mx-auto px-3 sm:px-0">
       <PageTitle
         title="Mes événements"
         description="Organisez chaque cérémonie et fête de votre mariage : religieuse, culturelle, réception, henné..."
@@ -183,33 +184,33 @@ export default function EvenementsPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="grid grid-cols-3 gap-2 sm:gap-3 mb-5"
+          className="grid grid-cols-3 gap-1 sm:gap-3 mb-5"
         >
-          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2 sm:p-3 shadow-sm">
             <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#823F91]/10 flex-shrink-0">
               <TrendingUp className="h-4 w-4 text-[#823F91]" />
             </div>
             <div className="min-w-0">
               <p className="text-lg sm:text-xl font-bold text-gray-900">{upcomingEvents.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">A venir</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 truncate">A venir</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2 sm:p-3 shadow-sm">
             <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-green-500/10 flex-shrink-0">
               <CalendarCheck className="h-4 w-4 text-green-600" />
             </div>
             <div className="min-w-0">
               <p className="text-lg sm:text-xl font-bold text-gray-900">{confirmedEvents.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">Confirmés</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 truncate">Confirmés</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2 sm:p-3 shadow-sm">
             <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-[#9D5FA8]/10 flex-shrink-0">
               <CalendarDays className="h-4 w-4 text-[#9D5FA8]" />
             </div>
             <div className="min-w-0">
               <p className="text-lg sm:text-xl font-bold text-gray-900">{planningEvents.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">En cours</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 truncate">En cours</p>
             </div>
           </div>
         </motion.div>
