@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUpSchema, type SignUpInput } from '@/lib/validations/auth.schema'
@@ -27,8 +27,11 @@ export default function SignUpPage() {
   const [step, setStep] = useState<Step>('initial')
   const router = useRouter()
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const particleCount = isMobile ? 50 : 200
+  const [particleCount, setParticleCount] = useState(200)
+
+  useEffect(() => {
+    if (window.innerWidth < 768) setParticleCount(50)
+  }, [])
 
   const {
     register,
@@ -52,6 +55,19 @@ export default function SignUpPage() {
     },
     mode: 'onChange',
   })
+
+  const searchParams = useSearchParams()
+
+  // Pré-sélectionner le rôle selon le query param ?type=vendor ou ?role=couple
+  useEffect(() => {
+    const type = searchParams.get('type')
+    const role = searchParams.get('role')
+    if (type === 'vendor') {
+      setValue('role', 'prestataire', { shouldValidate: false })
+    } else if (role === 'couple') {
+      setValue('role', 'couple', { shouldValidate: false })
+    }
+  }, [searchParams, setValue])
 
   const selectedRole = watch('role')
   const password = watch('password')
@@ -160,6 +176,7 @@ export default function SignUpPage() {
       <button
         type="button"
         onClick={handleBack}
+        aria-label="Retour à l'étape précédente"
         className="text-neutral-400 hover:text-neutral-600 transition-colors p-1"
       >
         <ArrowLeft className="h-4 w-4" />

@@ -534,7 +534,7 @@ export default function MatchingQuizSection() {
               whileTap={{ scale: 0.95 }}
             >
               <button
-                onClick={() => router.push('/tarifs')}
+                onClick={() => router.push('/sign-up')}
                 type="button"
                 className="text-sm sm:text-base px-4 sm:px-6 py-2.5 sm:py-3 shadow-lg hover:shadow-xl w-full sm:w-auto rounded-lg font-semibold text-white transition-all"
                 style={{

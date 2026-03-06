@@ -60,9 +60,12 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  const [particleCount, setParticleCount] = useState(200)
+
   // Reduce particle count on mobile for performance
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-  const particleCount = isMobile ? 50 : 200
+  useEffect(() => {
+    if (window.innerWidth < 768) setParticleCount(50)
+  }, [])
 
   const {
     register,
