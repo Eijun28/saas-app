@@ -217,13 +217,13 @@ export function ChatInput({
               <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
+                    className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/50 active:bg-white/70 transition-colors"
                     aria-label="Emoji"
                   >
                     <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                   </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] sm:w-80 p-2 sm:p-3" align="start">
+              <PopoverContent className="w-[calc(100vw-3rem)] sm:w-80 max-w-sm p-2 sm:p-3" align="start">
                 <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
                   {EMOJIS.map((emoji, idx) => (
                     <button
@@ -246,7 +246,7 @@ export function ChatInput({
               onChange={(e) => { setContent(e.target.value); onTyping?.() }}
               onKeyDown={handleKeyDown}
               placeholder="Message"
-              className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] md:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[20px] sm:min-h-[22px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
+              className="flex-1 bg-transparent border-0 resize-none outline-none text-sm sm:text-[15px] md:text-[16px] text-gray-900 placeholder:text-gray-400 min-h-[20px] max-h-[120px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] leading-relaxed"
               rows={1}
               disabled={isSending || isUploading}
             />
@@ -258,7 +258,7 @@ export function ChatInput({
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center hover:bg-white/60 active:bg-white/80 transition-colors"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center hover:bg-white/60 active:bg-white/80 transition-colors"
                       aria-label="Pièces jointes"
                     >
                       <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-[#8B7866]" />
@@ -307,7 +307,7 @@ export function ChatInput({
 
             {/* Upload indicator */}
             {isUploading && (
-              <div className="flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
+              <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center">
                 <div className="h-4 w-4 border-2 border-[#823F91] border-t-transparent rounded-full animate-spin" />
               </div>
             )}
@@ -317,7 +317,7 @@ export function ChatInput({
               <button
                 type="submit"
                 disabled={!content.trim() || isSending}
-                className="flex-shrink-0 bg-gray-800 text-white rounded-full w-7 h-7 sm:w-9 sm:h-9 hover:bg-gray-700 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-shrink-0 bg-gray-800 text-white rounded-full w-8 h-8 sm:w-9 sm:h-9 hover:bg-gray-700 active:scale-95 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Envoyer"
               >
                 <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={2.5} />
@@ -326,7 +326,7 @@ export function ChatInput({
               <button
                 type="button"
                 onClick={handleVoiceRecord}
-                className={`flex-shrink-0 rounded-full w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center transition-all duration-200 ${
+                className={`flex-shrink-0 rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center transition-all duration-200 ${
                   isRecording
                     ? 'bg-red-500 text-white hover:bg-red-600'
                     : 'hover:bg-white/50 active:bg-white/70'

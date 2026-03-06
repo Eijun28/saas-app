@@ -110,22 +110,22 @@ export function BudgetOverview({
           </div>
 
           {/* Statistiques */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="text-center">
               <p className="text-sm text-[#6B7280] mb-1">Budget total</p>
-              <p className="text-2xl font-bold text-[#111827]">
+              <p className="text-xl sm:text-2xl font-bold text-[#111827]">
                 {budgetMax.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-[#6B7280] mb-1">Dépensé</p>
-              <p className="text-2xl font-bold text-[#823F91]">
+              <p className="text-xl sm:text-2xl font-bold text-[#823F91]">
                 {totalDepense.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
               </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-[#6B7280] mb-1">Restant</p>
-              <p className={`text-2xl font-bold ${budgetRestant < 0 ? 'text-red-600' : 'text-[#111827]'}`}>
+              <p className={`text-xl sm:text-2xl font-bold ${budgetRestant < 0 ? 'text-red-600' : 'text-[#111827]'}`}>
                 {budgetRestant.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
               </p>
             </div>

@@ -113,7 +113,7 @@ export function BudgetForm({ initialBudgetMin = 0, initialBudgetMax = 0 }: Budge
           {/* Slider visuel */}
           <div className="space-y-2">
             <Label>Ajustement visuel du budget maximum</Label>
-            <div className="relative">
+            <div className="relative py-2">
               <input
                 type="range"
                 min={budgetMinNum}
@@ -121,7 +121,7 @@ export function BudgetForm({ initialBudgetMin = 0, initialBudgetMax = 0 }: Budge
                 step="500"
                 value={sliderValue}
                 onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
-                className="w-full h-2 bg-[#E5E7EB] rounded-lg appearance-none cursor-pointer accent-[#823F91]"
+                className="w-full h-3 sm:h-2 bg-[#E5E7EB] rounded-lg appearance-none cursor-pointer accent-[#823F91]"
               />
               <div className="flex justify-between text-xs text-[#6B7280] mt-1">
                 <span>{budgetMinNum.toLocaleString('fr-FR')} €</span>

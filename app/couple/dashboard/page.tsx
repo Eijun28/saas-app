@@ -286,7 +286,7 @@ export default function CoupleDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-[#823F91]/50 mb-1.5">Tableau de bord</p>
-              <h1 className="text-2xl sm:text-[32px] font-extrabold text-gray-900 tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-[32px] font-extrabold text-gray-900 tracking-tight leading-tight break-words">
                 {greeting}
               </h1>
               <p className="text-sm sm:text-[15px] text-gray-500 mt-1.5 leading-relaxed">
@@ -297,15 +297,15 @@ export default function CoupleDashboardPage() {
               </p>
               <div className="flex items-center flex-wrap gap-2.5 mt-3">
                 {daysUntilWedding && (
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#823F91]/10 rounded-full">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#823F91]/10 rounded-full min-w-0">
                     <Calendar className="h-3.5 w-3.5 text-[#823F91]" />
                     <span className="text-sm font-bold text-[#823F91]">J-{daysUntilWedding}</span>
                     <span className="text-xs text-[#823F91]/60">avant le jour J</span>
                   </div>
                 )}
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-white/60 border border-gray-100 rounded-full">
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-white/60 border border-gray-100 rounded-full min-w-0">
                   <span className="text-xs font-semibold text-gray-500">Preparation</span>
-                  <div className="w-16 sm:w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-14 sm:w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[#823F91] to-[#9D5FA8] rounded-full transition-all duration-500"
                       style={{ width: `${planningProgress.percentage}%` }}
@@ -395,7 +395,7 @@ export default function CoupleDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Prestataires</p>
-                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                  <p className="text-2xl sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900 truncate">
                     {favoritesCount === 0 ? '0' : favoritesCount}
                   </p>
                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
@@ -427,7 +427,7 @@ export default function CoupleDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Budget</p>
-                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                  <p className="text-2xl sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900 truncate">
                     {budgetTotal > 0 ? `${(budgetTotal / 1000).toFixed(0)}k` : '0'}
                   </p>
                   {budgetTotal > 0 ? (
@@ -469,7 +469,7 @@ export default function CoupleDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Jours restants</p>
-                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                  <p className="text-2xl sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900 truncate">
                     {daysUntilWedding ?? '—'}
                   </p>
                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
@@ -501,7 +501,7 @@ export default function CoupleDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-xs sm:text-[13px] font-semibold text-gray-500 mb-1">Demandes actives</p>
-                  <p className="text-[28px] sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900">
+                  <p className="text-2xl sm:text-[34px] font-extrabold tracking-tight leading-none tabular-nums text-gray-900 truncate">
                     {shortlistedCount === 0 ? '0' : shortlistedCount}
                   </p>
                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1.5">
