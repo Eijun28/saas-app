@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { sendConfirmationEmail } from '@/lib/email/confirmation'
 import { logger } from '@/lib/logger'
 import { translateAuthError } from '@/lib/auth/error-translations'
+import { getUserRoleServer, getDashboardUrl } from '@/lib/auth/utils'
 
 import { revalidatePath } from 'next/cache'
 
@@ -607,34 +608,36 @@ export async function signIn(email: string, password: string) {
     return { error: translateAuthError(error.message) }
   }
 
-  if (!data.user) {
-    return { error: 'Échec de la connexion. Veuillez réessayer.' }
-  }
+  if (data.user) {
+    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
+    const roleCheck = await getUserRoleServer(data.user.id)
+    
+    revalidatePath('/', 'layout')
+    
+    if (roleCheck.role) {
+      // Pour les prestataires, vérifier si l'onboarding est terminé
+      if (roleCheck.role === 'prestataire') {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_step')
+          .eq('id', data.user.id)
+          .maybeSingle()
 
-  const userId = data.user.id
+        if (!profile || (profile.onboarding_step ?? 0) < 5) {
+          return { success: true, redirectTo: '/prestataire/onboarding' }
+        }
+      }
 
-  // Use admin client to check role — avoids RLS timing issues
-  // where the session cookies may not be fully propagated yet
-  const adminClient = createAdminClient()
-
-  const [{ data: couple }, { data: profile }] = await Promise.all([
-    adminClient.from('couples').select('id').eq('user_id', userId).maybeSingle(),
-    adminClient.from('profiles').select('id, onboarding_step').eq('id', userId).maybeSingle(),
-  ])
-
-  if (couple) {
-    return { success: true, redirectTo: '/couple/dashboard' }
-  }
-
-  if (profile) {
-    if ((profile.onboarding_step ?? 0) < 5) {
-      return { success: true, redirectTo: '/prestataire/onboarding' }
+      const dashboardUrl = getDashboardUrl(roleCheck.role)
+      return { success: true, redirectTo: dashboardUrl }
     }
-    return { success: true, redirectTo: '/prestataire/dashboard' }
+
+    // Si ni couple ni prestataire trouvé, rediriger vers la page d'accueil
+    // (cas d'un compte auth créé mais profil non complété)
+    return { success: true, redirectTo: '/' }
   }
 
-  // Compte auth créé mais profil non complété → choix de rôle
-  return { success: true, redirectTo: '/onboarding/role' }
+  return { success: true, redirectTo: '/' }
 }
 
 export async function signOut() {
@@ -644,7 +647,6 @@ export async function signOut() {
 
   if (error) {
     logger.error('Erreur lors de la déconnexion', error)
-    return { error: 'Erreur lors de la déconnexion. Veuillez réessayer.' }
   }
 
   revalidatePath('/', 'layout')
