@@ -39,18 +39,23 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
           className="flex justify-center items-center gap-4 mb-4 flex-col sm:flex-row"
         >
-          <Link href="/prestataires">
+          <Link href="/sign-up">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 border-2"
+              className="px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 text-white shadow-lg shadow-[#823F91]/25"
               style={{
-                borderColor: 'hsl(var(--violet-500))',
-                color: 'hsl(var(--violet-500))',
-                backgroundColor: 'transparent'
+                backgroundColor: '#823F91',
+                color: 'white'
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6D3478'
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#823F91'
               }}
             >
-              Voir les prestataires
+              Commencer mon aventure
             </motion.button>
           </Link>
         </motion.div>
