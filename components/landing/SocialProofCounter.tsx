@@ -67,8 +67,8 @@ export function SocialProofCounter() {
 
       setStats({
         providers: providerCount || 0,
-        cultures: Math.max(uniqueCultures.size, 15), // minimum 15 for credibility
-        cities: Math.max(uniqueCities.size, 5), // minimum 5
+        cultures: uniqueCultures.size,
+        cities: uniqueCities.size,
       })
     }
     fetchStats()
@@ -79,6 +79,11 @@ export function SocialProofCounter() {
     { icon: Globe2, label: 'Cultures', value: stats.cultures, suffix: '' },
     { icon: MapPin, label: 'Villes', value: stats.cities, suffix: '+' },
   ]
+
+  // Don't render if no data yet
+  if (stats.providers === 0 && stats.cultures === 0 && stats.cities === 0) {
+    return null
+  }
 
   return (
     <section className="py-8 px-4">

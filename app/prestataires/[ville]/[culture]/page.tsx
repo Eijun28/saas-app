@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createMetadata } from '@/lib/seo/config'
 import { siteConfig } from '@/config/site'
@@ -7,6 +8,7 @@ import { JsonLd } from '@/components/seo/JsonLd'
 import { getCultureById } from '@/lib/constants/cultures'
 import { PrestatairesPageClient } from '@/components/prestataires/PrestatairesPageClient'
 import type { ProviderData } from '@/components/prestataires/PrestatairesPageClient'
+import { SEO_CITIES, SEO_CULTURES } from '@/lib/constants/seo-cities'
 
 function capitalize(str: string): string {
   return str
@@ -15,12 +17,30 @@ function capitalize(str: string): string {
     .join(' ')
 }
 
+/** Escape SQL LIKE special characters to prevent pattern injection */
+function escapeLikePattern(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&')
+}
+
+/** Validate that ville and culture are from known SEO lists */
+function isValidParams(ville: string, culture: string): boolean {
+  return SEO_CITIES.includes(ville) && SEO_CULTURES.includes(culture)
+}
+
+/** Pre-render all known city+culture combinations at build time */
+export function generateStaticParams() {
+  return SEO_CITIES.flatMap((ville) =>
+    SEO_CULTURES.map((culture) => ({ ville, culture }))
+  )
+}
+
 interface Props {
   params: Promise<{ ville: string; culture: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { ville, culture } = await params
+  if (!isValidParams(ville, culture)) return { title: 'Page non trouvee | NUPLY' }
   const villeLabel = decodeURIComponent(ville).replace(/-/g, ' ')
   const cultureLabel =
     getCultureById(culture)?.label ||
@@ -45,6 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PrestatairesVilleCulturePage({ params }: Props) {
   const { ville, culture } = await params
+  if (!isValidParams(ville, culture)) notFound()
   const villeLabel = decodeURIComponent(ville).replace(/-/g, ' ')
   const cultureLabel =
     getCultureById(culture)?.label ||
@@ -77,7 +98,7 @@ export default async function PrestatairesVilleCulturePage({ params }: Props) {
     `)
     .eq('role', 'prestataire')
     .not('nom_entreprise', 'is', null)
-    .ilike('ville_principale', `%${villeLabel}%`)
+    .ilike('ville_principale', `%${escapeLikePattern(villeLabel)}%`)
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -94,7 +115,7 @@ export default async function PrestatairesVilleCulturePage({ params }: Props) {
       )
       .eq('role', 'prestataire')
       .not('nom_entreprise', 'is', null)
-      .ilike('ville_principale', `%${villeLabel}%`)
+      .ilike('ville_principale', `%${escapeLikePattern(villeLabel)}%`)
       .order('created_at', { ascending: false })
       .limit(50)
 
@@ -133,13 +154,7 @@ export default async function PrestatairesVilleCulturePage({ params }: Props) {
       {
         '@type': 'ListItem',
         position: 3,
-        name: capitalize(villeLabel),
-        item: `${siteConfig.url}/prestataires/${ville}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 4,
-        name: `Mariage ${cultureLabel}`,
+        name: `Mariage ${cultureLabel} a ${capitalize(villeLabel)}`,
         item: `${siteConfig.url}/prestataires/${ville}/${culture}`,
       },
     ],
@@ -185,17 +200,8 @@ export default async function PrestatairesVilleCulturePage({ params }: Props) {
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li>
-            <Link
-              href={`/prestataires/${ville}`}
-              className="hover:text-[#823F91] transition-colors"
-            >
-              {capitalize(villeLabel)}
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
           <li aria-current="page" className="font-medium text-foreground">
-            Mariage {cultureLabel}
+            {capitalize(villeLabel)} — Mariage {cultureLabel}
           </li>
         </ol>
       </nav>
