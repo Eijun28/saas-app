@@ -11,6 +11,7 @@ import MatchingExplainerCards from './MatchingExplainerCards'
 const SkeletonMatchingFullWidth = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: false, amount: 0.3 });
+  const router = useRouter();
   
   const conversationSets = [
     {
