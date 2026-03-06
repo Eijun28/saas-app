@@ -12,15 +12,29 @@ export function OAuthButtons({ role }: OAuthButtonsProps = {}) {
   const [isLoading, setIsLoading] = useState(false)
 
   // Reset loading state when user returns to the page (e.g. after cancelling OAuth)
+  // Covers: tab switch back (visibilitychange), popup close (focus), and safety timeout
   useEffect(() => {
+    if (!isLoading) return
+
+    const reset = () => setIsLoading(false)
+
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        setIsLoading(false)
-      }
+      if (document.visibilityState === 'visible') reset()
     }
+
+    // If user closes OAuth popup without leaving the page, focus fires
+    window.addEventListener('focus', reset)
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [])
+
+    // Safety timeout — reset after 30s no matter what
+    const timeout = setTimeout(reset, 30_000)
+
+    return () => {
+      window.removeEventListener('focus', reset)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      clearTimeout(timeout)
+    }
+  }, [isLoading])
 
   const handleOAuth = async (provider: 'google') => {
     setIsLoading(true)
