@@ -603,7 +603,7 @@ export async function signIn(email: string, password: string) {
     // écrits par signInWithPassword dans Next.js 16
     const [{ data: couple }, { data: profile }] = await Promise.all([
       supabase.from('couples').select('id').eq('user_id', data.user.id).maybeSingle(),
-      supabase.from('profiles').select('id, onboarding_step').eq('id', data.user.id).maybeSingle(),
+      supabase.from('profiles').select('id, onboarding_step, onboarding_completed').eq('id', data.user.id).maybeSingle(),
     ])
 
     let role: 'couple' | 'prestataire' | null = null
@@ -619,7 +619,7 @@ export async function signIn(email: string, password: string) {
     if (role) {
       // Pour les prestataires, vérifier si l'onboarding est terminé
       if (role === 'prestataire' && profile) {
-        if ((profile.onboarding_step ?? 0) < 5) {
+        if (!profile.onboarding_completed) {
           return { success: true, redirectTo: '/prestataire/onboarding' }
         }
       }

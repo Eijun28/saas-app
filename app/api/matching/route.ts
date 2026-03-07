@@ -777,6 +777,43 @@ export async function POST(request: NextRequest) {
       logger.warn('⚠️ Impossible de charger les donnees d\'equite (table peut-etre inexistante):', fairnessError);
     }
 
+    // Charger les event_type slugs depuis provider_event_types → cultural_event_types
+    const eventTypeSlugsMap = new Map<string, string[]>();
+    try {
+      const { data: petData, error: petError } = await supabase
+        .from('provider_event_types')
+        .select(`
+          profile_id,
+          cultural_event_types!inner (
+            slug
+          )
+        `)
+        .in('profile_id', providerIds);
+
+      if (petError && petError.code !== 'PGRST205') {
+        throw petError;
+      }
+
+      if (petData) {
+        for (const item of petData) {
+          const profileId = String(item.profile_id);
+          const cet = item.cultural_event_types as { slug: string } | Array<{ slug: string }>;
+          const slugs = Array.isArray(cet) ? cet : [cet];
+          for (const s of slugs) {
+            if (s?.slug) {
+              const existing = eventTypeSlugsMap.get(profileId) || [];
+              existing.push(s.slug);
+              eventTypeSlugsMap.set(profileId, existing);
+            }
+          }
+        }
+      }
+
+      logger.debug(`🎭 Event type slugs chargés pour ${eventTypeSlugsMap.size} prestataires`);
+    } catch (eventTypeError) {
+      logger.warn('⚠️ Impossible de charger les event_type slugs (non bloquant):', eventTypeError);
+    }
+
     // Charger les tags pour tous les prestataires (tous types + specialites separement)
     const allTagsMap = new Map<string, string[]>();
     const specialtyTagsMap = new Map<string, string[]>();
@@ -837,6 +874,7 @@ export async function POST(request: NextRequest) {
           ...provider,
           tags: allTagsMap.get(providerId) || [],
           specialty_tags: specialtyTagsMap.get(providerId) || [],
+          event_type_slugs: eventTypeSlugsMap.get(providerId) || [],
           // languages est deja dans provider via le SELECT, on s'assure qu'il est transmis
           languages: Array.isArray(provider.languages) ? provider.languages : [],
           service_type: provider.service_type,
