@@ -82,6 +82,20 @@ export type CoupleEventWithType = TimelineEvent
 export type CoupleEventWithProviders = TimelineEvent
 export type CoupleEventFormData = TimelineEventFormData
 
+/** Style visuel par catégorie d'événement (gradients, accents, bordures) */
+export const EVENT_CATEGORY_VISUAL: Record<EventCategory, { gradient: string; accent: string; bgLight: string; borderColor: string }> = {
+  'ceremony-civil':     { gradient: 'from-blue-500 to-blue-600',     accent: 'text-blue-600',    bgLight: 'bg-blue-50',    borderColor: 'border-blue-200' },
+  'ceremony-religious': { gradient: 'from-amber-500 to-amber-600',   accent: 'text-amber-600',   bgLight: 'bg-amber-50',   borderColor: 'border-amber-200' },
+  'ceremony-cultural':  { gradient: 'from-pink-500 to-pink-600',     accent: 'text-pink-600',    bgLight: 'bg-pink-50',    borderColor: 'border-pink-200' },
+  'cocktail':           { gradient: 'from-emerald-500 to-emerald-600', accent: 'text-emerald-600', bgLight: 'bg-emerald-50', borderColor: 'border-emerald-200' },
+  'dinner':             { gradient: 'from-violet-500 to-violet-600', accent: 'text-violet-600',  bgLight: 'bg-violet-50',  borderColor: 'border-violet-200' },
+  'party':              { gradient: 'from-fuchsia-500 to-fuchsia-600', accent: 'text-fuchsia-600', bgLight: 'bg-fuchsia-50', borderColor: 'border-fuchsia-200' },
+  'photo':              { gradient: 'from-cyan-500 to-cyan-600',     accent: 'text-cyan-600',    bgLight: 'bg-cyan-50',    borderColor: 'border-cyan-200' },
+  'fitting':            { gradient: 'from-rose-500 to-rose-600',     accent: 'text-rose-600',    bgLight: 'bg-rose-50',    borderColor: 'border-rose-200' },
+  'meeting':            { gradient: 'from-slate-500 to-slate-600',   accent: 'text-slate-600',   bgLight: 'bg-slate-50',   borderColor: 'border-slate-200' },
+  'other':              { gradient: 'from-gray-500 to-gray-600',     accent: 'text-gray-600',    bgLight: 'bg-gray-50',    borderColor: 'border-gray-200' },
+}
+
 /** CulturalEventType stub — table does not exist in current schema */
 export interface CulturalEventType {
   id: string
