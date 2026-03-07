@@ -806,7 +806,7 @@ export default function CoupleProfilPage() {
 
   return (
 
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
 
       {/* Header Simple - Avatar à gauche, Nom, Bouton à droite */}
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -1648,29 +1648,27 @@ export default function CoupleProfilPage() {
         </div>
       </div>
 
-      {/* Bouton Enregistrer fixe en bas sur mobile */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated sm:hidden z-50">
+      {/* Bouton Enregistrer fixe en bas sur mobile — positionné au-dessus de la bottom nav */}
+      <div className="fixed bottom-[60px] left-0 right-0 px-4 py-2 bg-card/95 backdrop-blur-md border-t border-border sm:hidden z-[199]">
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm h-12 text-sm font-medium"
+          size="sm"
+          className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white shadow-sm h-9 text-sm font-medium"
         >
           {saving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               Enregistrement...
             </>
           ) : (
             <>
-              <Check className="h-4 w-4 mr-2" />
-              Enregistrer les modifications
+              <Check className="h-3.5 w-3.5 mr-1.5" />
+              Enregistrer
             </>
           )}
         </Button>
       </div>
-
-      {/* Spacer pour éviter que le contenu soit caché par le bouton fixe sur mobile */}
-      <div className="h-20 sm:hidden" />
     </div>
 
   )
