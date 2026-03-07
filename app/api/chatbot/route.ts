@@ -20,7 +20,7 @@ import {
 
 const ChatbotResponseSchema = z.object({
   message: z.string().describe('Réponse courte (2-3 phrases max)'),
-  suggestions: z.array(z.string()).max(4).describe('2-4 suggestions de réponse rapide'),
+  suggestions: z.array(z.string()).max(4).optional().describe('2-4 suggestions de réponse rapide'),
   extracted_data: z.object({
     service_type: z.string().nullable().optional().describe('Type de prestataire recherché'),
     cultures: z.array(z.string()).optional().describe('Cultures/traditions du couple'),
