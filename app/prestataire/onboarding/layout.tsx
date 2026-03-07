@@ -20,11 +20,11 @@ export default async function OnboardingLayout({
   // Vérifier si l'onboarding est déjà terminé
   const { data: profile } = await supabase
     .from('profiles')
-    .select('onboarding_step')
+    .select('onboarding_completed')
     .eq('id', user.id)
     .maybeSingle()
 
-  if (profile && profile.onboarding_step >= 5) {
+  if (profile && profile.onboarding_completed) {
     redirect("/prestataire/dashboard")
   }
 
