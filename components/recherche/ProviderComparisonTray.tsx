@@ -65,7 +65,7 @@ function CompareRow({
   values: (string | React.ReactNode)[]
 }) {
   return (
-    <div className="grid border-b border-gray-100 last:border-0" style={{ gridTemplateColumns: `100px repeat(${values.length}, minmax(120px, 1fr))` }}>
+    <div className="grid border-b border-gray-100 last:border-0" style={{ gridTemplateColumns: `140px repeat(${values.length}, 1fr)` }}>
       <div className="py-3 px-3 text-xs font-medium text-gray-500 bg-gray-50 flex items-center">
         {label}
       </div>
@@ -92,7 +92,7 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 120, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl"
+          className="fixed bottom-0 left-0 right-0 z-[201] bg-white border-t border-gray-200 shadow-2xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="max-w-5xl mx-auto px-4 py-3">
@@ -181,11 +181,11 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
             </DialogTitle>
           </DialogHeader>
 
-          <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="overflow-x-auto">
             {/* Entêtes providers */}
             <div
               className="grid border-b border-gray-200 bg-gray-50"
-              style={{ gridTemplateColumns: `100px repeat(${providers.length}, minmax(120px, 1fr))` }}
+              style={{ gridTemplateColumns: `140px repeat(${providers.length}, 1fr)` }}
             >
               <div className="py-4 px-3" />
               {providers.map((p) => (
@@ -278,7 +278,7 @@ export function ProviderComparisonTray({ providers, onRemove, onClear }: Provide
                 label="Cultures"
                 values={providers.map((p) =>
                   p.cultures.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 max-w-full">
+                    <div className="flex flex-wrap gap-1">
                       {p.cultures.slice(0, 3).map((c) => (
                         <Badge
                           key={c.id}

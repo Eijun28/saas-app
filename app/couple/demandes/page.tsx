@@ -662,7 +662,7 @@ export default function DemandesPage() {
                   {/* Header de catégorie */}
                   <button
                     onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between px-3 py-2 sm:px-4 sm:py-2.5 bg-[#6D3478] rounded-xl hover:bg-[#823F91] transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-2.5 bg-[#6D3478] rounded-xl hover:bg-[#823F91] transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-white text-sm">{category}</span>
@@ -694,7 +694,7 @@ export default function DemandesPage() {
                             transition={{ delay: index * 0.03 }}
                           >
                             <Card className={`border shadow-sm hover:shadow-md transition-shadow rounded-2xl ${status.bgClass}`}>
-                              <CardContent className="p-3 sm:p-4 md:p-5">
+                              <CardContent className="p-4 sm:p-5">
                                 {/* Header avec prestataire et statut */}
                                 <div className="flex items-start justify-between gap-4 mb-4">
                                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -720,9 +720,9 @@ export default function DemandesPage() {
 
                                   {/* Statut et actions */}
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-gray-200 min-w-0 ${status.className}`}>
-                                      <StatusIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                                      <span className="text-xs font-medium truncate">{status.label}</span>
+                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-gray-200 ${status.className}`}>
+                                      <StatusIcon className="h-3.5 w-3.5" />
+                                      <span className="text-xs font-medium">{status.label}</span>
                                     </div>
 
                                     <DropdownMenu>
@@ -786,7 +786,7 @@ export default function DemandesPage() {
 
                                 {/* Actions rapides pour pending */}
                                 {r.status === 'pending' && (
-                                  <div className="mt-4 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                                  <div className="mt-4 flex items-center justify-end gap-2">
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -801,7 +801,7 @@ export default function DemandesPage() {
 
                                 {/* Actions rapides pour cancelled/rejected */}
                                 {(r.status === 'cancelled' || r.status === 'rejected') && (
-                                  <div className="mt-4 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                                  <div className="mt-4 flex items-center justify-end gap-2">
                                     <Button
                                       size="sm"
                                       className="bg-[#823F91] hover:bg-[#6D3478] h-8 text-xs"
@@ -832,9 +832,9 @@ export default function DemandesPage() {
                                               isPending ? 'border-[#823F91]/20 bg-[#823F91]/[0.03]' : 'border-green-200 bg-green-50/40'
                                             )}
                                           >
-                                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <div className="flex items-center gap-2 min-w-0">
                                               <FileText className={cn('h-4 w-4 flex-shrink-0', isPending ? 'text-[#823F91]' : 'text-green-600')} />
-                                              <div className="min-w-0 flex-1">
+                                              <div className="min-w-0">
                                                 <p className="text-xs font-semibold text-gray-900 truncate">
                                                   {(d as any).description || 'Devis'}
                                                 </p>
@@ -881,7 +881,7 @@ export default function DemandesPage() {
 
                                 {/* Actions rapides pour accepted */}
                                 {r.status === 'accepted' && (
-                                  <div className="mt-4 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+                                  <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2">
                                     <Button
                                       variant="outline"
                                       size="sm"

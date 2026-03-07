@@ -87,7 +87,7 @@ export function MonthView({
             const isSelected = selectedDate && isSameDay(props.day.date, selectedDate)
 
             return (
-              <div className="relative w-full h-full min-h-[90px] sm:min-h-[110px] lg:min-h-[150px] xl:min-h-[170px] p-1.5 flex flex-col">
+              <div className="relative w-full h-full min-h-[130px] lg:min-h-[150px] xl:min-h-[170px] p-1.5 flex flex-col">
                 <CalendarDayButton
                   {...props}
                   className={cn(
@@ -125,7 +125,7 @@ export function MonthView({
                             <span className="font-semibold">{event.time}</span>
                           </div>
                         )}
-                        <div className="font-semibold truncate break-all" title={event.title}>{event.title}</div>
+                        <div className="font-semibold truncate">{event.title}</div>
                       </motion.div>
                     )
                   })}

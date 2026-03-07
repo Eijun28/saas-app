@@ -410,7 +410,7 @@ export default function FavorisPage() {
 
                 {/* Compare table */}
                 <div className="p-4 sm:p-6 overflow-x-auto">
-                  <div className={cn('grid gap-3 sm:gap-4 min-w-[320px]', compareProviders.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
+                  <div className={cn('grid gap-3 sm:gap-4 min-w-[400px]', compareProviders.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
                     {/* Provider headers */}
                     {compareProviders.map(p => (
                       <div key={p.id} className="text-center space-y-2">
@@ -487,7 +487,7 @@ export default function FavorisPage() {
                   ].map((row) => (
                     <div key={row.label} className="mt-4">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">{row.label}</p>
-                      <div className={cn('grid gap-3 sm:gap-4 min-w-[320px]', compareProviders.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
+                      <div className={cn('grid gap-3 sm:gap-4 min-w-[400px]', compareProviders.length === 2 ? 'grid-cols-2' : 'grid-cols-3')}>
                         {compareProviders.map(p => (
                           <div key={p.id} className="text-center py-2 px-3 bg-gray-50 rounded-lg min-h-[36px] flex items-center justify-center">
                             {row.render(p)}

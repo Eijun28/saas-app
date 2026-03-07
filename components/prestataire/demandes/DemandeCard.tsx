@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Calendar, MessageSquare, Check, X, ArrowRight, CheckCircle, PartyPopper } from 'lucide-react'
+import { Calendar, MessageSquare, Check, X, ArrowRight, CheckCircle } from 'lucide-react'
 import type { Demande } from '@/lib/types/prestataire'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
@@ -68,12 +68,6 @@ export function DemandeCard({ demande, onAccept, onReject, onComplete, conversat
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 {getStatusBadge(demande.statut)}
-                {demande.event_name && (
-                  <Badge className="bg-[#F5F0F7] text-[#5C2B66] text-xs px-2 py-0.5 border border-[#D4ADE0]">
-                    <PartyPopper className="h-3 w-3 mr-1" />
-                    {demande.event_name}
-                  </Badge>
-                )}
                 {demande.date_evenement && (
                   <span className="flex items-center gap-1 text-xs text-gray-500">
                     <Calendar className="h-3 w-3" />

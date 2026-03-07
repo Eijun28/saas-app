@@ -3,12 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST() {
   const supabase = await createClient()
-  const { error } = await supabase.auth.signOut()
-
-  if (error) {
-    return NextResponse.json({ error: 'Erreur lors de la déconnexion' }, { status: 500 })
-  }
-
+  await supabase.auth.signOut()
   return NextResponse.json({ success: true })
 }
 

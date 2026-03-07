@@ -89,7 +89,7 @@ export function UpcomingPaymentsWidget({ coupleId }: UpcomingPaymentsWidgetProps
             return (
               <div
                 key={p.id}
-                className={`flex items-center gap-3 p-2.5 rounded-xl min-w-0 ${isOverdue ? 'bg-red-50 border border-red-100' : 'bg-gray-50'}`}
+                className={`flex items-center gap-3 p-2.5 rounded-xl ${isOverdue ? 'bg-red-50 border border-red-100' : 'bg-gray-50'}`}
               >
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${cfg.dot}`} />
                 <div className="flex-1 min-w-0">

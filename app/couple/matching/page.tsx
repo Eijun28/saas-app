@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/hooks/use-user';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowUp, Sparkles, Search, Loader2, ChevronDown, Trash2, RotateCcw, MapPin, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -37,20 +37,8 @@ type Vue = 'landing' | 'chat' | 'validation' | 'results';
 
 export default function MatchingPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
-
-  // Event context from URL params (when coming from events page)
-  const eventContext = {
-    eventId: searchParams.get('event_id'),
-    eventType: searchParams.get('event_type'),
-    eventTitle: searchParams.get('event_title'),
-    city: searchParams.get('city'),
-    date: searchParams.get('date'),
-  };
-  const hasEventContext = !!eventContext.eventId;
-
-  const [vue, setVue] = useState<Vue>(hasEventContext ? 'chat' : 'landing');
+  const [vue, setVue] = useState<Vue>('landing');
   const [showBackDialog, setShowBackDialog] = useState(false);
   const [coupleProfile, setCoupleProfile] = useState<any>(null);
   const [userInput, setUserInput] = useState('');
@@ -155,25 +143,6 @@ export default function MatchingPage() {
       }
     }
   }, [userInput]);
-
-  // Auto-send event context message when coming from events page
-  const eventContextSentRef = useRef(false);
-  useEffect(() => {
-    if (hasEventContext && !eventContextSentRef.current && !isLoading && messages.length <= 1) {
-      eventContextSentRef.current = true;
-      const parts: string[] = [];
-      if (eventContext.eventTitle) parts.push(`pour notre ${eventContext.eventTitle}`);
-      if (eventContext.date) {
-        const d = new Date(eventContext.date);
-        parts.push(`le ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`);
-      }
-      if (eventContext.city) parts.push(`a ${eventContext.city}`);
-      const contextMsg = parts.length > 0
-        ? `Bonjour, nous cherchons un prestataire ${parts.join(' ')}. Quel type de prestataire nous recommandez-vous ?`
-        : 'Bonjour, nous cherchons un prestataire pour un de nos evenements.';
-      sendMessage(contextMsg);
-    }
-  }, [hasEventContext, isLoading, messages.length]);
 
   // Redirection si non connecté (APRÈS tous les hooks)
 	if (!userLoading && !user) {
@@ -398,19 +367,7 @@ export default function MatchingPage() {
     }
 
     setContactProviderId(providerId);
-    // Pre-fill with event context if available
-    if (hasEventContext && eventContext.eventTitle) {
-      const parts: string[] = [`Bonjour, nous organisons un ${eventContext.eventTitle}`];
-      if (eventContext.date) {
-        const d = new Date(eventContext.date);
-        parts.push(`le ${d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`);
-      }
-      if (eventContext.city) parts.push(`a ${eventContext.city}`);
-      parts.push('et nous serions interesses par vos services. Pourriez-vous nous en dire plus ?');
-      setContactMessage(parts.join(' '));
-    } else {
-      setContactMessage('');
-    }
+    setContactMessage('');
     setContactDialogOpen(true);
   };
 
@@ -422,19 +379,14 @@ export default function MatchingPage() {
     setIsSendingContact(true);
     try {
       const supabase = createClient();
-      const insertPayload: Record<string, unknown> = {
-        couple_id: coupleId,
-        provider_id: contactProviderId,
-        initial_message: contactMessage.trim(),
-        status: 'pending',
-      };
-      // Link to event if matching was triggered from an event
-      if (eventContext.eventId) {
-        insertPayload.event_id = eventContext.eventId;
-      }
       const { data, error } = await supabase
         .from('requests')
-        .insert(insertPayload)
+        .insert({
+          couple_id: coupleId,
+          provider_id: contactProviderId,
+          initial_message: contactMessage.trim(),
+          status: 'pending',
+        })
         .select()
         .single();
 
@@ -586,32 +538,6 @@ export default function MatchingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-[#F5F0F7]">
-      {/* Event context banner */}
-      {hasEventContext && (
-        <div className="sticky top-0 z-20 bg-[#823F91]/5 border-b border-[#823F91]/10 px-4 py-2.5">
-          <div className="max-w-4xl mx-auto flex items-center gap-3">
-            <Calendar className="h-4 w-4 text-[#823F91] flex-shrink-0" />
-            <p className="text-xs sm:text-sm text-[#823F91] font-medium truncate">
-              Recherche pour : <span className="font-bold">{eventContext.eventTitle || 'Evenement'}</span>
-              {eventContext.date && (
-                <span className="text-[#823F91]/70">
-                  {' '}· {new Date(eventContext.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                </span>
-              )}
-              {eventContext.city && (
-                <span className="text-[#823F91]/70"> · {eventContext.city}</span>
-              )}
-            </p>
-            <button
-              onClick={() => router.push('/couple/evenements')}
-              className="ml-auto text-xs text-[#823F91]/60 hover:text-[#823F91] transition-colors whitespace-nowrap"
-            >
-              Retour aux evenements
-            </button>
-          </div>
-        </div>
-      )}
-
       <AnimatePresence mode="wait">
         {vue === 'landing' && (
           <LandingView

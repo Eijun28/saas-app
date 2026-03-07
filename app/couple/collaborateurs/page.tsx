@@ -220,7 +220,7 @@ export default function CollaborateursPage() {
         <div className="h-8 w-48 bg-gray-100 rounded-xl animate-pulse" />
         <div className="h-4 w-64 bg-gray-100 rounded-lg animate-pulse" />
         <div className="h-24 bg-white rounded-2xl border border-gray-100 animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {[1, 2, 3].map(i => (
             <div key={i} className="h-48 bg-white rounded-2xl border border-gray-100 animate-pulse" />
           ))}

@@ -611,9 +611,9 @@ export async function signIn(email: string, password: string) {
   if (data.user) {
     // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
     const roleCheck = await getUserRoleServer(data.user.id)
-
+    
     revalidatePath('/', 'layout')
-
+    
     if (roleCheck.role) {
       // Pour les prestataires, vérifier si l'onboarding est terminé
       if (roleCheck.role === 'prestataire') {
