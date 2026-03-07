@@ -104,15 +104,24 @@ export default function SignInPage() {
         setError(translateAuthError(result.error))
         setIsLoading(false)
       } else if (result?.success) {
-        // Si on vient d'une invitation, rediriger vers la page d'invitation
-        if (invitationToken) {
-          router.push(`/invitation/${invitationToken}`)
-        } else if (result?.redirectTo) {
-          router.push(result.redirectTo)
-        }
+        // Redirection après connexion réussie
+        // Utiliser replace pour éviter le retour au formulaire via bouton back
+        const destination = invitationToken
+          ? `/invitation/${invitationToken}`
+          : result?.redirectTo || '/'
+        router.replace(destination)
+
+        // Safety: remettre isLoading à false après 8s
+        // au cas où la navigation échoue silencieusement
+        setTimeout(() => setIsLoading(false), 8000)
+      } else {
+        // Réponse inattendue du serveur
+        setError('Une erreur inattendue est survenue. Veuillez réessayer.')
+        setIsLoading(false)
       }
-    } catch (err: any) {
-      setError(translateAuthError(err.message))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      setError(translateAuthError(message))
       setIsLoading(false)
     }
   }
