@@ -39,16 +39,12 @@ export function SignInForm() {
       if (result?.error) {
         setError(translateAuthError(result.error))
         setIsLoading(false)
-      } else if (result?.success) {
-        router.replace(result?.redirectTo || '/')
-        setTimeout(() => setIsLoading(false), 8000)
-      } else {
-        setError('Une erreur inattendue est survenue. Veuillez réessayer.')
-        setIsLoading(false)
+      } else if (result?.success && result?.redirectTo) {
+        // Rediriger côté client après connexion réussie
+        router.push(result.redirectTo)
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur inconnue'
-      setError(translateAuthError(message))
+    } catch (err: any) {
+      setError(translateAuthError(err.message))
       setIsLoading(false)
     }
   }
