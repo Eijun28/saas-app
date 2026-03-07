@@ -30,6 +30,7 @@ CREATE INDEX IF NOT EXISTS idx_event_providers_provider_id
 ALTER TABLE public.event_providers ENABLE ROW LEVEL SECURITY;
 
 -- Couples can manage own event providers
+DROP POLICY IF EXISTS "Couples can manage own event providers" ON public.event_providers;
 CREATE POLICY "Couples can manage own event providers"
   ON public.event_providers FOR ALL
   USING (
@@ -50,6 +51,7 @@ CREATE POLICY "Couples can manage own event providers"
   );
 
 -- Providers can view their assignments
+DROP POLICY IF EXISTS "Providers can view their assignments" ON public.event_providers;
 CREATE POLICY "Providers can view their assignments"
   ON public.event_providers FOR SELECT
   USING (provider_id = auth.uid());
