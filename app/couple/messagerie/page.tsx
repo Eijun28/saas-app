@@ -303,7 +303,7 @@ export default function MessageriePage() {
               title="Messagerie"
               description="Communiquez avec vos prestataires"
             />
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -311,7 +311,8 @@ export default function MessageriePage() {
                 className="gap-1.5 text-xs sm:text-sm"
               >
                 <SearchIcon className="h-3.5 w-3.5" />
-                Rechercher un prestataire
+                <span className="hidden xs:inline">Rechercher un prestataire</span>
+                <span className="xs:hidden">Rechercher</span>
               </Button>
               <Button
                 size="sm"
@@ -319,7 +320,8 @@ export default function MessageriePage() {
                 className="gap-1.5 text-xs sm:text-sm bg-[#823F91] hover:bg-[#6D3478] text-white"
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                Matchez vos prestataires
+                <span className="hidden xs:inline">Matchez vos prestataires</span>
+                <span className="xs:hidden">Matching</span>
               </Button>
             </div>
           </div>
