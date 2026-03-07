@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Plus, Calendar, CalendarDays, CalendarCheck, List, TrendingUp, LayoutGrid } from 'lucide-react'
+import { Plus, Calendar, CalendarDays, CalendarCheck, List, TrendingUp, LayoutGrid, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -215,62 +215,106 @@ export default function EvenementsPage() {
         </motion.div>
       )}
 
-      {/* Header : toggle vue + bouton ajouter */}
-      <div className="flex items-center justify-between mb-5 gap-2">
-        <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
+      {/* Mobile: Header Google Calendar style */}
+      <div className="sm:hidden space-y-2 mb-5">
+        {/* Ligne 1 : ← Titre mois/semaine → (tap titre = aujourd'hui) */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => {/* navigation handled by EventCalendarView */}}
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-full transition-colors active:scale-95 touch-manipulation invisible"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-sm font-semibold text-[#823F91] text-center truncate px-2">
+            {events.length === 0
+              ? 'Aucun événement'
+              : `${events.length} événement${events.length > 1 ? 's' : ''}`}
+          </h2>
+          <button
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center invisible"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Ligne 2 : Sélecteur de vue (pills arrondis) */}
+        <div className="flex gap-0.5 bg-gray-100/80 rounded-full p-0.5">
+          {([
+            { key: 'cards' as const, label: 'Cartes', icon: LayoutGrid },
+            { key: 'list' as const, label: 'Liste', icon: List },
+            { key: 'calendar' as const, label: 'Calendrier', icon: CalendarDays },
+          ]).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setViewMode(key)}
+              className={cn(
+                'flex-1 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 touch-manipulation',
+                viewMode === key
+                  ? 'bg-[#823F91] text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: Header classique */}
+      <div className="hidden sm:flex items-center justify-between mb-5 gap-2">
+        <p className="text-xs sm:text-sm text-gray-500">
           {events.length === 0
             ? 'Aucun événement pour le moment'
             : `${events.length} événement${events.length > 1 ? 's' : ''}`}
         </p>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          {/* Toggle cartes / liste / calendrier */}
+        <div className="flex items-center gap-2">
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
             <button
               onClick={() => setViewMode('cards')}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[40px] sm:min-h-0',
+                'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
                 viewMode === 'cards'
                   ? 'bg-[#823F91] text-white'
                   : 'text-gray-600 hover:bg-gray-50',
               )}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Cartes</span>
+              Cartes
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors border-l border-gray-200 min-h-[40px] sm:min-h-0',
+                'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-gray-200',
                 viewMode === 'list'
                   ? 'bg-[#823F91] text-white'
                   : 'text-gray-600 hover:bg-gray-50',
               )}
             >
               <List className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Liste</span>
+              Liste
             </button>
             <button
               onClick={() => setViewMode('calendar')}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors border-l border-gray-200 min-h-[40px] sm:min-h-0',
+                'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-gray-200',
                 viewMode === 'calendar'
                   ? 'bg-[#823F91] text-white'
                   : 'text-gray-600 hover:bg-gray-50',
               )}
             >
               <CalendarDays className="h-3.5 w-3.5" />
-              <span className="hidden xs:inline">Calendrier</span>
+              Calendrier
             </button>
           </div>
 
           <Button
             onClick={handleOpenCreate}
-            className="bg-[#823F91] hover:bg-[#6D3478] text-white min-h-[40px] sm:min-h-0"
+            className="bg-[#823F91] hover:bg-[#6D3478] text-white"
             size="sm"
           >
-            <Plus className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Ajouter</span>
+            <Plus className="h-4 w-4 mr-1.5" />
+            Ajouter
           </Button>
         </div>
       </div>
@@ -336,6 +380,14 @@ export default function EvenementsPage() {
           onEventClick={handleEventClick}
         />
       )}
+
+      {/* Mobile: FAB (Floating Action Button) style Google Calendar */}
+      <button
+        onClick={handleOpenCreate}
+        className="sm:hidden fixed bottom-6 right-6 z-40 w-14 h-14 flex items-center justify-center bg-[#823F91] text-white rounded-2xl shadow-lg shadow-[#823F91]/30 active:scale-90 transition-transform touch-manipulation"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
 
       {/* Dialog formulaire */}
       <EventForm

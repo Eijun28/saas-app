@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { TimelineEvent } from '@/types/cultural-events.types'
 import { EVENT_CATEGORY_CONFIG, EVENT_STATUS_CONFIG } from '@/types/cultural-events.types'
@@ -65,25 +64,28 @@ export function EventCalendarView({ events, onEventClick }: EventCalendarViewPro
       transition={{ duration: 0.3 }}
       className="rounded-xl border border-gray-200 bg-white overflow-hidden"
     >
-      {/* Navigation header */}
+      {/* Navigation header — Google Calendar style */}
       <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-100 bg-gray-50/50">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 sm:h-7 sm:w-7 touch-manipulation"
+        <button
           onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+          className="p-2.5 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 sm:p-1.5 flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-full transition-colors active:scale-95 touch-manipulation"
         >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <h3 className="text-sm font-semibold text-gray-800 capitalize">{monthLabel}</h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 sm:h-7 sm:w-7 touch-manipulation"
+          <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
+        </button>
+        <button
+          onClick={() => setCurrentDate(new Date())}
+          className="flex-1 min-w-0 group"
+        >
+          <h3 className="text-sm font-semibold text-[#823F91] sm:text-gray-800 text-center capitalize truncate px-2 group-active:opacity-60 transition-opacity">
+            {monthLabel}
+          </h3>
+        </button>
+        <button
           onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
+          className="p-2.5 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 sm:p-1.5 flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-full transition-colors active:scale-95 touch-manipulation"
         >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
+        </button>
       </div>
 
       {/* Day-of-week labels */}
