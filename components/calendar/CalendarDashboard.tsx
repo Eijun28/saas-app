@@ -976,54 +976,33 @@ export function CalendarDashboard({
       {/* Main content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col gap-2.5 sm:gap-0 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 bg-white border-b border-gray-200">
-          {/* Mobile: Navigation compacte */}
+        <div className="flex-shrink-0 flex flex-col gap-2 sm:gap-0 px-3 sm:px-5 md:px-6 py-3 sm:py-3.5 bg-white border-b border-gray-200">
+          {/* Mobile: Navigation style Google Calendar */}
           <div className="flex items-center justify-between sm:hidden">
-            {showSidebar && (
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
-              >
-                {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            )}
             <button
               onClick={previousPeriod}
-              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-full transition-colors active:scale-95 touch-manipulation"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <h2 className="text-xs font-bold text-[#823F91] flex-1 text-center px-1 truncate">
-              {getPeriodTitle()}
-            </h2>
-            <button
-              onClick={nextPeriod}
-              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-lg transition-colors active:scale-95 touch-manipulation"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
             <button
               onClick={goToToday}
-              className="px-2 py-1.5 min-h-[36px] flex items-center rounded-lg text-[10px] font-bold text-[#823F91] hover:bg-[#F5F0F7] active:scale-95 transition-all touch-manipulation"
+              className="flex-1 min-w-0 group"
             >
-              Auj.
+              <h2 className="text-sm font-semibold text-[#823F91] text-center truncate px-2 group-active:opacity-60 transition-opacity">
+                {getPeriodTitle()}
+              </h2>
             </button>
             <button
-              onClick={() => {
-                const rawDate = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
-                const dateToUse = normalizeDate(rawDate)
-                setSelectedDate(dateToUse)
-                setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
-                setIsDialogOpen(true)
-              }}
-              className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center bg-[#823F91] text-white rounded-lg active:scale-95 touch-manipulation shadow-sm"
+              onClick={nextPeriod}
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#823F91] hover:bg-[#F5F0F7] rounded-full transition-colors active:scale-95 touch-manipulation"
             >
-              <Plus className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
           {/* Mobile: Sélecteur de vue */}
-          <div className="flex gap-0.5 bg-gray-100 rounded-lg p-0.5 sm:hidden">
+          <div className="flex gap-0.5 bg-gray-100/80 rounded-full p-0.5 sm:hidden">
             {(['month', 'week', 'day', 'agenda'] as const).map((viewType) => {
               const labels = {
                 month: 'Mois',
@@ -1037,10 +1016,10 @@ export function CalendarDashboard({
                   key={viewType}
                   onClick={() => setViewMode(viewType)}
                   className={cn(
-                    'flex-1 py-2 rounded-md text-[11px] font-bold transition-all active:scale-95 touch-manipulation min-h-[36px]',
+                    'flex-1 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 touch-manipulation',
                     viewMode === viewType
                       ? 'bg-[#823F91] text-white shadow-sm'
-                      : 'text-gray-600 hover:bg-white/60'
+                      : 'text-gray-500 hover:text-gray-700'
                   )}
                 >
                   {labels[viewType]}
@@ -1172,6 +1151,20 @@ export function CalendarDashboard({
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Mobile: FAB (Floating Action Button) style Google Calendar */}
+      <button
+        onClick={() => {
+          const rawDate = viewMode === 'day' ? (selectedDate || currentDate) : new Date()
+          const dateToUse = normalizeDate(rawDate)
+          setSelectedDate(dateToUse)
+          setNewEvent({ date: dateToUse, time: '', title: '', description: '' })
+          setIsDialogOpen(true)
+        }}
+        className="sm:hidden fixed bottom-6 right-6 z-40 w-14 h-14 flex items-center justify-center bg-[#823F91] text-white rounded-2xl shadow-lg shadow-[#823F91]/30 active:scale-90 transition-transform touch-manipulation"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
 
       {/* Extracted dialog components */}
       <CreateEventDialog
