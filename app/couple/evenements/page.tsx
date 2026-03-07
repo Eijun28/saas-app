@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Plus, Calendar, CalendarDays, CalendarCheck, List, TrendingUp } from 'lucide-react'
+import { Plus, Calendar, CalendarDays, CalendarCheck, List, TrendingUp, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
@@ -12,11 +12,12 @@ import { PageTitle } from '@/components/couple/shared/PageTitle'
 import { EventCard } from '@/components/couple-events/EventCard'
 import { EventForm } from '@/components/couple-events/EventForm'
 import { EventCalendarView } from '@/components/couple-events/EventCalendarView'
+import { EventVisualSelector } from '@/components/couple-events/EventVisualSelector'
 import { CulturalEventSuggestions } from '@/components/couple-events/CulturalEventSuggestions'
 import { cn } from '@/lib/utils'
 import type { TimelineEvent, TimelineEventFormData, EventCategory } from '@/types/cultural-events.types'
 
-type ViewMode = 'list' | 'calendar'
+type ViewMode = 'cards' | 'list' | 'calendar'
 
 export default function EvenementsPage() {
   const { user } = useUser()
@@ -29,7 +30,7 @@ export default function EvenementsPage() {
   const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null)
   const [cultures, setCultures]         = useState<string[]>([])
   const [religions, setReligions]       = useState<string[]>([])
-  const [viewMode, setViewMode]         = useState<ViewMode>('list')
+  const [viewMode, setViewMode]         = useState<ViewMode>('cards')
   const [suggestionValues, setSuggestionValues] = useState<{
     title: string
     description: string
@@ -171,6 +172,7 @@ export default function EvenementsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-0">
+    <div className="max-w-5xl mx-auto px-1 sm:px-0">
       <PageTitle
         title="Mes événements"
         description="Organisez chaque cérémonie et fête de votre mariage : religieuse, culturelle, réception, henné..."
@@ -223,12 +225,24 @@ export default function EvenementsPage() {
         </p>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          {/* Toggle liste / calendrier */}
+          {/* Toggle cartes / liste / calendrier */}
           <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[40px] sm:min-h-0',
+                viewMode === 'cards'
+                  ? 'bg-[#823F91] text-white'
+                  : 'text-gray-600 hover:bg-gray-50',
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden xs:inline">Cartes</span>
+            </button>
             <button
               onClick={() => setViewMode('list')}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors min-h-[40px] sm:min-h-0',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-medium transition-colors border-l border-gray-200 min-h-[40px] sm:min-h-0',
                 viewMode === 'list'
                   ? 'bg-[#823F91] text-white'
                   : 'text-gray-600 hover:bg-gray-50',
@@ -292,6 +306,20 @@ export default function EvenementsPage() {
             Créer un événement personnalisé
           </Button>
         </motion.div>
+      ) : viewMode === 'cards' ? (
+        <EventVisualSelector
+          events={events}
+          onSelect={handleEventClick}
+          onFindProvider={(event) => {
+            const params = new URLSearchParams()
+            if (event.category) params.set('event_type', event.category)
+            if (event.location) params.set('city', event.location)
+            if (event.event_date) params.set('date', event.event_date)
+            if (event.title) params.set('event_title', event.title)
+            params.set('event_id', event.id)
+            router.push(`/couple/matching?${params.toString()}`)
+          }}
+        />
       ) : viewMode === 'list' ? (
         <div className="space-y-3">
           {events.map((event, index) => (
