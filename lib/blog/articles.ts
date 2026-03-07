@@ -413,8 +413,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage chrétien : guide complet pour organiser une cérémonie religieuse inoubliable',
     description: 'Découvrez les étapes, traditions et conseils pratiques pour préparer votre mariage chrétien (catholique, protestant, orthodoxe). Trouvez les prestataires adaptés avec NUPLY.',
     author: 'NUPLY',
-    publishedAt: '2026-03-05',
-    updatedAt: '2026-03-05',
+    publishedAt: '2026-01-22',
+    updatedAt: '2026-01-22',
     tags: ['Mariage religieux', 'Chrétien', 'Traditions'],
     readingTime: '9 min',
     content: `
@@ -520,8 +520,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage musulman : traditions, étapes et organisation du nikah à la walima',
     description: 'Tout savoir sur le mariage musulman : le nikah, la mahr, la walima, les traditions culturelles et comment NUPLY vous aide à trouver des prestataires halal et expérimentés.',
     author: 'NUPLY',
-    publishedAt: '2026-03-05',
-    updatedAt: '2026-03-05',
+    publishedAt: '2026-01-29',
+    updatedAt: '2026-01-29',
     tags: ['Mariage religieux', 'Musulman', 'Traditions'],
     readingTime: '10 min',
     content: `
@@ -627,8 +627,8 @@ export const articles: BlogArticle[] = [
     title: 'Mariage juif : de la houpa à la hora, guide des cérémonies et traditions',
     description: 'Tout savoir sur le mariage juif : la houpa, la ketouba, les 7 bénédictions, le verre brisé et les traditions. Trouvez vos prestataires casher avec NUPLY.',
     author: 'NUPLY',
-    publishedAt: '2026-03-05',
-    updatedAt: '2026-03-05',
+    publishedAt: '2026-02-06',
+    updatedAt: '2026-02-06',
     tags: ['Mariage religieux', 'Juif', 'Traditions'],
     readingTime: '9 min',
     content: `
@@ -741,6 +741,344 @@ export const articles: BlogArticle[] = [
 <h2>En résumé</h2>
 
 <p>Le mariage juif est une célébration profondément joyeuse, où chaque rituel porte une signification millénaire. De la signature de la ketouba au fracas du verre brisé, chaque instant est chargé d'émotion et de sens. Avec NUPLY, trouvez les prestataires qui respecteront vos traditions et feront de votre mariage un événement inoubliable. Mazal Tov !</p>
+`,
+  },
+  {
+    slug: 'mariage-indien-guide-traditions-ceremonies',
+    title: 'Mariage indien : guide des traditions, cérémonies et organisation en France',
+    description: 'Du mehendi au phera, découvrez les rituels du mariage indien (hindou, sikh, sud-indien). Conseils pratiques et prestataires spécialisés avec NUPLY.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-14',
+    tags: ['Mariage culturel', 'Indien', 'Traditions'],
+    readingTime: '10 min',
+    content: `
+<p>Le mariage indien est l'une des célébrations les plus riches, colorées et spectaculaires au monde. S'étalant souvent sur plusieurs jours, il mêle rituels sacrés, musique, danse et festins somptueux. Que vous soyez d'origine indienne ou que vous souhaitiez intégrer ces traditions à votre union en France, ce guide vous accompagne dans chaque étape.</p>
+
+<h2>1. Les fondements du mariage hindou</h2>
+
+<p>Dans la tradition hindoue, le mariage (vivah) est bien plus qu'une union entre deux personnes : c'est un sacrement qui lie deux familles et deux âmes. Il repose sur quatre piliers fondamentaux :</p>
+
+<ul>
+  <li><strong>Dharma :</strong> le devoir moral et spirituel. Le couple s'engage à mener une vie vertueuse ensemble</li>
+  <li><strong>Artha :</strong> la prospérité matérielle. Les époux travaillent ensemble pour assurer le bien-être de leur foyer</li>
+  <li><strong>Kama :</strong> l'amour et le plaisir. Le mariage célèbre l'union physique et émotionnelle du couple</li>
+  <li><strong>Moksha :</strong> la libération spirituelle. Le couple se soutient mutuellement dans sa quête spirituelle</li>
+</ul>
+
+<p>Le mariage hindou est considéré comme un lien sacré et indissoluble, béni par le feu sacré (Agni) qui sert de témoin divin à l'union.</p>
+
+<h2>2. Les cérémonies pré-mariage</h2>
+
+<h3>Roka et Sagai (fiançailles)</h3>
+
+<p>La <strong>Roka</strong> est la cérémonie d'engagement officielle où les deux familles se rencontrent et acceptent l'union. La <strong>Sagai</strong> (fiançailles) suit peu après : les familles échangent des cadeaux, des fruits secs et des sucreries. Les futurs mariés échangent des bagues, marquant le début officiel des préparatifs.</p>
+
+<h3>Mehendi (cérémonie du henné)</h3>
+
+<p>Le <strong>Mehendi</strong> est l'un des rituels les plus attendus. La future mariée se fait appliquer des motifs complexes au henné sur les mains et les pieds. Selon la tradition, plus la couleur du henné est foncée, plus l'amour du futur mari sera intense. C'est une célébration joyeuse, accompagnée de musique et de danse, réunissant les femmes des deux familles.</p>
+
+<h3>Sangeet (soirée musicale)</h3>
+
+<p>Le <strong>Sangeet</strong> est une soirée festive dédiée à la musique et à la danse. Les familles et amis préparent des chorégraphies et des performances pour divertir les futurs mariés. C'est souvent l'occasion de danses Bollywood entraînantes, de chants traditionnels et de moments de rire partagés.</p>
+
+<h3>Haldi (cérémonie du curcuma)</h3>
+
+<p>La cérémonie du <strong>Haldi</strong> a lieu la veille du mariage. Une pâte de curcuma, d'huile de santal et d'eau de rose est appliquée sur le visage et le corps des futurs mariés par les membres de la famille. Ce rituel est censé purifier, embellir la peau et éloigner le mauvais œil. C'est un moment intime et émouvant, souvent accompagné de chants.</p>
+
+<h2>3. La cérémonie principale</h2>
+
+<h3>Baraat (arrivée du marié)</h3>
+
+<p>La <strong>Baraat</strong> est l'arrivée triomphale du marié. Traditionnellement à cheval ou sur un éléphant, le marié arrive accompagné de sa famille et ses amis qui dansent au son du dhol (tambour). En France, le cheval blanc reste populaire, et certains couples optent pour une voiture de luxe décorée. C'est un moment spectaculaire et joyeux.</p>
+
+<h3>Jaimala (échange de guirlandes)</h3>
+
+<p>Le <strong>Jaimala</strong> est l'échange de guirlandes de fleurs (varmala) entre les mariés. Ce geste symbolise l'acceptation mutuelle et le respect. Souvent, les amis du marié le soulèvent pour rendre l'échange plus amusant et compétitif.</p>
+
+<h3>Kanyadaan (don de la mariée)</h3>
+
+<p>Le <strong>Kanyadaan</strong> est l'un des rituels les plus émouvants : le père de la mariée remet symboliquement sa fille au marié. Il place la main de sa fille dans celle du marié, signifiant qu'il confie son bien le plus précieux. Ce rituel est souvent accompagné de prières et de larmes d'émotion.</p>
+
+<h3>Mangal Phera (tours autour du feu sacré)</h3>
+
+<p>Les <strong>Mangal Phera</strong> sont les quatre tours sacrés que le couple effectue autour du feu sacré (Agni). Chaque tour représente l'un des quatre piliers du mariage : dharma, artha, kama et moksha. Le prêtre (pandit) récite des mantras védiques pendant que le couple marche autour du feu, lié par un tissu noué entre leurs vêtements.</p>
+
+<h3>Saptapadi (les sept pas)</h3>
+
+<p>Les <strong>Saptapadi</strong> sont les sept pas que le couple fait ensemble, chacun représentant un vœu :</p>
+
+<ul>
+  <li>Nourriture et bien-être</li>
+  <li>Force et santé</li>
+  <li>Prospérité</li>
+  <li>Bonheur et harmonie</li>
+  <li>Descendance</li>
+  <li>Longévité</li>
+  <li>Amitié et fidélité éternelle</li>
+</ul>
+
+<p>Après le septième pas, le mariage est considéré comme scellé et irrévocable.</p>
+
+<h3>Sindoor et Mangalsutra</h3>
+
+<p>Le marié applique le <strong>sindoor</strong> (poudre vermillon) dans la raie des cheveux de la mariée et lui passe le <strong>mangalsutra</strong> (collier sacré) autour du cou. Ces deux symboles marquent le statut de femme mariée et sont portés tout au long de la vie conjugale.</p>
+
+<h2>4. Variations régionales</h2>
+
+<h3>Mariage sikh : Anand Karaj</h3>
+
+<p>Le mariage sikh, appelé <strong>Anand Karaj</strong> (cérémonie de la félicité), se déroule dans un gurdwara (temple sikh) devant le Guru Granth Sahib (livre saint). Le couple effectue quatre tours (laavan) autour du livre sacré, chaque tour accompagné d'un hymne spécifique. La cérémonie est empreinte de simplicité et de spiritualité profonde.</p>
+
+<h3>Mariage sud-indien</h3>
+
+<p>Le mariage sud-indien se distingue par le <strong>Thali</strong> (équivalent du mangalsutra), le rituel du <strong>Kashi Yatra</strong> où le marié fait semblant de partir en pèlerinage avant d'être convaincu de se marier, et l'échange de guirlandes en trois tours. Les mariées portent souvent un sari en soie Kanjeevaram richement brodé d'or.</p>
+
+<h3>Mariage bengali</h3>
+
+<p>Le mariage bengali est marqué par le <strong>Shubho Drishti</strong> (premier regard) où les mariés se voient pour la première fois, et le rituel du <strong>Saat Paak</strong> où la mariée est portée sur un tabouret par ses frères pour faire sept tours autour du marié. Le repas bengali est réputé pour ses poissons et ses sucreries (rasgulla, sandesh).</p>
+
+<h2>5. Le repas et les festivités</h2>
+
+<p>Le banquet de mariage indien est une expérience culinaire exceptionnelle, avec généralement <strong>15 à 30 plats</strong> servis en buffet ou en thali :</p>
+
+<ul>
+  <li><strong>Entrées :</strong> samosas, pakoras, tikki, chaat, papadums</li>
+  <li><strong>Plats principaux :</strong> biryani, paneer tikka, butter chicken, dal makhani, rogan josh</li>
+  <li><strong>Pains :</strong> naan, roti, paratha, puri</li>
+  <li><strong>Accompagnements :</strong> raita, chutneys variés, pickles, riz basmati</li>
+  <li><strong>Desserts :</strong> gulab jamun, jalebi, kheer, barfi, ladoo, ras malai</li>
+</ul>
+
+<p>Pour les mariages végétariens (courants chez les hindous), le menu est tout aussi riche et varié, avec des plats à base de paneer, légumes, lentilles et légumineuses.</p>
+
+<h2>6. Organisation et budget en France</h2>
+
+<p>Organiser un mariage indien en France demande une planification minutieuse. Le nombre d'invités varie généralement de <strong>200 à 800 personnes</strong>, et les festivités s'étalent sur 2 à 5 jours. Voici les postes budgétaires spécifiques :</p>
+
+<ul>
+  <li><strong>Traiteur indien :</strong> entre 35 € et 90 € par personne, selon le nombre de plats et le service</li>
+  <li><strong>Mandap (structure cérémonielle) :</strong> entre 1 500 € et 8 000 € selon la taille et la décoration florale</li>
+  <li><strong>DJ et dhol (tambour) :</strong> entre 800 € et 3 000 € pour l'ensemble musique et animation</li>
+  <li><strong>Mehendi (artiste henné) :</strong> entre 300 € et 1 500 € selon le nombre de personnes et la complexité des motifs</li>
+  <li><strong>Pandit (prêtre hindou) :</strong> entre 300 € et 800 € pour officier la cérémonie</li>
+  <li><strong>Lehenga (tenue de la mariée) :</strong> entre 1 000 € et 10 000 € selon le créateur et les broderies</li>
+  <li><strong>Sherwani (tenue du marié) :</strong> entre 500 € et 3 000 €</li>
+</ul>
+
+<p>Le <strong>module Budget de NUPLY</strong> vous permet de créer des catégories dédiées (mandap, mehendi, traiteur indien, tenues) et de suivre chaque dépense en temps réel.</p>
+
+<h2>7. Trouver les bons prestataires avec NUPLY</h2>
+
+<p>Organiser un mariage indien en France nécessite des prestataires qui connaissent et respectent les traditions. NUPLY simplifie cette recherche :</p>
+
+<ul>
+  <li><strong>Traiteurs indiens :</strong> trouvez des traiteurs spécialisés dans la cuisine indienne authentique, végétarienne ou non-végétarienne</li>
+  <li><strong>Décorateurs de mandap :</strong> des professionnels qui créent des structures cérémonielles somptueuses avec fleurs fraîches et drapés</li>
+  <li><strong>DJ et musiciens :</strong> des artistes qui maîtrisent le répertoire Bollywood, bhangra et musique classique indienne</li>
+  <li><strong>Artistes mehendi :</strong> des spécialistes du henné pour des motifs traditionnels ou contemporains</li>
+  <li><strong>Photographes et vidéastes :</strong> des professionnels habitués aux mariages indiens qui savent capturer la baraat, le phera et chaque moment clé</li>
+  <li><strong>Matching intelligent :</strong> l'algorithme NUPLY prend en compte vos traditions spécifiques et votre budget pour vous proposer les prestataires les plus pertinents</li>
+</ul>
+
+<p>Avec la <strong>messagerie intégrée de NUPLY</strong>, coordonnez tous vos prestataires depuis une seule plateforme et assurez-vous que chaque détail est parfait.</p>
+
+<h2>En résumé</h2>
+
+<p>Le mariage indien est une fête grandiose où chaque rituel porte une signification profonde. Du mehendi coloré au phera sacré, en passant par la baraat festive et le banquet somptueux, c'est une célébration de l'amour, de la famille et des traditions millénaires. Avec NUPLY, trouvez les prestataires qui donneront vie à votre mariage indien en France. Shubh Vivah !</p>
+`,
+  },
+  {
+    slug: 'mariage-chinois-traditions-organisation-guide',
+    title: 'Mariage chinois : traditions ancestrales, cérémonies du thé et organisation moderne',
+    description: 'Guide complet du mariage chinois : cérémonie du thé, symbolique du rouge et de l\'or, banquet traditionnel. Organisez votre mariage avec les prestataires NUPLY.',
+    author: 'NUPLY',
+    publishedAt: '2026-02-24',
+    tags: ['Mariage culturel', 'Chinois', 'Traditions'],
+    readingTime: '9 min',
+    content: `
+<p>Le mariage chinois est une célébration riche en symboles, en couleurs et en traditions ancestrales. Mêlant respect des aînés, harmonie familiale et vœux de prospérité, il est l'un des événements les plus importants dans la culture chinoise. Que vous souhaitiez un mariage traditionnel ou une version moderne en France, ce guide vous accompagne à travers chaque étape.</p>
+
+<h2>1. Les fondements du mariage chinois</h2>
+
+<p>Le mariage chinois repose sur des valeurs profondément ancrées dans la culture :</p>
+
+<ul>
+  <li><strong>Respect des aînés :</strong> le mariage est avant tout l'union de deux familles. L'approbation et la bénédiction des parents sont essentielles</li>
+  <li><strong>Harmonie (和 hé) :</strong> le couple aspire à une vie harmonieuse, en équilibre avec la famille et la société</li>
+  <li><strong>Prospérité (福 fú) :</strong> le mariage est une occasion de souhaiter richesse et abondance au nouveau couple</li>
+  <li><strong>Continuité :</strong> le mariage assure la perpétuation de la lignée familiale et le respect des ancêtres</li>
+</ul>
+
+<h2>2. Les préparatifs traditionnels</h2>
+
+<h3>Choix de la date : calendrier lunaire et feng shui</h3>
+
+<p>Le choix de la date de mariage est crucial dans la tradition chinoise. Les familles consultent souvent un maître feng shui ou un almanach chinois (Tong Shu) pour déterminer une date auspicieuse basée sur les dates de naissance des mariés. Le chiffre <strong>8</strong> est considéré comme extrêmement porte-bonheur (il se prononce comme "prospérité" en chinois), tandis que le chiffre <strong>4</strong> est évité car il se prononce comme "mort".</p>
+
+<h3>Guo Da Li (demande officielle)</h3>
+
+<p>Le <strong>Guo Da Li</strong> (过大礼) est la demande en mariage officielle. La famille du marié envoie des cadeaux à la famille de la mariée : bijoux en or, tissus, gâteaux de mariage, fruits, alcool et une enveloppe rouge contenant de l'argent. Ces cadeaux symbolisent le respect et la gratitude envers la famille qui a élevé la mariée.</p>
+
+<h3>Jia Zhuang (trousseau de la mariée)</h3>
+
+<p>En retour, la famille de la mariée prépare le <strong>Jia Zhuang</strong> (嫁妆), le trousseau. Il comprend traditionnellement des objets pour le nouveau foyer : literie, vaisselle, objets décoratifs et bijoux. De nos jours, le trousseau peut aussi inclure des appareils électroménagers ou une contribution financière.</p>
+
+<h2>3. La symbolique des couleurs et des motifs</h2>
+
+<p>Les couleurs jouent un rôle fondamental dans le mariage chinois :</p>
+
+<ul>
+  <li><strong>Rouge (红 hóng) :</strong> couleur dominante du mariage chinois, le rouge symbolise la chance, la joie et la prospérité. La mariée porte traditionnellement une robe rouge (qipao ou kua), et la décoration est majoritairement rouge</li>
+  <li><strong>Or (金 jīn) :</strong> symbole de richesse et de noblesse. Les bijoux en or sont offerts à la mariée et les décorations dorées ornent la salle de réception</li>
+  <li><strong>Blanc :</strong> traditionnellement associé au deuil dans la culture chinoise, le blanc est évité dans les mariages traditionnels. Cependant, les mariages modernes en France intègrent souvent une robe blanche occidentale pour une partie de la cérémonie</li>
+  <li><strong>Double bonheur 囍 (shuāng xǐ) :</strong> ce caractère emblématique du mariage chinois est présent partout : invitations, décoration, cadeaux. Il représente le bonheur doublé par l'union</li>
+  <li><strong>Dragon et Phénix :</strong> le dragon représente le marié (puissance et force) et le phénix représente la mariée (grâce et beauté). Ensemble, ils symbolisent l'équilibre parfait du couple</li>
+</ul>
+
+<h2>4. Le déroulement du jour J</h2>
+
+<h3>La cérémonie du thé</h3>
+
+<p>La <strong>cérémonie du thé</strong> (敬茶 jìng chá) est le moment le plus symbolique du mariage chinois. Le couple sert du thé aux parents et aux aînés des deux familles, en commençant par la famille du marié :</p>
+
+<ul>
+  <li>Le couple s'agenouille devant les parents et leur offre une tasse de thé avec les deux mains</li>
+  <li>En acceptant le thé, les parents donnent leur bénédiction et offrent en retour des enveloppes rouges (红包 hóngbāo) contenant de l'argent et des bijoux en or</li>
+  <li>Le rituel se poursuit avec les grands-parents, oncles, tantes et aînés, par ordre d'ancienneté</li>
+  <li>Le thé utilisé est souvent un thé sucré aux longanes et aux graines de lotus, symbolisant la douceur et la fertilité</li>
+</ul>
+
+<p>Ce rituel exprime le respect filial et officialise l'intégration de chaque époux dans la famille de l'autre.</p>
+
+<h3>Le banquet de mariage</h3>
+
+<p>Le banquet est le cœur de la réception. Traditionnellement composé de <strong>8 à 12 plats</strong> (le chiffre 8 étant porte-bonheur), chaque plat a une signification symbolique :</p>
+
+<ul>
+  <li><strong>Poisson entier :</strong> servi en dernier, il symbolise l'abondance (余 yú, qui se prononce comme "surplus")</li>
+  <li><strong>Nouilles de longévité :</strong> de longues nouilles non coupées symbolisant une longue vie ensemble</li>
+  <li><strong>Canard laqué :</strong> symbole de fidélité car les canards mandarins restent en couple toute leur vie</li>
+  <li><strong>Homard et poulet :</strong> le homard (龙虾 lóngxiā, "crevette-dragon") et le poulet (凤 fèng, évoquant le phénix) représentent le dragon et le phénix ensemble</li>
+  <li><strong>Desserts tang yuan :</strong> des boulettes de riz gluant sucrées, symbolisant l'unité familiale et la douceur</li>
+</ul>
+
+<h3>Les traditions pendant le banquet</h3>
+
+<ul>
+  <li><strong>Toast table par table :</strong> le couple fait le tour des tables pour trinquer avec chaque groupe d'invités</li>
+  <li><strong>Changements de tenue :</strong> la mariée change souvent de robe 2 à 3 fois (qipao rouge, robe occidentale blanche, robe de soirée)</li>
+  <li><strong>Jeux et animations :</strong> des jeux sont organisés pour divertir les invités, souvent aux dépens du marié</li>
+  <li><strong>Enveloppes rouges :</strong> les invités offrent des enveloppes rouges contenant de l'argent (montant toujours pair, jamais le chiffre 4)</li>
+</ul>
+
+<h2>5. Trouver les bons prestataires avec NUPLY</h2>
+
+<p>Organiser un mariage chinois en France nécessite des prestataires qui comprennent la richesse de ces traditions. NUPLY vous aide à trouver :</p>
+
+<ul>
+  <li><strong>Traiteurs chinois :</strong> des professionnels qui maîtrisent le banquet traditionnel avec ses plats symboliques</li>
+  <li><strong>Décorateurs spécialisés :</strong> des experts en décoration rouge et or, calligraphie du double bonheur et mise en scène traditionnelle</li>
+  <li><strong>Photographes :</strong> des professionnels habitués aux mariages chinois qui capturent la cérémonie du thé, les changements de tenue et chaque moment clé</li>
+  <li><strong>Animateurs et DJ :</strong> des professionnels qui connaissent le déroulement d'un mariage chinois et savent gérer les jeux et les toasts</li>
+  <li><strong>Matching intelligent :</strong> l'algorithme NUPLY prend en compte vos traditions et votre budget pour vous proposer les prestataires les plus adaptés</li>
+</ul>
+
+<p>Avec la <strong>messagerie intégrée de NUPLY</strong>, coordonnez tous vos prestataires et organisez chaque détail de votre mariage chinois depuis une seule plateforme.</p>
+
+<h2>En résumé</h2>
+
+<p>Le mariage chinois est une célébration magnifique où chaque couleur, chaque plat et chaque geste porte une signification profonde. De la cérémonie du thé empreinte de respect au banquet festif et symbolique, c'est une union qui honore à la fois les ancêtres et l'avenir du couple. Avec NUPLY, trouvez les prestataires qui respecteront vos traditions et feront de votre mariage un événement mémorable. 百年好合 (Bǎi nián hǎo hé) — Cent ans d'harmonie !</p>
+`,
+  },
+  {
+    slug: 'mariage-japonais-shinzen-shiki-traditions',
+    title: 'Mariage japonais : du shinzen-shiki au banquet, guide des traditions et cérémonies',
+    description: 'Découvrez le mariage japonais : cérémonie shinto (shinzen-shiki), échange de sake, tenues traditionnelles et organisation en France avec NUPLY.',
+    author: 'NUPLY',
+    publishedAt: '2026-03-01',
+    tags: ['Mariage culturel', 'Japonais', 'Traditions'],
+    readingTime: '8 min',
+    content: `
+<p>Le mariage japonais est une célébration empreinte de raffinement, de spiritualité et de sobriété élégante. Ancré dans les traditions shinto, il se distingue par sa beauté épurée et ses rituels symboliques. Que vous souhaitiez un mariage traditionnel japonais ou une fusion moderne en France, ce guide vous dévoile chaque facette de cette cérémonie unique.</p>
+
+<h2>1. Le mariage shinto : shinzen-shiki</h2>
+
+<p>Le <strong>shinzen-shiki</strong> (神前式) est la cérémonie de mariage shinto traditionnelle, célébrée devant les divinités (kami) dans un sanctuaire (jinja). Le shintoïsme, religion native du Japon, considère le mariage comme une union bénie par les kami, les esprits de la nature et des ancêtres.</p>
+
+<p>La cérémonie est intime par tradition : seuls les membres proches des deux familles y assistent (généralement 20 à 40 personnes). Elle est présidée par un prêtre shinto (kannushi) et assistée par des miko (prêtresses) vêtues de blanc et rouge.</p>
+
+<h3>Déroulement de la cérémonie</h3>
+
+<ul>
+  <li><strong>Shuubatsu (修祓) :</strong> purification rituelle. Le prêtre agite un bâton orné de papier blanc (haraigushi) pour purifier les mariés et les invités</li>
+  <li><strong>Norito (祝詞) :</strong> le prêtre récite des prières sacrées devant l'autel, invoquant la bénédiction des kami pour le couple</li>
+  <li><strong>San-san-kudo (三三九度) :</strong> le rituel le plus emblématique du mariage japonais. Les mariés échangent des coupes de sake sacré en trois séries de trois gorgées, utilisant trois coupes de tailles différentes (petite, moyenne, grande). Le chiffre 3 est sacré dans le shintoïsme, et 3×3 = 9, un nombre considéré comme parfait et indivisible, symbolisant l'union éternelle</li>
+  <li><strong>Seishi no kotoba (誓詞) :</strong> les mariés prononcent leurs vœux (seishi) devant les kami, promettant fidélité et dévouement</li>
+  <li><strong>Tamagushi hoten (玉串奉奠) :</strong> le couple offre des branches de sakaki (arbre sacré) à l'autel en signe de dévotion</li>
+  <li><strong>Shinzoku-hai (親族盃) :</strong> les familles des deux côtés partagent une coupe de sake, scellant l'union entre les deux familles</li>
+</ul>
+
+<h2>2. Les tenues traditionnelles</h2>
+
+<h3>La mariée</h3>
+
+<ul>
+  <li><strong>Shiromuku (白無垢) :</strong> le kimono de mariage entièrement blanc, symbole de pureté et de nouveau départ. La mariée porte également un watabōshi (grand capuchon blanc) ou un tsunokakushi (coiffe qui "cache les cornes", symbolisant la douceur et l'obéissance)</li>
+  <li><strong>Uchikake (打掛) :</strong> un kimono richement brodé, souvent rouge et or, porté par-dessus le shiromuku lors de la réception. Les motifs représentent des grues (longévité), des pins (constance) ou des fleurs de cerisier (beauté éphémère)</li>
+</ul>
+
+<h3>Le marié</h3>
+
+<ul>
+  <li><strong>Montsuki hakama (紋付袴) :</strong> l'ensemble formel masculin composé d'un kimono noir orné du blason familial (mon) et d'un hakama (pantalon large plissé) rayé. C'est la tenue la plus formelle pour un homme japonais</li>
+</ul>
+
+<h2>3. La cérémonie au sanctuaire</h2>
+
+<p>La cérémonie au sanctuaire shinto est caractérisée par sa solennité et sa simplicité. L'atmosphère est recueillie, avec le son des tambours taiko et de la flûte fue en fond. Les miko exécutent parfois une danse sacrée (kagura) pour bénir les mariés.</p>
+
+<p>L'ensemble de la cérémonie dure environ 20 à 30 minutes. Il n'y a pas de musique festive ni d'applaudissements : le respect et le silence accompagnent les rituels. La beauté réside dans la simplicité et la profondeur spirituelle de chaque geste.</p>
+
+<h2>4. La réception : hiroen</h2>
+
+<p>Après la cérémonie, le couple et les invités se retrouvent pour le <strong>hiroen</strong> (披露宴), la réception de mariage. Contrairement à la cérémonie intime, le hiroen peut accueillir un plus grand nombre d'invités :</p>
+
+<ul>
+  <li><strong>Discours et toasts :</strong> les supérieurs hiérarchiques (patron, professeur) et les amis proches prononcent des discours soigneusement préparés</li>
+  <li><strong>Changements de tenue :</strong> la mariée change de tenue 2 à 3 fois au cours de la soirée (du shiromuku à l'uchikake, puis souvent à une robe occidentale)</li>
+  <li><strong>Gâteau de mariage :</strong> le couple découpe un gâteau ensemble (souvent spectaculaire et à plusieurs étages)</li>
+  <li><strong>Repas kaiseki :</strong> un repas raffiné de cuisine japonaise en plusieurs services, mettant en valeur les produits de saison</li>
+  <li><strong>Cérémonie des bougies :</strong> le couple allume des bougies à chaque table en remerciement aux invités</li>
+</ul>
+
+<h2>5. Les cadeaux : goshugi</h2>
+
+<p>Les invités offrent un <strong>goshugi</strong> (ご祝儀), un cadeau en argent présenté dans une enveloppe spéciale appelée <strong>noshi bukuro</strong> (のし袋). Les règles sont précises :</p>
+
+<ul>
+  <li>Le montant doit être un nombre impair (30 000 ¥, 50 000 ¥) — les nombres pairs étant associés à la séparation</li>
+  <li>Les billets doivent être neufs et non pliés</li>
+  <li>L'enveloppe est ornée d'un nœud mizuhiki doré et blanc (ou rouge et blanc), noué d'une façon qui ne peut être défaite, symbolisant un lien éternel</li>
+  <li>Le nom de l'invité est calligraphié au pinceau sur l'enveloppe</li>
+</ul>
+
+<h2>6. Organiser un mariage japonais en France avec NUPLY</h2>
+
+<p>Organiser un mariage d'inspiration japonaise en France est tout à fait possible avec les bons prestataires. NUPLY vous aide à trouver :</p>
+
+<ul>
+  <li><strong>Traiteurs japonais :</strong> des chefs spécialisés en cuisine kaiseki ou en fusion franco-japonaise pour un repas raffiné</li>
+  <li><strong>Décorateurs :</strong> des experts en décoration épurée et élégante, avec arrangements floraux ikebana, lanternes et éléments naturels</li>
+  <li><strong>Photographes :</strong> des professionnels qui capturent la beauté subtile des tenues traditionnelles et la solennité de la cérémonie</li>
+  <li><strong>Location de kimonos :</strong> des boutiques spécialisées proposant shiromuku, uchikake et montsuki hakama pour le jour J</li>
+  <li><strong>Matching intelligent :</strong> l'algorithme NUPLY identifie les prestataires qui comprennent la culture japonaise et correspondent à votre budget</li>
+</ul>
+
+<p>Avec la <strong>messagerie intégrée de NUPLY</strong>, échangez avec chaque prestataire et coordonnez chaque détail pour un mariage japonais parfait en France.</p>
+
+<h2>En résumé</h2>
+
+<p>Le mariage japonais est une célébration d'une élégance rare, où chaque geste, chaque vêtement et chaque rituel est porteur de sens. Du san-san-kudo sacré au hiroen festif, en passant par la beauté du shiromuku, c'est une union qui allie spiritualité et raffinement. Avec NUPLY, trouvez les prestataires qui donneront vie à votre mariage japonais en France. おめでとうございます (Omedetō gozaimasu) — Félicitations !</p>
 `,
   },
 ]
