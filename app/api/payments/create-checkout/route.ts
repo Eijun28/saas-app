@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       .select(`
         *,
         couples!inner (id, user_id, partner_1_name, partner_2_name),
-        profiles!factures_prestataire_id_fkey (id, prenom, nom, business_name, email)
+        profiles!factures_prestataire_id_fkey (id, prenom, nom, nom_entreprise, email)
       `)
       .eq('id', facture_id)
       .single()
@@ -75,8 +75,8 @@ export async function POST(request: NextRequest) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nuply.fr'
-    const prestataireProfile = facture.profiles as { prenom?: string; nom?: string; business_name?: string; email?: string }
-    const prestataireName = prestataireProfile?.business_name ||
+    const prestataireProfile = facture.profiles as { prenom?: string; nom?: string; nom_entreprise?: string; email?: string }
+    const prestataireName = prestataireProfile?.nom_entreprise ||
       `${prestataireProfile?.prenom || ''} ${prestataireProfile?.nom || ''}`.trim() ||
       'Prestataire'
 

@@ -115,11 +115,10 @@ export default function MessageriePage() {
 
       const { data, error } = await supabase
         .from('conversations')
-        .select('id, prestataire_id, couple_id, last_message, last_message_at, updated_at, created_at, status, unread_count_couple')
+        .select('id, provider_id, couple_id, created_at, status')
         .eq('couple_id', coupleId)
         .eq('status', 'active')
-        .order('last_message_at', { ascending: false, nullsFirst: false })
-        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
 
       if (error) {
         setConversations([])
@@ -132,7 +131,7 @@ export default function MessageriePage() {
         
         if (data && data.length > 0) {
           // Charger tous les profils en une seule fois
-          const prestataireIds = [...new Set(data.map(conv => conv.prestataire_id).filter(Boolean))]
+          const prestataireIds = [...new Set(data.map(conv => conv.provider_id).filter(Boolean))]
           
           const [prestataireProfiles, profiles] = await Promise.all([
             prestataireIds.length > 0 ? supabase
@@ -156,9 +155,9 @@ export default function MessageriePage() {
           
           // Charger les derniers messages pour chaque conversation
           for (const conv of data) {
-            if (conv.prestataire_id) {
-              const prestataireProfile = prestataireMap.get(conv.prestataire_id)
-              const profile = profileMap.get(conv.prestataire_id)
+            if (conv.provider_id) {
+              const prestataireProfile = prestataireMap.get(conv.provider_id)
+              const profile = profileMap.get(conv.provider_id)
               
               // Nom de l'entreprise en priorité
               if (prestataireProfile?.nom_entreprise) {
@@ -174,15 +173,7 @@ export default function MessageriePage() {
                 avatars[conv.id] = profile.avatar_url
               }
               
-              // Dernier message
-              if (conv.last_message) {
-                const lastMsgDate = conv.last_message_at || conv.updated_at
-                lastMsgs[conv.id] = {
-                  content: conv.last_message,
-                  time: lastMsgDate ? formatRelativeTime(lastMsgDate) : '',
-                  sender_id: '' // On ne peut pas savoir sans charger les messages
-                }
-              }
+              // Les derniers messages sont chargés depuis la table messages ci-dessous
             } else {
               names[conv.id] = 'Prestataire'
             }
@@ -390,7 +381,7 @@ export default function MessageriePage() {
                       const lastMsg = lastMessages[conv.id]
                       const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?'
                       const isSelected = selectedConversation === conv.id
-                      const unreadCount = conv.unread_count_couple || 0
+                      const unreadCount = 0
                       const isFromMe = lastMsg?.sender_id === user?.id
 
                       return (
