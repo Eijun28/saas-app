@@ -289,7 +289,7 @@ export default function TimelinePage() {
   })() : null
 
   return (
-    <div className="h-[calc(100dvh-80px)] sm:h-[calc(100dvh-140px)] min-h-[400px] flex flex-col gap-3 sm:gap-4">
+    <div className="h-[calc(100dvh-140px)] sm:h-[calc(100dvh-140px)] min-h-[400px] flex flex-col gap-3 sm:gap-4">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -6 }}
@@ -358,7 +358,7 @@ export default function TimelinePage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.05 }}
-          className="grid grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-3 gap-1.5 sm:gap-3"
         >
           {daysUntilWedding !== null && daysUntilWedding > 0 ? (
             <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
@@ -367,7 +367,7 @@ export default function TimelinePage() {
               </div>
               <div className="min-w-0">
                 <p className="text-lg sm:text-xl font-bold text-gray-900">J-{daysUntilWedding}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Mariage</p>
+                <p className="text-[11px] sm:text-xs text-gray-500 truncate">Mariage</p>
               </div>
             </div>
           ) : (
@@ -377,7 +377,7 @@ export default function TimelinePage() {
               </div>
               <div className="min-w-0">
                 <p className="text-lg sm:text-xl font-bold text-gray-900">{todayCalEvents.length}</p>
-                <p className="text-[10px] sm:text-xs text-gray-500 truncate">Aujourd'hui</p>
+                <p className="text-[11px] sm:text-xs text-gray-500 truncate">Aujourd'hui</p>
               </div>
             </div>
           )}
@@ -387,7 +387,7 @@ export default function TimelinePage() {
             </div>
             <div className="min-w-0">
               <p className="text-lg sm:text-xl font-bold text-gray-900">{weekCalEvents.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">Cette semaine</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 truncate">Cette semaine</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 rounded-xl border border-gray-100 bg-white p-2.5 sm:p-3 shadow-sm">
@@ -396,7 +396,7 @@ export default function TimelinePage() {
             </div>
             <div className="min-w-0">
               <p className="text-lg sm:text-xl font-bold text-gray-900">{calendarEvents.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 truncate">Total</p>
+              <p className="text-[11px] sm:text-xs text-gray-500 truncate">Total</p>
             </div>
           </div>
         </motion.div>

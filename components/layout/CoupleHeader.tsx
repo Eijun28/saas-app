@@ -127,7 +127,7 @@ export function CoupleHeader() {
   return (
     <header className="h-16 sticky top-0 z-[100] w-full">
       <div className="h-full bg-white border-b border-gray-200 flex items-center">
-        <div className="w-full flex items-center justify-between px-4 sm:px-5 lg:px-6 h-full">
+        <div className="w-full flex items-center justify-between px-4 sm:px-5 md:px-6 lg:px-8 h-full">
 
           {/* Left: page title + quick actions */}
           <div className="flex items-center gap-2.5 min-w-0">
@@ -140,7 +140,7 @@ export function CoupleHeader() {
             {/* Page title — tablet only (md → lg) */}
             <div className="hidden md:flex lg:hidden items-center gap-1.5 pl-3 border-l border-gray-100 min-w-0">
               <pageInfo.icon className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-              <span className="text-[13px] font-semibold text-gray-700 truncate">{pageInfo.label}</span>
+              <span className="text-xs md:text-sm font-semibold text-gray-700 truncate">{pageInfo.label}</span>
             </div>
 
             {/* Quick actions — desktop dashboard only */}
@@ -179,7 +179,7 @@ export function CoupleHeader() {
                   )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 p-0 overflow-hidden z-[201]">
+              <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-72 p-0 overflow-hidden z-[201]">
                 <div className="px-3 py-2.5 bg-gradient-to-r from-[#F5F0F7] to-[#F5F0F7] border-b border-[#E8D4EF]/60">
                   <p className="text-[13px] font-semibold text-gray-900">Notifications</p>
                   {totalNotifs > 0 && (
@@ -259,7 +259,7 @@ export function CoupleHeader() {
                   <ChevronDown className="hidden sm:block h-3 w-3 text-gray-400 flex-shrink-0" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 p-1 z-[201]">
+              <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-52 p-1 z-[201]">
                 <div className="px-2.5 py-2">
                   <p className="text-[13px] font-semibold text-gray-900 truncate">{profile?.name}</p>
                   <p className="text-[11px] text-gray-500 truncate">{profile?.email}</p>

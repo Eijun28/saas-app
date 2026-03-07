@@ -1138,7 +1138,7 @@ export default function RecherchePage() {
                     }}
                   />
                 ) : (
-                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-20 md:pb-4' : ''}`}>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-24 md:pb-4' : ''}`}>
                   {displayedProviders.map((provider, index) => (
                 <motion.div
                   key={provider.id}
@@ -1180,10 +1180,10 @@ export default function RecherchePage() {
                       <img
                         src={provider.avatar_url}
                         alt={provider.nom_entreprise}
-                        className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full object-cover border-2 sm:border-3 md:border-4 border-white shadow-md"
+                        className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full object-cover border-2 md:border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-3 md:border-4 border-white shadow-md">
+                      <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 md:border-4 border-white shadow-md">
                         <span className="text-lg sm:text-xl md:text-2xl font-semibold text-white">
                           {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>

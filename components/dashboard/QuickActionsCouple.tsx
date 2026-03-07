@@ -78,7 +78,7 @@ export function QuickActionsCouple() {
             className="overflow-hidden"
           >
             <div className="p-4 sm:p-5">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                 {actions.map((action, index) => {
                   const Icon = action.icon
                   return (
@@ -90,7 +90,7 @@ export function QuickActionsCouple() {
                     >
                       <Link
                         href={action.href}
-                        className="group relative overflow-hidden bg-gray-50/80 hover:bg-[#823F91]/[0.04] rounded-xl p-4 sm:p-5 transition-all duration-200 flex flex-col h-full border border-gray-100 hover:border-[#823F91]/15"
+                        className="group relative overflow-hidden bg-gray-50/80 hover:bg-[#823F91]/[0.04] rounded-xl p-3 sm:p-5 transition-all duration-200 flex flex-col h-full border border-gray-100 hover:border-[#823F91]/15"
                       >
                         <div className="inline-flex p-2.5 bg-gradient-to-br from-[#823F91] to-[#9D5FA8] rounded-xl mb-3 w-fit shadow-sm shadow-[#823F91]/10 group-hover:shadow-md group-hover:shadow-[#823F91]/20 transition-all">
                           <Icon className="text-white" size={18} />
