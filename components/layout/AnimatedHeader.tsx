@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { RippleButton } from '@/components/ui/ripple-button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, X, LogOut } from 'lucide-react'
+import { Menu, X, LogOut, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
-import { useNavAuth } from '@/hooks/use-nav-auth'
 
 // Variants d'animation pour le logo
 const logoVariants = {
@@ -45,7 +46,8 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user, profile, dashboardUrl } = useNavAuth()
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const { scrollY } = useScroll()
   const router = useRouter()
   const pathname = usePathname()
@@ -67,8 +69,71 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     setLastScrollY(latest)
   })
 
+  // Récupération de l'utilisateur
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        // Vérifier d'abord dans la table couples
+        supabase
+          .from('couples')
+          .select('id, prenom, nom')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: couple }) => {
+            if (couple) {
+              setProfile({ ...couple, role: 'couple' })
+              return
+            }
+            // Sinon vérifier dans profiles (prestataires)
+            supabase
+              .from('profiles')
+              .select('role, prenom, nom')
+              .eq('id', user.id)
+              .single()
+              .then(({ data }) => setProfile(data))
+          })
+      }
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        // Vérifier d'abord dans la table couples
+        supabase
+          .from('couples')
+          .select('id, prenom, nom')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: couple }) => {
+            if (couple) {
+              setProfile({ ...couple, role: 'couple' })
+              return
+            }
+            // Sinon vérifier dans profiles (prestataires)
+            supabase
+              .from('profiles')
+              .select('role, prenom, nom')
+              .eq('id', session.user.id)
+              .single()
+              .then(({ data }) => setProfile(data))
+          })
+      } else {
+        setProfile(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   const handleSignOut = async () => {
     await signOut()
+    setUser(null)
+    setProfile(null)
     router.push('/')
     setIsMobileMenuOpen(false)
   }
@@ -206,7 +271,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
             {user && !isHomePage ? (
               <>
                 <Link
-                  href={dashboardUrl}
+                  href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                   className={cn(
                     'hidden md:inline-flex text-sm transition-colors duration-300',
                     isScrolled
@@ -214,7 +279,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       : 'text-white hover:text-white/80'
                   )}
                 >
-                  Mon espace
+                  {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                 </Link>
                 <Button
                   onClick={handleSignOut}
@@ -231,20 +296,30 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
               </>
             ) : (
               <>
-                <Button
-                  asChild
-                  size="sm"
-                  className="hidden md:inline-flex text-sm h-8 border-0 text-white bg-[#823F91] hover:bg-[#6D3478]"
-                >
-                  <Link href="/sign-in">Se connecter</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="sm"
-                  className="text-sm h-8 text-white border-0 bg-[#823F91] hover:bg-[#6D3478]"
-                >
-                  <Link href="/sign-up">Commencer</Link>
-                </Button>
+                <Link href="/sign-in">
+                  <RippleButton
+                    className={cn(
+                      'hidden md:inline-flex text-sm h-8 border-0 text-white',
+                      'bg-[#823F91] hover:bg-[#6D3478]'
+                    )}
+                    rippleColor="#ffffff"
+                  >
+                    Se connecter
+                  </RippleButton>
+                </Link>
+                <Link href="/sign-up">
+                  <RippleButton
+                    className={cn(
+                      'text-sm h-8 text-white border-0',
+                      isScrolled
+                        ? 'bg-[#823F91] hover:bg-[#6D3478]'
+                        : 'bg-[#823F91] hover:bg-[#6D3478]'
+                    )}
+                    rippleColor="#ffffff"
+                  >
+                    Commencer
+                  </RippleButton>
+                </Link>
               </>
             )}
 
@@ -325,11 +400,11 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                     {user && !isHomePage ? (
                       <>
                         <Link
-                          href={dashboardUrl}
+                          href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
                         >
-                          Mon espace
+                          {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
                         </Link>
                         <Button
                           onClick={handleSignOut}
@@ -342,22 +417,22 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       </>
                     ) : (
                       <>
-                        <Button
-                          asChild
-                          className="w-full justify-center border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
-                        >
-                          <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                          <RippleButton
+                            className="w-full justify-start border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                            rippleColor="#ffffff"
+                          >
                             Se connecter
-                          </Link>
-                        </Button>
-                        <Button
-                          asChild
-                          className="w-full justify-center bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
-                        >
-                          <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                          </RippleButton>
+                        </Link>
+                        <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                          <RippleButton
+                            className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                            rippleColor="#ffffff"
+                          >
                             Commencer
-                          </Link>
-                        </Button>
+                          </RippleButton>
+                        </Link>
                       </>
                     )}
                   </div>
@@ -370,3 +445,4 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     </motion.header>
   )
 }
+

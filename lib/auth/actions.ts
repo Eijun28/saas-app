@@ -510,7 +510,13 @@ export async function signUp(
           if (profileExists) {
             // Le profil existe malgré l'erreur RLS, l'inscription est réussie
             logger.critical('✅ Profil vérifié et existant malgré erreur RLS', { userId, role })
-            return { success: true, redirectTo: '/auth/confirm' }
+            const response = { success: true, redirectTo: '/auth/confirm' }
+            try {
+              revalidatePath('/', 'layout')
+            } catch (revalidateError: unknown) {
+              logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+            }
+            return response
           } else {
             // Le profil n'existe pas, essayer de le créer avec le client admin
             logger.warn('Profil non trouvé après erreur RLS, tentative de création avec client admin...', { userId, role })
@@ -571,17 +577,22 @@ export async function signUp(
     // Succès - retourner avec redirection
     logger.critical('🎉 INSCRIPTION RÉUSSIE', { email, role, userId: data.user.id })
     
+    // Préparer la réponse AVANT revalidatePath (pour éviter les problèmes de sérialisation)
     const response: { success: boolean; redirectTo: string; emailWarning?: string } = { success: true, redirectTo: '/auth/confirm' }
     if (confirmationEmailFailed) {
       response.emailWarning = "Votre compte a ete cree mais l'email de confirmation n'a pas pu etre envoye. Vous pouvez demander un renvoi depuis la page de connexion."
     }
     
     
-    // NOTE: Ne PAS appeler revalidatePath ici.
-    // Le router.replace côté client navigue vers /auth/confirm
-    // et la page sera fetchée fraîchement. revalidatePath cause
-    // des re-rendus inutiles de la page sign-up.
-
+    // Revalidate après avoir préparé la réponse
+    try {
+      revalidatePath('/', 'layout')
+    } catch (revalidateError: unknown) {
+      // Ne pas bloquer si revalidatePath échoue
+      logger.warn('Erreur revalidatePath (non bloquant):', revalidateError)
+    }
+    
+    
     return response
 }
 
@@ -598,33 +609,26 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Utiliser le MÊME client Supabase (celui qui a fait le signIn)
-    // pour vérifier le rôle — un nouveau client ne verrait pas les cookies
-    // écrits par signInWithPassword dans Next.js 16
-    const [{ data: couple }, { data: profile }] = await Promise.all([
-      supabase.from('couples').select('id').eq('user_id', data.user.id).maybeSingle(),
-      supabase.from('profiles').select('id, onboarding_step').eq('id', data.user.id).maybeSingle(),
-    ])
-
-    let role: 'couple' | 'prestataire' | null = null
-    if (couple) role = 'couple'
-    else if (profile) role = 'prestataire'
-
-    // NOTE: Ne PAS appeler revalidatePath ici.
-    // Le router.push côté client re-fetch la page de destination.
-    // revalidatePath cause un re-rendu de /sign-in qui déclenche
-    // le middleware (redirect vers dashboard) en parallèle de router.push,
-    // créant une race condition → chargement infini.
-
-    if (role) {
+    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
+    const roleCheck = await getUserRoleServer(data.user.id)
+    
+    revalidatePath('/', 'layout')
+    
+    if (roleCheck.role) {
       // Pour les prestataires, vérifier si l'onboarding est terminé
-      if (role === 'prestataire' && profile) {
-        if ((profile.onboarding_step ?? 0) < 5) {
+      if (roleCheck.role === 'prestataire') {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_step')
+          .eq('id', data.user.id)
+          .maybeSingle()
+
+        if (!profile || (profile.onboarding_step ?? 0) < 5) {
           return { success: true, redirectTo: '/prestataire/onboarding' }
         }
       }
 
-      const dashboardUrl = getDashboardUrl(role)
+      const dashboardUrl = getDashboardUrl(roleCheck.role)
       return { success: true, redirectTo: dashboardUrl }
     }
 
