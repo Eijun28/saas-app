@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronRight, ChevronLeft, Briefcase, Building2, Globe, MapPin, Euro, Sparkles, Search, X } from 'lucide-react'
+import { Check, ChevronRight, ChevronLeft, Briefcase, Building2, Globe, MapPin, Euro, Sparkles, Search, X, CalendarCheck } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,9 +18,24 @@ import { CultureSelector } from '@/components/provider/CultureSelector'
 const BASE_STEPS = [
   { id: 'prestation', label: 'Prestation', icon: Briefcase, description: 'Votre métier et ville' },
   { id: 'cultures', label: 'Cultures', icon: Globe, description: 'Cultures de mariage' },
+  { id: 'evenements', label: 'Événements', icon: CalendarCheck, description: 'Types d\'événements couverts' },
   { id: 'zones', label: 'Zones', icon: MapPin, description: 'Zones d\'intervention' },
   { id: 'budget', label: 'Budget', icon: Euro, description: 'Vos tarifs' },
 ]
+
+interface CulturalEventType {
+  id: string
+  slug: string
+  label: string
+  culture_category_id: string
+}
+
+const EVENT_CATEGORY_LABELS: Record<string, string> = {
+  'maghrebin': 'Maghrébin', 'indien': 'Indien', 'pakistanais': 'Pakistanais',
+  'turc': 'Turc', 'africain': 'Africain', 'antillais': 'Antillais',
+  'asiatique': 'Asiatique', 'moyen-orient': 'Moyen-Orient', 'europeen': 'Européen',
+  'amerique-latine': 'Amérique latine', 'universel': 'Universel',
+}
 
 const ENTREPRISE_STEP = { id: 'entreprise', label: 'Entreprise', icon: Building2, description: 'Nom de votre société' }
 
@@ -45,10 +60,14 @@ export default function OnboardingPage() {
   const [pickerCategory, setPickerCategory] = useState<ServiceCategory | null>(null)
   const [pickerSearch, setPickerSearch] = useState('')
 
-  // Step 3: Zones
+  // Step Evenements
+  const [allEventTypes, setAllEventTypes] = useState<CulturalEventType[]>([])
+  const [selectedEventTypeIds, setSelectedEventTypeIds] = useState<Set<string>>(new Set())
+
+  // Step Zones
   const [selectedZones, setSelectedZones] = useState<string[]>([])
 
-  // Step 4: Budget
+  // Step Budget
   const [budgetMin, setBudgetMin] = useState('')
   const [budgetMax, setBudgetMax] = useState('')
 
@@ -64,12 +83,12 @@ export default function OnboardingPage() {
       // Charger les données existantes et l'étape en cours
       const { data: profile } = await supabase
         .from('profiles')
-        .select('service_type, ville_principale, budget_min, budget_max, onboarding_step, nom_entreprise')
+        .select('service_type, ville_principale, budget_min, budget_max, onboarding_step, onboarding_completed, nom_entreprise')
         .eq('id', user.id)
         .maybeSingle()
 
       if (profile) {
-        if (profile.onboarding_step >= 5) {
+        if (profile.onboarding_completed) {
           router.push('/prestataire/dashboard')
           return
         }
@@ -83,7 +102,7 @@ export default function OnboardingPage() {
         if (profile.budget_min) setBudgetMin(String(profile.budget_min))
         if (profile.budget_max) setBudgetMax(String(profile.budget_max))
         // Reprendre là où on s'est arrêté
-        if (profile.onboarding_step > 0 && profile.onboarding_step < 5) {
+        if (profile.onboarding_step > 0 && profile.onboarding_step < 6) {
           // If company name is missing, start at step 1 (entreprise step)
           // Otherwise use stored step (offset by 1 since there's no entreprise step)
           if (missingCompanyName) {
@@ -94,14 +113,21 @@ export default function OnboardingPage() {
         }
       }
 
-      // Charger les zones existantes
-      const { data: zones } = await supabase
-        .from('provider_zones')
-        .select('zone_id')
-        .eq('profile_id', user.id)
+      // Charger les zones et event types en parallèle
+      const [zonesResult, eventTypesRefResult, selectedEventTypesResult] = await Promise.all([
+        supabase.from('provider_zones').select('zone_id').eq('profile_id', user.id),
+        supabase.from('cultural_event_types').select('id, slug, label, culture_category_id').eq('is_active', true).order('culture_category_id').order('display_order'),
+        supabase.from('provider_event_types').select('event_type_id').eq('profile_id', user.id),
+      ])
 
-      if (zones && zones.length > 0) {
-        setSelectedZones(zones.map(z => z.zone_id))
+      if (zonesResult.data && zonesResult.data.length > 0) {
+        setSelectedZones(zonesResult.data.map(z => z.zone_id))
+      }
+      if (eventTypesRefResult.data) {
+        setAllEventTypes(eventTypesRefResult.data)
+      }
+      if (selectedEventTypesResult.data && selectedEventTypesResult.data.length > 0) {
+        setSelectedEventTypeIds(new Set(selectedEventTypesResult.data.map(r => r.event_type_id)))
       }
 
       setIsLoading(false)
@@ -164,6 +190,25 @@ export default function OnboardingPage() {
         if (error) throw error
       }
 
+      if (currentStepId === 'evenements') {
+        // Sauvegarder les event types sélectionnés
+        await supabase.from('provider_event_types').delete().eq('profile_id', userId)
+        if (selectedEventTypeIds.size > 0) {
+          const inserts = Array.from(selectedEventTypeIds).map(event_type_id => ({
+            profile_id: userId,
+            event_type_id,
+          }))
+          const { error: etError } = await supabase.from('provider_event_types').insert(inserts)
+          if (etError) throw etError
+        }
+
+        const { error } = await supabase
+          .from('profiles')
+          .update({ onboarding_step: 4 })
+          .eq('id', userId)
+        if (error) throw error
+      }
+
       if (currentStepId === 'zones') {
         if (selectedZones.length === 0) {
           toast.error('Sélectionnez au moins une zone')
@@ -178,7 +223,7 @@ export default function OnboardingPage() {
 
         const { error } = await supabase
           .from('profiles')
-          .update({ onboarding_step: 4 })
+          .update({ onboarding_step: 5 })
           .eq('id', userId)
         if (error) throw error
       }
@@ -198,7 +243,7 @@ export default function OnboardingPage() {
           .update({
             budget_min: min,
             budget_max: max,
-            onboarding_step: 5,
+            onboarding_step: 6,
             onboarding_completed: true,
             onboarding_completed_at: new Date().toISOString(),
           })
@@ -252,6 +297,7 @@ export default function OnboardingPage() {
       case 'entreprise': return nomEntreprise.trim().length >= 2
       case 'prestation': return !!serviceType && !!ville.trim()
       case 'cultures': return true // cultures are optional but encouraged
+      case 'evenements': return true // event types are optional
       case 'zones': return selectedZones.length > 0
       case 'budget': return true // budget is optional
       default: return false
@@ -550,6 +596,72 @@ export default function OnboardingPage() {
                     </div>
 
                     <CultureSelector userId={userId} compact />
+                  </div>
+                )}
+
+                {/* Step Événements */}
+                {currentStepId === 'evenements' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900 mb-1">Quels types d'événements couvrez-vous ?</h2>
+                      <p className="text-sm text-gray-500">
+                        Sélectionnez les événements culturels et religieux que vous pouvez couvrir (Henné, Sangeet, Nikah, etc.).
+                        Cela aide les couples à vous trouver pour des événements spécifiques.
+                        <span className="text-gray-400"> (optionnel)</span>
+                      </p>
+                    </div>
+
+                    <div className="text-xs text-gray-500">
+                      {selectedEventTypeIds.size} type{selectedEventTypeIds.size > 1 ? 's' : ''} sélectionné{selectedEventTypeIds.size > 1 ? 's' : ''}
+                    </div>
+
+                    <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+                      {(() => {
+                        const grouped = allEventTypes.reduce<Record<string, CulturalEventType[]>>((acc, et) => {
+                          const key = et.culture_category_id
+                          if (!acc[key]) acc[key] = []
+                          acc[key].push(et)
+                          return acc
+                        }, {})
+                        return Object.entries(grouped).map(([catId, types]) => (
+                          <div key={catId}>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                              {EVENT_CATEGORY_LABELS[catId] || catId}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {types.map(et => {
+                                const isSelected = selectedEventTypeIds.has(et.id)
+                                return (
+                                  <button
+                                    key={et.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedEventTypeIds(prev => {
+                                        const next = new Set(prev)
+                                        if (next.has(et.id)) next.delete(et.id)
+                                        else next.add(et.id)
+                                        return next
+                                      })
+                                    }}
+                                    className={cn(
+                                      'px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-150',
+                                      isSelected
+                                        ? 'bg-[#823F91]/10 border-[#823F91]/30 text-[#5C2B66]'
+                                        : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-100'
+                                    )}
+                                  >
+                                    {et.label}
+                                    {isSelected && (
+                                      <X className="inline-block ml-1.5 h-3 w-3" />
+                                    )}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))
+                      })()}
+                    </div>
                   </div>
                 )}
 

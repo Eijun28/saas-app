@@ -44,50 +44,27 @@ export interface ExtendedSearchCriteria extends SearchCriteria {
 }
 
 /**
- * Correspondance entre types d'événements (couple) et tags prestataires
- * Permet de scorer les prestataires qui couvrent les événements du couple
- */
-const EVENT_TYPE_TO_PROVIDER_TAGS: Record<string, string[]> = {
-  'henne': ['henna', 'henna_artiste', 'henna_service', 'henne', 'henna_party'],
-  'zaffa': ['zaffa', 'zaffa_service'],
-  'mariage_religieux': ['nikah', 'mariage_religieux', 'religieux', 'imam', 'catholique', 'synagogue', 'mandap'],
-  'ceremonie_laique': ['laique', 'ceremonie_laique', 'officiant_laique'],
-  'mariage_civil': ['civil', 'mairie'],
-  'nikah': ['nikah', 'mariage_religieux', 'islamique'],
-  'sangeet': ['sangeet', 'indien', 'bollywood'],
-  'mehndi': ['mehndi', 'henna', 'indien'],
-  'kina_gecesi': ['kina', 'turc', 'kina_gecesi'],
-  'dugun': ['dugun', 'turc'],
-  'baraat': ['baraat', 'indien', 'procession'],
-  'mandap': ['mandap', 'indien', 'hindou'],
-  'dot': ['dot', 'africain', 'bride_price'],
-  'ceremonie_traditionnelle': ['africain', 'traditionnel', 'ceremonie_traditionnelle'],
-  'reception': ['reception', 'soiree', 'diner'],
-  'cocktail': ['cocktail', 'apero'],
-  'evjf_evg': ['evjf', 'evg', 'enterrement'],
-};
-
-/**
  * Calcule le score de couverture des événements prévus par le couple (bonus 0-8 points)
- * Récompense les prestataires dont les tags couvrent les types d'événements du couple
+ * Compare directement les slugs cultural_event_types du couple avec ceux du prestataire
+ * (chargés depuis la table provider_event_types → cultural_event_types.slug)
  */
 export function calculateEventTypesScore(
   coupleEventTypes: string[] | undefined,
-  providerTags: string[] | undefined
+  providerEventSlugs: string[] | undefined
 ): number {
   if (!coupleEventTypes || coupleEventTypes.length === 0) return 0;
-  if (!providerTags || providerTags.length === 0) return 0;
+  if (!providerEventSlugs || providerEventSlugs.length === 0) return 0;
 
-  const normalizedProviderTags = providerTags.map(t => t.toLowerCase().trim());
+  const normalizedProviderSlugs = providerEventSlugs.map(s => s.toLowerCase().trim());
   let coveredEvents = 0;
 
   for (const eventType of coupleEventTypes) {
-    const relevantTags = EVENT_TYPE_TO_PROVIDER_TAGS[eventType.toLowerCase()] || [];
-    const isCovered = relevantTags.some(tag => normalizedProviderTags.includes(tag));
-    if (isCovered) coveredEvents++;
+    const normalized = eventType.toLowerCase().trim();
+    if (normalizedProviderSlugs.includes(normalized)) {
+      coveredEvents++;
+    }
   }
 
-  if (coupleEventTypes.length === 0) return 0;
   const coverageRatio = coveredEvents / coupleEventTypes.length;
 
   if (coverageRatio >= 1) return 8;    // Couvre tous les événements
@@ -623,6 +600,7 @@ export interface ProviderWithFairness {
   ville_principale?: string;
   tags?: string[];
   specialty_tags?: string[];
+  event_type_slugs?: string[];
   languages?: string[];
   service_type?: string;
   fairness_data?: FairnessData;
@@ -756,9 +734,10 @@ export function calculateTotalScore(
   );
 
   // Calculate event types coverage bonus (up to +8 points)
+  // Uses provider_event_types slugs (from cultural_event_types table)
   const eventTypesScore = calculateEventTypesScore(
     criteria.event_types,
-    provider.tags
+    provider.event_type_slugs
   );
 
   // Calculate CTR bonus/malus (-3 to +5 points)
