@@ -138,7 +138,7 @@ export default function SignUpPage() {
         if ('emailWarning' in result && result.emailWarning) {
           redirectUrl += `?emailWarning=${encodeURIComponent(String(result.emailWarning))}`
         }
-        router.push(redirectUrl)
+        router.replace(redirectUrl)
       } else {
         setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
