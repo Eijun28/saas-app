@@ -17,7 +17,6 @@ import {
   Copy,
   Check,
   Zap,
-  PartyPopper,
 } from 'lucide-react'
 import { StatCard } from '@/components/prestataire/dashboard/StatCard'
 import { EmptyState } from '@/components/prestataire/shared/EmptyState'
@@ -67,15 +66,6 @@ export default function DashboardPrestatairePage() {
   const [referralCount, setReferralCount] = useState(0)
   const [referralCopied, setReferralCopied] = useState(false)
   const [urgentDemandes, setUrgentDemandes] = useState(0)
-  const [assignedEvents, setAssignedEvents] = useState<Array<{
-    id: string
-    event_title: string
-    event_date: string
-    event_category: string | null
-    couple_name: string
-    status: string
-  }>>([])
-  const [eventsLoading, setEventsLoading] = useState(true)
 
   // Verifier le succes du paiement Stripe
   useEffect(() => {
@@ -172,10 +162,7 @@ export default function DashboardPrestatairePage() {
         }
       }
 
-      // Ne pas réafficher le skeleton si on fait un refresh silencieux (skipCache=true)
-      if (!skipCache) {
-        setUiState({ loading: 'loading', error: null })
-      }
+      setUiState({ loading: 'loading', error: null })
       try {
         const supabase = createClient()
         const now = new Date()
@@ -318,56 +305,6 @@ export default function DashboardPrestatairePage() {
       }
     }
     fetchRecentActivities()
-  }, [user])
-
-  // Charger evenements assignes via event_providers
-  useEffect(() => {
-    if (!user) return
-    const fetchAssignedEvents = async () => {
-      setEventsLoading(true)
-      try {
-        const supabase = createClient()
-        const today = new Date().toISOString().split('T')[0]
-        const { data } = await supabase
-          .from('event_providers')
-          .select('id, status, event_id')
-          .eq('provider_id', user.id)
-
-        if (!data || data.length === 0) { setAssignedEvents([]); return }
-
-        const eventIds = data.map((ep: { event_id: string }) => ep.event_id)
-        const { data: events } = await supabase
-          .from('timeline_events')
-          .select('id, title, event_date, category, couple_id')
-          .in('id', eventIds)
-          .gte('event_date', today)
-          .order('event_date', { ascending: true })
-          .limit(5)
-
-        if (!events || events.length === 0) { setAssignedEvents([]); return }
-
-        const coupleIds = [...new Set(events.map((e: { couple_id: string }) => e.couple_id).filter(Boolean))]
-        const couplesMap = coupleIds.length > 0
-          ? await getCouplesByUserIds(coupleIds as string[], ['user_id', 'partner_1_name', 'partner_2_name'])
-          : new Map()
-
-        const statusMap = new Map(data.map((ep: { event_id: string; status: string }) => [ep.event_id, ep.status]))
-
-        setAssignedEvents(events.map((e: { id: string; title: string; event_date: string; category: string | null; couple_id: string }) => ({
-          id: e.id,
-          event_title: e.title,
-          event_date: e.event_date,
-          event_category: e.category,
-          couple_name: formatCoupleName(couplesMap.get(e.couple_id)),
-          status: statusMap.get(e.id) || 'pending',
-        })))
-      } catch (error) {
-        console.error('Erreur chargement evenements assignes:', error)
-      } finally {
-        setEventsLoading(false)
-      }
-    }
-    fetchAssignedEvents()
   }, [user])
 
   if (uiState.loading === 'loading') return (
@@ -631,47 +568,6 @@ export default function DashboardPrestatairePage() {
             )}
           </div>
         </motion.div>
-
-        {/* Evenements assignes */}
-        {!eventsLoading && assignedEvents.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.55 }}
-            className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_0_rgb(0_0_0/0.04)] overflow-hidden">
-            <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-gray-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                  <PartyPopper className="h-4.5 w-4.5 text-[#823F91]" />
-                  Evenements a venir
-                </h2>
-                <p className="text-xs sm:text-[13px] text-gray-400 mt-0.5">Evenements auxquels vous etes assigne</p>
-              </div>
-            </div>
-            <div className="p-3 sm:p-5 space-y-2">
-              {assignedEvents.map((ev) => (
-                <div
-                  key={ev.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50/80 hover:bg-[#F5F0F7]/50 transition-colors cursor-pointer"
-                  onClick={() => router.push('/prestataire/agenda')}
-                >
-                  <div className="p-2 bg-[#823F91]/10 rounded-lg flex-shrink-0">
-                    <Calendar className="h-4 w-4 text-[#823F91]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{ev.event_title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {ev.couple_name} — {new Date(ev.event_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-                    </p>
-                  </div>
-                  <span className={cn(
-                    'text-[11px] font-medium px-2 py-0.5 rounded-full flex-shrink-0',
-                    ev.status === 'confirmed' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                  )}>
-                    {ev.status === 'confirmed' ? 'Confirme' : 'En attente'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
 
         {/* Grille 2 colonnes: Agenda et Demandes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

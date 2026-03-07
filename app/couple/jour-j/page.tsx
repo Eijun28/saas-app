@@ -231,7 +231,7 @@ export default function JourJPage() {
               value={filterCategory}
               onValueChange={v => setFilterCategory(v as ProgramCategory | 'all')}
             >
-              <SelectTrigger className="h-9 w-full sm:w-52 rounded-xl">
+              <SelectTrigger className="h-9 w-52 rounded-xl">
                 <SelectValue placeholder="Toutes les catégories" />
               </SelectTrigger>
               <SelectContent>

@@ -181,7 +181,7 @@ export function ChatMessages({
     // Grille 2x2 pour plusieurs médias
     if (media.length <= 4) {
       return (
-        <div className={`grid gap-1 mt-2 ${media.length === 1 ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3'}`}>
+        <div className={`grid gap-1 mt-2 ${media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {media.slice(0, 4).map((item, idx) => (
             <div key={idx} className="relative aspect-square">
               {item.type === 'image' ? (
@@ -274,7 +274,7 @@ export function ChatMessages({
                     }`}
                   >
                     <div
-                      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[80%] md:max-w-[70%]`}
+                      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-[90%] xs:max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]`}
                     >
                       <div className="relative group">
                         <div
@@ -357,7 +357,7 @@ export function ChatMessages({
         ))}
 
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] px-3 sm:px-4 pt-8 sm:pt-12 md:pt-16">
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-180px)] sm:min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-250px)] px-3 sm:px-4 pt-8 sm:pt-12 md:pt-16">
             <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center border border-gray-200">
               <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
                 <svg

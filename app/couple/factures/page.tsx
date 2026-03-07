@@ -136,7 +136,7 @@ export default function CoupleFacturesPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+          className="grid grid-cols-2 gap-3"
         >
           <Card>
             <CardContent className="p-4">
@@ -202,7 +202,7 @@ export default function CoupleFacturesPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
                       {/* Infos facture */}
-                      <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-sm">{facture.facture_number}</span>
                           <Badge className={statusCfg.className}>

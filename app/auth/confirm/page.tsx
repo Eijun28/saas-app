@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense } from 'react'
 import Particles from '@/components/Particles'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -30,11 +30,8 @@ function ConfirmEmailContent() {
 }
 
 export default function ConfirmEmail() {
-  const [particleCount, setParticleCount] = useState(200)
-
-  useEffect(() => {
-    if (window.innerWidth < 768) setParticleCount(50)
-  }, [])
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 50 : 200
 
   return (
     <>

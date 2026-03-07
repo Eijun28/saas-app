@@ -365,7 +365,7 @@ export function BudgetCategoriesSection({
                           value={Math.min(percentage, 100)}
                           className={isOverBudget ? 'bg-red-200' : ''}
                         />
-                        <div className="flex flex-wrap justify-between text-xs text-[#6B7280]">
+                        <div className="flex justify-between text-xs text-[#6B7280]">
                           <span>{percentage.toFixed(0)}% utilisé</span>
                           {isOverBudget && (
                             <span className="text-red-600 font-medium">
@@ -582,7 +582,7 @@ export function BudgetCategoriesSection({
 
       {/* Modal Voir détails */}
       <Dialog open={!!detailCategoryId} onOpenChange={(open) => !open && setDetailCategoryId(null)}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Détails — {detailCategoryName}</DialogTitle>
             <DialogDescription>

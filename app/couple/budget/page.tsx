@@ -327,7 +327,7 @@ export default function BudgetPage() {
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
           >
             <p className="text-xs font-medium text-gray-500 mb-1">Budget total</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900">
               {budgetAverage > 0
                 ? `${budgetAverage.toLocaleString('fr-FR')} €`
                 : 'Non défini'}
@@ -346,7 +346,7 @@ export default function BudgetPage() {
             className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
           >
             <p className="text-xs font-medium text-gray-500 mb-1">Total dépensé</p>
-            <p className="text-xl sm:text-2xl font-bold text-[#823F91]">
+            <p className="text-2xl font-bold text-[#823F91]">
               {totalSpent === 0 ? '0' : totalSpent.toLocaleString('fr-FR')} €
             </p>
             {budgetAverage > 0 && (
@@ -370,7 +370,7 @@ export default function BudgetPage() {
                   : <TrendingDown className="h-4 w-4 text-red-500" />
               )}
             </div>
-            <p className={`text-xl sm:text-2xl font-bold ${remaining >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+            <p className={`text-2xl font-bold ${remaining >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
               {budgetAverage > 0 ? `${remaining.toLocaleString('fr-FR')} €` : '-'}
             </p>
             {remaining < 0 && (
@@ -418,7 +418,7 @@ export default function BudgetPage() {
             </div>
 
             <div className="p-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
                 {/* Donut chart */}
                 <div className="h-[240px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -611,7 +611,7 @@ export default function BudgetPage() {
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-[400px] max-h-[85vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-lg">
                 {editingItem ? 'Modifier la dépense' : 'Ajouter une dépense'}

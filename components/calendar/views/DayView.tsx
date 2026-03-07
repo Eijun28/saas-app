@@ -76,7 +76,7 @@ export function DayView({
 
       {/* Grille horaire */}
       <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-[60px_1fr] sm:grid-cols-[80px_1fr] relative max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 relative max-w-4xl mx-auto">
           {/* Colonne des heures */}
           <div className="border-r sticky left-0 bg-white z-10">
             {hours.map(hour => (

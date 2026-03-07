@@ -387,11 +387,7 @@ export function TopBar({ title, breadcrumbs }: TopBarProps) {
                       {notifications.map((notif) => (
                         <div
                           key={notif.id}
-                          className="flex items-start gap-3 px-4 py-3 hover:bg-[#E8D4EF]/50 transition-colors border-b border-gray-100 last:border-b-0 cursor-pointer"
-                          onClick={() => {
-                            router.push(notif.href)
-                            setIsNotificationsOpen(false)
-                          }}
+                          className="flex items-start gap-3 px-4 py-3 hover:bg-[#E8D4EF]/50 transition-colors border-b border-gray-100 last:border-b-0 cursor-default"
                         >
                           <div className={`mt-1 ${
                             notif.type === 'message' ? 'text-blue-500' :

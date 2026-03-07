@@ -81,7 +81,7 @@ function MoreSheet({ sections, accentColor, onClose }: MoreSheetProps) {
 
       {/* Sheet */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl flex flex-col max-w-lg mx-auto"
+        className="fixed bottom-0 left-0 right-0 z-[301] bg-white rounded-t-3xl shadow-2xl flex flex-col"
         style={{
           maxHeight: '92dvh',
           animation: 'slideInFromBottom 0.28s cubic-bezier(0.32, 0.72, 0, 1)',

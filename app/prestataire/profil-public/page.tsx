@@ -14,7 +14,6 @@ import {
   ClipboardList,
   Package,
   Languages,
-  PartyPopper,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -38,7 +37,6 @@ import { BoutiqueEditor } from '@/components/provider/BoutiqueEditor'
 import { useProviderPricing } from '@/hooks/use-provider-pricing'
 import { ServiceDetailsEditor } from '@/components/provider/ServiceDetailsEditor'
 import { LanguagesCapacityEditor } from '@/components/provider/LanguagesCapacityEditor'
-import { EventTypeSelector } from '@/components/provider/EventTypeSelector'
 import { CULTURES } from '@/lib/constants/cultures'
 import { getServiceTypeLabel } from '@/lib/constants/service-types'
 import { hasServiceFields } from '@/lib/constants/service-fields'
@@ -273,7 +271,6 @@ export default function ProfilPublicPage() {
     { id: 'boutique', label: 'Lieu physique', icon: Store },
     ...(hasMetier ? [{ id: 'metier', label: 'Détails métier', icon: ClipboardList }] : []),
     { id: 'langues', label: 'Langues & Capacité', icon: Languages },
-    { id: 'evenements', label: 'Types d\'événements', icon: PartyPopper },
     { id: 'cultures', label: 'Cultures', icon: Globe },
     { id: 'zones', label: "Zones d'intervention", icon: MapPin },
     { id: 'tags', label: 'Tags', icon: Tag },
@@ -495,12 +492,6 @@ export default function ProfilPublicPage() {
                 initialCapacityMax={profile?.guest_capacity_max}
                 onSave={() => loadAllData(user.id)}
               />
-            </Section>
-          )}
-
-          {activeSection === 'evenements' && (
-            <Section icon={PartyPopper} title="Types d'événements">
-              <EventTypeSelector userId={user.id} onSave={() => loadAllData(user.id)} />
             </Section>
           )}
 

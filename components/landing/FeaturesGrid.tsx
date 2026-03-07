@@ -76,14 +76,13 @@ const SkeletonMatching = () => {
                       />
                     )}
                   </div>
-                  <div
-                    className={`rounded-2xl p-3 ${
-                      msg.from === "couple"
-                        ? "bg-gray-100 text-gray-900"
-                        : "text-white"
-                    }`}
-                    style={msg.from === "ai" ? { background: 'linear-gradient(to right, #c081e3, #823F91)' } : {}}
-                  >
+                  <div className={`rounded-2xl p-3 ${
+                    msg.from === "couple" 
+                      ? "bg-gray-100 text-gray-900" 
+                      : "text-white"
+                  }
+                  style={msg.from === "ai" ? { background: 'linear-gradient(to right, #c081e3, #823F91)' } : {}}
+                  }`}>
                     <p className="text-xs font-medium leading-relaxed">{msg.text}</p>
                   </div>
                 </div>

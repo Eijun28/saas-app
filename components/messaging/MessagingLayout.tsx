@@ -28,7 +28,7 @@ export function MessagingLayout({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      setIsMobile(window.innerWidth < 1024)
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -69,7 +69,7 @@ export function MessagingLayout({
         {/* Carte gauche — liste des conversations (largeur mobile fixe) */}
         <div className={`
           bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden flex-shrink-0
-          ${hasConversationSelected ? 'w-[280px] lg:w-[340px] xl:w-[375px]' : 'w-full max-w-[375px]'}
+          ${hasConversationSelected ? 'w-[340px] xl:w-[375px]' : 'w-full max-w-[375px]'}
           transition-all duration-300
         `}>
           {chatListComponent}

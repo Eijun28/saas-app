@@ -86,11 +86,11 @@ export async function GET(request: Request) {
           const supabaseCheck = await createClient()
           const { data: profile } = await supabaseCheck
             .from('profiles')
-            .select('onboarding_completed')
+            .select('onboarding_step')
             .eq('id', user.id)
             .maybeSingle()
 
-          if (!profile || !profile.onboarding_completed) {
+          if (!profile || (profile.onboarding_step ?? 0) < 5) {
             return NextResponse.redirect(`${requestUrl.origin}/prestataire/onboarding`)
           }
         }

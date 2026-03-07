@@ -34,9 +34,7 @@ interface RequestWithCouple {
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed'
   initial_message: string
   created_at: string
-  event_id?: string | null
   couple?: { partner_1_name?: string; partner_2_name?: string; wedding_date?: string; budget_min?: number; budget_max?: number; city?: string } | null
-  event?: { title?: string; category?: string; event_date?: string } | null
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -86,9 +84,6 @@ export default function DemandesRecuesPage() {
           : 'annulee',
         message: req.initial_message,
         created_at: req.created_at,
-        event_name: req.event?.title,
-        event_category: req.event?.category ?? undefined,
-        event_date: req.event?.event_date,
       }
 
       if (d.statut === 'nouvelle') nouvelles.push(d)
@@ -108,7 +103,7 @@ export default function DemandesRecuesPage() {
 
     const { data: requestsData, error } = await supabase
       .from('requests')
-      .select('id, couple_id, provider_id, status, initial_message, created_at, event_id')
+      .select('id, couple_id, provider_id, status, initial_message, created_at')
       .eq('provider_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -129,26 +124,13 @@ export default function DemandesRecuesPage() {
     const coupleIds = Array.from(new Set<string>(requestsData.map((r: any) => r.couple_id as string)))
     const couplesMap = await getCouplesByUserIds(coupleIds, ['user_id', 'partner_1_name', 'partner_2_name', 'wedding_date', 'budget_min', 'budget_max', 'wedding_location'])
 
-    // Events linked to requests
-    const eventIds = requestsData.map((r: any) => r.event_id).filter(Boolean) as string[]
-    const eventsMap = new Map<string, { title: string; category: string | null; event_date: string }>()
-    if (eventIds.length > 0) {
-      const { data: eventsData } = await supabase
-        .from('timeline_events')
-        .select('id, title, category, event_date')
-        .in('id', eventIds)
-      eventsData?.forEach((e: any) => eventsMap.set(e.id, { title: e.title, category: e.category, event_date: e.event_date }))
-    }
-
     const data: RequestWithCouple[] = requestsData.map((r: any) => {
       const c = couplesMap.get(r.couple_id)
-      const ev = r.event_id ? eventsMap.get(r.event_id) : null
       return {
         id: r.id, couple_id: r.couple_id, provider_id: r.provider_id,
         status: r.status, initial_message: r.initial_message || '',
-        created_at: r.created_at, event_id: r.event_id || null,
+        created_at: r.created_at,
         couple: c ? { partner_1_name: c.partner_1_name ?? undefined, partner_2_name: c.partner_2_name ?? undefined, wedding_date: c.wedding_date ?? undefined, budget_min: c.budget_min ?? undefined, budget_max: c.budget_max ?? undefined, city: c.wedding_location ?? undefined } : null,
-        event: ev ? { title: ev.title, category: ev.category ?? undefined, event_date: ev.event_date } : null,
       }
     })
 

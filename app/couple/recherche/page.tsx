@@ -116,10 +116,8 @@ export default function RecherchePage() {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [availableTags, setAvailableTags] = useState<ProviderTag[]>([])
-  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([])
-  const [availableEventTypes, setAvailableEventTypes] = useState<Array<{ id: string; slug: string; label: string; culture_category_id: string }>>([])
   const [showFiltersDropdown, setShowFiltersDropdown] = useState(false)
-  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | 'tags' | 'evenements' | null>(null)
+  const [openSubDropdown, setOpenSubDropdown] = useState<'metier' | 'culture' | 'pays' | 'tags' | null>(null)
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
@@ -150,7 +148,6 @@ export default function RecherchePage() {
     culture: string | null
     country: string | null
     tags: string[]
-    eventTypes?: string[]
     minRating: number
     budgetMax: number | null
     sortBy: string
@@ -177,7 +174,6 @@ export default function RecherchePage() {
       culture: selectedCulture,
       country: selectedCountry,
       tags: selectedTags,
-      eventTypes: selectedEventTypes,
       minRating,
       budgetMax,
       sortBy,
@@ -187,14 +183,13 @@ export default function RecherchePage() {
     localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(updated))
     setPresetName('')
     setShowSavePreset(false)
-  }, [presetName, selectedCategory, selectedCulture, selectedCountry, selectedTags, selectedEventTypes, minRating, budgetMax, sortBy, savedPresets])
+  }, [presetName, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy, savedPresets])
 
   const loadPreset = useCallback((preset: FilterPreset) => {
     setSelectedCategory(preset.category)
     setSelectedCulture(preset.culture)
     setSelectedCountry(preset.country)
     setSelectedTags(preset.tags)
-    setSelectedEventTypes(preset.eventTypes || [])
     setMinRating(preset.minRating)
     setBudgetMax(preset.budgetMax)
     setSortBy(preset.sortBy as typeof sortBy)
@@ -210,16 +205,14 @@ export default function RecherchePage() {
   useEffect(() => {
     async function loadInitialData() {
       const supabase = createClient()
-      const [tagsResult, favsResult, coupleResult, eventTypesResult] = await Promise.all([
+      const [tagsResult, favsResult, coupleResult] = await Promise.all([
         supabase.from('tags').select('id, label, category').order('usage_count', { ascending: false }).limit(50),
         user ? supabase.from('favoris').select('prestataire_id').eq('couple_id', user.id) : Promise.resolve({ data: null }),
         user ? supabase.from('couples').select('wedding_date').eq('user_id', user.id).single() : Promise.resolve({ data: null }),
-        supabase.from('cultural_event_types').select('id, slug, label, culture_category_id').eq('is_active', true).order('culture_category_id').order('display_order'),
       ])
       if (tagsResult.data) setAvailableTags(tagsResult.data)
       if (favsResult.data) setFavoritedIds(new Set(favsResult.data.map((f: any) => f.prestataire_id)))
       if (coupleResult.data?.wedding_date) setWeddingDate(coupleResult.data.wedding_date)
-      if (eventTypesResult.data) setAvailableEventTypes(eventTypesResult.data)
     }
     loadInitialData()
   }, [user])
@@ -231,7 +224,7 @@ export default function RecherchePage() {
       setHasMore(true)
       searchProviders(0)
     }
-  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags, selectedEventTypes, minRating, budgetMax, sortBy])
+  }, [user, searchQuery, selectedCategory, selectedCulture, selectedCountry, selectedTags, minRating, budgetMax, sortBy])
 
   const searchProviders = async (pageNum: number = 0) => {
     if (!user) return
@@ -319,7 +312,7 @@ export default function RecherchePage() {
       // Batch enrichment: 4 parallel queries instead of N*4
       const providerIds = profilesData.map(p => p.id)
 
-      const [culturesResult, zonesResult, tagsResult, ratingsResult, eventTypesResult] = await Promise.all([
+      const [culturesResult, zonesResult, tagsResult, ratingsResult] = await Promise.all([
         supabase
           .from('provider_cultures')
           .select('profile_id, culture_id')
@@ -336,12 +329,6 @@ export default function RecherchePage() {
           .from('prestataire_public_profiles')
           .select('profile_id, rating, total_reviews')
           .in('profile_id', providerIds),
-        selectedEventTypes.length > 0
-          ? supabase
-              .from('provider_event_types')
-              .select('profile_id, cultural_event_types!inner(slug)')
-              .in('profile_id', providerIds) as unknown as Promise<{ data: Array<{ profile_id: string; cultural_event_types: { slug: string } | Array<{ slug: string }> }> | null; error: unknown }>
-          : Promise.resolve({ data: null, error: null }),
       ])
 
       // Index results by profile_id for O(1) lookup
@@ -382,22 +369,6 @@ export default function RecherchePage() {
         })
       }
 
-      // Index event type slugs by profile_id
-      const eventTypeSlugsByProfile = new Map<string, string[]>()
-      if (eventTypesResult.data) {
-        for (const item of eventTypesResult.data as Array<{ profile_id: string; cultural_event_types: { slug: string } | Array<{ slug: string }> }>) {
-          const cet = item.cultural_event_types
-          const slugs = Array.isArray(cet) ? cet : [cet]
-          for (const s of slugs) {
-            if (s?.slug) {
-              const existing = eventTypeSlugsByProfile.get(item.profile_id) || []
-              existing.push(s.slug)
-              eventTypeSlugsByProfile.set(item.profile_id, existing)
-            }
-          }
-        }
-      }
-
       // Enrich profiles using indexed data
       const enrichedProviders: Provider[] = profilesData.map(profile => {
         const cultures = culturesByProfile.get(profile.id) || []
@@ -435,13 +406,6 @@ export default function RecherchePage() {
         filteredProviders = filteredProviders.filter(p =>
           selectedTags.every(tagId => p.tags.some(t => t.id === tagId))
         )
-      }
-
-      if (selectedEventTypes.length > 0) {
-        filteredProviders = filteredProviders.filter(p => {
-          const providerSlugs = eventTypeSlugsByProfile.get(p.id) || []
-          return selectedEventTypes.some(slug => providerSlugs.includes(slug))
-        })
       }
 
       if (minRating > 0) {
@@ -813,92 +777,6 @@ export default function RecherchePage() {
                     </PopoverContent>
                   </Popover>
 
-                  {/* Type d'événement */}
-                  {availableEventTypes.length > 0 && (
-                    <Popover open={openSubDropdown === 'evenements'} onOpenChange={(open) => setOpenSubDropdown(open ? 'evenements' : null)}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-between text-sm font-medium hover:bg-gray-100 text-gray-900"
-                        >
-                          <span className="flex items-center gap-2">
-                            <CalendarCheck className="h-4 w-4 text-gray-700" />
-                            Type d&apos;événement
-                            {selectedEventTypes.length > 0 && (
-                              <Badge variant="secondary" className="ml-2 text-xs bg-gray-200 text-gray-900 font-medium">
-                                {selectedEventTypes.length}
-                              </Badge>
-                            )}
-                          </span>
-                          <ChevronDown className="h-4 w-4 text-gray-700" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-[calc(100vw-2rem)] sm:w-[320px] max-w-[calc(100vw-2rem)] p-2 bg-white max-h-[50vh] overflow-y-auto z-[99999] shadow-xl border border-gray-200 rounded-lg"
-                        side={isMobile ? "bottom" : "right"}
-                        align="start"
-                        sideOffset={8}
-                        collisionPadding={16}
-                        avoidCollisions={true}
-                      >
-                        <div className="space-y-1">
-                          <button
-                            className={`w-full text-left px-3 py-2 text-sm font-medium text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none ${selectedEventTypes.length === 0 ? "bg-gray-100" : ""}`}
-                            onClick={() => {
-                              setSelectedEventTypes([])
-                              setOpenSubDropdown(null)
-                            }}
-                          >
-                            Tous les événements
-                          </button>
-                          <div className="border-t border-gray-200 my-2"></div>
-                          {(() => {
-                            const CATEGORY_LABELS: Record<string, string> = {
-                              'maghrebin': 'Maghrébin', 'indien': 'Indien', 'pakistanais': 'Pakistanais',
-                              'turc': 'Turc', 'africain': 'Africain', 'antillais': 'Antillais',
-                              'asiatique': 'Asiatique', 'moyen-orient': 'Moyen-Orient', 'europeen': 'Européen',
-                              'amerique-latine': 'Amérique latine', 'universel': 'Universel',
-                            }
-                            const grouped = availableEventTypes.reduce<Record<string, typeof availableEventTypes>>((acc, et) => {
-                              const key = et.culture_category_id
-                              if (!acc[key]) acc[key] = []
-                              acc[key].push(et)
-                              return acc
-                            }, {})
-                            return Object.entries(grouped).map(([catId, types]) => (
-                              <div key={catId} className="space-y-0.5">
-                                <div className="px-2 py-1 text-xs font-semibold text-[#823F91] uppercase">
-                                  {CATEGORY_LABELS[catId] || catId}
-                                </div>
-                                {types.map(et => {
-                                  const isSelected = selectedEventTypes.includes(et.slug)
-                                  return (
-                                    <button
-                                      key={et.id}
-                                      className={`w-full text-left px-4 py-2 text-sm text-[#6B3FA0] hover:bg-gray-100 rounded-md transition-none flex items-center gap-2 ${isSelected ? "bg-[#E8D4EF]" : ""}`}
-                                      onClick={() => {
-                                        if (isSelected) {
-                                          setSelectedEventTypes(prev => prev.filter(s => s !== et.slug))
-                                        } else {
-                                          setSelectedEventTypes(prev => [...prev, et.slug])
-                                        }
-                                      }}
-                                    >
-                                      <span className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-[#823F91] border-[#823F91]' : 'border-gray-300'}`}>
-                                        {isSelected && <X className="h-3 w-3 text-white" />}
-                                      </span>
-                                      {et.label}
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            ))
-                          })()}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-
                   {/* Tags */}
                   <Popover open={openSubDropdown === 'tags'} onOpenChange={(open) => setOpenSubDropdown(open ? 'tags' : null)}>
                     <PopoverTrigger asChild>
@@ -990,7 +868,7 @@ export default function RecherchePage() {
           </div>
           
           {/* Filtres actifs */}
-          {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || selectedEventTypes.length > 0 || searchQuery) && (
+          {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || searchQuery) && (
             <div className="flex flex-wrap gap-2">
               {selectedCategory && (
                 <Badge
@@ -1037,21 +915,6 @@ export default function RecherchePage() {
                   </Badge>
                 ) : null
               })}
-              {selectedEventTypes.map(slug => {
-                const et = availableEventTypes.find(e => e.slug === slug)
-                return et ? (
-                  <Badge
-                    key={slug}
-                    variant="secondary"
-                    className="px-3 py-1 text-sm cursor-pointer hover:bg-gray-200 text-gray-900 bg-[#E8D4EF]"
-                    onClick={() => setSelectedEventTypes(prev => prev.filter(s => s !== slug))}
-                  >
-                    <CalendarCheck className="h-3 w-3 mr-1" />
-                    {et.label}
-                    <X className="h-3 w-3 ml-2" />
-                  </Badge>
-                ) : null
-              })}
               {searchQuery && (
                 <Badge
                   variant="secondary"
@@ -1063,7 +926,7 @@ export default function RecherchePage() {
                 </Badge>
               )}
               {/* Save current filters */}
-              {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || selectedEventTypes.length > 0 || minRating > 0 || budgetMax !== null) && (
+              {(selectedCategory || selectedCulture || selectedCountry || selectedTags.length > 0 || minRating > 0 || budgetMax !== null) && (
                 showSavePreset ? (
                   <div className="flex items-center gap-1.5">
                     <input
@@ -1275,7 +1138,7 @@ export default function RecherchePage() {
                     }}
                   />
                 ) : (
-                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-24 md:pb-4' : ''}`}>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 ${comparisonIds.size > 0 ? 'pb-20 md:pb-4' : ''}`}>
                   {displayedProviders.map((provider, index) => (
                 <motion.div
                   key={provider.id}
@@ -1317,10 +1180,10 @@ export default function RecherchePage() {
                       <img
                         src={provider.avatar_url}
                         alt={provider.nom_entreprise}
-                        className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full object-cover border-2 md:border-4 border-white shadow-md"
+                        className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full object-cover border-2 sm:border-3 md:border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 md:border-4 border-white shadow-md">
+                      <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-full bg-gradient-to-br from-[#823F91] to-[#9D5FA8] flex items-center justify-center border-2 sm:border-3 md:border-4 border-white shadow-md">
                         <span className="text-lg sm:text-xl md:text-2xl font-semibold text-white">
                           {getInitials(provider.nom_entreprise || provider.prenom || 'P')}
                         </span>
