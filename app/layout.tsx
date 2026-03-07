@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GeistSans } from 'geist/font/sans';
-import { NuplyNavbarMenu } from "@/components/NuplyNavbarMenu";
+import { SafeNavbar } from "@/components/layout/SafeNavbar";
 import MainWrapper from "@/components/layout/MainWrapper";
 import FooterWrapper from "@/components/layout/FooterWrapper";
 // import Chatbot from "@/components/Chatbot"; // Désactivé temporairement - à réactiver plus tard
@@ -77,7 +77,7 @@ export default function RootLayout({
       <body className={`${GeistSans.className} ${GeistSans.variable} antialiased bg-background`} suppressHydrationWarning>
         {/* Données structurées pour le SEO */}
         <JsonLd data={[generateOrganizationSchema(), generateWebSiteSchema()]} />
-        <NuplyNavbarMenu />
+        <SafeNavbar />
         <div id="dialog-container" style={{ position: 'relative', zIndex: 99999 }} />
         <main>
           <MainWrapper>
