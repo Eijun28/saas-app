@@ -79,7 +79,7 @@ export default function CoupleFacturesPage() {
             id,
             prenom,
             nom,
-            business_name,
+            nom_entreprise,
             avatar_url
           )
         `)
@@ -184,9 +184,9 @@ export default function CoupleFacturesPage() {
             const StatusIcon = statusCfg.icon
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const prestataire = (facture as any).profiles as {
-              prenom?: string; nom?: string; business_name?: string
+              prenom?: string; nom?: string; nom_entreprise?: string
             } | null
-            const prestataireName = prestataire?.business_name ||
+            const prestataireName = prestataire?.nom_entreprise ||
               `${prestataire?.prenom || ''} ${prestataire?.nom || ''}`.trim() ||
               'Prestataire'
 

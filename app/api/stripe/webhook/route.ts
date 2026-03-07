@@ -193,7 +193,7 @@ async function handleFacturePaymentCompleted(
     .select(`
       *,
       couples (id, user_id, partner_1_name, partner_2_name),
-      profiles!factures_prestataire_id_fkey (id, prenom, nom, business_name, email)
+      profiles!factures_prestataire_id_fkey (id, prenom, nom, nom_entreprise, email)
     `)
     .eq('id', factureId)
     .single()
@@ -222,14 +222,14 @@ async function handleFacturePaymentCompleted(
 
   // Envoyer le reçu par email au couple
   const coupleData = facture.couples as { user_id: string; partner_1_name?: string; partner_2_name?: string } | null
-  const prestataireData = facture.profiles as { prenom?: string; nom?: string; business_name?: string; email?: string } | null
+  const prestataireData = facture.profiles as { prenom?: string; nom?: string; nom_entreprise?: string; email?: string } | null
 
   if (session.customer_email) {
     const coupleName = [coupleData?.partner_1_name, coupleData?.partner_2_name]
       .filter(Boolean)
       .join(' & ') || 'Chers clients'
 
-    const prestataireName = prestataireData?.business_name ||
+    const prestataireName = prestataireData?.nom_entreprise ||
       `${prestataireData?.prenom || ''} ${prestataireData?.nom || ''}`.trim() ||
       'votre prestataire'
 
