@@ -21,6 +21,9 @@ export interface Demande {
   statut: 'nouvelle' | 'acceptee' | 'refusee' | 'en_cours' | 'terminee' | 'annulee'
   message?: string
   created_at: string
+  event_name?: string
+  event_category?: string
+  event_date?: string
 }
 
 export interface Service {
