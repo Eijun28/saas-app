@@ -172,7 +172,10 @@ export default function DashboardPrestatairePage() {
         }
       }
 
-      setUiState({ loading: 'loading', error: null })
+      // Ne pas réafficher le skeleton si on fait un refresh silencieux (skipCache=true)
+      if (!skipCache) {
+        setUiState({ loading: 'loading', error: null })
+      }
       try {
         const supabase = createClient()
         const now = new Date()

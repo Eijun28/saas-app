@@ -142,8 +142,9 @@ export default function SignUpPage() {
       } else {
         setFormError('Une réponse inattendue a été reçue du serveur. Veuillez réessayer.')
       }
-    } catch (err: any) {
-      setFormError(translateAuthError(err?.message))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      setFormError(translateAuthError(message))
     } finally {
       setIsLoading(false)
     }
