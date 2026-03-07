@@ -609,26 +609,29 @@ export async function signIn(email: string, password: string) {
   }
 
   if (data.user) {
-    // Utiliser la fonction utilitaire centralisée pour vérifier le rôle
-    const roleCheck = await getUserRoleServer(data.user.id)
-    
-    revalidatePath('/', 'layout')
-    
-    if (roleCheck.role) {
-      // Pour les prestataires, vérifier si l'onboarding est terminé
-      if (roleCheck.role === 'prestataire') {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_step')
-          .eq('id', data.user.id)
-          .maybeSingle()
+    // Utiliser le MÊME client Supabase (celui qui a fait le signIn)
+    // pour vérifier le rôle — un nouveau client ne verrait pas les cookies
+    // écrits par signInWithPassword dans Next.js 16
+    const [{ data: couple }, { data: profile }] = await Promise.all([
+      supabase.from('couples').select('id').eq('user_id', data.user.id).maybeSingle(),
+      supabase.from('profiles').select('id, onboarding_step').eq('id', data.user.id).maybeSingle(),
+    ])
 
-        if (!profile || (profile.onboarding_step ?? 0) < 5) {
+    let role: 'couple' | 'prestataire' | null = null
+    if (couple) role = 'couple'
+    else if (profile) role = 'prestataire'
+
+    revalidatePath('/', 'layout')
+
+    if (role) {
+      // Pour les prestataires, vérifier si l'onboarding est terminé
+      if (role === 'prestataire' && profile) {
+        if ((profile.onboarding_step ?? 0) < 5) {
           return { success: true, redirectTo: '/prestataire/onboarding' }
         }
       }
 
-      const dashboardUrl = getDashboardUrl(roleCheck.role)
+      const dashboardUrl = getDashboardUrl(role)
       return { success: true, redirectTo: dashboardUrl }
     }
 
