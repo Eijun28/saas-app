@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,129 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Menu as MenuIcon, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useNavAuth } from "@/hooks/use-nav-auth";
 
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export function NuplyNavbarMenu() {
   const [active, setActive] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [mounted, setMounted] = useState(false);
-  const router = useRouter();
+  const { user, profile, dashboardUrl } = useNavAuth();
   const pathname = usePathname();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      const supabase = createClient();
-      
-      // Récupérer l'utilisateur
-      supabase.auth.getUser().then(({ data: { user }, error }) => {
-        // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
-        if (error && !error.message?.includes('Auth session missing')) {
-          console.error('Erreur lors de la récupération de l\'utilisateur:', error);
-        }
-        setUser(error ? null : user);
-        if (user) {
-          // Vérifier d'abord dans la table couples
-          supabase
-            .from('couples')
-            .select('id, partner_1_name, partner_2_name')
-            .eq('user_id', user.id)
-            .maybeSingle()
-            .then(({ data: couple, error: coupleError }) => {
-              if (couple && !coupleError) {
-                // Extraire prenom et nom de partner_1_name
-                const partner1Name = couple.partner_1_name || '';
-                const nameParts = partner1Name.split(' ');
-                setProfile({
-                  ...couple,
-                  role: 'couple',
-                  prenom: nameParts[0] || '',
-                  nom: nameParts.slice(1).join(' ') || ''
-                });
-                return;
-              }
-              // Sinon vérifier dans profiles (prestataires)
-              supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .maybeSingle()
-                .then(({ data, error: profileError }) => {
-                  if (profileError) {
-                    console.error('Erreur lors de la récupération du profil:', profileError);
-                  }
-                  if (data) {
-                    setProfile(data);
-                  }
-                });
-            });
-        }
-      }).catch((error) => {
-        console.error('Erreur lors de l\'initialisation de Supabase:', error);
-      });
-
-      // Écouter les changements d'authentification
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          // Vérifier d'abord dans la table couples
-          supabase
-            .from('couples')
-            .select('id, partner_1_name, partner_2_name')
-            .eq('user_id', session.user.id)
-            .maybeSingle()
-            .then(({ data: couple, error: coupleError }) => {
-              if (couple && !coupleError) {
-                // Extraire prenom et nom de partner_1_name
-                const partner1Name = couple.partner_1_name || '';
-                const nameParts = partner1Name.split(' ');
-                setProfile({
-                  ...couple,
-                  role: 'couple',
-                  prenom: nameParts[0] || '',
-                  nom: nameParts.slice(1).join(' ') || ''
-                });
-                return;
-              }
-              // Sinon vérifier dans profiles (prestataires)
-              supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle()
-                .then(({ data, error: profileError }) => {
-                  if (profileError) {
-                    console.error('Erreur lors de la récupération du profil:', profileError);
-                  }
-                  if (data) {
-                    setProfile(data);
-                  }
-                });
-            });
-        } else {
-          setProfile(null);
-        }
-      });
-
-      return () => subscription.unsubscribe();
-    } catch (error: any) {
-      console.error('Erreur lors de la création du client Supabase:', error);
-      // Si c'est une erreur de configuration, on ne bloque pas l'interface
-      if (error.message?.includes('Variables d\'environnement') || error.message?.includes('Invalid API key')) {
-        console.error('Configuration Supabase invalide. Vérifiez vos variables d\'environnement.');
-      }
-    }
-  }, [mounted]);
 
   const handleSignOut = async () => {
     try {
@@ -139,8 +26,6 @@ export function NuplyNavbarMenu() {
     } catch {
       // Ignore sign out errors
     }
-    setUser(null);
-    setProfile(null);
     window.location.href = '/';
   };
 
@@ -148,26 +33,6 @@ export function NuplyNavbarMenu() {
   const isDashboardPage = pathname?.startsWith('/couple') || pathname?.startsWith('/prestataire');
   if (isDashboardPage) {
     return null;
-  }
-
-  // Ne pas rendre le contenu dépendant de l'utilisateur jusqu'à ce que le composant soit monté
-  // Cela évite les erreurs d'hydratation
-  if (!mounted) {
-    return (
-      <div className="relative w-full flex items-center justify-center">
-        <Navbar 
-          className="top-2" 
-          active={active} 
-          setActive={setActive}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          user={null}
-          profile={null}
-          onSignOut={handleSignOut}
-
-        />
-      </div>
-    );
   }
 
   return (
@@ -179,7 +44,7 @@ export function NuplyNavbarMenu() {
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         user={user}
-        profile={profile}
+        dashboardUrl={dashboardUrl}
         onSignOut={handleSignOut}
       />
     </div>
@@ -193,7 +58,7 @@ function Navbar({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   user,
-  profile,
+  dashboardUrl,
   onSignOut,
 }: {
   className?: string;
@@ -201,28 +66,24 @@ function Navbar({
   setActive: (item: string | null) => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
-  user: any;
-  profile: any;
+  user: ReturnType<typeof import("@/hooks/use-nav-auth").useNavAuth>["user"];
+  dashboardUrl: string;
   onSignOut: () => void;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
-  
+
   const handleLinkClick = (href: string) => {
     if (href.startsWith('/#')) {
       // Vérifier que nous sommes côté client
       if (typeof window !== 'undefined') {
         const targetId = href.replace('/#', '');
-        
+
         // Si on est déjà sur la page d'accueil, scroller directement
         if (pathname === '/') {
           const element = document.getElementById(targetId);
           if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-        } else {
-          // Sinon, naviguer vers la page d'accueil avec le hash
-          router.push(href);
         }
       }
     }
@@ -244,11 +105,11 @@ function Navbar({
       style={{ zIndex: 99999, pointerEvents: 'auto', position: 'fixed' }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div 
+      <div
         className={cn(
           "flex items-center justify-between rounded-full",
-          scrolled 
-            ? "bg-white/95 backdrop-blur-md shadow-lg border px-4 py-1.5" 
+          scrolled
+            ? "bg-white/95 backdrop-blur-md shadow-lg border px-4 py-1.5"
             : "bg-transparent backdrop-blur-none shadow-none border-transparent px-4 py-2"
         )}
         style={{
@@ -258,7 +119,7 @@ function Navbar({
           zIndex: 99999,
           pointerEvents: 'auto',
           willChange: 'background-color, padding, box-shadow'
-        }} 
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Logo */}
@@ -274,9 +135,9 @@ function Navbar({
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-6" style={{ 
-          pointerEvents: 'auto', 
-          position: 'relative', 
+        <div className="hidden md:flex items-center space-x-6" style={{
+          pointerEvents: 'auto',
+          position: 'relative',
           zIndex: 100000
         }}>
           <Link
@@ -288,7 +149,7 @@ function Navbar({
               handleLinkClick("/#trouver-un-prestataire");
             }}
             className="text-base font-bold cursor-pointer transition-colors"
-            style={{ 
+            style={{
               color: '#823F91',
               pointerEvents: 'auto',
               transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -306,7 +167,7 @@ function Navbar({
             href="/tarifs"
             onClick={() => setActive(null)}
             className="text-base font-bold cursor-pointer transition-colors"
-            style={{ 
+            style={{
               color: '#823F91',
               pointerEvents: 'auto',
               transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -342,7 +203,7 @@ function Navbar({
             href="/blog"
             onClick={() => setActive(null)}
             className="text-base font-bold cursor-pointer transition-colors"
-            style={{ 
+            style={{
               color: '#823F91',
               pointerEvents: 'auto',
               transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -359,15 +220,15 @@ function Navbar({
         </div>
 
         {/* Desktop CTA Buttons */}
-        <div className="hidden md:flex items-center gap-3" style={{ 
-          pointerEvents: 'auto', 
-          position: 'relative', 
+        <div className="hidden md:flex items-center gap-3" style={{
+          pointerEvents: 'auto',
+          position: 'relative',
           zIndex: 100000
         }}>
           {user ? (
             <>
               <Link
-                href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                href={dashboardUrl}
                 className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
                 style={{
                   color: '#823F91',
@@ -484,7 +345,7 @@ function Navbar({
                     handleLinkClick("/#trouver-un-prestataire");
                   }}
                   className="text-base py-2 transition-colors"
-                  style={{ 
+                  style={{
                     color: '#823F91',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
@@ -501,7 +362,7 @@ function Navbar({
                   href="/tarifs"
                   onClick={() => handleLinkClick("/tarifs")}
                   className="text-base py-2 transition-colors"
-                  style={{ 
+                  style={{
                     color: '#823F91',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
@@ -535,7 +396,7 @@ function Navbar({
                   href="/blog"
                   onClick={() => handleLinkClick("/blog")}
                   className="text-base py-2 transition-colors"
-                  style={{ 
+                  style={{
                     color: '#823F91',
                     transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
@@ -553,7 +414,7 @@ function Navbar({
                 {user ? (
                   <div className="space-y-2">
                     <Link
-                      href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                      href={dashboardUrl}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="block w-full text-left px-3 py-2 text-base transition-colors"
                       style={{

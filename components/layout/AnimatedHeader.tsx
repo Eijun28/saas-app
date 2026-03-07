@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Menu, X, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
+import { useNavAuth } from '@/hooks/use-nav-auth'
 
 // Variants d'animation pour le logo
 const logoVariants = {
@@ -45,8 +45,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
+  const { user, profile, dashboardUrl } = useNavAuth()
   const { scrollY } = useScroll()
   const router = useRouter()
   const pathname = usePathname()
@@ -68,71 +67,8 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     setLastScrollY(latest)
   })
 
-  // Récupération de l'utilisateur
-  useEffect(() => {
-    const supabase = createClient()
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      if (user) {
-        // Vérifier d'abord dans la table couples
-        supabase
-          .from('couples')
-          .select('id, prenom, nom')
-          .eq('id', user.id)
-          .single()
-          .then(({ data: couple }) => {
-            if (couple) {
-              setProfile({ ...couple, role: 'couple' })
-              return
-            }
-            // Sinon vérifier dans profiles (prestataires)
-            supabase
-              .from('profiles')
-              .select('role, prenom, nom')
-              .eq('id', user.id)
-              .single()
-              .then(({ data }) => setProfile(data))
-          })
-      }
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        // Vérifier d'abord dans la table couples
-        supabase
-          .from('couples')
-          .select('id, prenom, nom')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: couple }) => {
-            if (couple) {
-              setProfile({ ...couple, role: 'couple' })
-              return
-            }
-            // Sinon vérifier dans profiles (prestataires)
-            supabase
-              .from('profiles')
-              .select('role, prenom, nom')
-              .eq('id', session.user.id)
-              .single()
-              .then(({ data }) => setProfile(data))
-          })
-      } else {
-        setProfile(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
   const handleSignOut = async () => {
     await signOut()
-    setUser(null)
-    setProfile(null)
     router.push('/')
     setIsMobileMenuOpen(false)
   }
@@ -270,7 +206,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
             {user && !isHomePage ? (
               <>
                 <Link
-                  href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                  href={dashboardUrl}
                   className={cn(
                     'hidden md:inline-flex text-sm transition-colors duration-300',
                     isScrolled
@@ -278,7 +214,7 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       : 'text-white hover:text-white/80'
                   )}
                 >
-                  {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                  Mon espace
                 </Link>
                 <Button
                   onClick={handleSignOut}
@@ -389,11 +325,11 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                     {user && !isHomePage ? (
                       <>
                         <Link
-                          href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                          href={dashboardUrl}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
                         >
-                          {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
+                          Mon espace
                         </Link>
                         <Button
                           onClick={handleSignOut}
@@ -434,4 +370,3 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
     </motion.header>
   )
 }
-
