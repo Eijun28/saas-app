@@ -5,12 +5,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { RippleButton } from "@/components/ui/ripple-button";
 import { Menu as MenuIcon, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
-import { signOut } from "@/lib/auth/actions";
+
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 
 export function NuplyNavbarMenu() {
@@ -44,14 +43,14 @@ export function NuplyNavbarMenu() {
             .from('couples')
             .select('id, partner_1_name, partner_2_name')
             .eq('user_id', user.id)
-            .single()
+            .maybeSingle()
             .then(({ data: couple, error: coupleError }) => {
               if (couple && !coupleError) {
                 // Extraire prenom et nom de partner_1_name
                 const partner1Name = couple.partner_1_name || '';
                 const nameParts = partner1Name.split(' ');
-                setProfile({ 
-                  ...couple, 
+                setProfile({
+                  ...couple,
                   role: 'couple',
                   prenom: nameParts[0] || '',
                   nom: nameParts.slice(1).join(' ') || ''
@@ -63,10 +62,9 @@ export function NuplyNavbarMenu() {
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
-                .single()
+                .maybeSingle()
                 .then(({ data, error: profileError }) => {
-                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
-                  if (profileError && profileError.code !== 'PGRST116') {
+                  if (profileError) {
                     console.error('Erreur lors de la récupération du profil:', profileError);
                   }
                   if (data) {
@@ -90,14 +88,14 @@ export function NuplyNavbarMenu() {
             .from('couples')
             .select('id, partner_1_name, partner_2_name')
             .eq('user_id', session.user.id)
-            .single()
+            .maybeSingle()
             .then(({ data: couple, error: coupleError }) => {
               if (couple && !coupleError) {
                 // Extraire prenom et nom de partner_1_name
                 const partner1Name = couple.partner_1_name || '';
                 const nameParts = partner1Name.split(' ');
-                setProfile({ 
-                  ...couple, 
+                setProfile({
+                  ...couple,
                   role: 'couple',
                   prenom: nameParts[0] || '',
                   nom: nameParts.slice(1).join(' ') || ''
@@ -109,10 +107,9 @@ export function NuplyNavbarMenu() {
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
-                .single()
+                .maybeSingle()
                 .then(({ data, error: profileError }) => {
-                  // Ignorer l'erreur si le profil n'existe pas (utilisateur non configuré)
-                  if (profileError && profileError.code !== 'PGRST116') {
+                  if (profileError) {
                     console.error('Erreur lors de la récupération du profil:', profileError);
                   }
                   if (data) {
@@ -136,10 +133,15 @@ export function NuplyNavbarMenu() {
   }, [mounted]);
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore sign out errors
+    }
     setUser(null);
     setProfile(null);
-    router.push('/');
+    window.location.href = '/';
   };
 
   // Ne pas afficher la navbar sur les pages dashboard (elles ont leur propre header)
@@ -147,9 +149,6 @@ export function NuplyNavbarMenu() {
   if (isDashboardPage) {
     return null;
   }
-
-  // Sur la page d'accueil, toujours afficher "Se connecter" et "Commencer"
-  const isHomePage = pathname === '/';
 
   // Ne pas rendre le contenu dépendant de l'utilisateur jusqu'à ce que le composant soit monté
   // Cela évite les erreurs d'hydratation
@@ -165,24 +164,23 @@ export function NuplyNavbarMenu() {
           user={null}
           profile={null}
           onSignOut={handleSignOut}
-          isHomePage={isHomePage}
+
         />
       </div>
     );
   }
 
   return (
-    <div className="relative w-full flex items-center justify-center" style={{ pointerEvents: 'none', zIndex: 99999 }}>
-      <Navbar 
-        className="top-2" 
-        active={active} 
+    <div className="relative w-full flex items-center justify-center" style={{ zIndex: 99999 }}>
+      <Navbar
+        className="top-2"
+        active={active}
         setActive={setActive}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         user={user}
         profile={profile}
         onSignOut={handleSignOut}
-        isHomePage={isHomePage}
       />
     </div>
   );
@@ -197,7 +195,6 @@ function Navbar({
   user,
   profile,
   onSignOut,
-  isHomePage,
 }: {
   className?: string;
   active: string | null;
@@ -207,7 +204,6 @@ function Navbar({
   user: any;
   profile: any;
   onSignOut: () => void;
-  isHomePage: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -368,27 +364,29 @@ function Navbar({
           position: 'relative', 
           zIndex: 100000
         }}>
-          {user && !isHomePage ? (
+          {user ? (
             <>
-              <Link
-                href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
-                style={{
-                  color: '#823F91',
-                  pointerEvents: 'auto',
-                  position: 'relative',
-                  zIndex: 100000,
-                  transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#a720f2'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#823F91'
-                }}
-              >
-                {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
-              </Link>
+              {profile?.role && (
+                <Link
+                  href={profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                  className="text-base font-bold cursor-pointer transition-colors flex items-center h-8"
+                  style={{
+                    color: '#823F91',
+                    pointerEvents: 'auto',
+                    position: 'relative',
+                    zIndex: 100000,
+                    transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#a720f2'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#823F91'
+                  }}
+                >
+                  Mon espace
+                </Link>
+              )}
               <button
                 onClick={handleSignOutClick}
                 className="text-base font-bold cursor-pointer transition-colors flex items-center h-8 gap-1"
@@ -414,40 +412,22 @@ function Navbar({
             </>
             ) : (
             <>
-              <Link href="/sign-in" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
-                <RippleButton
-                  className="text-sm h-8 px-4 border-0 font-medium"
-                  style={{ backgroundColor: '#823F91', color: 'white', pointerEvents: 'auto' }}
-                  rippleColor="#ffffff"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#6D3478'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#823F91'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                >
-                  <span style={{ color: 'white' }}>Se connecter</span>
-                </RippleButton>
-              </Link>
-              <Link href="/sign-up" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}>
-                <RippleButton
-                  className="text-sm h-8 px-4 border-0 font-medium"
-                  style={{ backgroundColor: '#c081e3', color: 'white', pointerEvents: 'auto' }}
-                  rippleColor="#ffffff"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#a865d0'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#c081e3'
-                    e.currentTarget.style.color = 'white'
-                  }}
-                >
-                  <span style={{ color: 'white' }}>Commencer</span>
-                </RippleButton>
-              </Link>
+              <Button
+                asChild
+                size="sm"
+                className="text-sm h-8 px-4 border-0 font-medium bg-[#823F91] hover:bg-[#6D3478] text-white"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+              >
+                <Link href="/sign-in">Se connecter</Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="text-sm h-8 px-4 border-0 font-medium bg-[#c081e3] hover:bg-[#a865d0] text-white"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 100000 }}
+              >
+                <Link href="/sign-up">S&apos;inscrire</Link>
+              </Button>
             </>
           )}
         </div>
@@ -572,25 +552,27 @@ function Navbar({
                 </Link>
               </div>
               <div className="pt-4 border-t border-gray-200">
-                {user && !isHomePage ? (
+                {user ? (
                   <div className="space-y-2">
-                    <Link
-                      href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-left px-3 py-2 text-base transition-colors"
-                      style={{
-                        color: '#823F91',
-                        transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#a720f2'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#823F91'
-                      }}
-                    >
-                      {profile?.prenom ? `Bonjour ${profile.prenom}` : 'Mon espace'}
-                    </Link>
+                    {profile?.role && (
+                      <Link
+                        href={profile.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full text-left px-3 py-2 text-base transition-colors"
+                        style={{
+                          color: '#823F91',
+                          transition: 'color 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#a720f2'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#823F91'
+                        }}
+                      >
+                        Mon espace
+                      </Link>
+                    )}
                     <button
                       onClick={handleSignOutClick}
                       className="w-full text-left px-3 py-2 text-base flex items-center gap-2 transition-colors"
@@ -613,40 +595,22 @@ function Navbar({
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-base font-medium border-0"
-                        style={{ backgroundColor: '#823F91', color: 'white' }}
-                        rippleColor="#ffffff"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#6D3478'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#823F91'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                      >
-                        <span style={{ color: 'white' }}>Se connecter</span>
-                      </RippleButton>
-                    </Link>
-                    <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                      <RippleButton
-                        className="w-full h-9 text-base font-medium border-0"
-                        style={{ backgroundColor: '#c081e3', color: 'white' }}
-                        rippleColor="#ffffff"
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#a865d0'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#c081e3'
-                          e.currentTarget.style.color = 'white'
-                        }}
-                      >
-                        <span style={{ color: 'white' }}>Commencer</span>
-                      </RippleButton>
-                    </Link>
+                    <Button
+                      asChild
+                      className="w-full h-9 text-base font-medium border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                    >
+                      <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        Se connecter
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      className="w-full h-9 text-base font-medium border-0 bg-[#c081e3] hover:bg-[#a865d0] text-white"
+                    >
+                      <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                        S&apos;inscrire
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
+import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 // import LightRays from "@/components/LightRays"; // Désactivé temporairement - nécessite 'ogl'
@@ -60,14 +61,14 @@ export default function CTA({
                 size="lg"
                 asChild
                 className={cn(
-                  button.variant === "default" && "bg-[#c081e3] hover:bg-[#a865d0] text-white"
+                  button.variant === "default" && "bg-[#823F91] hover:bg-[#6D3478] text-white"
                 )}
               >
-                <a href={button.href}>
+                <Link href={button.href}>
                   {button.icon}
                   {button.text}
                   {button.iconRight}
-                </a>
+                </Link>
               </Button>
             ))}
           </div>

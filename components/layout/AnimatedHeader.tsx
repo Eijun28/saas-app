@@ -5,9 +5,8 @@ import { motion, useScroll, useMotionValueEvent } from 'framer-motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { RippleButton } from '@/components/ui/ripple-button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, X, LogOut, User } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
@@ -296,30 +295,20 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
               </>
             ) : (
               <>
-                <Link href="/sign-in">
-                  <RippleButton
-                    className={cn(
-                      'hidden md:inline-flex text-sm h-8 border-0 text-white',
-                      'bg-[#823F91] hover:bg-[#6D3478]'
-                    )}
-                    rippleColor="#ffffff"
-                  >
-                    Se connecter
-                  </RippleButton>
-                </Link>
-                <Link href="/sign-up">
-                  <RippleButton
-                    className={cn(
-                      'text-sm h-8 text-white border-0',
-                      isScrolled
-                        ? 'bg-[#823F91] hover:bg-[#6D3478]'
-                        : 'bg-[#823F91] hover:bg-[#6D3478]'
-                    )}
-                    rippleColor="#ffffff"
-                  >
-                    Commencer
-                  </RippleButton>
-                </Link>
+                <Button
+                  asChild
+                  size="sm"
+                  className="hidden md:inline-flex text-sm h-8 border-0 text-white bg-[#823F91] hover:bg-[#6D3478]"
+                >
+                  <Link href="/sign-in">Se connecter</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className="text-sm h-8 text-white border-0 bg-[#823F91] hover:bg-[#6D3478]"
+                >
+                  <Link href="/sign-up">Commencer</Link>
+                </Button>
               </>
             )}
 
@@ -417,22 +406,22 @@ export function AnimatedHeader({ className }: AnimatedHeaderProps) {
                       </>
                     ) : (
                       <>
-                        <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
-                          <RippleButton
-                            className="w-full justify-start border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
-                            rippleColor="#ffffff"
-                          >
+                        <Button
+                          asChild
+                          className="w-full justify-center border-0 bg-[#823F91] hover:bg-[#6D3478] text-white"
+                        >
+                          <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
                             Se connecter
-                          </RippleButton>
-                        </Link>
-                        <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
-                          <RippleButton
-                            className="w-full bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
-                            rippleColor="#ffffff"
-                          >
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          className="w-full justify-center bg-[#823F91] hover:bg-[#6D3478] text-white border-0"
+                        >
+                          <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
                             Commencer
-                          </RippleButton>
-                        </Link>
+                          </Link>
+                        </Button>
                       </>
                     )}
                   </div>

@@ -5,7 +5,6 @@ import Hero from '@/components/landing/Hero'
 import { CulturesMarquee } from '@/components/landing/CulturesMarquee'
 import { SmoothScrollProvider } from '@/components/landing/SmoothScrollProvider'
 import { ArrowRight } from 'lucide-react'
-
 // Particules : lazy + ssr:false (canvas WebGL, inutile côté serveur)
 const LandingParticles = dynamic(
   () => import('@/components/landing/LandingParticles').then(mod => ({ default: mod.LandingParticles })),
@@ -53,7 +52,7 @@ export default function HomePage() {
             buttons={[
               {
                 href: '/sign-up',
-                text: 'Commencer',
+                text: "S'inscrire",
                 variant: 'default',
                 iconRight: <ArrowRight className="ml-2 h-5 w-5" />,
               },

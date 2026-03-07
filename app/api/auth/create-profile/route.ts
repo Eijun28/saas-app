@@ -41,7 +41,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Erreur lors de la création du profil' }, { status: 500 })
       }
 
-      await adminClient
+      const { error: prefError } = await adminClient
         .from('couple_preferences')
         .upsert({
           couple_id: user.id,
@@ -55,6 +55,10 @@ export async function POST(request: Request) {
           completion_percentage: 0,
           onboarding_step: 0,
         }, { onConflict: 'couple_id' })
+
+      if (prefError) {
+        logger.error('Erreur création préférences couple (onboarding):', prefError)
+      }
 
       logger.info('✅ Profil couple créé (onboarding/role)', { userId: user.id })
     } else {

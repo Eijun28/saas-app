@@ -29,30 +29,27 @@ export default function Hero() {
           className="text-base sm:text-lg md:text-xl lg:text-[25px] max-w-2xl mx-auto mb-10 leading-relaxed px-2"
           style={{ color: 'hsl(var(--beige-800))' }}
         >
-          Trouvez ceux qui comprennent d'où vous venez, pas juste où vous allez.
+          Le premier matching mariage qui comprend votre culture. Trouvez vos prestataires en 2 minutes.
         </motion.p>
 
-        {/* CTA - Violet */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-          className="flex justify-center items-center mb-4"
+          className="flex justify-center items-center gap-4 mb-4 flex-col sm:flex-row"
         >
-          <Link href="/sign-up">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3.5 text-white font-semibold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
-              style={{
-                backgroundColor: 'hsl(var(--violet-500))',
-                boxShadow: '0 4px 12px hsl(var(--violet-500) / 0.25)',
-                color: 'rgba(255, 255, 255, 1)'
-              }}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link
+              href="/sign-up"
+              className="inline-block px-8 py-3.5 font-semibold rounded-xl transition-all duration-300 text-white shadow-lg shadow-[#823F91]/25 bg-[#823F91] hover:bg-[#6D3478]"
             >
-              Commencer gratuitement
-            </motion.button>
-          </Link>
+              Commencer mon aventure
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Texte sous bouton - beige clair */}
@@ -63,7 +60,7 @@ export default function Hero() {
           className="text-sm text-center mt-4"
           style={{ color: 'hsl(var(--beige-700))' }}
         >
-          Rejoignez la révolution du mariage
+          Gratuit pour les couples
         </motion.p>
       </div>
     </section>

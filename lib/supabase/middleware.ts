@@ -1,8 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { logger } from '@/lib/logger';
 import type { User } from '@supabase/supabase-js';
-import { getEnvConfig } from '@/lib/config/env';
 
 export type UpdateSessionResult = {
   supabaseResponse: NextResponse;
@@ -42,42 +40,15 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
         }
       }
     }
-
-    // En production, vérifier aussi le referer
-    const config = getEnvConfig()
-    if (process.env.NODE_ENV === 'production') {
-      const referer = request.headers.get('referer')
-      const allowedDomains = [
-        config.NEXT_PUBLIC_SITE_URL,
-        // Ajouter d'autres domaines autorisés si nécessaire
-      ].filter(Boolean)
-
-      const isValidReferer = referer && allowedDomains.some(
-        domain => referer.startsWith(domain as string)
-      )
-
-      if (!isValidReferer) {
-        return {
-          supabaseResponse: NextResponse.json(
-            { error: 'CSRF detected: Invalid referer' },
-            { status: 403 }
-          ),
-          user: null
-        }
-      }
-    }
   }
 
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  // Utiliser la configuration validée
-  const config = getEnvConfig()
-
   const supabase = createServerClient(
-    config.NEXT_PUBLIC_SUPABASE_URL,
-    config.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -107,7 +78,7 @@ export async function updateSession(request: NextRequest): Promise<UpdateSession
   // Si erreur de session manquante, c'est normal pour les utilisateurs non connectés
   // On ne fait rien, on retourne simplement null pour user
   if (error && !error.message.includes('Auth session missing')) {
-    logger.error('Erreur lors de la récupération de l\'utilisateur', error);
+    console.error('Erreur lors de la récupération de l\'utilisateur', error);
   }
 
   return { supabaseResponse, user: error ? null : user };

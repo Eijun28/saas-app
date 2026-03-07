@@ -3,7 +3,7 @@
   "short_name": "Nuply",
   "description": "Plateforme premium de planification de mariage. Trouvez les meilleurs prestataires pour votre jour J.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#FFFFFF",
   "theme_color": "#FFFFFF",
   "orientation": "portrait-primary",
