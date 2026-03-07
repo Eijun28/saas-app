@@ -126,7 +126,7 @@ export async function GET(request: Request) {
             }
             logger.error('Erreur création profil prestataire (OAuth):', err)
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           logger.error('Erreur inattendue création profil (OAuth):', e)
         }
       }
