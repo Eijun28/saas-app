@@ -148,9 +148,6 @@ export function NuplyNavbarMenu() {
     return null;
   }
 
-  // Sur la page d'accueil, toujours afficher "Se connecter" et "Commencer"
-  const isHomePage = pathname === '/';
-
   // Ne pas rendre le contenu dépendant de l'utilisateur jusqu'à ce que le composant soit monté
   // Cela évite les erreurs d'hydratation
   if (!mounted) {
@@ -165,7 +162,6 @@ export function NuplyNavbarMenu() {
           user={null}
           profile={null}
           onSignOut={handleSignOut}
-          isHomePage={isHomePage}
         />
       </div>
     );
@@ -173,16 +169,15 @@ export function NuplyNavbarMenu() {
 
   return (
     <div className="relative w-full flex items-center justify-center" style={{ pointerEvents: 'none', zIndex: 99999 }}>
-      <Navbar 
-        className="top-2" 
-        active={active} 
+      <Navbar
+        className="top-2"
+        active={active}
         setActive={setActive}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         user={user}
         profile={profile}
         onSignOut={handleSignOut}
-        isHomePage={isHomePage}
       />
     </div>
   );
@@ -197,7 +192,6 @@ function Navbar({
   user,
   profile,
   onSignOut,
-  isHomePage,
 }: {
   className?: string;
   active: string | null;
@@ -207,7 +201,6 @@ function Navbar({
   user: any;
   profile: any;
   onSignOut: () => void;
-  isHomePage: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -368,7 +361,7 @@ function Navbar({
           position: 'relative', 
           zIndex: 100000
         }}>
-          {user && !isHomePage ? (
+          {user ? (
             <>
               <Link
                 href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}
@@ -572,7 +565,7 @@ function Navbar({
                 </Link>
               </div>
               <div className="pt-4 border-t border-gray-200">
-                {user && !isHomePage ? (
+                {user ? (
                   <div className="space-y-2">
                     <Link
                       href={profile?.role === 'couple' ? '/couple/dashboard' : '/prestataire/dashboard'}

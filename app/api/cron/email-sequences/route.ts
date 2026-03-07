@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   sendProviderIncompleteProfileReminder,
@@ -38,7 +39,8 @@ export async function POST(request: NextRequest) {
     if (!CRON_SECRET) {
       return NextResponse.json({ error: 'CRON_SECRET non configuré' }, { status: 500 })
     }
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    const expected = `Bearer ${CRON_SECRET}`
+    if (!authHeader || authHeader.length !== expected.length || !timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
   }
