@@ -2,7 +2,7 @@
 
 import { ProviderMatch } from '@/types/matching';
 import { useState } from 'react';
-import { Heart, Mail, Star, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Mail, Star, MapPin, Briefcase, Euro, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -29,319 +29,212 @@ export default function ProviderMatchCard({
   const [favorited, setFavorited] = useState(isFavorited);
   const { provider, score, rank, breakdown, explanation } = match;
 
-  const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return 'bg-yellow-100 text-yellow-800';
-      case 2:
-        return 'bg-gray-100 text-gray-800';
-      case 3:
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const formatBudget = (min?: number, max?: number) => {
+    if (min && max) {
+      return `${min.toLocaleString('fr-FR')} – ${max.toLocaleString('fr-FR')} €`;
     }
+    if (min) return `À partir de ${min.toLocaleString('fr-FR')} €`;
+    if (max) return `Jusqu'à ${max.toLocaleString('fr-FR')} €`;
+    return null;
   };
 
-  const getScoreColor = (score: number) => {
-    if (score > 90) {
-      return 'bg-gradient-to-br from-green-400 to-green-600';
-    } else if (score >= 80) {
-      return 'bg-gradient-to-br from-blue-400 to-blue-600';
-    } else {
-      return 'bg-gradient-to-br from-gray-400 to-gray-600';
-    }
-  };
-
-  const getStarCount = (score: number) => {
-    if (score > 90) return 5;
-    if (score > 80) return 4;
-    if (score > 70) return 3;
-    if (score > 60) return 2;
-    return 1;
-  };
-
-  const starCount = getStarCount(score);
+  const budgetText = formatBudget(provider.budget_min, provider.budget_max);
 
   return (
-    <div className="border rounded-xl shadow-lg hover:shadow-xl transition-all bg-white">
-      {/* Header */}
-      <div className="flex items-start gap-3 p-4 sm:gap-4 sm:p-6 border-b">
-        {/* Badge rank */}
-        <div
-          className={cn(
-            'w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-sm sm:text-lg flex-shrink-0 mt-0.5',
-            getRankBadge(rank)
-          )}
-        >
-          #{rank}
-        </div>
-
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          {provider.avatar_url ? (
-            <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-gray-200">
-              <Image
-                src={provider.avatar_url}
-                alt={provider.nom_entreprise}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#823F91] to-[#9333ea] flex items-center justify-center text-white text-base sm:text-xl font-bold">
-              {provider.nom_entreprise.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        {/* Infos principales */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base sm:text-xl text-gray-900 truncate">
-            {provider.nom_entreprise}
-          </h3>
-          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mt-0.5">
-            <span className="truncate">{provider.service_type}</span>
-            {provider.ville_principale && (
-              <>
-                <span>•</span>
-                <span className="truncate">{provider.ville_principale}</span>
-              </>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      {/* Main content */}
+      <div className="p-5 sm:p-6">
+        {/* Top row: Avatar + Info + Score + Favorite */}
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {provider.avatar_url ? (
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden ring-2 ring-gray-100">
+                <Image
+                  src={provider.avatar_url}
+                  alt={provider.nom_entreprise}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#823F91]/10 flex items-center justify-center text-[#823F91] text-lg sm:text-xl font-bold">
+                {provider.nom_entreprise.charAt(0).toUpperCase()}
+              </div>
             )}
           </div>
-          {/* Badge compatibilité — sous le nom sur mobile */}
-          <span
-            className={cn(
-              'inline-block mt-1.5 sm:hidden text-xs font-bold px-2 py-0.5 rounded-full',
-              score > 90
-                ? 'bg-green-100 text-green-700'
-                : score >= 75
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'bg-gray-100 text-gray-600'
-            )}
-          >
-            {Math.round(score)}% compatible
-          </span>
-        </div>
 
-        {/* Score badge — côté droit */}
-        <div className="ml-auto flex-shrink-0 flex flex-col items-center gap-1">
-          {/* Badge compatibilité — desktop uniquement */}
-          <span
-            className={cn(
-              'hidden sm:block text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap',
-              score > 90
-                ? 'bg-green-100 text-green-700'
-                : score >= 75
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'bg-gray-100 text-gray-600'
-            )}
-          >
-            {Math.round(score)}% compatible
-          </span>
-          {/* Cercle score — réduit sur mobile */}
-          <div
-            className={cn(
-              'w-14 h-14 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center text-white shadow-lg',
-              getScoreColor(score)
-            )}
-          >
-            <span className="text-lg sm:text-2xl font-bold">{Math.round(score)}</span>
-            <span className="text-[10px] sm:text-xs">/100</span>
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">
+                {provider.nom_entreprise}
+              </h3>
+              {rank <= 3 && (
+                <span className="flex-shrink-0 text-xs font-semibold text-[#823F91] bg-[#823F91]/8 px-2 py-0.5 rounded-full">
+                  Top {rank}
+                </span>
+              )}
+            </div>
+
+            <p className="text-sm text-[#823F91] font-medium mt-0.5">
+              {provider.service_type}
+            </p>
+
+            {/* Meta info row */}
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              {provider.ville_principale && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <MapPin className="h-3 w-3 text-gray-400" />
+                  {provider.ville_principale}
+                </span>
+              )}
+              {provider.annees_experience && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <Briefcase className="h-3 w-3 text-gray-400" />
+                  {provider.annees_experience} ans
+                </span>
+              )}
+              {provider.average_rating && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+                  {provider.average_rating.toFixed(1)}
+                  {provider.review_count && (
+                    <span className="text-gray-400">({provider.review_count})</span>
+                  )}
+                </span>
+              )}
+            </div>
           </div>
-          {/* Étoiles selon score */}
-          <div className="flex items-center justify-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
+
+          {/* Right side: Score + Favorite */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-2">
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-[#823F91]">
+                {Math.round(score)}
+              </div>
+              <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+                /100
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setFavorited(!favorited);
+                onFavorite?.(provider.id);
+              }}
+              className="p-1.5 rounded-full hover:bg-gray-50 transition-colors"
+            >
+              <Heart
                 className={cn(
-                  'h-2.5 w-2.5 sm:h-3 sm:w-3',
-                  i < starCount
-                    ? 'text-yellow-400 fill-yellow-400'
-                    : 'text-gray-300'
+                  'h-4 w-4 transition-colors',
+                  favorited ? 'fill-red-500 text-red-500' : 'text-gray-300 hover:text-gray-400'
                 )}
               />
-            ))}
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Body */}
-      <div className="p-4 sm:p-6 space-y-4">
-        {/* Description courte */}
+        {/* Description */}
         {(provider.description_courte || provider.bio) && (
-          <p className="text-gray-700 line-clamp-2">
+          <p className="mt-4 text-sm text-gray-600 leading-relaxed line-clamp-2">
             {provider.description_courte || provider.bio}
           </p>
         )}
 
-        {/* Infos clés */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Budget/Tarifs */}
-          <PricingDisplay
-            budgetMin={provider.budget_min}
-            budgetMax={provider.budget_max}
-            variant="card"
-          />
-
-          {/* Expérience */}
-          {provider.annees_experience && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Expérience</p>
-              <p className="text-sm font-medium text-gray-900">
-                {provider.annees_experience} ans
-              </p>
-            </div>
+        {/* Key info chips */}
+        <div className="mt-4 flex items-center gap-2 flex-wrap">
+          {budgetText && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium py-1.5 px-3 rounded-full bg-gray-50 text-gray-700 border border-gray-100">
+              <Euro className="h-3 w-3 text-gray-400" />
+              {budgetText}
+            </span>
           )}
-
-          {/* Note */}
-          {provider.average_rating && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Note</p>
-              <p className="text-sm font-medium text-gray-900">
-                {provider.average_rating.toFixed(1)}/5
-                {provider.review_count && (
-                  <span className="text-gray-500 ml-1">
-                    ({provider.review_count} avis)
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
-
-          {/* Cultures */}
           {provider.cultures && provider.cultures.length > 0 && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Cultures</p>
-              <p className="text-sm font-medium text-gray-900">
-                {provider.cultures.join(', ')}
-              </p>
-            </div>
+            <>
+              {provider.cultures.slice(0, 2).map((culture) => (
+                <span
+                  key={culture}
+                  className="inline-flex items-center text-xs font-medium py-1.5 px-3 rounded-full bg-[#823F91]/6 text-[#823F91] border border-[#823F91]/10"
+                >
+                  {culture}
+                </span>
+              ))}
+              {provider.cultures.length > 2 && (
+                <span className="text-xs text-gray-400">
+                  +{provider.cultures.length - 2}
+                </span>
+              )}
+            </>
           )}
-
-          {/* Langues */}
           {provider.languages && provider.languages.length > 0 && (
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Langues</p>
-              <p className="text-sm font-medium text-gray-900 capitalize">
-                {provider.languages.join(', ')}
-              </p>
-            </div>
+            <span className="inline-flex items-center text-xs font-medium py-1.5 px-3 rounded-full bg-gray-50 text-gray-600 border border-gray-100 capitalize">
+              {provider.languages.slice(0, 2).join(', ')}
+            </span>
           )}
         </div>
 
-        {/* Explication IA */}
+        {/* AI Explanation */}
         {explanation && (
-          <div className="bg-[#F5F0F7] p-4 rounded-lg border border-[#D4ADE0]">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="h-5 w-5 text-[#823F91] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#5C2B66] leading-relaxed">
-                {explanation}
-              </p>
-            </div>
+          <div className="mt-4 flex items-start gap-2.5 bg-[#823F91]/4 rounded-xl px-4 py-3 border border-[#823F91]/8">
+            <Sparkles className="h-4 w-4 text-[#823F91] flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-gray-600 leading-relaxed">
+              {explanation}
+            </p>
           </div>
         )}
 
-        {/* Breakdown score collapsible */}
-        <div>
+        {/* Score breakdown toggle */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setShowBreakdown(!showBreakdown)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
             >
               {showBreakdown ? (
-                <>
-                  <ChevronUp className="h-4 w-4" />
-                  <span>Masquer le détail du score</span>
-                </>
+                <ChevronUp className="h-3.5 w-3.5" />
               ) : (
-                <>
-                  <ChevronDown className="h-4 w-4" />
-                  <span>Voir le détail du score</span>
-                </>
+                <ChevronDown className="h-3.5 w-3.5" />
               )}
+              Détail du score
             </button>
             <button
               onClick={() => setShowBreakdownModal(true)}
-              className="text-xs text-[#823F91] hover:text-[#9333ea] transition-colors font-medium"
+              className="text-xs text-[#823F91] hover:text-[#6D3478] transition-colors font-medium"
             >
-              Voir le détail complet →
+              Voir tout
             </button>
           </div>
 
           {showBreakdown && (
-            <div className="mt-3 bg-gray-50 rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Culture</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {Math.round(breakdown.cultural_match)}/30
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-[#823F91] h-2 rounded-full"
-                  style={{ width: `${(breakdown.cultural_match / 30) * 100}%` }}
-                />
-              </div>
+            <div className="mt-3 space-y-2.5">
+              {[
+                { label: 'Culture', value: breakdown.cultural_match, max: 30, color: 'bg-[#823F91]' },
+                { label: 'Budget', value: breakdown.budget_match, max: 20, color: 'bg-[#823F91]/70' },
+                { label: 'Réputation', value: breakdown.reputation, max: 20, color: 'bg-[#823F91]/55' },
+                { label: 'Expérience', value: breakdown.experience, max: 10, color: 'bg-[#823F91]/45' },
+                { label: 'Localisation', value: breakdown.location_match, max: 10, color: 'bg-[#823F91]/35' },
+              ].map(({ label, value, max, color }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <span className="text-xs text-gray-500 w-20 flex-shrink-0">{label}</span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                    <div
+                      className={cn('h-1.5 rounded-full transition-all', color)}
+                      style={{ width: `${(value / max) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-gray-600 w-10 text-right">
+                    {Math.round(value)}/{max}
+                  </span>
+                </div>
+              ))}
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Budget</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {Math.round(breakdown.budget_match)}/20
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-[#9333ea] h-2 rounded-full"
-                  style={{ width: `${(breakdown.budget_match / 20) * 100}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Réputation</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {Math.round(breakdown.reputation)}/20
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{ width: `${(breakdown.reputation / 20) * 100}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Expérience</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {Math.round(breakdown.experience)}/10
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full"
-                  style={{ width: `${(breakdown.experience / 10) * 100}%` }}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">Localisation</span>
-                <span className="text-sm font-semibold text-gray-900">
-                  {Math.round(breakdown.location_match)}/10
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-orange-500 h-2 rounded-full"
-                  style={{ width: `${(breakdown.location_match / 10) * 100}%` }}
-                />
-              </div>
-
-              {/* Bonus de compatibilité */}
+              {/* Bonus items */}
               {[
                 breakdown.language_match !== undefined && breakdown.language_match !== 0
                   ? { label: 'Langues', score: breakdown.language_match }
                   : null,
                 breakdown.dietary_match !== undefined && breakdown.dietary_match !== 0
-                  ? { label: 'Régimes alim.', score: breakdown.dietary_match }
+                  ? { label: 'Régimes', score: breakdown.dietary_match }
                   : null,
                 breakdown.tags_match !== undefined && breakdown.tags_match !== 0
                   ? { label: 'Style', score: breakdown.tags_match }
@@ -359,7 +252,7 @@ export default function ProviderMatchCard({
                   ? { label: 'Engagement', score: breakdown.ctr_bonus }
                   : null,
                 breakdown.response_rate_bonus !== undefined && breakdown.response_rate_bonus !== 0
-                  ? { label: 'Taux de réponse', score: breakdown.response_rate_bonus }
+                  ? { label: 'Réactivité', score: breakdown.response_rate_bonus }
                   : null,
                 breakdown.ai_bonus !== undefined && breakdown.ai_bonus !== 0
                   ? { label: 'Bonus IA', score: breakdown.ai_bonus }
@@ -368,11 +261,11 @@ export default function ProviderMatchCard({
                 .filter(Boolean)
                 .map((item, index) => (
                   <div key={index} className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">{item!.label}</span>
+                    <span className="text-xs text-gray-500">{item!.label}</span>
                     <span
                       className={cn(
-                        'text-sm font-semibold',
-                        item!.score > 0 ? 'text-green-600' : 'text-red-600'
+                        'text-xs font-medium',
+                        item!.score > 0 ? 'text-[#823F91]' : 'text-gray-400'
                       )}
                     >
                       {item!.score > 0 ? '+' : ''}
@@ -381,48 +274,32 @@ export default function ProviderMatchCard({
                   </div>
                 ))}
 
-              <div className="pt-2 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-900">
-                    Score total
-                  </span>
-                  <span className="text-lg font-bold text-[#823F91]">
-                    {Math.round(breakdown.final_score)}/100
-                  </span>
-                </div>
+              <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-xs font-semibold text-gray-700">Score total</span>
+                <span className="text-sm font-bold text-[#823F91]">
+                  {Math.round(breakdown.final_score)}/100
+                </span>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="p-4 sm:p-6 border-t flex gap-2 sm:gap-3">
+      {/* Footer actions */}
+      <div className="px-5 sm:px-6 py-3.5 border-t border-gray-100 flex gap-2.5">
         <Button
           onClick={() => onViewProfile(provider.id)}
           variant="outline"
-          className="flex-1 text-xs sm:text-sm"
+          className="flex-1 text-xs sm:text-sm h-9 border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
         >
           Voir le profil
         </Button>
         <Button
           onClick={() => onContact(provider.id)}
-          variant="default"
-          className="flex-1 bg-gradient-to-r from-[#823F91] to-[#9333ea] hover:from-[#9333ea] hover:to-[#823F91] text-white text-xs sm:text-sm"
+          className="flex-1 text-xs sm:text-sm h-9 bg-[#823F91] hover:bg-[#6D3478] text-white"
         >
-          <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <Mail className="h-3.5 w-3.5 mr-1.5" />
           Contacter
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="flex-shrink-0"
-          onClick={() => {
-            setFavorited(!favorited);
-            onFavorite?.(provider.id);
-          }}
-        >
-          <Heart className={cn('h-4 w-4 transition-colors', favorited ? 'fill-red-500 text-red-500' : '')} />
         </Button>
       </div>
 
